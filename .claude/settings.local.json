@@ -17,7 +17,8 @@
       "Bash(pnpm exec tsc:*)",
       "Bash(timeout 30 pnpm dev)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(timeout 40 pnpm dev)"
     ],
     "deny": [],
     "ask": []

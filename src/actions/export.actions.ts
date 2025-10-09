@@ -34,28 +34,28 @@ export const exportTimesheetToExcel = authActionClient
         ...(userRole === "EMPLOYEE" && { userId: currentUserId }),
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        project: {
+        Project: {
           select: {
             id: true,
             name: true,
             code: true,
           },
         },
-        task: {
+        Task: {
           select: {
             id: true,
             name: true,
           },
         },
       },
-      orderBy: [{ date: "desc" }, { user: { name: "asc" } }],
+      orderBy: [{ date: "desc" }, { User: { name: "asc" } }],
     });
 
     // Create workbook
@@ -88,10 +88,10 @@ export const exportTimesheetToExcel = authActionClient
     entries.forEach((entry) => {
       worksheet.addRow({
         date: entry.date.toLocaleDateString("fr-FR"),
-        employee: entry.user.name || entry.user.email,
-        project: entry.project.name,
-        projectCode: entry.project.code,
-        task: entry.task?.name || "-",
+        employee: entry.User.name || entry.User.email,
+        project: entry.Project.name,
+        projectCode: entry.Project.code,
+        task: entry.Task?.name || "-",
         type: getTypeLabel(entry.type),
         duration: entry.duration,
         status: getStatusLabel(entry.status),
@@ -162,32 +162,32 @@ export const exportTimesheetToPDF = authActionClient
         ...(userRole === "EMPLOYEE" && { userId: currentUserId }),
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        project: {
+        Project: {
           select: {
             id: true,
             name: true,
             code: true,
           },
         },
-        task: {
+        Task: {
           select: {
             id: true,
             name: true,
           },
         },
       },
-      orderBy: [{ date: "desc" }, { user: { name: "asc" } }],
+      orderBy: [{ date: "desc" }, { User: { name: "asc" } }],
     });
 
     // Create PDF
-    const doc = new jsPDF({ orientation: "landscape" });
+    const doc = new jsPDF({ orientation: "landscape" }) as any;
 
     // Header
     doc.setFontSize(20);
@@ -206,10 +206,10 @@ export const exportTimesheetToPDF = authActionClient
     // Prepare table data
     const tableData = entries.map((entry) => [
       entry.date.toLocaleDateString("fr-FR"),
-      entry.user.name || entry.user.email,
-      entry.project.name,
-      entry.project.code,
-      entry.task?.name || "-",
+      entry.User.name || entry.User.email,
+      entry.Project.name,
+      entry.Project.code,
+      entry.Task?.name || "-",
       getTypeLabel(entry.type),
       `${entry.duration}h`,
       getStatusLabel(entry.status),

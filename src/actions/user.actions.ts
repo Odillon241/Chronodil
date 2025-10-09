@@ -18,15 +18,15 @@ export const getMyProfile = authActionClient
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        department: true,
-        manager: {
+        Department: true,
+        Manager: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        subordinates: {
+        Subordinates: {
           select: {
             id: true,
             name: true,
@@ -86,8 +86,8 @@ export const getUsers = authActionClient
         ...(parsedInput.departmentId && { departmentId: parsedInput.departmentId }),
       },
       include: {
-        department: true,
-        manager: {
+        Department: true,
+        Manager: {
           select: {
             id: true,
             name: true,
@@ -96,8 +96,8 @@ export const getUsers = authActionClient
         },
         _count: {
           select: {
-            timesheetEntries: true,
-            subordinates: true,
+            TimesheetEntry: true,
+            Subordinates: true,
           },
         },
       },
@@ -254,10 +254,10 @@ export const getMyTeam = authActionClient
         managerId: userId,
       },
       include: {
-        department: true,
+        Department: true,
         _count: {
           select: {
-            timesheetEntries: true,
+            TimesheetEntry: true,
           },
         },
       },
