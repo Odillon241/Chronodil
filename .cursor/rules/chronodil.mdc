@@ -1,0 +1,1185 @@
+# Chronodil - Cursor Rules
+
+## Project Overview
+Chronodil is a modern time tracking and timesheet management system built with Next.js 14+, TypeScript, and a comprehensive tech stack focusing on developer experience, type safety, and user experience.
+
+## Tech Stack
+- **Framework**: Next.js 14+ (App Router)
+- **Language**: TypeScript 5+ (strict mode)
+- **Database**: PostgreSQL + Prisma ORM
+- **Authentication**: Better Auth
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State Management**: Zustand
+- **Forms**: React Hook Form + Zod
+- **Server Actions**: Next-safe-action
+- **Background Jobs**: Inngest
+- **Email**: React Email + Resend
+- **AI**: Vercel AI SDK
+- **URL State**: NUQS
+- **Shortcuts**: React Hotkeys
+- **Charts**: Recharts
+- **Exports**: ExcelJS + jsPDF
+
+---
+
+## Code Style & Conventions
+
+### TypeScript
+- Use TypeScript strict mode at all times
+- Prefer `interface` over `type` for object shapes
+- Use `type` for unions, intersections, and utility types
+- Always type function parameters and return types explicitly
+- Use const assertions for literal types: `as const`
+- Avoid `any` - use `unknown` if type is truly unknown
+- Use discriminated unions for complex state management
+- Leverage utility types: Partial, Required, Pick, Omit, Record, etc.
+
+### Naming Conventions
+- **Files**: kebab-case (e.g., `user-profile.tsx`, `time-entry.ts`)
+- **Components**: PascalCase (e.g., `TimesheetForm`, `ProjectSelector`)
+- **Functions**: camelCase (e.g., `calculateDuration`, `validateTimeEntry`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_HOURS_PER_DAY`, `API_ENDPOINTS`)
+- **Interfaces**: PascalCase with "I" prefix optional (e.g., `User` or `IUser`)
+- **Types**: PascalCase (e.g., `TimesheetStatus`, `ValidationError`)
+- **Enums**: PascalCase with PascalCase values (e.g., `Role.Employee`)
+
+### File Structure
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Route groups for auth pages
+│   ├── (dashboard)/       # Route groups for protected pages
+│   ├── api/               # API routes
+│   └── actions/           # Server actions (next-safe-action)
+├── components/
+│   ├── ui/                # shadcn/ui base components
+│   ├── forms/             # Form components
+│   ├── layout/            # Layout components (header, sidebar)
+│   └── features/          # Feature-specific components
+├── lib/
+│   ├── auth.ts            # Better Auth configuration
+│   ├── prisma.ts          # Prisma client
+│   ├── validations.ts     # Zod schemas
+│   └── utils.ts           # Utility functions
+├── hooks/                 # Custom React hooks
+├── store/                 # Zustand stores
+├── types/                 # TypeScript types and interfaces
+└── ai/                    # AI-related logic
+```
+
+---
+
+## React & Next.js Best Practices
+
+### Components
+- Use functional components with hooks exclusively
+- Keep components small and focused (single responsibility)
+- Extract logic into custom hooks when component gets complex
+- Use React.memo() for expensive components that receive stable props
+- Prefer composition over prop drilling (use context or state management)
+- Always destructure props at the component level
+
+```typescript
+// Good
+interface TimesheetFormProps {
+  projectId: string;
+  onSubmit: (data: TimesheetData) => void;
+}
+
+export function TimesheetForm({ projectId, onSubmit }: TimesheetFormProps) {
+  // Component logic
+}
+
+// Bad - no types
+export function TimesheetForm({ projectId, onSubmit }) {
+  // Component logic
+}
+```
+
+### Hooks Rules
+- Always prefix custom hooks with "use" (e.g., `useTimesheet`, `useAuth`)
+- Never call hooks conditionally
+- Extract complex logic into custom hooks
+- Use useMemo and useCallback appropriately (not prematurely)
+- Prefer useCallback for functions passed as props to prevent re-renders
+
+```typescript
+// Good
+function useTimesheetData(userId: string) {
+  const [data, setData] = useState<Timesheet[]>([]);
+  
+  useEffect(() => {
+    // Fetch logic
+  }, [userId]);
+  
+  return { data, isLoading };
+}
+
+// Bad - hook called conditionally
+function useTimesheetData(userId?: string) {
+  if (!userId) return null; // ❌ Hook called conditionally
+  
+  const [data, setData] = useState<Timesheet[]>([]);
+  return { data };
+}
+```
+
+### Server Components vs Client Components
+- Default to Server Components whenever possible
+- Use "use client" directive only when necessary:
+  - Event handlers (onClick, onChange, etc.)
+  - Browser APIs (localStorage, window, etc.)
+  - React hooks (useState, useEffect, etc.)
+  - Context providers
+- Keep client components small and focused
+- Fetch data in Server Components, pass as props to Client Components
+
+```typescript
+// server-component.tsx (Server Component - default)
+import { ClientButton } from './client-button'
+
+export async function ServerComponent() {
+  const data = await fetchData() // ✓ Fetch on server
+  
+  return (
+    <div>
+      <h1>{data.title}</h1>
+      <ClientButton onClick={() => {}} /> {/* Client Component */}
+    </div>
+  )
+}
+
+// client-button.tsx (Client Component)
+'use client'
+
+export function ClientButton({ onClick }: { onClick: () => void }) {
+  return <button onClick={onClick}>Click me</button>
+}
+```
+
+### App Router Patterns
+- Use route groups (folders with parentheses) for layout organization
+- Leverage loading.tsx and error.tsx for better UX
+- Use metadata API for SEO
+- Implement proper error boundaries
+- Use parallel routes and intercepting routes when appropriate
+
+```typescript
+// app/(dashboard)/layout.tsx
+import { Sidebar } from '@/components/layout/sidebar'
+
+export const metadata = {
+  title: 'Dashboard | TimeTracker Pro',
+  description: 'Manage your timesheets',
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex">
+      <Sidebar />
+      <main className="flex-1">{children}</main>
+    </div>
+  )
+}
+```
+
+---
+
+## Server Actions & Data Mutations
+
+### Next-safe-action Usage
+- Always use next-safe-action for server mutations
+- Define clear input schemas with Zod
+- Handle errors gracefully and return typed responses
+- Use middleware for authentication and authorization
+- Never expose sensitive data in action responses
+
+```typescript
+// app/actions/timesheet.ts
+'use server'
+
+import { action } from '@/lib/safe-action'
+import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
+
+const createTimesheetSchema = z.object({
+  projectId: z.string().cuid(),
+  date: z.date(),
+  duration: z.number().positive().max(24),
+  description: z.string().optional(),
+})
+
+export const createTimesheet = action(
+  createTimesheetSchema,
+  async (input, { userId }) => {
+    // Verify user has access to project
+    const hasAccess = await verifyProjectAccess(userId, input.projectId)
+    if (!hasAccess) {
+      throw new Error('Unauthorized')
+    }
+
+    const timesheet = await prisma.timesheet.create({
+      data: {
+        ...input,
+        userId,
+        status: 'DRAFT',
+      },
+    })
+
+    revalidatePath('/dashboard/timesheets')
+    
+    return { 
+      success: true, 
+      data: timesheet 
+    }
+  }
+)
+```
+
+### Data Fetching
+- Fetch data in Server Components when possible
+- Use React Query (TanStack Query) for client-side data fetching
+- Implement proper loading and error states
+- Use suspense boundaries for better UX
+- Cache appropriately using Next.js cache functions
+
+```typescript
+// Server Component data fetching
+async function getTimesheets(userId: string) {
+  const timesheets = await prisma.timesheet.findMany({
+    where: { userId },
+    include: { project: true },
+    orderBy: { date: 'desc' },
+  })
+  
+  return timesheets
+}
+
+export default async function TimesheetsPage() {
+  const timesheets = await getTimesheets('user-id')
+  
+  return <TimesheetList timesheets={timesheets} />
+}
+```
+
+---
+
+## Database & Prisma
+
+### Prisma Best Practices
+- Always use Prisma Client types (generated from schema)
+- Use includes and selects to avoid over-fetching
+- Leverage transactions for multi-step operations
+- Use proper indexing on frequently queried fields
+- Implement soft deletes where appropriate
+- Use enums for status fields
+
+```typescript
+// Good - typed query with select
+const user = await prisma.user.findUnique({
+  where: { id: userId },
+  select: {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    role: true,
+    department: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  },
+})
+
+// Bad - fetching everything
+const user = await prisma.user.findUnique({
+  where: { id: userId },
+})
+```
+
+### Transactions
+```typescript
+// Use transactions for related operations
+await prisma.$transaction(async (tx) => {
+  const timesheet = await tx.timesheet.update({
+    where: { id: timesheetId },
+    data: { status: 'APPROVED' },
+  })
+  
+  await tx.approval.create({
+    data: {
+      timesheetId,
+      approverId: managerId,
+      status: 'APPROVED',
+    },
+  })
+  
+  await tx.notification.create({
+    data: {
+      userId: timesheet.userId,
+      type: 'APPROVAL_RESULT',
+      title: 'Timesheet Approved',
+      message: 'Your timesheet has been approved',
+    },
+  })
+})
+```
+
+---
+
+## Form Handling
+
+### React Hook Form + Zod
+- Always use Zod schemas for validation
+- Use zodResolver with React Hook Form
+- Implement proper error handling and display
+- Provide clear validation messages in French
+- Use controlled components for complex inputs
+
+```typescript
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const timesheetSchema = z.object({
+  projectId: z.string().min(1, 'Le projet est requis'),
+  date: z.date(),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Format HH:MM requis'),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Format HH:MM requis'),
+  description: z.string().max(500, 'Maximum 500 caractères').optional(),
+}).refine(
+  (data) => data.endTime > data.startTime,
+  {
+    message: "L'heure de fin doit être après l'heure de début",
+    path: ['endTime'],
+  }
+)
+
+type TimesheetFormData = z.infer<typeof timesheetSchema>
+
+export function TimesheetForm() {
+  const form = useForm<TimesheetFormData>({
+    resolver: zodResolver(timesheetSchema),
+    defaultValues: {
+      date: new Date(),
+    },
+  })
+  
+  const onSubmit = async (data: TimesheetFormData) => {
+    try {
+      await createTimesheet(data)
+      toast.success('Temps enregistré avec succès')
+      form.reset()
+    } catch (error) {
+      toast.error('Erreur lors de l\'enregistrement')
+    }
+  }
+  
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* Form fields */}
+    </form>
+  )
+}
+```
+
+---
+
+## State Management
+
+### Zustand Stores
+- Create focused stores (don't create a monolithic store)
+- Use slices pattern for complex stores
+- Implement proper TypeScript typing
+- Use selectors to prevent unnecessary re-renders
+- Keep stores flat and normalized when possible
+
+```typescript
+// stores/timesheet-store.ts
+import { create } from 'zustand'
+import { devtools, persist } from 'zustand/middleware'
+
+interface TimesheetStore {
+  // State
+  currentDate: Date
+  selectedProjectId: string | null
+  isTimerRunning: boolean
+  timerStartTime: Date | null
+  
+  // Actions
+  setDate: (date: Date) => void
+  selectProject: (projectId: string) => void
+  startTimer: () => void
+  stopTimer: () => void
+  resetTimer: () => void
+}
+
+export const useTimesheetStore = create<TimesheetStore>()(
+  devtools(
+    persist(
+      (set, get) => ({
+        currentDate: new Date(),
+        selectedProjectId: null,
+        isTimerRunning: false,
+        timerStartTime: null,
+        
+        setDate: (date) => set({ currentDate: date }),
+        selectProject: (projectId) => set({ selectedProjectId: projectId }),
+        startTimer: () => set({ 
+          isTimerRunning: true, 
+          timerStartTime: new Date() 
+        }),
+        stopTimer: () => set({ 
+          isTimerRunning: false 
+        }),
+        resetTimer: () => set({ 
+          isTimerRunning: false,
+          timerStartTime: null,
+        }),
+      }),
+      {
+        name: 'timesheet-storage',
+        partialize: (state) => ({ 
+          selectedProjectId: state.selectedProjectId 
+        }),
+      }
+    )
+  )
+)
+
+// Usage with selector to prevent re-renders
+const selectedProjectId = useTimesheetStore((state) => state.selectedProjectId)
+const selectProject = useTimesheetStore((state) => state.selectProject)
+```
+
+---
+
+## Authentication & Authorization
+
+### Better Auth Patterns
+- Always check authentication in middleware
+- Use server-side session validation for sensitive operations
+- Implement role-based access control (RBAC)
+- Never trust client-side auth state for authorization
+- Use TypeScript to enforce permission checks
+
+```typescript
+// middleware.ts
+import { auth } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  })
+
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login')
+  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
+
+  if (isDashboard && !session) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  if (isAuthPage && session) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  return NextResponse.next()
+}
+
+// Server action with auth check
+export const updateProject = action(
+  updateProjectSchema,
+  async (input, { userId, userRole }) => {
+    // Check authorization
+    if (userRole !== 'ADMIN' && userRole !== 'MANAGER') {
+      throw new Error('Unauthorized')
+    }
+    
+    // Proceed with action
+  }
+)
+```
+
+---
+
+## Styling & UI
+
+### Tailwind CSS Guidelines
+- Use Tailwind utility classes, avoid custom CSS when possible
+- Follow mobile-first approach (default classes for mobile, use md:, lg: for larger)
+- Use consistent spacing scale (p-4, m-8, gap-6, etc.)
+- Leverage Tailwind's color palette, avoid arbitrary values
+- Use semantic class grouping: layout → spacing → typography → colors → effects
+
+```typescript
+// Good - semantic grouping
+<div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-md">
+  <h2 className="text-2xl font-bold text-gray-900">Title</h2>
+  <p className="text-sm text-gray-600">Description</p>
+</div>
+
+// Bad - random order
+<div className="text-gray-900 flex shadow-md rounded-lg gap-4 bg-white flex-col p-6">
+```
+
+### shadcn/ui Components
+- Use shadcn/ui components as base, customize as needed
+- Keep component variants consistent across the app
+- Don't override core shadcn styles unless necessary
+- Extend components through composition, not modification
+
+```typescript
+// Good - composition
+import { Button } from '@/components/ui/button'
+
+export function SubmitButton({ children, ...props }: ButtonProps) {
+  return (
+    <Button variant="default" size="lg" {...props}>
+      {children}
+    </Button>
+  )
+}
+
+// Bad - direct modification of shadcn component
+// Don't modify files in components/ui/ directly
+```
+
+---
+
+## Inngest & Background Jobs
+
+### Job Patterns
+- Keep job functions pure and testable
+- Use proper error handling and retries
+- Implement idempotency for critical jobs
+- Log important job events for debugging
+- Use step functions for complex workflows
+
+```typescript
+// inngest/functions/send-reminders.ts
+import { inngest } from '../client'
+import { prisma } from '@/lib/prisma'
+import { sendEmail } from '@/lib/email'
+
+export const sendTimesheetReminders = inngest.createFunction(
+  { 
+    id: 'send-timesheet-reminders',
+    retries: 3,
+  },
+  { cron: '0 17 * * 1-5' }, // Every weekday at 5 PM
+  async ({ event, step }) => {
+    // Step 1: Find users who haven't logged time today
+    const usersWithoutTime = await step.run('find-users', async () => {
+      return await prisma.user.findMany({
+        where: {
+          isActive: true,
+          timesheets: {
+            none: {
+              date: new Date().toISOString().split('T')[0],
+            },
+          },
+        },
+      })
+    })
+
+    // Step 2: Send emails
+    await step.run('send-emails', async () => {
+      const emailPromises = usersWithoutTime.map((user) =>
+        sendEmail({
+          to: user.email,
+          subject: 'Rappel : Saisie de temps',
+          template: 'timesheet-reminder',
+          data: { userName: user.firstName },
+        })
+      )
+      
+      await Promise.all(emailPromises)
+    })
+
+    return { 
+      sentTo: usersWithoutTime.length 
+    }
+  }
+)
+```
+
+---
+
+## AI Integration (Vercel AI SDK)
+
+### AI Best Practices
+- Use streaming for better UX with long responses
+- Implement proper error handling for AI failures
+- Don't rely on AI for critical business logic
+- Cache AI responses when appropriate
+- Provide fallbacks when AI is unavailable
+
+```typescript
+// AI suggestion for time entry
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+
+export async function suggestTimeEntry(userId: string, date: Date) {
+  try {
+    // Get user's history
+    const history = await prisma.timesheet.findMany({
+      where: { userId },
+      orderBy: { date: 'desc' },
+      take: 20,
+      include: { project: true, task: true },
+    })
+
+    const { text } = await generateText({
+      model: openai('gpt-4-turbo'),
+      system: 'You are a helpful assistant that suggests time entries based on patterns.',
+      prompt: `Based on this history: ${JSON.stringify(history)}
+               Suggest a time entry for ${date}.
+               Return JSON: { projectId, taskId, duration, description }`,
+    })
+
+    return JSON.parse(text)
+  } catch (error) {
+    console.error('AI suggestion failed:', error)
+    return null // Fallback gracefully
+  }
+}
+```
+
+---
+
+## Testing (Phase 2)
+
+### Testing Strategy
+- Write unit tests for utility functions and business logic
+- Write integration tests for API routes and server actions
+- Write E2E tests for critical user flows
+- Use Vitest for unit/integration tests
+- Use Playwright for E2E tests
+
+```typescript
+// Example unit test
+import { describe, it, expect } from 'vitest'
+import { calculateDuration } from '@/lib/utils'
+
+describe('calculateDuration', () => {
+  it('should calculate duration correctly', () => {
+    const start = new Date('2024-01-01T09:00:00')
+    const end = new Date('2024-01-01T17:00:00')
+    
+    expect(calculateDuration(start, end)).toBe(8)
+  })
+  
+  it('should handle overnight shifts', () => {
+    const start = new Date('2024-01-01T22:00:00')
+    const end = new Date('2024-01-02T06:00:00')
+    
+    expect(calculateDuration(start, end)).toBe(8)
+  })
+})
+```
+
+---
+
+## Error Handling
+
+### Error Handling Patterns
+- Always handle errors gracefully
+- Provide user-friendly error messages in French
+- Log errors appropriately for debugging
+- Use error boundaries for React components
+- Return typed errors from server actions
+
+```typescript
+// Error boundary component
+'use client'
+
+import { useEffect } from 'react'
+
+export function ErrorBoundary({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  useEffect(() => {
+    console.error('Error boundary caught:', error)
+  }, [error])
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <h2 className="text-2xl font-bold mb-4">Une erreur est survenue</h2>
+      <p className="text-gray-600 mb-4">
+        Nous sommes désolés, une erreur inattendue s'est produite.
+      </p>
+      <button
+        onClick={reset}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+      >
+        Réessayer
+      </button>
+    </div>
+  )
+}
+
+// Server action error handling
+export const createTimesheet = action(
+  createTimesheetSchema,
+  async (input, { userId }) => {
+    try {
+      const timesheet = await prisma.timesheet.create({
+        data: { ...input, userId },
+      })
+      
+      return { 
+        success: true, 
+        data: timesheet 
+      }
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          return { 
+            success: false, 
+            error: 'Une entrée existe déjà pour cette période' 
+          }
+        }
+      }
+      
+      throw new Error('Erreur lors de la création de l\'entrée')
+    }
+  }
+)
+```
+
+---
+
+## Performance Optimization
+
+### Performance Best Practices
+- Use Next.js Image component for all images
+- Implement proper code splitting
+- Lazy load heavy components
+- Use React.memo for expensive renders
+- Optimize database queries with proper indexes
+- Implement pagination for large lists
+- Use server components to reduce client bundle size
+
+```typescript
+// Lazy loading
+import dynamic from 'next/dynamic'
+
+const HeavyChart = dynamic(() => import('@/components/charts/heavy-chart'), {
+  loading: () => <p>Chargement du graphique...</p>,
+  ssr: false, // Don't render on server if not needed
+})
+
+// Pagination
+async function getTimesheets(page: number, pageSize: number = 20) {
+  const [timesheets, total] = await Promise.all([
+    prisma.timesheet.findMany({
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: { date: 'desc' },
+    }),
+    prisma.timesheet.count(),
+  ])
+  
+  return {
+    timesheets,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    },
+  }
+}
+```
+
+---
+
+## Security Best Practices
+
+### Security Checklist
+- ✅ Always validate input on server side (never trust client)
+- ✅ Use parameterized queries (Prisma does this by default)
+- ✅ Implement CSRF protection (Next.js handles this)
+- ✅ Sanitize user input before displaying
+- ✅ Use HTTPS in production
+- ✅ Implement rate limiting on API routes
+- ✅ Never expose sensitive data in client components
+- ✅ Use environment variables for secrets
+- ✅ Implement proper authentication checks
+- ✅ Hash passwords (Better Auth handles this)
+- ✅ Implement audit logging for sensitive operations
+
+```typescript
+// Rate limiting example
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, '10 s'),
+})
+
+export async function POST(req: Request) {
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
+  const { success } = await ratelimit.limit(ip)
+  
+  if (!success) {
+    return new Response('Too Many Requests', { status: 429 })
+  }
+  
+  // Handle request
+}
+```
+
+---
+
+## Accessibility
+
+### A11y Guidelines
+- Use semantic HTML elements
+- Provide alt text for images
+- Ensure keyboard navigation works
+- Use proper ARIA labels when needed
+- Maintain color contrast ratios (WCAG AA)
+- Test with screen readers
+- Don't rely solely on color to convey information
+
+```typescript
+// Good accessibility
+<button
+  className="px-4 py-2 bg-blue-600 text-white"
+  aria-label="Soumettre la feuille de temps"
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <>
+      <span className="sr-only">Envoi en cours...</span>
+      <Loader2 className="animate-spin" aria-hidden="true" />
+    </>
+  ) : (
+    'Soumettre'
+  )}
+</button>
+```
+
+---
+
+## Internationalization (Future)
+
+### i18n Preparation
+- Keep all user-facing strings in French for MVP
+- Structure code to make i18n easy to add later
+- Avoid hardcoded strings in components
+- Use date-fns with French locale
+
+```typescript
+// Good - easy to internationalize later
+const messages = {
+  submit: 'Soumettre',
+  cancel: 'Annuler',
+  success: 'Opération réussie',
+}
+
+// Usage
+<button>{messages.submit}</button>
+
+// Date formatting
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
+const formattedDate = format(date, 'PPP', { locale: fr })
+```
+
+---
+
+## Git & Version Control
+
+### Commit Conventions
+- Use conventional commits format
+- Write clear, descriptive commit messages in English
+- Keep commits focused and atomic
+- Reference issues/tickets when applicable
+
+```
+feat(timesheet): add weekly view component
+fix(auth): resolve session expiration issue
+docs(readme): update installation instructions
+refactor(utils): simplify date calculation logic
+test(timesheet): add unit tests for validation
+chore(deps): update dependencies
+```
+
+### Branch Strategy
+- `main` - production-ready code
+- `develop` - integration branch
+- `feature/*` - new features
+- `fix/*` - bug fixes
+- `refactor/*` - refactoring work
+
+---
+
+## Comments & Documentation
+
+### When to Comment
+- **DO** comment complex business logic
+- **DO** document utility functions with JSDoc
+- **DO** explain "why" not "what" in comments
+- **DON'T** comment obvious code
+- **DON'T** leave commented-out code
+
+```typescript
+// Good - explains the "why"
+// We add a 5-minute buffer to prevent overlapping entries due to clock differences
+const bufferMinutes = 5
+
+// Bad - explains the obvious
+// This function calculates duration
+function calculateDuration(start: Date, end: Date) { }
+
+// Good - JSDoc for complex functions
+/**
+ * Calculates overtime hours based on weekly threshold
+ * @param weeklyHours - Total hours worked in the week
+ * @param threshold - Overtime threshold (default: 35h)
+ * @returns Object with regular and overtime hours
+ */
+function calculateOvertime(
+  weeklyHours: number, 
+  threshold: number = 35
+): { regular: number; overtime: number } {
+  // Implementation
+}
+```
+
+---
+
+## Environment Variables
+
+### Naming & Usage
+- Use NEXT_PUBLIC_ prefix for client-accessible variables
+- Keep sensitive variables server-only (no prefix)
+- Document all environment variables in .env.example
+- Never commit .env files
+
+```env
+# .env.example
+
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/chronodil"
+
+# Authentication
+BETTER_AUTH_SECRET="your-secret-key-min-32-chars"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# Email
+RESEND_API_KEY="re_..."
+
+# AI (optional)
+OPENAI_API_KEY="sk-..."
+
+# Public (client-accessible)
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+---
+
+## Code Review Checklist
+
+Before submitting a PR, ensure:
+- ✅ TypeScript types are properly defined (no `any`)
+- ✅ Code follows the established patterns
+- ✅ Server actions are properly secured
+- ✅ Database queries are optimized
+- ✅ Error handling is implemented
+- ✅ User-facing text is in French
+- ✅ Loading and error states are handled
+- ✅ Components are properly typed
+- ✅ No console.logs in production code
+- ✅ Code is formatted (Prettier)
+- ✅ Linter passes (ESLint)
+- ✅ No obvious security issues
+- ✅ Performance considered (no obvious bottlenecks)
+
+---
+
+## Common Patterns & Utilities
+
+### Date Utilities
+```typescript
+// lib/date-utils.ts
+import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
+export function formatDate(date: Date, formatStr: string = 'PP'): string {
+  return format(date, formatStr, { locale: fr })
+}
+
+export function getWeekDays(date: Date): Date[] {
+  const start = startOfWeek(date, { weekStartsOn: 1 }) // Monday
+  const end = endOfWeek(date, { weekStartsOn: 1 })
+  return eachDayOfInterval({ start, end })
+}
+
+export function calculateDuration(start: Date, end: Date): number {
+  const diff = end.getTime() - start.getTime()
+  return diff / (1000 * 60 * 60) // Hours
+}
+```
+
+### API Response Types
+```typescript
+// types/api.ts
+export type ApiResponse<T = unknown> = 
+  | { success: true; data: T }
+  | { success: false; error: string }
+
+export type PaginatedResponse<T> = {
+  data: T[]
+  pagination: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
+}
+```
+
+---
+
+## Anti-Patterns to Avoid
+
+### ❌ Don't Do This
+```typescript
+// ❌ Using any
+function processData(data: any) { }
+
+// ❌ Not handling errors
+const data = await fetchData() // What if this fails?
+
+// ❌ Prop drilling through many levels
+<Parent>
+  <Child prop={value}>
+    <GrandChild prop={value}>
+      <GreatGrandChild prop={value} /> {/* Use context or state management */}
+    </GrandChild>
+  </Child>
+</Parent>
+
+// ❌ Mutating props
+function Component({ items }) {
+  items.push(newItem) // Never mutate props!
+}
+
+// ❌ Inline styles (use Tailwind)
+<div style={{ padding: '16px', backgroundColor: 'white' }}>
+
+// ❌ Large components (>300 lines)
+// Break into smaller, focused components
+
+// ❌ Business logic in components
+// Extract to services or utilities
+```
+
+### ✅ Do This Instead
+```typescript
+// ✅ Proper typing
+function processData(data: UserData) { }
+
+// ✅ Error handling
+try {
+  const data = await fetchData()
+} catch (error) {
+  handleError(error)
+}
+
+// ✅ Context or state management
+const value = useTimesheetContext()
+
+// ✅ Immutability
+const newItems = [...items, newItem]
+
+// ✅ Tailwind classes
+<div className="p-4 bg-white">
+
+// ✅ Small, focused components
+<TimesheetForm />
+<TimesheetList />
+<TimesheetFilters />
+```
+
+---
+
+## Project-Specific Business Rules
+
+### Timesheet Rules
+- Maximum 24 hours per day
+- Overtime threshold: 35h/week (configurable)
+- Night shift: 21:00-06:00 (1.5x multiplier)
+- Weekend work: Saturday-Sunday (1.25x multiplier)
+- No overlapping time entries allowed
+- Draft entries can be modified; submitted/approved cannot
+
+### Validation Rules
+- Manager can only approve direct reports' timesheets
+- Timesheet must be submitted before approval
+- Once approved, timesheet is locked
+- Admin can unlock in exceptional cases
+- Rejection requires a comment
+
+### Leave Rules (Phase 2)
+- Minimum notice: 2 weeks for planned leave
+- Check team availability before approval
+- Deduct from balance only after approval
+- Automatic rollover of unused days (policy-dependent)
+
+---
+
+## Remember
+
+1. **Type Safety First**: Always use TypeScript strictly
+2. **Server-First**: Prefer Server Components and Server Actions
+3. **User Experience**: Loading states, error handling, feedback
+4. **Performance**: Optimize early, measure often
+5. **Security**: Never trust client input, always validate on server
+6. **Maintainability**: Clear code > clever code
+7. **Consistency**: Follow established patterns
+8. **Documentation**: Code should be self-documenting, but complex logic needs comments
+9. **Testing**: Write tests for critical paths (Phase 2)
+10. **Accessibility**: Build for everyone from the start
+
+---
+
+## Resources
+
+- Next.js Docs: https://nextjs.org/docs
+- TypeScript Handbook: https://www.typescriptlang.org/docs
+- Prisma Docs: https://www.prisma.io/docs
+- Better Auth: https://better-auth.com/docs
+- Tailwind CSS: https://tailwindcss.com/docs
+- shadcn/ui: https://ui.shadcn.com
+- React Hook Form: https://react-hook-form.com
+- Zod: https://zod.dev
+
+---
+
+## Questions?
+
+If you're unsure about a pattern or approach:
+1. Check this document first
+2. Look for similar examples in the codebase
+3. Consult the official documentation
+4. Ask the team lead
+
+**Happy coding! 🚀**

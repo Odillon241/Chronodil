@@ -1,0 +1,35 @@
+/* Rose Petal - https://coolors.co/880d1e-dd2d4a-f26a8d-f49cbb-cbeef3 */
+
+- Tailwind
+
+{ 'ou_crimson': { DEFAULT: '#880d1e', 100: '#1b0306', 200: '#36050c', 300: '#510811', 400: '#6c0a17', 500: '#880d1e', 600: '#ca132b', 700: '#ed3850', 800: '#f37a8b', 900: '#f9bdc5' }, 'rusty_red': { DEFAULT: '#dd2d4a', 100: '#2e070e', 200: '#5b0f1c', 300: '#891629', 400: '#b61e37', 500: '#dd2d4a', 600: '#e4576e', 700: '#ea8192', 800: '#f1abb7', 900: '#f8d5db' }, 'bright_pink_(crayola)': { DEFAULT: '#f26a8d', 100: '#400614', 200: '#800b28', 300: '#bf113c', 400: '#ec295a', 500: '#f26a8d', 600: '#f587a2', 700: '#f7a5b9', 800: '#fac3d1', 900: '#fce1e8' }, 'amaranth_pink': { DEFAULT: '#f49cbb', 100: '#48081e', 200: '#8f103c', 300: '#d7185b', 400: '#ec5288', 500: '#f49cbb', 600: '#f6aec7', 700: '#f8c2d5', 800: '#fbd7e3', 900: '#fdebf1' }, 'light_cyan': { DEFAULT: '#cbeef3', 100: '#114148', 200: '#228390', 300: '#3abfd1', 400: '#81d6e2', 500: '#cbeef3', 600: '#d4f1f5', 700: '#dff5f7', 800: '#eaf8fa', 900: '#f4fcfc' } }
+
+- CSV
+
+880d1e,dd2d4a,f26a8d,f49cbb,cbeef3
+
+- With #
+
+#880d1e, #dd2d4a, #f26a8d, #f49cbb, #cbeef3
+
+- Array
+
+["880d1e","dd2d4a","f26a8d","f49cbb","cbeef3"]
+
+- Object
+
+{"OU crimson":"880d1e","Rusty red":"dd2d4a","Bright pink (Crayola)":"f26a8d","Amaranth pink":"f49cbb","Light cyan":"cbeef3"}
+
+- Extended Array
+
+[{"name":"OU crimson","hex":"880d1e","rgb":[136,13,30],"cmyk":[0,90,78,47],"hsb":[352,90,53],"hsl":[352,83,29],"lab":[28,49,26]},{"name":"Rusty red","hex":"dd2d4a","rgb":[221,45,74],"cmyk":[0,80,67,13],"hsb":[350,80,87],"hsl":[350,72,52],"lab":[49,67,28]},{"name":"Bright pink (Crayola)","hex":"f26a8d","rgb":[242,106,141],"cmyk":[0,56,42,5],"hsb":[345,56,95],"hsl":[345,84,68],"lab":[63,55,7]},{"name":"Amaranth pink","hex":"f49cbb","rgb":[244,156,187],"cmyk":[0,36,23,4],"hsb":[339,36,96],"hsl":[339,80,78],"lab":[74,37,-2]},{"name":"Light cyan","hex":"cbeef3","rgb":[203,238,243],"cmyk":[16,2,0,5],"hsb":[187,16,95],"hsl":[187,62,87],"lab":[92,-10,-6]}]
+
+- XML
+
+<palette>
+  <color name="OU crimson" hex="880d1e" r="136" g="13" b="30" />
+  <color name="Rusty red" hex="dd2d4a" r="221" g="45" b="74" />
+  <color name="Bright pink (Crayola)" hex="f26a8d" r="242" g="106" b="141" />
+  <color name="Amaranth pink" hex="f49cbb" r="244" g="156" b="187" />
+  <color name="Light cyan" hex="cbeef3" r="203" g="238" b="243" />
+</palette>

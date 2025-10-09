@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  scope                 String?
+  accessToken           String?
+  accessTokenExpiresAt  DateTime?
+  accountId             String
+  createdAt             DateTime  @default(now())
+  idToken               String?
+  password              String?
+  providerId            String
+  refreshToken          String?
+  refreshTokenExpiresAt DateTime?
+  updatedAt             DateTime
+  User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+}
+
+model AuditLog {
+  id        String   @id
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  changes   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([entityId])
+  @@index([entity])
+  @@index([userId])
+}
+
+model CompanySetting {
+  id          String   @id
+  key         String   @unique
+  value       String
+  type        String   @default("string")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+
+  @@index([key])
+}
+
+model Department {
+  id          String    @id
+  name        String
+  code        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  Project     Project[]
+  User        User[]
+
+  @@index([code])
+}
+
+model Holiday {
+  id          String   @id
+  name        String
+  date        DateTime
+  description String?
+  isRecurring Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+
+  @@unique([date, name])
+  @@index([date])
+}
+
+model Notification {
+  id        String   @id
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info")
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([isRead])
+  @@index([userId])
+}
+
+model Project {
+  id             String           @id
+  name           String
+  code           String           @unique
+  description    String?
+  color          String           @default("#3b82f6")
+  departmentId   String?
+  budgetHours    Float?
+  hourlyRate     Float?
+  isActive       Boolean          @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  Department     Department?      @relation(fields: [departmentId], references: [id])
+  ProjectMember  ProjectMember[]
+  Task           Task[]
+  TimesheetEntry TimesheetEntry[]
+
+  @@index([code])
+  @@index([departmentId])
+  @@index([isActive])
+}
+
+model ProjectMember {
+  id        String   @id
+  projectId String
+  userId    String
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Task {
+  id             String           @id
+  name           String
+  description    String?
+  projectId      String
+  parentId       String?
+  estimatedHours Float?
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  Task           Task?            @relation("TaskToTask", fields: [parentId], references: [id])
+  other_Task     Task[]           @relation("TaskToTask")
+  Project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  TimesheetEntry TimesheetEntry[]
+
+  @@index([isActive])
+  @@index([parentId])
+  @@index([projectId])
+}
+
+model TimesheetEntry {
+  id                  String               @id
+  userId              String
+  projectId           String
+  taskId              String?
+  date                DateTime
+  startTime           DateTime?
+  endTime             DateTime?
+  duration            Float
+  type                TimeType             @default(NORMAL)
+  status              TimesheetStatus      @default(DRAFT)
+  description         String?
+  isLocked            Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime
+  Project             Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Task                Task?                @relation(fields: [taskId], references: [id])
+  User                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  TimesheetValidation TimesheetValidation?
+
+  @@unique([userId, projectId, date, startTime])
+  @@index([date])
+  @@index([projectId])
+  @@index([status])
+  @@index([taskId])
+  @@index([userId])
+}
+
+model TimesheetValidation {
+  id               String          @id
+  timesheetEntryId String          @unique
+  validatorId      String
+  status           TimesheetStatus
+  comment          String?
+  validatedAt      DateTime        @default(now())
+  TimesheetEntry   TimesheetEntry  @relation(fields: [timesheetEntryId], references: [id], onDelete: Cascade)
+  User             User            @relation(fields: [validatorId], references: [id])
+
+  @@index([status])
+  @@index([validatorId])
+}
+
+model User {
+  id                  String                @id
+  email               String                @unique
+  name                String
+  role                Role                  @default(EMPLOYEE)
+  avatar              String?
+  departmentId        String?
+  managerId           String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  emailVerified       Boolean               @default(false)
+  image               String?
+  Account             Account[]
+  AuditLog            AuditLog[]
+  Notification        Notification[]
+  ProjectMember       ProjectMember[]
+  Session             Session[]
+  TimesheetEntry      TimesheetEntry[]
+  TimesheetValidation TimesheetValidation[]
+  Department          Department?           @relation(fields: [departmentId], references: [id])
+  User                User?                 @relation("UserToUser", fields: [managerId], references: [id])
+  other_User          User[]                @relation("UserToUser")
+
+  @@index([departmentId])
+  @@index([email])
+  @@index([managerId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  updatedAt  DateTime
+  value      String
+
+  @@unique([identifier, value])
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  HR
+  ADMIN
+}
+
+enum TimeType {
+  NORMAL
+  OVERTIME
+  NIGHT
+  WEEKEND
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  LOCKED
+}
