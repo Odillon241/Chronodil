@@ -7,9 +7,23 @@
       "Bash(test:*)",
       "Bash(pnpm exec prisma:*)",
       "Bash(echo:*)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm dlx:*)",
+      "Bash(pnpm prisma generate:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(pnpm db:seed:*)",
+      "mcp__shadcn__get_add_command_for_items",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(timeout 30 pnpm dev)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
 }

@@ -172,9 +172,9 @@ L'application utilise une palette de couleurs cohérente :
 
 Après le seed de la base de données :
 
-- **Admin**: admin@chronodil.com / password
-- **Manager**: manager@chronodil.com / password
-- **Employé**: employe@chronodil.com / password
+- **Admin**: admin@chronodil.com / Admin2025!
+- **Manager**: manager@chronodil.com / Manager2025!
+- **Employé**: employe@chronodil.com / Employee2025!
 
 ## 📚 Documentation
 

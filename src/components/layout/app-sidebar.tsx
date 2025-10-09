@@ -17,6 +17,9 @@ import {
   ChevronsUpDown,
   LogOut,
   User,
+  ListTodo,
+  Bell,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -61,20 +64,11 @@ const navMain = [
     title: "Projets",
     url: "/dashboard/projects",
     icon: FolderKanban,
-    items: [
-      {
-        title: "Tous les projets",
-        url: "/dashboard/projects",
-      },
-      {
-        title: "Mes projets",
-        url: "/dashboard/projects/my",
-      },
-      {
-        title: "Archives",
-        url: "/dashboard/projects/archived",
-      },
-    ],
+  },
+  {
+    title: "Tâches",
+    url: "/dashboard/tasks",
+    icon: ListTodo,
   },
   {
     title: "Validation",
@@ -85,30 +79,11 @@ const navMain = [
     title: "Rapports",
     url: "/dashboard/reports",
     icon: BarChart3,
-    items: [
-      {
-        title: "Mes rapports",
-        url: "/dashboard/reports",
-      },
-      {
-        title: "Rapports d'équipe",
-        url: "/dashboard/reports/team",
-      },
-      {
-        title: "Exports",
-        url: "/dashboard/reports/exports",
-      },
-    ],
   },
   {
-    title: "Calendrier",
-    url: "/dashboard/calendar",
-    icon: Calendar,
-  },
-  {
-    title: "Équipe",
-    url: "/dashboard/team",
-    icon: Users,
+    title: "Notifications",
+    url: "/dashboard/notifications",
+    icon: Bell,
   },
 ];
 
@@ -117,20 +92,12 @@ const navSettings = [
     title: "Paramètres",
     url: "/dashboard/settings",
     icon: Settings,
-    items: [
-      {
-        title: "Profil",
-        url: "/dashboard/settings/profile",
-      },
-      {
-        title: "Préférences",
-        url: "/dashboard/settings/preferences",
-      },
-      {
-        title: "Administration",
-        url: "/dashboard/settings/admin",
-      },
-    ],
+  },
+  {
+    title: "Audit",
+    url: "/dashboard/audit",
+    icon: Shield,
+    roles: ["ADMIN", "HR"],
   },
 ];
 
@@ -240,56 +207,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
-              {navSettings.map((item) => {
-                const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
-                const hasItems = item.items && item.items.length > 0;
-                const isOpen = openMenus.includes(item.title);
+              {navSettings
+                .filter((item: any) => {
+                  if (!item.roles) return true;
+                  return session?.user?.role && item.roles.includes(session.user.role);
+                })
+                .map((item) => {
+                  const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
 
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    {hasItems ? (
-                      <>
-                        <SidebarMenuButton
-                          onClick={() => toggleMenu(item.title)}
-                          tooltip={item.title}
-                          isActive={isActive}
-                        >
-                          {item.icon && <item.icon />}
-                          <span>{item.title}</span>
-                          <ChevronRight
-                            className={`ml-auto transition-transform ${
-                              isOpen ? "rotate-90" : ""
-                            }`}
-                          />
-                        </SidebarMenuButton>
-                        {isOpen && (
-                          <SidebarMenuSub>
-                            {item.items?.map((subItem) => (
-                              <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton
-                                  asChild
-                                  isActive={pathname === subItem.url}
-                                >
-                                  <Link href={subItem.url}>
-                                    <span>{subItem.title}</span>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            ))}
-                          </SidebarMenuSub>
-                        )}
-                      </>
-                    ) : (
+                  return (
+                    <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
                         <Link href={item.url}>
                           {item.icon && <item.icon />}
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                );
-              })}
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

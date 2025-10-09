@@ -17,12 +17,15 @@ import {
 import { Plus, Search, FolderKanban, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getProjects, createProject } from "@/actions/project.actions";
+import { ProjectTeamDialog } from "@/components/features/project-team-dialog";
 
 export default function ProjectsPage() {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -64,6 +67,11 @@ export default function ProjectsPage() {
     } catch (error) {
       toast.error("Erreur lors de la création du projet");
     }
+  };
+
+  const handleManageTeam = (project: any) => {
+    setSelectedProject(project);
+    setTeamDialogOpen(true);
   };
 
   const filteredProjects = projects.filter(
@@ -230,7 +238,11 @@ export default function ProjectsPage() {
                   <Button variant="outline" size="sm" className="flex-1">
                     Détails
                   </Button>
-                  <Button size="sm" className="flex-1 bg-rusty-red hover:bg-ou-crimson">
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-rusty-red hover:bg-ou-crimson"
+                    onClick={() => handleManageTeam(project)}
+                  >
                     Gérer
                   </Button>
                 </div>
@@ -253,6 +265,14 @@ export default function ProjectsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog de gestion d'équipe */}
+      <ProjectTeamDialog
+        project={selectedProject}
+        open={teamDialogOpen}
+        onOpenChange={setTeamDialogOpen}
+        onUpdate={loadProjects}
+      />
     </div>
   );
 }

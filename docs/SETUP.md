@@ -107,10 +107,10 @@ Cette commande crée :
 - Des données de démonstration
 
 **Comptes créés :**
-- Admin : `admin@chronodil.com` / `password`
-- Manager : `manager@chronodil.com` / `password`
-- RH : `rh@chronodil.com` / `password`
-- Employé : `employe@chronodil.com` / `password`
+- Admin : `admin@chronodil.com` / `Admin2025!`
+- Manager : `manager@chronodil.com` / `Manager2025!`
+- RH : `rh@chronodil.com` / `RH2025!`
+- Employé : `employe@chronodil.com` / `Employee2025!`
 
 ## 🎯 Étape 6 : Lancer l'application
 

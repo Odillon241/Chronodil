@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { timesheetValidationSchema } from "@/lib/validations/timesheet";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { notifyTimesheetValidated } from "@/lib/inngest/helpers";
 
 // Récupérer les entrées en attente de validation
 export const getPendingValidations = authActionClient
@@ -130,6 +131,19 @@ export const validateTimesheetEntry = authActionClient
       },
     });
 
+    // Envoyer notification email via Inngest
+    const validator = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+
+    await notifyTimesheetValidated({
+      userId: entry.userId,
+      status,
+      validatorName: validator?.name || validator?.email || "un manager",
+      comment,
+    });
+
     // Log d'audit
     await prisma.auditLog.create({
       data: {
@@ -221,6 +235,23 @@ export const bulkValidateEntries = authActionClient
             type: status === "APPROVED" ? "success" : "warning",
             link: "/dashboard/timesheet",
           },
+        })
+      )
+    );
+
+    // Envoyer notifications email via Inngest
+    const validator = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+
+    await Promise.all(
+      entries.map((entry) =>
+        notifyTimesheetValidated({
+          userId: entry.userId,
+          status,
+          validatorName: validator?.name || validator?.email || "un manager",
+          comment,
         })
       )
     );

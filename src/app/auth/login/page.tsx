@@ -58,6 +58,7 @@ export default function LoginPage() {
               width={180}
               height={60}
               className="h-16 w-auto"
+              priority
             />
           </div>
           <CardDescription className="text-center font-heading">

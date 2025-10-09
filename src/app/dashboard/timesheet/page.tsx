@@ -7,6 +7,9 @@ import { timesheetEntrySchema, type TimesheetEntryInput } from "@/lib/validation
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -17,16 +20,26 @@ import {
 } from "@/components/ui/select";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { createTimesheetEntry, getMyTimesheetEntries, deleteTimesheetEntry, submitTimesheetEntries } from "@/actions/timesheet.actions";
 import { getMyProjects } from "@/actions/project.actions";
+import { WeeklyTimesheet } from "@/components/features/weekly-timesheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function TimesheetPage() {
   const [entries, setEntries] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"week" | "history">("week");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "",
+    projectId: "",
+    startDate: startOfMonth(new Date()),
+    endDate: endOfMonth(new Date()),
+  });
 
   const {
     register,
@@ -68,9 +81,34 @@ export default function TimesheetPage() {
     }
   }, [selectedDate]);
 
+  const loadHistoryData = useCallback(async () => {
+    try {
+      const entriesResult = await getMyTimesheetEntries({
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        ...(filters.status && { status: filters.status as any }),
+      });
+
+      if (entriesResult?.data) {
+        let filtered = entriesResult.data;
+        if (filters.projectId) {
+          filtered = filtered.filter((e: any) => e.projectId === filters.projectId);
+        }
+        setEntries(filtered);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement:", error);
+      toast.error("Erreur lors du chargement");
+    }
+  }, [filters]);
+
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (viewMode === "week") {
+      loadData();
+    } else {
+      loadHistoryData();
+    }
+  }, [viewMode, loadData, loadHistoryData]);
 
   const onSubmit = async (data: TimesheetEntryInput) => {
     setIsLoading(true);
@@ -177,6 +215,65 @@ export default function TimesheetPage() {
     return labels[status as keyof typeof labels] || status;
   };
 
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setValue("date", date);
+  };
+
+  const handleAddEntry = (date: Date) => {
+    setValue("date", date);
+    // Le formulaire est déjà prêt avec la date sélectionnée
+  };
+
+  const handleSubmitWeek = async (weekStart: Date, weekEnd: Date) => {
+    const draftEntries = entries.filter(
+      (e) => e.status === "DRAFT" && new Date(e.date) >= weekStart && new Date(e.date) <= weekEnd
+    );
+
+    if (draftEntries.length === 0) {
+      toast.error("Aucune entrée à soumettre");
+      return;
+    }
+
+    const confirmed = confirm(
+      `Voulez-vous soumettre ${draftEntries.length} entrée(s) de cette semaine pour validation ?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const result = await submitTimesheetEntries({
+        entryIds: draftEntries.map((e) => e.id),
+        period: {
+          startDate: weekStart,
+          endDate: weekEnd,
+        },
+      });
+
+      if (result?.data) {
+        toast.success(`${result.data.entries} entrée(s) soumise(s) avec succès !`);
+        loadData();
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la soumission");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la soumission");
+    }
+  };
+
+  const applyFilters = () => {
+    loadHistoryData();
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      status: "",
+      projectId: "",
+      startDate: startOfMonth(new Date()),
+      endDate: endOfMonth(new Date()),
+    });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -184,24 +281,56 @@ export default function TimesheetPage() {
         <p className="text-muted-foreground">Enregistrez vos heures de travail quotidiennes</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Nouvelle saisie</CardTitle>
-            <CardDescription>Ajoutez vos heures travaillées</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Vue hebdomadaire */}
+      <WeeklyTimesheet
+        entries={entries}
+        onDateSelect={handleDateSelect}
+        onAddEntry={handleAddEntry}
+        onSubmitWeek={handleSubmitWeek}
+        selectedDate={selectedDate}
+      />
+
+      {/* Tabs pour Saisie et Historique */}
+      <Tabs defaultValue="form" className="w-full">
+        <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+          <TabsTrigger value="form">Nouvelle saisie</TabsTrigger>
+          <TabsTrigger value="history">Historique</TabsTrigger>
+        </TabsList>
+
+        {/* Formulaire de saisie */}
+        <TabsContent value="form" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Nouvelle saisie</CardTitle>
+              <CardDescription>Ajoutez vos heures travaillées</CardDescription>
+            </CardHeader>
+            <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="date">Date</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    defaultValue={format(new Date(), "yyyy-MM-dd")}
-                    onChange={(e) => setValue("date", new Date(e.target.value))}
-                  />
-                  {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(watch("date") ?? new Date(), "dd/MM/yyyy", { locale: fr })}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={watch("date") ?? new Date()}
+                        onSelect={(d: Date | undefined) => d && setValue("date", d)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {errors.date && (
+                    <p className="text-sm text-destructive">{errors.date.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -310,135 +439,226 @@ export default function TimesheetPage() {
             </form>
           </CardContent>
         </Card>
+        </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Récapitulatif</CardTitle>
-            <CardDescription>
-              {format(selectedDate, "d MMMM yyyy", { locale: fr })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <span className="font-medium">Total</span>
-                <span className="text-2xl font-bold text-rusty-red">{todayTotal.toFixed(2)}h</span>
+        {/* Historique avec filtres */}
+        <TabsContent value="history" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Historique</CardTitle>
+                  <CardDescription>Consultez toutes vos saisies</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtres
+                </Button>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Filtres */}
+              {showFilters && (
+                <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label>Statut</Label>
+                      <Select
+                        value={filters.status}
+                        onValueChange={(value) => setFilters({ ...filters, status: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Tous" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Tous</SelectItem>
+                          <SelectItem value="DRAFT">Brouillon</SelectItem>
+                          <SelectItem value="SUBMITTED">Soumis</SelectItem>
+                          <SelectItem value="APPROVED">Approuvé</SelectItem>
+                          <SelectItem value="REJECTED">Rejeté</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">Entrées</h3>
-                {todayEntries.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Aucune entrée
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {todayEntries.map((entry) => (
-                      <div key={entry.id} className="p-3 border rounded-lg space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{entry.project.name}</span>
-                          <span className="text-sm font-bold text-rusty-red">
-                            {entry.duration}h
-                          </span>
-                        </div>
-                        {entry.description && (
-                          <p className="text-xs text-muted-foreground">{entry.description}</p>
-                        )}
-                        <div className="flex items-center justify-between">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusBadge(entry.status)}`}>
-                            {getStatusLabel(entry.status)}
-                          </span>
-                          {entry.status === "DRAFT" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(entry.id)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    <div className="space-y-2">
+                      <Label>Projet</Label>
+                      <Select
+                        value={filters.projectId}
+                        onValueChange={(value) => setFilters({ ...filters, projectId: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Tous" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Tous</SelectItem>
+                          {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.id}>
+                              {project.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              <Button
-                className="w-full bg-ou-crimson hover:bg-ou-crimson-700"
-                onClick={handleSubmitDay}
-                disabled={todayEntries.filter((e) => e.status === "DRAFT").length === 0}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Soumettre
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Historique</CardTitle>
-          <CardDescription>Vos saisies récentes</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs uppercase bg-muted">
-                <tr>
-                  <th className="px-6 py-3">Date</th>
-                  <th className="px-6 py-3">Projet</th>
-                  <th className="px-6 py-3">Type</th>
-                  <th className="px-6 py-3">Durée</th>
-                  <th className="px-6 py-3">Statut</th>
-                  <th className="px-6 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
-                      Aucune entrée
-                    </td>
-                  </tr>
-                ) : (
-                  entries.map((entry) => (
-                    <tr key={entry.id} className="border-b hover:bg-muted/50">
-                      <td className="px-6 py-4">
-                        {format(new Date(entry.date), "dd/MM/yyyy")}
-                      </td>
-                      <td className="px-6 py-4">{entry.project.name}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                          {entry.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-medium">{entry.duration}h</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(entry.status)}`}>
-                          {getStatusLabel(entry.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {entry.status === "DRAFT" && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(entry.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
+                    <div className="space-y-2">
+                      <Label>Date début</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {format(filters.startDate, "dd/MM/yyyy", { locale: fr })}
                           </Button>
-                        )}
-                      </td>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <Calendar
+                            mode="single"
+                            selected={filters.startDate}
+                            onSelect={(d) => d && setFilters({ ...filters, startDate: d })}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Date fin</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {format(filters.endDate, "dd/MM/yyyy", { locale: fr })}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <Calendar
+                            mode="single"
+                            selected={filters.endDate}
+                            onSelect={(d) => d && setFilters({ ...filters, endDate: d })}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button onClick={applyFilters} className="bg-rusty-red hover:bg-ou-crimson">
+                      Appliquer
+                    </Button>
+                    <Button variant="outline" onClick={resetFilters}>
+                      <X className="h-4 w-4 mr-2" />
+                      Réinitialiser
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tableau historique */}
+              <div className="relative overflow-x-auto rounded-lg border">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs uppercase bg-muted">
+                    <tr>
+                      <th className="px-6 py-3">Date</th>
+                      <th className="px-6 py-3">Projet</th>
+                      <th className="px-6 py-3">Type</th>
+                      <th className="px-6 py-3">Durée</th>
+                      <th className="px-6 py-3">Statut</th>
+                      <th className="px-6 py-3">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                  </thead>
+                  <tbody>
+                    {entries.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                          Aucune entrée trouvée
+                        </td>
+                      </tr>
+                    ) : (
+                      entries.map((entry) => (
+                        <tr key={entry.id} className="border-b hover:bg-muted/50 transition-colors">
+                          <td className="px-6 py-4 font-medium">
+                            {format(new Date(entry.date), "dd/MM/yyyy", { locale: fr })}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                              />
+                              {entry.project.name}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                              {entry.type}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 font-bold text-rusty-red">{entry.duration}h</td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(entry.status)}`}
+                            >
+                              {getStatusLabel(entry.status)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {entry.status === "DRAFT" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(entry.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Statistiques */}
+              {entries.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Total heures</p>
+                        <p className="text-3xl font-bold text-rusty-red">
+                          {entries.reduce((sum, e) => sum + e.duration, 0).toFixed(1)}h
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Entrées</p>
+                        <p className="text-3xl font-bold text-ou-crimson">{entries.length}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">En attente</p>
+                        <p className="text-3xl font-bold text-amber-600">
+                          {entries.filter((e) => e.status === "SUBMITTED").length}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

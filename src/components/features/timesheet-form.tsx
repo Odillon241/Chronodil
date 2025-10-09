@@ -5,6 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { timesheetEntrySchema, type TimesheetEntryInput } from "@/lib/validations/timesheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -76,12 +79,25 @@ export function TimesheetForm({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="date">Date</Label>
-          <Input
-            id="date"
-            type="date"
-            defaultValue={format(defaultDate, "yyyy-MM-dd")}
-            onChange={(e) => setValue("date", new Date(e.target.value))}
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(watch("date") ?? defaultDate, "dd/MM/yyyy")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={watch("date") ?? defaultDate}
+                onSelect={(d: Date | undefined) => d && setValue("date", d)}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
         </div>
 

@@ -46,8 +46,8 @@ async function getDashboardData(userId: string) {
   const recentEntries = await prisma.timesheetEntry.findMany({
     where: { userId },
     include: {
-      project: true,
-      task: true,
+      Project: true,
+      Task: true,
     },
     orderBy: { date: "desc" },
     take: 5,
@@ -234,10 +234,10 @@ export default async function DashboardPage() {
                   >
                     <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {entry.project.name}
+                        {entry.Project.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {entry.task?.name || "Sans tâche"}
+                        {entry.Task?.name || "Sans tâche"}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">

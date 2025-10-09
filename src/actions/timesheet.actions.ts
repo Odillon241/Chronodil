@@ -9,6 +9,13 @@ import { prisma } from "@/lib/db";
 import { timesheetEntrySchema, timesheetValidationSchema } from "@/lib/validations/timesheet";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import {
+  validateTimesheetEntry,
+  suggestTimeType,
+  detectNightHours,
+  isWeekend,
+} from "@/lib/utils/timesheet.utils";
+import { startOfDay, endOfDay } from "date-fns";
 
 // Créer une entrée de temps
 export const createTimesheetEntry = authActionClient
@@ -16,27 +23,75 @@ export const createTimesheetEntry = authActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { userId } = ctx;
 
+    // Convertir les heures string en Date objects
+    const startTime = parsedInput.startTime
+      ? new Date(`1970-01-01T${parsedInput.startTime}`)
+      : null;
+    const endTime = parsedInput.endTime ? new Date(`1970-01-01T${parsedInput.endTime}`) : null;
+
+    // Récupérer les entrées existantes du même jour pour validation
+    const existingEntries = await prisma.timesheetEntry.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startOfDay(parsedInput.date),
+          lte: endOfDay(parsedInput.date),
+        },
+      },
+    });
+
+    // Préparer l'entrée pour validation
+    const newEntry = {
+      userId,
+      date: parsedInput.date,
+      startTime,
+      endTime,
+      duration: parsedInput.duration,
+    };
+
+    // Valider l'entrée
+    const validation = validateTimesheetEntry(newEntry, existingEntries as any);
+
+    if (!validation.isValid) {
+      throw new Error(validation.errors.join(", "));
+    }
+
+    // Suggestion automatique du type si nécessaire
+    let finalType = parsedInput.type;
+    if (finalType === "NORMAL") {
+      const suggested = suggestTimeType(newEntry, existingEntries as any);
+      if (suggested !== "NORMAL") {
+        finalType = suggested;
+      }
+    }
+
     const entry = await prisma.timesheetEntry.create({
       data: {
+        id: require("nanoid").nanoid(),
         userId,
         projectId: parsedInput.projectId,
         taskId: parsedInput.taskId,
         date: parsedInput.date,
-        startTime: parsedInput.startTime ? new Date(`1970-01-01T${parsedInput.startTime}`) : undefined,
-        endTime: parsedInput.endTime ? new Date(`1970-01-01T${parsedInput.endTime}`) : undefined,
+        startTime,
+        endTime,
         duration: parsedInput.duration,
-        type: parsedInput.type,
+        type: finalType,
         description: parsedInput.description,
         status: "DRAFT",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       include: {
-        project: true,
-        task: true,
+        Project: true,
+        Task: true,
       },
     });
 
     revalidatePath("/dashboard/timesheet");
-    return entry;
+    return {
+      ...entry,
+      warnings: validation.warnings,
+    };
   });
 
 // Récupérer les entrées de temps de l'utilisateur
@@ -62,11 +117,11 @@ export const getMyTimesheetEntries = authActionClient
         ...(status && { status }),
       },
       include: {
-        project: true,
-        task: true,
-        validation: {
+        Project: true,
+        Task: true,
+        TimesheetValidation: {
           include: {
-            validator: true,
+            User: true,
           },
         },
       },
@@ -103,26 +158,69 @@ export const updateTimesheetEntry = authActionClient
       throw new Error("Entrée non trouvée ou verrouillée");
     }
 
+    // Préparer les données mises à jour
+    const updatedDate = data.date || existingEntry.date;
+    const updatedStartTime = data.startTime
+      ? new Date(`1970-01-01T${data.startTime}`)
+      : existingEntry.startTime;
+    const updatedEndTime = data.endTime
+      ? new Date(`1970-01-01T${data.endTime}`)
+      : existingEntry.endTime;
+    const updatedDuration = data.duration ?? existingEntry.duration;
+
+    // Récupérer les autres entrées du jour (excluant celle en cours de modification)
+    const otherEntries = await prisma.timesheetEntry.findMany({
+      where: {
+        userId,
+        id: { not: id },
+        date: {
+          gte: startOfDay(updatedDate),
+          lte: endOfDay(updatedDate),
+        },
+      },
+    });
+
+    // Préparer l'entrée pour validation
+    const updatedEntry = {
+      id,
+      userId,
+      date: updatedDate,
+      startTime: updatedStartTime,
+      endTime: updatedEndTime,
+      duration: updatedDuration,
+    };
+
+    // Valider l'entrée
+    const validation = validateTimesheetEntry(updatedEntry, otherEntries as any);
+
+    if (!validation.isValid) {
+      throw new Error(validation.errors.join(", "));
+    }
+
     const entry = await prisma.timesheetEntry.update({
       where: { id },
       data: {
         ...(data.projectId && { projectId: data.projectId }),
         ...(data.taskId && { taskId: data.taskId }),
         ...(data.date && { date: data.date }),
-        ...(data.startTime && { startTime: new Date(`1970-01-01T${data.startTime}`) }),
-        ...(data.endTime && { endTime: new Date(`1970-01-01T${data.endTime}`) }),
+        ...(data.startTime && { startTime: updatedStartTime }),
+        ...(data.endTime && { endTime: updatedEndTime }),
         ...(data.duration && { duration: data.duration }),
         ...(data.type && { type: data.type }),
         ...(data.description !== undefined && { description: data.description }),
+        updatedAt: new Date(),
       },
       include: {
-        project: true,
-        task: true,
+        Project: true,
+        Task: true,
       },
     });
 
     revalidatePath("/dashboard/timesheet");
-    return entry;
+    return {
+      ...entry,
+      warnings: validation.warnings,
+    };
   });
 
 // Supprimer une entrée de temps
@@ -155,10 +253,66 @@ export const deleteTimesheetEntry = authActionClient
 
 // Soumettre les entrées pour validation
 export const submitTimesheetEntries = authActionClient
-  .schema(z.object({ entryIds: z.array(z.string()) }))
+  .schema(
+    z.object({
+      entryIds: z.array(z.string()),
+      period: z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+      }).optional(),
+    })
+  )
   .action(async ({ parsedInput, ctx }) => {
     const { userId } = ctx;
-    const { entryIds } = parsedInput;
+    const { entryIds, period } = parsedInput;
+
+    // Vérifier que toutes les entrées appartiennent à l'utilisateur et sont en DRAFT
+    const entries = await prisma.timesheetEntry.findMany({
+      where: {
+        id: { in: entryIds },
+        userId,
+      },
+      include: {
+        project: true,
+      },
+    });
+
+    // Vérifier que toutes les entrées sont bien en DRAFT
+    const nonDraftEntries = entries.filter((e) => e.status !== "DRAFT");
+    if (nonDraftEntries.length > 0) {
+      throw new Error(
+        `Certaines entrées ne sont pas en brouillon et ne peuvent pas être soumises`
+      );
+    }
+
+    // Vérifier qu'il y a au moins une entrée
+    if (entries.length === 0) {
+      throw new Error("Aucune entrée à soumettre");
+    }
+
+    // Vérifier qu'aucune entrée n'est verrouillée
+    const lockedEntries = entries.filter((e) => e.isLocked);
+    if (lockedEntries.length > 0) {
+      throw new Error("Certaines entrées sont verrouillées");
+    }
+
+    // Récupérer l'utilisateur et son manager
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        User: true, // Manager
+      },
+    });
+
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    if (!user.managerId) {
+      throw new Error(
+        "Vous n'avez pas de manager assigné. Veuillez contacter votre administrateur."
+      );
+    }
 
     // Mettre à jour le statut de toutes les entrées
     const result = await prisma.timesheetEntry.updateMany({
@@ -173,8 +327,28 @@ export const submitTimesheetEntries = authActionClient
       },
     });
 
+    // Créer une notification pour le manager
+    await prisma.notification.create({
+      data: {
+        userId: user.managerId,
+        title: "Nouvelle feuille de temps à valider",
+        message: `${user.name} a soumis ${entries.length} entrée(s) de temps pour validation`,
+        type: "timesheet_submitted",
+        link: "/dashboard/validations",
+      },
+    });
+
+    // TODO: Envoyer un email au manager (via Inngest plus tard)
+
     revalidatePath("/dashboard/timesheet");
-    return result;
+    revalidatePath("/dashboard/validations");
+
+    return {
+      success: true,
+      count: result.count,
+      managerId: user.managerId,
+      entries: entries.length,
+    };
   });
 
 // Obtenir les statistiques de temps

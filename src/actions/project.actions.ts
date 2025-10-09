@@ -4,6 +4,7 @@ import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { nanoid } from "nanoid";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -30,6 +31,7 @@ export const createProject = authActionClient
 
     const project = await prisma.project.create({
       data: {
+        id: nanoid(),
         name: parsedInput.name,
         code: parsedInput.code,
         description: parsedInput.description,
@@ -39,6 +41,8 @@ export const createProject = authActionClient
         hourlyRate: parsedInput.hourlyRate,
         startDate: parsedInput.startDate,
         endDate: parsedInput.endDate,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
 
@@ -61,16 +65,16 @@ export const getProjects = authActionClient
         ...(departmentId && { departmentId }),
       },
       include: {
-        department: true,
-        members: {
+        Department: true,
+        ProjectMember: {
           include: {
-            user: true,
+            User: true,
           },
         },
         _count: {
           select: {
-            tasks: true,
-            timesheetEntries: true,
+            Task: true,
+            TimesheetEntry: true,
           },
         },
       },
@@ -106,13 +110,13 @@ export const getProjectById = authActionClient
     const project = await prisma.project.findUnique({
       where: { id: parsedInput.id },
       include: {
-        department: true,
-        members: {
+        Department: true,
+        ProjectMember: {
           include: {
-            user: true,
+            User: true,
           },
         },
-        tasks: {
+        Task: {
           where: { isActive: true },
           orderBy: { name: "asc" },
         },
@@ -199,12 +203,14 @@ export const addProjectMember = authActionClient
 
     const member = await prisma.projectMember.create({
       data: {
+        id: nanoid(),
         projectId: parsedInput.projectId,
         userId: parsedInput.userId,
         role: parsedInput.role,
+        createdAt: new Date(),
       },
       include: {
-        user: true,
+        User: true,
       },
     });
 
@@ -239,12 +245,12 @@ export const getMyProjects = authActionClient
     const projectMembers = await prisma.projectMember.findMany({
       where: { userId },
       include: {
-        project: {
+        Project: {
           include: {
             _count: {
               select: {
-                members: true,
-                tasks: true,
+                ProjectMember: true,
+                Task: true,
               },
             },
           },
@@ -252,5 +258,5 @@ export const getMyProjects = authActionClient
       },
     });
 
-    return projectMembers.map((pm) => pm.project);
+    return projectMembers.map((pm) => pm.Project);
   });
