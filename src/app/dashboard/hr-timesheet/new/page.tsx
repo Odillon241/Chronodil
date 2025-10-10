@@ -55,7 +55,8 @@ interface CatalogItem {
   name: string;
   category: string;
   type: string;
-  defaultPeriodicity?: string;
+  defaultPeriodicity?: string | null;
+  description?: string | null;
 }
 
 export default function NewHRTimesheetPage() {

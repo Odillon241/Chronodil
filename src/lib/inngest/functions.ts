@@ -28,8 +28,10 @@ export const sendEmailNotification = inngest.createFunction(
 
     // Step 2: Create in-app notification
     await step.run("create-notification", async () => {
+      const { nanoid } = require("nanoid");
       return await prisma.notification.create({
         data: {
+          id: nanoid(),
           userId,
           title,
           message,
@@ -103,12 +105,12 @@ export const sendTimesheetSubmittedNotification = inngest.createFunction(
       return await prisma.user.findUnique({
         where: { id: userId },
         include: {
-          manager: { select: { id: true, email: true, name: true } },
+          User: { select: { id: true, email: true, name: true } },
         },
       });
     });
 
-    if (!user?.manager) {
+    if (!user?.User) {
       return { success: false, reason: "No manager found" };
     }
 
@@ -117,7 +119,7 @@ export const sendTimesheetSubmittedNotification = inngest.createFunction(
       return await inngest.send({
         name: "notification/email.send",
         data: {
-          userId: user.manager.id,
+          userId: user.User!.id,
           title: "Nouvelle feuille de temps à valider",
           message: `${user.name || user.email} a soumis une feuille de temps pour validation. ${timesheetEntryIds.length} entrée(s) en attente.`,
           type: "info",

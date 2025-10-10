@@ -101,8 +101,8 @@ export default function UsersManagementPage() {
       ]);
 
       if (usersResult?.data) {
-        setUsers(usersResult.data as User[]);
-        setFilteredUsers(usersResult.data as User[]);
+        setUsers(usersResult.data as unknown as User[]);
+        setFilteredUsers(usersResult.data as unknown as User[]);
       }
 
       if (departmentsResult?.data) {
@@ -329,12 +329,12 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="department">Département</Label>
-                  <Select value={form.departmentId} onValueChange={(val) => setForm({ ...form, departmentId: val })}>
+                  <Select value={form.departmentId || undefined} onValueChange={(val) => setForm({ ...form, departmentId: val === "none" ? "" : val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucun</SelectItem>
+                      <SelectItem value="none">Aucun</SelectItem>
                       {departments.map((dept) => (
                         <SelectItem key={dept.id} value={dept.id}>
                           {dept.name} ({dept.code})
@@ -346,12 +346,12 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="manager">Manager</Label>
-                  <Select value={form.managerId} onValueChange={(val) => setForm({ ...form, managerId: val })}>
+                  <Select value={form.managerId || undefined} onValueChange={(val) => setForm({ ...form, managerId: val === "none" ? "" : val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucun</SelectItem>
+                      <SelectItem value="none">Aucun</SelectItem>
                       {availableManagers.map((manager) => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.name || manager.email}

@@ -10,6 +10,7 @@ import { timesheetValidationSchema } from "@/lib/validations/timesheet";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { notifyTimesheetValidated } from "@/lib/inngest/helpers";
+import { nanoid } from "nanoid";
 
 // Récupérer les entrées en attente de validation
 export const getPendingValidations = authActionClient
@@ -47,15 +48,15 @@ export const getPendingValidations = authActionClient
         }),
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        project: true,
-        task: true,
+        Project: true,
+        Task: true,
       },
       orderBy: {
         date: "desc",
@@ -80,7 +81,7 @@ export const validateTimesheetEntry = authActionClient
     // Vérifier que l'entrée existe et est en statut SUBMITTED
     const entry = await prisma.timesheetEntry.findUnique({
       where: { id: timesheetEntryId },
-      include: { user: true },
+      include: { User: true },
     });
 
     if (!entry) {
@@ -93,7 +94,7 @@ export const validateTimesheetEntry = authActionClient
 
     // Si manager, vérifier qu'il est bien le manager de l'utilisateur
     if (userRole === "MANAGER") {
-      if (entry.user.managerId !== userId) {
+      if (entry.User.managerId !== userId) {
         throw new Error("Vous n'êtes pas le manager de cet utilisateur");
       }
     }
@@ -101,6 +102,7 @@ export const validateTimesheetEntry = authActionClient
     // Créer la validation
     const validation = await prisma.timesheetValidation.create({
       data: {
+        id: nanoid(),
         timesheetEntryId,
         validatorId: userId,
         status,
@@ -121,6 +123,7 @@ export const validateTimesheetEntry = authActionClient
     // Créer une notification pour l'utilisateur
     await prisma.notification.create({
       data: {
+        id: nanoid(),
         userId: entry.userId,
         title: status === "APPROVED" ? "Temps approuvé" : "Temps rejeté",
         message: status === "APPROVED"
@@ -147,6 +150,7 @@ export const validateTimesheetEntry = authActionClient
     // Log d'audit
     await prisma.auditLog.create({
       data: {
+        id: nanoid(),
         userId,
         action: status === "APPROVED" ? "APPROVE_TIMESHEET" : "REJECT_TIMESHEET",
         entity: "TimesheetEntry",
@@ -187,12 +191,12 @@ export const bulkValidateEntries = authActionClient
         id: { in: entryIds },
         status: "SUBMITTED",
       },
-      include: { user: true },
+      include: { User: true },
     });
 
     // Si manager, vérifier les permissions
     if (userRole === "MANAGER") {
-      const unauthorizedEntry = entries.find((e) => e.user.managerId !== userId);
+      const unauthorizedEntry = entries.find((e) => e.User.managerId !== userId);
       if (unauthorizedEntry) {
         throw new Error("Vous n'avez pas l'autorisation de valider toutes ces entrées");
       }
@@ -203,6 +207,7 @@ export const bulkValidateEntries = authActionClient
       entries.map((entry) =>
         prisma.timesheetValidation.create({
           data: {
+            id: nanoid(),
             timesheetEntryId: entry.id,
             validatorId: userId,
             status,
@@ -226,6 +231,7 @@ export const bulkValidateEntries = authActionClient
       entries.map((entry) =>
         prisma.notification.create({
           data: {
+            id: nanoid(),
             userId: entry.userId,
             title: status === "APPROVED" ? "Temps approuvés" : "Temps rejetés",
             message:

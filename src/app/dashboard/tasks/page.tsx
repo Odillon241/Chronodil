@@ -314,23 +314,25 @@ export default function TasksPage() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {Object.entries(groupedTasks).map(([projectName, projectTasks]) => (
+          {Object.entries(groupedTasks).map(([projectName, projectTasks]) => {
+            const tasksArray = projectTasks as any[];
+            return (
             <Card key={projectName}>
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: projectTasks[0].project.color }}
+                    style={{ backgroundColor: tasksArray[0]?.project?.color || '#3b82f6' }}
                   />
                   <div>
                     <CardTitle>{projectName}</CardTitle>
-                    <CardDescription>{projectTasks.length} tâche(s)</CardDescription>
+                    <CardDescription>{tasksArray.length} tâche(s)</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {projectTasks.map((task) => (
+                  {tasksArray.map((task: any) => (
                     <div
                       key={task.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -393,7 +395,8 @@ export default function TasksPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )}
+          )}
         </div>
       )}
     </div>

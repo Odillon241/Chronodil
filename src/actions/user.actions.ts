@@ -19,14 +19,14 @@ export const getMyProfile = authActionClient
       where: { id: userId },
       include: {
         Department: true,
-        Manager: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        Subordinates: {
+        other_User: {
           select: {
             id: true,
             name: true,
@@ -87,7 +87,7 @@ export const getUsers = authActionClient
       },
       include: {
         Department: true,
-        Manager: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -97,7 +97,7 @@ export const getUsers = authActionClient
         _count: {
           select: {
             TimesheetEntry: true,
-            Subordinates: true,
+            other_User: true,
           },
         },
       },
@@ -138,7 +138,17 @@ export const createUser = authActionClient
     }
 
     const user = await prisma.user.create({
-      data: parsedInput,
+      data: {
+        id: require("nanoid").nanoid(),
+        name: parsedInput.name,
+        email: parsedInput.email,
+        role: parsedInput.role,
+        ...(parsedInput.departmentId && { departmentId: parsedInput.departmentId }),
+        ...(parsedInput.managerId && { managerId: parsedInput.managerId }),
+        emailVerified: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
 
     revalidatePath("/dashboard/team");

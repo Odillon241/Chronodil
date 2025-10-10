@@ -137,21 +137,21 @@ export default function HRTimesheetDetailPage() {
 
       const result = await exportHRTimesheetToExcel({ timesheetId });
 
-      if (result?.data) {
+      if (result?.data?.data) {
         // Convertir base64 en blob
-        const byteCharacters = atob(result.data.fileData);
+        const byteCharacters = atob(result.data.data.fileData);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: result.data.mimeType });
+        const blob = new Blob([byteArray], { type: result.data.data.mimeType });
 
         // Créer un lien de téléchargement
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = result.data.fileName;
+        link.download = result.data.data.fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

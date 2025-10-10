@@ -273,7 +273,7 @@ export const submitTimesheetEntries = authActionClient
         userId,
       },
       include: {
-        project: true,
+        Project: true,
       },
     });
 
@@ -330,6 +330,7 @@ export const submitTimesheetEntries = authActionClient
     // Créer une notification pour le manager
     await prisma.notification.create({
       data: {
+        id: require("nanoid").nanoid(),
         userId: user.managerId,
         title: "Nouvelle feuille de temps à valider",
         message: `${user.name} a soumis ${entries.length} entrée(s) de temps pour validation`,

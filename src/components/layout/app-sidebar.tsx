@@ -82,6 +82,12 @@ const navMain = [
     icon: CheckSquare,
   },
   {
+    title: "Validations Manager",
+    url: "/dashboard/validations",
+    icon: CheckSquare,
+    roles: ["MANAGER", "ADMIN"],
+  },
+  {
     title: "Rapports",
     url: "/dashboard/reports",
     icon: BarChart3,
@@ -156,9 +162,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navMain.map((item) => {
+              {navMain
+                .filter((item: any) => {
+                  if (!item.roles) return true;
+                  return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
+                })
+                .map((item) => {
                 const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
-                const hasItems = item.items && item.items.length > 0;
+                const hasItems = (item as any).items && (item as any).items.length > 0;
                 const isOpen = openMenus.includes(item.title);
 
                 return (
@@ -180,7 +191,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuButton>
                         {isOpen && (
                           <SidebarMenuSub>
-                            {item.items?.map((subItem) => (
+                            {(item as any).items?.map((subItem: any) => (
                               <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                   asChild
@@ -216,7 +227,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {navSettings
                 .filter((item: any) => {
                   if (!item.roles) return true;
-                  return session?.user?.role && item.roles.includes(session.user.role);
+                  return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
                 })
                 .map((item) => {
                   const isActive = pathname === item.url || pathname.startsWith(item.url + "/");

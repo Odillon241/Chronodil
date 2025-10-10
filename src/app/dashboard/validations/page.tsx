@@ -81,7 +81,7 @@ export default function ValidationsPage() {
       ]);
 
       if (entriesResult?.data) {
-        setEntries(entriesResult.data as TimesheetEntry[]);
+        setEntries(entriesResult.data as unknown as TimesheetEntry[]);
       }
 
       if (statsResult?.data) {

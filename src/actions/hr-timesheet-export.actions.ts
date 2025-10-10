@@ -1,7 +1,7 @@
 "use server";
 
 import { authActionClient } from "@/lib/safe-action";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 import { z } from "zod";
 import ExcelJS from "exceljs";
 import { format } from "date-fns";
@@ -130,7 +130,7 @@ export const exportHRTimesheetToExcel = authActionClient
     headerRow.alignment = { horizontal: "center", vertical: "middle" };
 
     // Grouper les activités par catégorie
-    const groupedActivities = timesheet.activities.reduce((acc, activity) => {
+    const groupedActivities = timesheet.activities.reduce((acc: Record<string, any[]>, activity: any) => {
       const category = activity.ActivityCatalog?.category || "Autres";
       if (!acc[category]) {
         acc[category] = [];
@@ -152,7 +152,7 @@ export const exportHRTimesheetToExcel = authActionClient
       };
 
       // Activités de cette catégorie
-      activities.forEach((activity) => {
+      activities.forEach((activity: any) => {
         const row = worksheet.addRow({
           type: activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting",
           name: activity.activityName,

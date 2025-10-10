@@ -30,7 +30,9 @@
       "Bash(pnpm prisma migrate:*)",
       "Bash(psql:*)",
       "Bash(rm:*)",
-      "WebFetch(domain:www.better-auth.com)"
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(taskkill:*)",
+      "Bash(pnpm prisma:*)"
     ],
     "deny": [],
     "ask": []

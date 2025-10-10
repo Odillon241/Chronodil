@@ -33,8 +33,8 @@ Application web moderne et responsive pour la gestion des feuilles de temps, dé
 
 ## 🛠️ Stack Technique
 
-- **Framework**: Next.js 14 (App Router)
-- **Langage**: TypeScript 5.6
+- **Framework**: Next.js 15 (App Router)
+- **Langage**: TypeScript
 - **Base de données**: PostgreSQL avec Prisma ORM
 - **Authentification**: Better Auth
 - **UI**: Tailwind CSS + shadcn/ui + Radix UI
