@@ -213,27 +213,30 @@ model TimesheetValidation {
 }
 
 model User {
-  id                  String                @id
-  email               String                @unique
-  name                String
-  role                Role                  @default(EMPLOYEE)
-  avatar              String?
-  departmentId        String?
-  managerId           String?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime
-  emailVerified       Boolean               @default(false)
-  image               String?
-  Account             Account[]
-  AuditLog            AuditLog[]
-  Notification        Notification[]
-  ProjectMember       ProjectMember[]
-  Session             Session[]
-  TimesheetEntry      TimesheetEntry[]
-  TimesheetValidation TimesheetValidation[]
-  Department          Department?           @relation(fields: [departmentId], references: [id])
-  User                User?                 @relation("UserToUser", fields: [managerId], references: [id])
-  other_User          User[]                @relation("UserToUser")
+  id                       String                @id
+  email                    String                @unique
+  name                     String
+  role                     Role                  @default(EMPLOYEE)
+  avatar                   String?
+  departmentId             String?
+  managerId                String?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime
+  emailVerified            Boolean               @default(false)
+  image                    String?
+  Account                  Account[]
+  AuditLog                 AuditLog[]
+  Notification             Notification[]
+  ProjectMember            ProjectMember[]
+  Session                  Session[]
+  TimesheetEntry           TimesheetEntry[]
+  TimesheetValidation      TimesheetValidation[]
+  HRTimesheet              HRTimesheet[]         @relation("HRTimesheetUser")
+  HRTimesheetManagerSigned HRTimesheet[]         @relation("HRTimesheetManagerSigner")
+  HRTimesheetOdillonSigned HRTimesheet[]         @relation("HRTimesheetOdillonSigner")
+  Department               Department?           @relation(fields: [departmentId], references: [id])
+  User                     User?                 @relation("UserToUser", fields: [managerId], references: [id])
+  other_User               User[]                @relation("UserToUser")
 
   @@index([departmentId])
   @@index([email])
@@ -271,4 +274,142 @@ enum TimesheetStatus {
   APPROVED
   REJECTED
   LOCKED
+}
+
+// ========================================
+// TIMESHEET RH - Feuille de temps hebdomadaire
+// ========================================
+
+model HRTimesheet {
+  id            String            @id
+  weekStartDate DateTime // Début de semaine (lundi)
+  weekEndDate   DateTime // Fin de semaine (vendredi/dimanche)
+  userId        String
+  employeeName  String
+  position      String
+  site          String
+  totalHours    Float             @default(0)
+  status        HRTimesheetStatus @default(DRAFT)
+
+  // Workflow de validation multi-niveaux
+  employeeSignedAt  DateTime?
+  managerSignedAt   DateTime?
+  managerSignedById String?
+  odillonSignedAt   DateTime?
+  odillonSignedById String?
+
+  // Observations
+  employeeObservations String?
+  managerComments      String?
+  odillonComments      String?
+
+  activities HRActivity[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime
+
+  User          User  @relation("HRTimesheetUser", fields: [userId], references: [id], onDelete: Cascade)
+  ManagerSigner User? @relation("HRTimesheetManagerSigner", fields: [managerSignedById], references: [id])
+  OdillonSigner User? @relation("HRTimesheetOdillonSigner", fields: [odillonSignedById], references: [id])
+
+  @@unique([userId, weekStartDate])
+  @@index([userId])
+  @@index([weekStartDate])
+  @@index([status])
+  @@index([managerSignedById])
+}
+
+model HRActivity {
+  id            String @id
+  hrTimesheetId String
+
+  activityType   HRActivityType
+  activityName   String
+  description    String?
+  periodicity    HRPeriodicity
+  weeklyQuantity Int? // Quantité hebdomadaire (1-20)
+  startDate      DateTime
+  endDate        DateTime
+  totalHours     Float // Calculé automatiquement: DATEDIF(start, end, "D") * 24
+  status         HRActivityStatus
+
+  // Référence optionnelle au catalogue
+  catalogId       String?
+  ActivityCatalog ActivityCatalog? @relation(fields: [catalogId], references: [id])
+
+  hrTimesheet HRTimesheet @relation(fields: [hrTimesheetId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+
+  @@index([hrTimesheetId])
+  @@index([status])
+  @@index([catalogId])
+}
+
+model ActivityCatalog {
+  id                 String         @id
+  name               String         @unique
+  category           String // Administration, Formation, Recrutement, etc.
+  type               HRActivityType
+  defaultPeriodicity HRPeriodicity?
+  description        String?
+  isActive           Boolean        @default(true)
+  sortOrder          Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime
+
+  HRActivity HRActivity[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model ReportType {
+  id          String          @id
+  name        String          @unique
+  frequency   ReportFrequency
+  description String?
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime
+
+  @@index([frequency])
+  @@index([isActive])
+}
+
+// ========================================
+// ENUMS pour Timesheet RH
+// ========================================
+
+enum HRTimesheetStatus {
+  DRAFT // Brouillon
+  PENDING // En attente validation manager
+  MANAGER_APPROVED // Validé par le manager
+  APPROVED // Validé final par Odillon
+  REJECTED // Rejeté
+}
+
+enum HRActivityType {
+  OPERATIONAL // Activités opérationnelles
+  REPORTING // Reportings
+}
+
+enum HRPeriodicity {
+  DAILY // Journalière
+  WEEKLY // Hebdomadaire
+  MONTHLY // Mensuelle
+  PUNCTUAL // Ponctuelle
+  WEEKLY_MONTHLY // Hebdomadaire et Mensuelle
+}
+
+enum HRActivityStatus {
+  IN_PROGRESS // En cours
+  COMPLETED // Clos
+}
+
+enum ReportFrequency {
+  WEEKLY // Hebdomadaire
+  MONTHLY // Mensuel
+  INDIVIDUAL // Individuel
 }

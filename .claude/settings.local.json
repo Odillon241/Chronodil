@@ -18,7 +18,19 @@
       "Bash(timeout 30 pnpm dev)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(timeout 40 pnpm dev)"
+      "Bash(timeout 40 pnpm dev)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(pnpm prisma format:*)",
+      "Bash(pnpm prisma migrate dev:*)",
+      "Bash(tsx scripts/create-admin.ts:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(pnpm prisma migrate create:*)",
+      "Bash(node:*)",
+      "Bash(pnpm prisma migrate:*)",
+      "Bash(psql:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:www.better-auth.com)"
     ],
     "deny": [],
     "ask": []

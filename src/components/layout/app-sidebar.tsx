@@ -20,6 +20,7 @@ import {
   ListTodo,
   Bell,
   Shield,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -59,6 +60,11 @@ const navMain = [
     title: "Saisie des temps",
     url: "/dashboard/timesheet",
     icon: Clock,
+  },
+  {
+    title: "Timesheets RH",
+    url: "/dashboard/hr-timesheet",
+    icon: FileText,
   },
   {
     title: "Projets",
