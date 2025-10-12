@@ -54,15 +54,15 @@ export function TimesheetRadarChart({ data, weekTotal, weekTarget }: TimesheetRa
       <CardContent className="pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
+          className="mx-auto aspect-square max-h-[300px] w-full"
         >
           <RadarChart
             data={data}
             margin={{
-              top: 10,
-              right: 10,
-              bottom: 10,
-              left: 10,
+              top: 40,
+              right: 40,
+              bottom: 40,
+              left: 40,
             }}
           >
             <ChartTooltip
@@ -77,21 +77,21 @@ export function TimesheetRadarChart({ data, weekTotal, weekTarget }: TimesheetRa
                 return (
                   <text
                     x={x}
-                    y={index === 0 ? y - 10 : y}
+                    y={index === 0 ? y - 15 : y + 5}
                     textAnchor={textAnchor}
-                    fontSize={13}
+                    fontSize={11}
                     fontWeight={500}
                     {...props}
                   >
                     <tspan className={dayData.hours >= dayData.target ? "fill-green-600" : "fill-amber-600"}>
-                      {dayData.hours}h
+                      {dayData.hours.toFixed(0)}h
                     </tspan>
                     <tspan className="fill-muted-foreground">/</tspan>
                     <tspan className="fill-muted-foreground">{dayData.target}h</tspan>
                     <tspan
                       x={x}
-                      dy={"1rem"}
-                      fontSize={12}
+                      dy={15}
+                      fontSize={10}
                       className="fill-muted-foreground"
                     >
                       {dayData.day}

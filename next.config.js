@@ -14,6 +14,10 @@ const nextConfig = {
       },
     ],
   },
+  // Optimisations de performance
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production', // Retirer les console.log en production
+  },
 }
 
 module.exports = nextConfig

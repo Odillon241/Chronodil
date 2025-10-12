@@ -110,16 +110,20 @@ model Project {
   isActive       Boolean          @default(true)
   startDate      DateTime?
   endDate        DateTime?
+  createdBy      String?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime
+  Creator        User?            @relation("ProjectCreator", fields: [createdBy], references: [id])
   Department     Department?      @relation(fields: [departmentId], references: [id])
   ProjectMember  ProjectMember[]
   Task           Task[]
   TimesheetEntry TimesheetEntry[]
+  Conversation   Conversation[]
 
   @@index([code])
   @@index([departmentId])
   @@index([isActive])
+  @@index([createdBy])
 }
 
 model ProjectMember {
@@ -228,6 +232,7 @@ model User {
   AuditLog                 AuditLog[]
   Notification             Notification[]
   ProjectMember            ProjectMember[]
+  CreatedProjects          Project[]             @relation("ProjectCreator")
   Session                  Session[]
   TimesheetEntry           TimesheetEntry[]
   TimesheetValidation      TimesheetValidation[]
@@ -237,10 +242,38 @@ model User {
   Department               Department?           @relation(fields: [departmentId], references: [id])
   User                     User?                 @relation("UserToUser", fields: [managerId], references: [id])
   other_User               User[]                @relation("UserToUser")
+  
+  // Relations pour le chat
+  ConversationMember       ConversationMember[]
+  CreatedConversations     Conversation[]        @relation("ConversationCreator")
+  Messages                 Message[]
+  
+  // Relations pour les rapports
+  CreatedReports           Report[]
+  ReportRecipients         ReportRecipient[]
+  
+  // Préférences utilisateur
+  Preferences              UserPreferences?
 
   @@index([departmentId])
   @@index([email])
   @@index([managerId])
+}
+
+model UserPreferences {
+  id                         String   @id
+  userId                     String   @unique
+  notificationSoundEnabled   Boolean  @default(true)
+  notificationSoundType      String   @default("default") // "default", "soft", "alert"
+  notificationSoundVolume    Float    @default(0.5) // 0.0 à 1.0
+  emailNotificationsEnabled  Boolean  @default(true)
+  desktopNotificationsEnabled Boolean @default(true)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime
+  
+  User                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }
 
 model Verification {
@@ -412,4 +445,111 @@ enum ReportFrequency {
   WEEKLY // Hebdomadaire
   MONTHLY // Mensuel
   INDIVIDUAL // Individuel
+}
+
+// ========================================
+// SYSTÈME DE CHAT ET MESSAGERIE
+// ========================================
+
+model Conversation {
+  id        String              @id
+  type      ConversationType
+  name      String? // Pour les groupes et conversations de projet
+  projectId String? // Pour les conversations de projet
+  createdBy String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime
+
+  Project   Project?              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Creator   User?                 @relation("ConversationCreator", fields: [createdBy], references: [id])
+  Members   ConversationMember[]
+  Messages  Message[]
+
+  @@index([projectId])
+  @@index([createdBy])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ConversationMember {
+  id             String   @id
+  conversationId String
+  userId         String
+  joinedAt       DateTime @default(now())
+  lastReadAt     DateTime?
+  isAdmin        Boolean  @default(false) // Pour gérer les admins de groupe
+  isMuted        Boolean  @default(false) // Pour désactiver les notifications
+
+  Conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String    @id
+  conversationId String
+  senderId       String
+  content        String
+  attachments    Json? // Pour les fichiers joints
+  reactions      Json? // Réactions emoji { "emoji": ["userId1", "userId2"] }
+  replyToId      String? // ID du message auquel on répond
+  isEdited       Boolean   @default(false)
+  isDeleted      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+
+  Conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  Sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  ReplyTo      Message?     @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  Replies      Message[]    @relation("MessageReplies")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([replyToId])
+  @@index([createdAt])
+}
+
+enum ConversationType {
+  DIRECT // Message direct entre 2 utilisateurs
+  GROUP // Groupe personnalisé
+  PROJECT // Conversation liée à un projet
+}
+
+model Report {
+  id               String             @id
+  title            String
+  content          String
+  format           String             // "pdf" ou "word"
+  period           String?            // "week", "month", "quarter", "year"
+  includeSummary   Boolean            @default(false)
+  fileUrl          String?            // URL du fichier stocké (optionnel)
+  fileSize         Int?               // Taille du fichier en bytes
+  createdById      String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  
+  CreatedBy        User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  Recipients       ReportRecipient[]
+  
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model ReportRecipient {
+  id               String   @id
+  reportId         String
+  userId           String?  // Si envoyé à un utilisateur de la base
+  email            String?  // Si envoyé à une adresse email externe
+  name             String?  // Nom du destinataire
+  sentAt           DateTime @default(now())
+  status           String   @default("sent") // "sent", "failed", "pending"
+  
+  Report           Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  User             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([reportId])
+  @@index([userId])
 }

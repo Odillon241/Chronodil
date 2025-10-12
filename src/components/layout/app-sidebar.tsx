@@ -18,9 +18,9 @@ import {
   LogOut,
   User,
   ListTodo,
-  Bell,
   Shield,
   FileText,
+  MessageSquare,
 } from "lucide-react";
 
 import {
@@ -77,6 +77,11 @@ const navMain = [
     icon: ListTodo,
   },
   {
+    title: "Chat",
+    url: "/dashboard/chat",
+    icon: MessageSquare,
+  },
+  {
     title: "Validation",
     url: "/dashboard/validation",
     icon: CheckSquare,
@@ -91,11 +96,6 @@ const navMain = [
     title: "Rapports",
     url: "/dashboard/reports",
     icon: BarChart3,
-  },
-  {
-    title: "Notifications",
-    url: "/dashboard/notifications",
-    icon: Bell,
   },
 ];
 

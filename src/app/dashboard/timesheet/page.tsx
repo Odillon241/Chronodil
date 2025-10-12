@@ -22,12 +22,14 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { createTimesheetEntry, getMyTimesheetEntries, deleteTimesheetEntry, submitTimesheetEntries } from "@/actions/timesheet.actions";
 import { getMyProjects } from "@/actions/project.actions";
 import { WeeklyTimesheet } from "@/components/features/weekly-timesheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function TimesheetPage() {
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [entries, setEntries] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -35,8 +37,8 @@ export default function TimesheetPage() {
   const [viewMode, setViewMode] = useState<"week" | "history">("week");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
-    status: "",
-    projectId: "",
+    status: "all",
+    projectId: "all",
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
   });
@@ -86,12 +88,12 @@ export default function TimesheetPage() {
       const entriesResult = await getMyTimesheetEntries({
         startDate: filters.startDate,
         endDate: filters.endDate,
-        ...(filters.status && { status: filters.status as any }),
+        ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
       });
 
       if (entriesResult?.data) {
         let filtered = entriesResult.data;
-        if (filters.projectId) {
+        if (filters.projectId && filters.projectId !== "all") {
           filtered = filtered.filter((e: any) => e.projectId === filters.projectId);
         }
         setEntries(filtered);
@@ -130,17 +132,24 @@ export default function TimesheetPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer cette entrée ?")) return;
-
-    try {
-      const result = await deleteTimesheetEntry({ id });
-      if (result?.data) {
-        toast.success("Entrée supprimée");
-        loadData();
-      }
-    } catch (error) {
-      toast.error("Erreur lors de la suppression");
-    }
+    const confirmed = await showConfirmation({
+      title: "Supprimer l'entrée",
+      description: "Êtes-vous sûr de vouloir supprimer cette entrée de timesheet ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const result = await deleteTimesheetEntry({ id });
+          if (result?.data) {
+            toast.success("Entrée supprimée");
+            loadData();
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la suppression");
+        }
+      },
+    });
   };
 
   const handleSubmitDay = async () => {
@@ -235,30 +244,32 @@ export default function TimesheetPage() {
       return;
     }
 
-    const confirmed = confirm(
-      `Voulez-vous soumettre ${draftEntries.length} entrée(s) de cette semaine pour validation ?`
-    );
+    const confirmed = await showConfirmation({
+      title: "Soumettre les entrées",
+      description: `Voulez-vous soumettre ${draftEntries.length} entrée(s) de cette semaine pour validation ?`,
+      confirmText: "Soumettre",
+      cancelText: "Annuler",
+      onConfirm: async () => {
+        try {
+          const result = await submitTimesheetEntries({
+            entryIds: draftEntries.map((e) => e.id),
+            period: {
+              startDate: weekStart,
+              endDate: weekEnd,
+            },
+          });
 
-    if (!confirmed) return;
-
-    try {
-      const result = await submitTimesheetEntries({
-        entryIds: draftEntries.map((e) => e.id),
-        period: {
-          startDate: weekStart,
-          endDate: weekEnd,
-        },
-      });
-
-      if (result?.data) {
-        toast.success(`${result.data.entries} entrée(s) soumise(s) avec succès !`);
-        loadData();
-      } else {
-        toast.error(result?.serverError || "Erreur lors de la soumission");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Erreur lors de la soumission");
-    }
+          if (result?.data) {
+            toast.success(`${result.data.entries} entrée(s) soumise(s) avec succès !`);
+            loadData();
+          } else {
+            toast.error(result?.serverError || "Erreur lors de la soumission");
+          }
+        } catch (error: any) {
+          toast.error(error.message || "Erreur lors de la soumission");
+        }
+      },
+    });
   };
 
   const applyFilters = () => {
@@ -267,8 +278,8 @@ export default function TimesheetPage() {
 
   const resetFilters = () => {
     setFilters({
-      status: "",
-      projectId: "",
+      status: "all",
+      projectId: "all",
       startDate: startOfMonth(new Date()),
       endDate: endOfMonth(new Date()),
     });
@@ -475,7 +486,7 @@ export default function TimesheetPage() {
                           <SelectValue placeholder="Tous" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous</SelectItem>
+                          <SelectItem value="all">Tous</SelectItem>
                           <SelectItem value="DRAFT">Brouillon</SelectItem>
                           <SelectItem value="SUBMITTED">Soumis</SelectItem>
                           <SelectItem value="APPROVED">Approuvé</SelectItem>
@@ -494,7 +505,7 @@ export default function TimesheetPage() {
                           <SelectValue placeholder="Tous" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous</SelectItem>
+                          <SelectItem value="all">Tous</SelectItem>
                           {projects.map((project) => (
                             <SelectItem key={project.id} value={project.id}>
                               {project.name}
@@ -585,9 +596,9 @@ export default function TimesheetPage() {
                             <div className="flex items-center gap-2">
                               <div
                                 className="w-2 h-2 rounded-full"
-                                style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                                style={{ backgroundColor: entry.project?.color || "#3b82f6" }}
                               />
-                              {entry.project.name}
+                              {entry.project?.name || "Projet non assigné"}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -622,43 +633,11 @@ export default function TimesheetPage() {
                 </table>
               </div>
 
-              {/* Statistiques */}
-              {entries.length > 0 && (
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Total heures</p>
-                        <p className="text-3xl font-bold text-rusty-red">
-                          {entries.reduce((sum, e) => sum + e.duration, 0).toFixed(1)}h
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Entrées</p>
-                        <p className="text-3xl font-bold text-ou-crimson">{entries.length}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">En attente</p>
-                        <p className="text-3xl font-bold text-amber-600">
-                          {entries.filter((e) => e.status === "SUBMITTED").length}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+      <ConfirmationDialog />
     </div>
   );
 }

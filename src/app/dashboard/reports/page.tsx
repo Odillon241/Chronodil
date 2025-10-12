@@ -10,7 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, Loader2, FilePlus, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -21,8 +36,15 @@ import {
   getDetailedReport,
   getProjectReport,
   getUserReport,
+  generateCustomReport,
+  sendReportByEmail,
+  getReports,
+  downloadReport,
 } from "@/actions/report.actions";
 import { exportTimesheetToExcel, exportTimesheetToPDF } from "@/actions/export.actions";
+import { getAllUsers } from "@/actions/user.actions";
+import { WeeklyActivityChart } from "@/components/features/weekly-activity-chart";
+import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
 
 type Period = "week" | "month" | "quarter" | "year" | "custom";
 type ReportType = "summary" | "detailed" | "by-project" | "by-user";
@@ -31,6 +53,24 @@ export default function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
   const [reportType, setReportType] = useState<ReportType>("summary");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // États pour le dialogue de rapport personnalisé
+  const [customReportDialogOpen, setCustomReportDialogOpen] = useState(false);
+  const [sendEmailDialogOpen, setSendEmailDialogOpen] = useState(false);
+  const [customReportData, setCustomReportData] = useState({
+    title: "",
+    content: "",
+    includeSummary: false,
+    recipientEmail: "",
+    recipientName: "",
+    attachPdf: true,
+  });
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  // États pour la sélection des utilisateurs
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [sendToUsers, setSendToUsers] = useState(false);
 
   // État pour les données
   const [summary, setSummary] = useState<any>(null);
@@ -39,10 +79,35 @@ export default function ReportsPage() {
   const [detailedData, setDetailedData] = useState<any[]>([]);
   const [projectReport, setProjectReport] = useState<any[]>([]);
   const [userReport, setUserReport] = useState<any[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
 
   useEffect(() => {
     loadData();
+    loadUsers();
+    loadReports();
   }, [period, reportType]);
+
+  const loadUsers = async () => {
+    try {
+      const result = await getAllUsers({});
+      if (result?.data) {
+        setUsers(result.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des utilisateurs:", error);
+    }
+  };
+
+  const loadReports = async () => {
+    try {
+      const result = await getReports();
+      if (result?.data) {
+        setReports(result.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des rapports:", error);
+    }
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -168,6 +233,198 @@ export default function ReportsPage() {
     return new Blob([byteArray], { type: mimeType });
   };
 
+  const handleGenerateCustomReport = async (format: "pdf" | "word" = "pdf") => {
+    if (!customReportData.title || !customReportData.content) {
+      toast.error("Veuillez remplir le titre et le contenu du rapport");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const result = await generateCustomReport({
+        title: customReportData.title,
+        content: customReportData.content,
+        includeSummary: customReportData.includeSummary,
+        period: period === "custom" ? undefined : period,
+        format: format,
+        saveToDatabase: true, // Enregistrer en base de données
+      });
+
+      if (result?.data) {
+        // Télécharger le fichier
+        const blob = base64ToBlob(result.data.data, result.data.mimeType);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = result.data.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast.success(`Rapport ${format === "word" ? "Word" : "PDF"} généré avec succès !`);
+        setCustomReportDialogOpen(false);
+        
+        // Réinitialiser le formulaire
+        setCustomReportData({
+          title: "",
+          content: "",
+          includeSummary: false,
+          recipientEmail: "",
+          recipientName: "",
+          attachPdf: true,
+        });
+        
+        // Recharger la liste des rapports
+        loadReports();
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la génération du rapport");
+      }
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast.error("Erreur lors de la génération du rapport");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSendReport = async () => {
+    if (!customReportData.title || !customReportData.content) {
+      toast.error("Veuillez remplir le titre et le contenu du rapport");
+      return;
+    }
+
+    // Validation selon le mode d'envoi
+    if (sendToUsers) {
+      if (selectedUserIds.length === 0) {
+        toast.error("Veuillez sélectionner au moins un utilisateur");
+        return;
+      }
+    } else {
+      if (!customReportData.recipientEmail) {
+        toast.error("Veuillez remplir l'adresse email du destinataire");
+        return;
+      }
+    }
+
+    setIsGenerating(true);
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+
+      if (sendToUsers) {
+        // Envoyer aux utilisateurs sélectionnés
+        const selectedUsers = users.filter(u => selectedUserIds.includes(u.id));
+        let sharedReportId: string | undefined;
+        
+        for (const user of selectedUsers) {
+          try {
+            const result = await sendReportByEmail({
+              title: customReportData.title,
+              content: customReportData.content,
+              recipientEmail: user.email,
+              recipientName: user.name,
+              recipientUserId: user.id,
+              attachPdf: customReportData.attachPdf,
+              period: period === "custom" ? undefined : period,
+              reportId: sharedReportId, // Partager le même rapport entre tous les destinataires
+            });
+
+            if (result?.data) {
+              if (!sharedReportId) {
+                sharedReportId = result.data.reportId;
+              }
+              successCount++;
+            } else {
+              errorCount++;
+            }
+          } catch (error) {
+            errorCount++;
+            console.error(`Erreur envoi à ${user.email}:`, error);
+          }
+        }
+
+        if (successCount > 0) {
+          toast.success(`Rapport envoyé avec succès à ${successCount} utilisateur(s) !`);
+        }
+        if (errorCount > 0) {
+          toast.error(`Échec de l'envoi à ${errorCount} utilisateur(s)`);
+        }
+      } else {
+        // Envoyer à une adresse email manuelle
+        const result = await sendReportByEmail({
+          title: customReportData.title,
+          content: customReportData.content,
+          recipientEmail: customReportData.recipientEmail,
+          recipientName: customReportData.recipientName,
+          attachPdf: customReportData.attachPdf,
+          period: period === "custom" ? undefined : period,
+        });
+
+        if (result?.data) {
+          toast.success(result.data.message || "Rapport envoyé avec succès !");
+          successCount = 1;
+        } else {
+          toast.error(result?.serverError || "Erreur lors de l'envoi du rapport");
+          errorCount = 1;
+        }
+      }
+
+      if (successCount > 0) {
+        setSendEmailDialogOpen(false);
+        setCustomReportDialogOpen(false);
+        
+        // Réinitialiser le formulaire
+        setCustomReportData({
+          title: "",
+          content: "",
+          includeSummary: false,
+          recipientEmail: "",
+          recipientName: "",
+          attachPdf: true,
+        });
+        setSelectedUserIds([]);
+        setSendToUsers(false);
+        
+        // Recharger la liste des rapports
+        loadReports();
+      }
+    } catch (error) {
+      console.error("Error sending report:", error);
+      toast.error("Erreur lors de l'envoi du rapport");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadReport = async (reportId: string) => {
+    setIsLoading(true);
+    try {
+      const result = await downloadReport(reportId);
+      if (result?.data) {
+        // Télécharger le fichier
+        const blob = base64ToBlob(result.data.data, result.data.mimeType);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = result.data.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Rapport téléchargé avec succès !");
+      } else {
+        toast.error(result?.serverError || "Erreur lors du téléchargement du rapport");
+      }
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      toast.error("Erreur lors du téléchargement du rapport");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const maxHours = projectData.length > 0 ? Math.max(...projectData.map(p => p.hours)) : 0;
 
   const getPeriodLabel = () => {
@@ -180,6 +437,14 @@ export default function ReportsPage() {
     }
   };
 
+  const formatFileSize = (bytes: number): string => {
+    if (!bytes) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -190,16 +455,299 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport("excel")}>
+          <Dialog open={customReportDialogOpen} onOpenChange={setCustomReportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-rusty-red hover:bg-ou-crimson">
+                <FilePlus className="mr-2 h-4 w-4" />
+                Nouveau rapport
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Créer un rapport personnalisé</DialogTitle>
+                <DialogDescription>
+                  Rédigez votre rapport et téléchargez-le ou envoyez-le par email
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="report-title">Titre du rapport *</Label>
+                  <Input
+                    id="report-title"
+                    placeholder="Ex: Rapport d'activité mensuel"
+                    value={customReportData.title}
+                    onChange={(e) => setCustomReportData({ ...customReportData, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="report-content">Contenu du rapport *</Label>
+                  <Textarea
+                    id="report-content"
+                    placeholder="Rédigez le contenu de votre rapport..."
+                    rows={10}
+                    value={customReportData.content}
+                    onChange={(e) => setCustomReportData({ ...customReportData, content: e.target.value })}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {customReportData.content.length} caractères
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="include-summary"
+                    checked={customReportData.includeSummary}
+                    onCheckedChange={(checked) => 
+                      setCustomReportData({ ...customReportData, includeSummary: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="include-summary" className="cursor-pointer">
+                    Inclure les statistiques de la période sélectionnée
+                  </Label>
+                </div>
+              </div>
+
+              <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCustomReportDialogOpen(false)}
+                  disabled={isGenerating}
+                  className="sm:mr-auto"
+                >
+                  Annuler
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (!customReportData.title || !customReportData.content) {
+                        toast.error("Veuillez remplir le titre et le contenu du rapport");
+                        return;
+                      }
+                      setSendEmailDialogOpen(true);
+                    }}
+                    disabled={isGenerating}
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Envoyer
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleGenerateCustomReport("word")}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="mr-2 h-4 w-4" />
+                        Word
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => handleGenerateCustomReport("pdf")}
+                    className="bg-rusty-red hover:bg-ou-crimson"
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        PDF
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Button variant="outline" onClick={() => handleExport("excel")} disabled={isLoading}>
             <Download className="mr-2 h-4 w-4" />
             Excel
           </Button>
-          <Button variant="outline" onClick={() => handleExport("pdf")}>
+          <Button variant="outline" onClick={() => handleExport("pdf")} disabled={isLoading}>
             <Download className="mr-2 h-4 w-4" />
             PDF
           </Button>
         </div>
       </div>
+
+      {/* Dialogue d'envoi par email */}
+      <Dialog open={sendEmailDialogOpen} onOpenChange={setSendEmailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Envoyer le rapport par email</DialogTitle>
+            <DialogDescription>
+              Sélectionnez les destinataires ou entrez une adresse email
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Sélection du mode d'envoi */}
+            <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
+              <Checkbox
+                id="send-to-users"
+                checked={sendToUsers}
+                onCheckedChange={(checked) => {
+                  setSendToUsers(checked as boolean);
+                  if (checked) {
+                    // Réinitialiser l'email manuel
+                    setCustomReportData({ ...customReportData, recipientEmail: "", recipientName: "" });
+                  } else {
+                    // Réinitialiser la sélection d'utilisateurs
+                    setSelectedUserIds([]);
+                  }
+                }}
+              />
+              <Label htmlFor="send-to-users" className="cursor-pointer font-medium">
+                Envoyer aux utilisateurs sélectionnés
+              </Label>
+            </div>
+
+            {sendToUsers ? (
+              // Sélection des utilisateurs
+              <div className="space-y-2">
+                <Label>Sélectionner les utilisateurs *</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Choisissez les utilisateurs qui recevront le rapport
+                </p>
+                <ScrollArea className="h-[300px] border rounded-md p-4">
+                  {users.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Aucun utilisateur disponible
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {users.map((user) => (
+                        <div key={user.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded">
+                          <Checkbox
+                            id={`user-email-${user.id}`}
+                            checked={selectedUserIds.includes(user.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedUserIds([...selectedUserIds, user.id]);
+                              } else {
+                                setSelectedUserIds(selectedUserIds.filter((id) => id !== user.id));
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={`user-email-${user.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div>{user.name}</div>
+                                <div className="text-muted-foreground text-xs">{user.email}</div>
+                              </div>
+                              {user.Department && (
+                                <Badge variant="secondary" className="ml-2 text-xs">
+                                  {user.Department.name}
+                                </Badge>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+                {selectedUserIds.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {selectedUserIds.length} utilisateur(s) sélectionné(s)
+                  </p>
+                )}
+              </div>
+            ) : (
+              // Saisie manuelle de l'email
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="recipient-name">Nom du destinataire</Label>
+                  <Input
+                    id="recipient-name"
+                    placeholder="Ex: Jean Dupont"
+                    value={customReportData.recipientName}
+                    onChange={(e) => setCustomReportData({ ...customReportData, recipientName: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="recipient-email">Email du destinataire *</Label>
+                  <Input
+                    id="recipient-email"
+                    type="email"
+                    placeholder="exemple@email.com"
+                    value={customReportData.recipientEmail}
+                    onChange={(e) => setCustomReportData({ ...customReportData, recipientEmail: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="attach-pdf"
+                checked={customReportData.attachPdf}
+                onCheckedChange={(checked) => 
+                  setCustomReportData({ ...customReportData, attachPdf: checked as boolean })
+                }
+              />
+              <Label htmlFor="attach-pdf" className="cursor-pointer">
+                Joindre le rapport en PDF
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSendEmailDialogOpen(false);
+                setSendToUsers(false);
+                setSelectedUserIds([]);
+              }}
+              disabled={isGenerating}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSendReport}
+              className="bg-rusty-red hover:bg-ou-crimson"
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Envoi...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Envoyer
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex gap-4">
         <Select value={period} onValueChange={(val) => setPeriod(val as Period)}>
@@ -294,97 +842,109 @@ export default function ReportsPage() {
 
           {/* Graphiques */}
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Activité hebdomadaire</CardTitle>
-                <CardDescription>
-                  Heures saisies par jour
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {weeklyData.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune donnée disponible</p>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      {weeklyData.map((day, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium">{day.day}</span>
-                            <span className="text-muted-foreground">{day.hours.toFixed(1)}h</span>
-                          </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-rusty-red"
-                              style={{ width: `${Math.min((day.hours / 12) * 100, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-6 p-4 bg-muted rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Total</span>
-                        <span className="text-2xl font-bold text-rusty-red">
-                          {weeklyData.reduce((acc, day) => acc + day.hours, 0).toFixed(1)}h
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <WeeklyActivityChart
+              data={weeklyData}
+              title="Activité hebdomadaire"
+              description="Heures saisies par jour"
+            />
 
+            <ProjectDistributionChart
+              data={projectData}
+              title="Répartition par projet"
+              description={`Heures par projet ${getPeriodLabel().toLowerCase()}`}
+            />
+          </div>
+
+          {/* Liste des rapports générés */}
+          {reports.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Répartition par projet</CardTitle>
+                <CardTitle>Historique des rapports</CardTitle>
                 <CardDescription>
-                  Heures par projet {getPeriodLabel().toLowerCase()}
+                  Liste de tous les rapports générés et envoyés
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {projectData.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune donnée disponible</p>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      {projectData.map((project, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-3 h-3 rounded-full"
-                                style={{ backgroundColor: project.color }}
-                              />
-                              <span className="font-medium">{project.name}</span>
+                <div className="relative overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs uppercase bg-muted">
+                      <tr>
+                        <th className="px-6 py-3">Titre</th>
+                        <th className="px-6 py-3">Créé par</th>
+                        <th className="px-6 py-3">Date</th>
+                        <th className="px-6 py-3">Format</th>
+                        <th className="px-6 py-3">Taille</th>
+                        <th className="px-6 py-3">Destinataires</th>
+                        <th className="px-6 py-3">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reports.map((report: any) => (
+                        <tr key={report.id} className="border-b hover:bg-muted/50">
+                          <td className="px-6 py-4">
+                            <div className="font-medium">{report.title}</div>
+                            {report.period && (
+                              <div className="text-xs text-muted-foreground">
+                                Période: {report.period}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div>{report.CreatedBy.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {report.CreatedBy.email}
                             </div>
-                            <span className="text-muted-foreground">{project.hours.toFixed(1)}h</span>
-                          </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full"
-                              style={{
-                                backgroundColor: project.color,
-                                width: `${(project.hours / maxHours) * 100}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {format(new Date(report.createdAt), "dd/MM/yyyy à HH:mm")}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge variant={report.format === "pdf" ? "default" : "secondary"}>
+                              {report.format === "pdf" ? "PDF" : "Word"}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            {formatFileSize(report.fileSize)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">{report._count.Recipients}</span>
+                              <span className="text-muted-foreground">
+                                destinataire(s)
+                              </span>
+                            </div>
+                            {report.Recipients.length > 0 && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {report.Recipients.slice(0, 2).map((recipient: any, idx: number) => (
+                                  <div key={recipient.id}>
+                                    {recipient.User ? recipient.User.name : recipient.email}
+                                  </div>
+                                ))}
+                                {report.Recipients.length > 2 && (
+                                  <div>+{report.Recipients.length - 2} autre(s)</div>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDownloadReport(report.id)}
+                              disabled={isLoading}
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              Télécharger
+                            </Button>
+                          </td>
+                        </tr>
                       ))}
-                    </div>
-                    <div className="mt-6 p-4 bg-muted rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Total</span>
-                        <span className="text-2xl font-bold text-rusty-red">
-                          {projectData.reduce((acc, project) => acc + project.hours, 0).toFixed(1)}h
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
 
           {/* Vue détaillée selon le type de rapport */}
           {reportType === "detailed" && detailedData.length > 0 && (
@@ -411,9 +971,9 @@ export default function ReportsPage() {
                       {detailedData.map((entry: any) => (
                         <tr key={entry.id} className="border-b hover:bg-muted/50">
                           <td className="px-6 py-4">{format(new Date(entry.date), "dd/MM/yyyy")}</td>
-                          <td className="px-6 py-4">{entry.user.name}</td>
-                          <td className="px-6 py-4">{entry.project.name}</td>
-                          <td className="px-6 py-4">{entry.task?.name || "-"}</td>
+                          <td className="px-6 py-4">{entry.User.name}</td>
+                          <td className="px-6 py-4">{entry.Project?.name || "Projet non assigné"}</td>
+                          <td className="px-6 py-4">{entry.Task?.name || "-"}</td>
                           <td className="px-6 py-4">
                             <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                               {entry.type}

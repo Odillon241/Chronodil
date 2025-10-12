@@ -67,7 +67,7 @@ export default function NewHRTimesheetPage() {
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [showCatalog, setShowCatalog] = useState(false);
-  const [catalogFilter, setCatalogFilter] = useState({ category: "", type: "" });
+  const [catalogFilter, setCatalogFilter] = useState({ category: "all", type: "all" });
 
   const {
     register: registerTimesheet,
@@ -190,8 +190,8 @@ export default function NewHRTimesheetPage() {
 
   const categories = Array.from(new Set(catalog.map(item => item.category))).sort();
   const filteredCatalog = catalog.filter(item => {
-    if (catalogFilter.category && item.category !== catalogFilter.category) return false;
-    if (catalogFilter.type && item.type !== catalogFilter.type) return false;
+    if (catalogFilter.category && catalogFilter.category !== "all" && item.category !== catalogFilter.category) return false;
+    if (catalogFilter.type && catalogFilter.type !== "all" && item.type !== catalogFilter.type) return false;
     return true;
   });
 
@@ -385,7 +385,7 @@ export default function NewHRTimesheetPage() {
                             <SelectValue placeholder="Toutes" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Toutes</SelectItem>
+                            <SelectItem value="all">Toutes</SelectItem>
                             {categories.map(cat => (
                               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                             ))}
@@ -403,7 +403,7 @@ export default function NewHRTimesheetPage() {
                             <SelectValue placeholder="Tous" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Tous</SelectItem>
+                            <SelectItem value="all">Tous</SelectItem>
                             <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
                             <SelectItem value="REPORTING">Reporting</SelectItem>
                           </SelectContent>

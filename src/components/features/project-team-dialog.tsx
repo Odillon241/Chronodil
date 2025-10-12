@@ -39,6 +39,7 @@ interface User {
 interface ProjectMember {
   id: string;
   user: User;
+  User?: User; // Alias pour compatibilité avec Prisma
   role: string | null;
 }
 
@@ -47,7 +48,8 @@ interface Project {
   name: string;
   code: string;
   color: string | null;
-  members?: ProjectMember[];
+  ProjectMember?: ProjectMember[];
+  members?: ProjectMember[]; // Alias pour compatibilité
 }
 
 interface ProjectTeamDialogProps {
@@ -81,7 +83,8 @@ export function ProjectTeamDialog({
       const result = await getUsers({});
       if (result?.data) {
         // Filter out users already in the project
-        const currentMemberIds = project?.members?.map((m) => m.user.id) || [];
+        const currentMemberIds = project?.ProjectMember?.map((m) => (m.user?.id || m.User?.id)) || 
+                                project?.members?.map((m) => (m.user?.id || m.User?.id)) || [];
         const filtered = (result.data as any[]).filter(
           (user: any) => !currentMemberIds.includes(user.id)
         );
@@ -290,11 +293,12 @@ export function ProjectTeamDialog({
             <div className="flex items-center gap-2 mb-4">
               <Users className="h-5 w-5 text-rusty-red" />
               <h3 className="font-semibold">
-                Membres actuels ({project.members?.length || 0})
+                Membres actuels ({project.ProjectMember?.length || project.members?.length || 0})
               </h3>
             </div>
 
-            {!project.members || project.members.length === 0 ? (
+            {(!project.ProjectMember || project.ProjectMember.length === 0) && 
+             (!project.members || project.members.length === 0) ? (
               <Card>
                 <CardContent className="py-8">
                   <div className="text-center text-muted-foreground">
@@ -304,22 +308,22 @@ export function ProjectTeamDialog({
               </Card>
             ) : (
               <div className="space-y-2">
-                {project.members.map((member) => (
+                {(project.ProjectMember || project.members || []).map((member) => (
                   <Card key={member.id}>
                     <CardContent className="py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarFallback className="bg-rusty-red/10 text-rusty-red">
-                              {getInitials(member.user.name)}
+                              {getInitials((member.user || member.User)?.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium">
-                              {member.user.name || "Utilisateur sans nom"}
+                              {(member.user || member.User)?.name || "Utilisateur sans nom"}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {member.user.email}
+                              {(member.user || member.User)?.email}
                             </div>
                           </div>
                         </div>
@@ -330,12 +334,12 @@ export function ProjectTeamDialog({
                               {getRoleLabel(member.role)}
                             </Badge>
                           )}
-                          <Badge className={getRoleBadgeColor(member.user.role)}>
-                            {getRoleLabel(member.user.role)}
+                          <Badge className={getRoleBadgeColor((member.user || member.User)?.role || "EMPLOYEE")}>
+                            {getRoleLabel((member.user || member.User)?.role || "EMPLOYEE")}
                           </Badge>
-                          {member.user.department && (
+                          {(member.user || member.User)?.department && (
                             <Badge variant="secondary" className="text-xs">
-                              {member.user.department.name}
+                              {(member.user || member.User)?.department?.name}
                             </Badge>
                           )}
                           <Button
@@ -344,7 +348,7 @@ export function ProjectTeamDialog({
                             onClick={() =>
                               handleRemoveMember(
                                 member.id,
-                                member.user.name || member.user.email
+                                (member.user || member.User)?.name || (member.user || member.User)?.email || "Utilisateur"
                               )
                             }
                             disabled={isLoading}

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Clock, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, format, startOfDay, endOfDay } from "date-fns";
 import { TimesheetRadarChart } from "@/components/features/timesheet-radar-chart";
+import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
 
 async function getDashboardData(userId: string) {
   try {
@@ -207,7 +208,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 lg:col-span-3">
+        <div className="col-span-4 lg:col-span-4">
           <TimesheetRadarChart
             data={data.radarData}
             weekTotal={data.weekHours}
@@ -215,7 +216,7 @@ export default async function DashboardPage() {
           />
         </div>
 
-        <Card className="col-span-4">
+        <Card className="col-span-4 lg:col-span-3">
           <CardHeader>
             <CardTitle>Activité récente</CardTitle>
             <CardDescription>Vos dernières saisies de temps</CardDescription>
@@ -266,45 +267,11 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading">Répartition par projet</CardTitle>
-            <CardDescription>Heures de cette semaine</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.projectsWithDetails.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Aucune saisie cette semaine
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {data.projectsWithDetails.map((project, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: project.color }}
-                        />
-                        <span className="font-medium">{project.name}</span>
-                      </div>
-                      <span className="text-muted-foreground">{project.hours}h</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full"
-                        style={{
-                          backgroundColor: project.color,
-                          width: `${(project.hours / maxHours) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ProjectDistributionChart
+          data={data.projectsWithDetails}
+          title="Répartition par projet"
+          description="Heures de cette semaine"
+        />
       </div>
     </div>
   );

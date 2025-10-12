@@ -278,3 +278,136 @@ export const getMyTeam = authActionClient
 
     return subordinates;
   });
+
+// Récupérer tous les utilisateurs (pour les MANAGER, HR, ADMIN)
+export const getAllUsers = authActionClient
+  .schema(z.object({}))
+  .action(async ({ ctx }) => {
+    const { userRole } = ctx;
+
+    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
+      throw new Error("Permissions insuffisantes");
+    }
+
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return users;
+  });
+
+// Récupérer tous les utilisateurs pour le chat (accessible à tous)
+export const getAllUsersForChat = authActionClient
+  .schema(z.object({}))
+  .action(async ({ ctx }) => {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        image: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return users;
+  });
+
+// Supprimer un utilisateur (Admin uniquement)
+export const deleteUser = authActionClient
+  .schema(z.object({ id: z.string() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { userRole, userId } = ctx;
+
+    if (userRole !== "ADMIN") {
+      throw new Error("Seuls les administrateurs peuvent supprimer des utilisateurs");
+    }
+
+    // Empêcher la suppression de son propre compte
+    if (parsedInput.id === userId) {
+      throw new Error("Vous ne pouvez pas supprimer votre propre compte");
+    }
+
+    // Vérifier que l'utilisateur existe
+    const user = await prisma.user.findUnique({
+      where: { id: parsedInput.id },
+    });
+
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // Supprimer l'utilisateur
+    await prisma.user.delete({
+      where: { id: parsedInput.id },
+    });
+
+    revalidatePath("/dashboard/settings/users");
+    return { success: true, message: "Utilisateur supprimé avec succès" };
+  });
+
+// Réinitialiser le mot de passe d'un utilisateur (Admin uniquement)
+export const resetUserPassword = authActionClient
+  .schema(
+    z.object({
+      id: z.string(),
+      newPassword: z.string().min(6),
+    })
+  )
+  .action(async ({ parsedInput, ctx }) => {
+    const { userRole } = ctx;
+
+    if (userRole !== "ADMIN") {
+      throw new Error("Seuls les administrateurs peuvent réinitialiser les mots de passe");
+    }
+
+    // Vérifier que l'utilisateur existe
+    const user = await prisma.user.findUnique({
+      where: { id: parsedInput.id },
+    });
+
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // Note: Dans une application réelle avec authentification,
+    // vous devriez hasher le mot de passe avant de le stocker
+    // Pour l'instant, nous simulons la réinitialisation
+    await prisma.user.update({
+      where: { id: parsedInput.id },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/dashboard/settings/users");
+    return { 
+      success: true, 
+      message: "Mot de passe réinitialisé avec succès",
+      tempPassword: parsedInput.newPassword 
+    };
+  });

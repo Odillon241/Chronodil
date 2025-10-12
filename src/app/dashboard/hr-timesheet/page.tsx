@@ -18,14 +18,17 @@ import {
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import {
   getMyHRTimesheets,
   deleteHRTimesheet,
   submitHRTimesheet,
+  cancelHRTimesheetSubmission,
   getHRTimesheetsForApproval,
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HRTimesheetStatsChart } from "@/components/features/hr-timesheet-stats-chart";
 
 interface HRTimesheet {
   id: string;
@@ -59,6 +62,7 @@ interface HRTimesheet {
 
 export default function HRTimesheetPage() {
   const router = useRouter();
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [myTimesheets, setMyTimesheets] = useState<HRTimesheet[]>([]);
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +70,7 @@ export default function HRTimesheetPage() {
   const [currentTab, setCurrentTab] = useState<"my" | "pending">("my");
 
   const [filters, setFilters] = useState({
-    status: "",
+    status: "all",
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
   });
@@ -75,7 +79,7 @@ export default function HRTimesheetPage() {
     try {
       setIsLoading(true);
       const result = await getMyHRTimesheets({
-        ...(filters.status && { status: filters.status as any }),
+        ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
         weekStartDate: filters.startDate,
         weekEndDate: filters.endDate,
       });
@@ -116,35 +120,70 @@ export default function HRTimesheetPage() {
   }, [currentTab, loadMyTimesheets, loadPendingTimesheets]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer ce timesheet RH ?")) return;
-
-    try {
-      const result = await deleteHRTimesheet({ timesheetId: id });
-      if (result?.data) {
-        toast.success("Timesheet supprimé");
-        loadMyTimesheets();
-      } else {
-        toast.error(result?.serverError || "Erreur lors de la suppression");
-      }
-    } catch (error) {
-      toast.error("Erreur lors de la suppression");
-    }
+    const confirmed = await showConfirmation({
+      title: "Supprimer le timesheet RH",
+      description: "Êtes-vous sûr de vouloir supprimer ce timesheet RH ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const result = await deleteHRTimesheet({ timesheetId: id });
+          if (result?.data) {
+            toast.success("Timesheet supprimé");
+            loadMyTimesheets();
+          } else {
+            toast.error(result?.serverError || "Erreur lors de la suppression");
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la suppression");
+        }
+      },
+    });
   };
 
   const handleSubmit = async (id: string) => {
-    if (!confirm("Soumettre ce timesheet pour validation ?")) return;
-
-    try {
-      const result = await submitHRTimesheet({ timesheetId: id });
-      if (result?.data) {
-        toast.success("Timesheet soumis avec succès !");
-        loadMyTimesheets();
-      } else {
-        toast.error(result?.serverError || "Erreur lors de la soumission");
-      }
-    } catch (error) {
-      toast.error("Erreur lors de la soumission");
-    }
+    const confirmed = await showConfirmation({
+      title: "Soumettre le timesheet",
+      description: "Voulez-vous soumettre ce timesheet pour validation ? Une fois soumis, vous ne pourrez plus le modifier.",
+      confirmText: "Soumettre",
+      cancelText: "Annuler",
+      onConfirm: async () => {
+        try {
+          const result = await submitHRTimesheet({ timesheetId: id });
+          if (result?.data) {
+            const weekStartDate = format(new Date(result.data.weekStartDate), "dd/MM/yyyy", { locale: fr });
+            
+            toast.success("Timesheet soumis", {
+              description: `Votre feuille de temps du ${weekStartDate} a été soumise pour validation`,
+              action: {
+                label: "Annuler",
+                onClick: async () => {
+                  try {
+                    const undoResult = await cancelHRTimesheetSubmission({ timesheetId: id });
+                    if (undoResult?.data) {
+                      toast.success("Soumission annulée", {
+                        description: "Votre timesheet est de nouveau en brouillon",
+                      });
+                      loadMyTimesheets();
+                    } else {
+                      toast.error("Erreur lors de l'annulation");
+                    }
+                  } catch (error) {
+                    toast.error("Erreur lors de l'annulation");
+                  }
+                },
+              },
+            });
+            loadMyTimesheets();
+          } else {
+            toast.error(result?.serverError || "Erreur lors de la soumission");
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la soumission");
+        }
+      },
+    });
   };
 
   const applyFilters = () => {
@@ -153,7 +192,7 @@ export default function HRTimesheetPage() {
 
   const resetFilters = () => {
     setFilters({
-      status: "",
+      status: "all",
       startDate: startOfMonth(new Date()),
       endDate: endOfMonth(new Date()),
     });
@@ -396,7 +435,7 @@ export default function HRTimesheetPage() {
                           <SelectValue placeholder="Tous" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous</SelectItem>
+                          <SelectItem value="all">Tous</SelectItem>
                           <SelectItem value="DRAFT">Brouillon</SelectItem>
                           <SelectItem value="PENDING">En attente</SelectItem>
                           <SelectItem value="MANAGER_APPROVED">Validé Manager</SelectItem>
@@ -482,47 +521,15 @@ export default function HRTimesheetPage() {
                 </div>
               )}
 
-              {/* Statistiques */}
+              {/* Graphique des statistiques */}
               {myTimesheets.length > 0 && (
-                <div className="grid gap-4 md:grid-cols-4 mt-6">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Total timesheets</p>
-                        <p className="text-3xl font-bold text-rusty-red">{myTimesheets.length}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Brouillons</p>
-                        <p className="text-3xl font-bold text-gray-600">
-                          {myTimesheets.filter((t) => t.status === "DRAFT").length}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">En attente</p>
-                        <p className="text-3xl font-bold text-amber-600">
-                          {myTimesheets.filter((t) => ["PENDING", "MANAGER_APPROVED"].includes(t.status)).length}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Approuvés</p>
-                        <p className="text-3xl font-bold text-green-600">
-                          {myTimesheets.filter((t) => t.status === "APPROVED").length}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="mt-6">
+                  <HRTimesheetStatsChart
+                    draft={myTimesheets.filter((t) => t.status === "DRAFT").length}
+                    pending={myTimesheets.filter((t) => ["PENDING", "MANAGER_APPROVED"].includes(t.status)).length}
+                    approved={myTimesheets.filter((t) => t.status === "APPROVED").length}
+                    rejected={myTimesheets.filter((t) => t.status === "REJECTED").length}
+                  />
                 </div>
               )}
             </CardContent>
@@ -559,6 +566,7 @@ export default function HRTimesheetPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      <ConfirmationDialog />
     </div>
   );
 }

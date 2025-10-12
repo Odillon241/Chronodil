@@ -542,6 +542,62 @@ export const submitHRTimesheet = authActionClient
   });
 
 /**
+ * Annuler la soumission d'un timesheet RH (le remettre en DRAFT)
+ */
+export const cancelHRTimesheetSubmission = authActionClient
+  .schema(z.object({ timesheetId: z.string() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId } = ctx;
+    const { timesheetId } = parsedInput;
+
+    // Vérifier que le timesheet appartient à l'utilisateur et est en PENDING
+    const timesheet = await prisma.hRTimesheet.findFirst({
+      where: {
+        id: timesheetId,
+        userId,
+        status: "PENDING",
+      },
+      include: {
+        User: true,
+      },
+    });
+
+    if (!timesheet) {
+      throw new Error("Timesheet non trouvé ou ne peut pas être annulé");
+    }
+
+    // Remettre en DRAFT
+    const updatedTimesheet = await prisma.hRTimesheet.update({
+      where: { id: timesheetId },
+      data: {
+        status: "DRAFT",
+        employeeSignedAt: null,
+        updatedAt: new Date(),
+      },
+      include: {
+        activities: true,
+        User: true,
+      },
+    });
+
+    // Supprimer la notification créée pour le manager (optionnel)
+    if (timesheet.User.managerId) {
+      await prisma.notification.deleteMany({
+        where: {
+          userId: timesheet.User.managerId,
+          type: "hr_timesheet_submitted",
+          link: `/dashboard/hr-timesheet/${timesheetId}`,
+        },
+      });
+    }
+
+    revalidatePath("/dashboard/hr-timesheet");
+    revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+
+    return updatedTimesheet;
+  });
+
+/**
  * Approuver ou rejeter un timesheet RH (Manager)
  */
 export const managerApproveHRTimesheet = authActionClient

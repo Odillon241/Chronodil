@@ -16,13 +16,14 @@ const projectSchema = z.object({
   hourlyRate: z.number().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  memberIds: z.array(z.string()).optional(),
 });
 
 // Créer un projet
 export const createProject = authActionClient
   .schema(projectSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
 
     // Vérifier les permissions
     if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
@@ -41,10 +42,30 @@ export const createProject = authActionClient
         hourlyRate: parsedInput.hourlyRate,
         startDate: parsedInput.startDate,
         endDate: parsedInput.endDate,
+        createdBy: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
+
+    // Ajouter les membres au projet - toujours inclure le créateur
+    const memberIdsToAdd = parsedInput.memberIds && parsedInput.memberIds.length > 0
+      ? [...new Set([...parsedInput.memberIds, userId])] // Inclure le créateur et dédupliquer
+      : [userId];
+
+    await Promise.all(
+      memberIdsToAdd.map((memberId) =>
+        prisma.projectMember.create({
+          data: {
+            id: nanoid(),
+            projectId: project.id,
+            userId: memberId,
+            role: "member",
+            createdAt: new Date(),
+          },
+        })
+      )
+    );
 
     revalidatePath("/dashboard/projects");
     return project;
@@ -66,6 +87,13 @@ export const getProjects = authActionClient
       },
       include: {
         Department: true,
+        Creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         ProjectMember: {
           include: {
             User: true,
@@ -111,6 +139,13 @@ export const getProjectById = authActionClient
       where: { id: parsedInput.id },
       include: {
         Department: true,
+        Creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         ProjectMember: {
           include: {
             User: true,
@@ -259,4 +294,101 @@ export const getMyProjects = authActionClient
     });
 
     return projectMembers.map((pm) => pm.Project);
+  });
+
+// Cloner un projet
+export const cloneProject = authActionClient
+  .schema(z.object({ id: z.string() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { userRole, userId } = ctx;
+
+    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
+      throw new Error("Permissions insuffisantes");
+    }
+
+    // Récupérer le projet original
+    const originalProject = await prisma.project.findUnique({
+      where: { id: parsedInput.id },
+      include: {
+        ProjectMember: true,
+      },
+    });
+
+    if (!originalProject) {
+      throw new Error("Projet non trouvé");
+    }
+
+    // Créer le nouveau projet (clone)
+    const clonedProject = await prisma.project.create({
+      data: {
+        id: nanoid(),
+        name: `${originalProject.name} (Copie)`,
+        code: `${originalProject.code}-COPY`,
+        description: originalProject.description,
+        color: originalProject.color,
+        departmentId: originalProject.departmentId,
+        budgetHours: originalProject.budgetHours,
+        hourlyRate: originalProject.hourlyRate,
+        startDate: originalProject.startDate,
+        endDate: originalProject.endDate,
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    // Copier les membres du projet
+    if (originalProject.ProjectMember.length > 0) {
+      await Promise.all(
+        originalProject.ProjectMember.map((member) =>
+          prisma.projectMember.create({
+            data: {
+              id: nanoid(),
+              projectId: clonedProject.id,
+              userId: member.userId,
+              role: member.role,
+              createdAt: new Date(),
+            },
+          })
+        )
+      );
+    }
+
+    revalidatePath("/dashboard/projects");
+    return clonedProject;
+  });
+
+// Supprimer un projet
+export const deleteProject = authActionClient
+  .schema(z.object({ id: z.string() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { userRole, userId } = ctx;
+
+    // Récupérer le projet avec son créateur
+    const project = await prisma.project.findUnique({
+      where: { id: parsedInput.id },
+      select: { id: true, name: true, createdBy: true },
+    });
+
+    if (!project) {
+      throw new Error("Projet non trouvé");
+    }
+
+    // Vérifier les permissions :
+    // - ADMIN peut supprimer n'importe quel projet
+    // - Le créateur peut supprimer son propre projet
+    const isAdmin = userRole === "ADMIN";
+    const isCreator = project.createdBy === userId;
+
+    if (!isAdmin && !isCreator) {
+      throw new Error("Vous n'avez pas la permission de supprimer ce projet. Seul le créateur ou un administrateur peut supprimer un projet.");
+    }
+
+    // Supprimer le projet (cascade deletion pour les membres et entrées de timesheet)
+    await prisma.project.delete({
+      where: { id: parsedInput.id },
+    });
+
+    revalidatePath("/dashboard/projects");
+    return { success: true, projectName: project.name };
   });

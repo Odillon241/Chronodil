@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getPendingValidations, validateTimesheetEntry, getValidationStats } from "@/actions/validation.actions";
+import { ValidationStatsChart } from "@/components/features/validation-stats-chart";
 
 export default function ValidationPage() {
   const [entries, setEntries] = useState<any[]>([]);
@@ -129,7 +130,7 @@ export default function ValidationPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -143,6 +144,14 @@ export default function ValidationPage() {
             </CardContent>
           </Card>
         ))}
+
+        <div className="md:col-span-2 lg:col-span-1">
+          <ValidationStatsChart
+            pending={stats.pending}
+            approved={stats.approved}
+            rejected={stats.rejected}
+          />
+        </div>
       </div>
 
       <Card>
@@ -172,7 +181,7 @@ export default function ValidationPage() {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="font-medium text-rusty-red">
-                          {entry.project.name}
+                          {entry.project?.name || "Projet non assigné"}
                         </span>
                         {entry.task && (
                           <>

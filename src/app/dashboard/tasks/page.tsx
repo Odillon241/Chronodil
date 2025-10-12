@@ -23,10 +23,12 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { createTask, updateTask, deleteTask, getMyTasks } from "@/actions/task.actions";
 import { getMyProjects } from "@/actions/project.actions";
 
 export default function TasksPage() {
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [tasks, setTasks] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("");
@@ -129,17 +131,24 @@ export default function TasksPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer cette tâche ?")) return;
-
-    try {
-      const result = await deleteTask({ id });
-      if (result?.data) {
-        toast.success("Tâche supprimée");
-        loadTasks();
-      }
-    } catch (error) {
-      toast.error("Erreur lors de la suppression");
-    }
+    const confirmed = await showConfirmation({
+      title: "Supprimer la tâche",
+      description: "Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const result = await deleteTask({ id });
+          if (result?.data) {
+            toast.success("Tâche supprimée");
+            loadTasks();
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la suppression");
+        }
+      },
+    });
   };
 
   const handleToggleActive = async (task: any) => {
@@ -169,7 +178,11 @@ export default function TasksPage() {
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
-    const projectName = task.project.name;
+    // Vérifier que le projet existe avant d'accéder à ses propriétés
+    if (!task.Project || !task.Project.name) {
+      return acc;
+    }
+    const projectName = task.Project.name;
     if (!acc[projectName]) {
       acc[projectName] = [];
     }
@@ -322,7 +335,7 @@ export default function TasksPage() {
                 <div className="flex items-center gap-3">
                   <div
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: tasksArray[0]?.project?.color || '#3b82f6' }}
+                    style={{ backgroundColor: tasksArray[0]?.Project?.color || '#3b82f6' }}
                   />
                   <div>
                     <CardTitle>{projectName}</CardTitle>
@@ -399,6 +412,7 @@ export default function TasksPage() {
           )}
         </div>
       )}
+      <ConfirmationDialog />
     </div>
   );
 }

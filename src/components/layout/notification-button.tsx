@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNotificationSound } from "@/hooks/use-notification-sound";
 
 interface Notification {
   id: string;
@@ -34,6 +36,16 @@ export function NotificationButton({
   onNotificationClick,
   onMarkAllRead,
 }: NotificationButtonProps) {
+  const { playSound, isEnabled } = useNotificationSound();
+  const previousUnreadCountRef = useRef(unreadCount);
+
+  // Jouer un son lorsqu'une nouvelle notification arrive
+  useEffect(() => {
+    if (unreadCount > previousUnreadCountRef.current && isEnabled) {
+      playSound();
+    }
+    previousUnreadCountRef.current = unreadCount;
+  }, [unreadCount, isEnabled, playSound]);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

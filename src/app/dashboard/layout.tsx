@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { NotificationDropdown } from "@/components/features/notification-dropdown";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 export default function DashboardLayout({
   children,
@@ -18,7 +19,10 @@ export default function DashboardLayout({
           <div className="flex flex-1 items-center gap-2">
             <h1 className="text-lg font-semibold">Chronodil</h1>
           </div>
-          <NotificationDropdown />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <NotificationDropdown />
+          </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {children}

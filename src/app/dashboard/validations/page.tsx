@@ -25,6 +25,7 @@ import { fr } from "date-fns/locale";
 import { CheckCircle, XCircle, Clock, User, Calendar, AlertCircle } from "lucide-react";
 import { getPendingValidations, getValidationStats } from "@/actions/validation.actions";
 import { ValidationDialog } from "@/components/features/validation-dialog";
+import { ValidationStatsChart } from "@/components/features/validation-stats-chart";
 import { toast } from "sonner";
 import { formatDuration } from "@/lib/utils/timesheet.utils";
 
@@ -192,51 +193,13 @@ export default function ValidationsPage() {
         </p>
       </div>
 
-      {/* Statistiques */}
+      {/* Graphique des statistiques */}
       {stats && (
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">En attente</CardTitle>
-              <Clock className="h-4 w-4 text-amber-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Approuvées</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rejetées</CardTitle>
-              <XCircle className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taux d&apos;approbation</CardTitle>
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.approvalRate.toFixed(0)}%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <ValidationStatsChart
+          pending={stats.pending}
+          approved={stats.approved}
+          rejected={stats.rejected}
+        />
       )}
 
       {/* Filtres et actions */}
@@ -347,9 +310,9 @@ export default function ValidationsPage() {
                             <div className="flex items-center gap-2">
                               <div
                                 className="h-2 w-2 rounded-full"
-                                style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                                style={{ backgroundColor: entry.project?.color || "#3b82f6" }}
                               />
-                              <span className="font-medium">{entry.project.name}</span>
+                              <span className="font-medium">{entry.project?.name || "Projet non assigné"}</span>
                             </div>
                           </TableCell>
                           <TableCell>

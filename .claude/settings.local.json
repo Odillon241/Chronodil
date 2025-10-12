@@ -32,7 +32,12 @@
       "Bash(rm:*)",
       "WebFetch(domain:www.better-auth.com)",
       "Bash(taskkill:*)",
-      "Bash(pnpm prisma:*)"
+      "Bash(pnpm prisma:*)",
+      "Bash(tsx scripts/setup-hierarchy.ts:*)",
+      "mcp__shadcn__get_project_registries",
+      "mcp__shadcn__search_items_in_registries",
+      "mcp__shadcn__get_item_examples_from_registries",
+      "Bash(tsx scripts/assign-user-to-projects.ts:*)"
     ],
     "deny": [],
     "ask": []

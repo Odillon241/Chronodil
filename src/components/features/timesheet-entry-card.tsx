@@ -40,13 +40,13 @@ export function TimesheetEntryCard({
     <div className="p-3 border rounded-lg space-y-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {entry.project.color && (
+          {entry.project?.color && (
             <div
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: entry.project.color }}
             />
           )}
-          <span className="text-sm font-medium">{entry.project.name}</span>
+          <span className="text-sm font-medium">{entry.project?.name || "Projet non assigné"}</span>
         </div>
         <span className="text-sm font-bold text-rusty-red">{entry.duration}h</span>
       </div>

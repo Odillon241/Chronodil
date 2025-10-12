@@ -17,6 +17,7 @@ export const authActionClient = actionClient.use(async ({ next }) => {
     ctx: {
       userId: session.user.id,
       userRole: session.user.role as string,
+      user: session.user,
     },
   });
 });

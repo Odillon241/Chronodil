@@ -109,14 +109,14 @@ export function ProjectCreateDialog({ onSubmit, trigger }: ProjectCreateDialogPr
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hourlyRate">Taux horaire (€)</Label>
+                <Label htmlFor="hourlyRate">Taux horaire (F CFA)</Label>
                 <Input
                   id="hourlyRate"
                   name="hourlyRate"
                   type="number"
                   min="0"
-                  step="0.01"
-                  placeholder="50"
+                  step="100"
+                  placeholder="20000"
                   disabled={isLoading}
                 />
               </div>

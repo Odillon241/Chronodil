@@ -203,9 +203,9 @@ export function ValidationDialog({
                 <div className="flex items-center gap-2">
                   <div
                     className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                    style={{ backgroundColor: entry.project?.color || "#3b82f6" }}
                   />
-                  <p className="font-medium">{entry.project.name}</p>
+                  <p className="font-medium">{entry.project?.name || "Projet non assigné"}</p>
                 </div>
               </div>
 

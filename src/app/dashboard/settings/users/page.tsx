@@ -30,10 +30,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2 } from "lucide-react";
+import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2, Key } from "lucide-react";
 import { toast } from "sonner";
-import { getUsers, createUser, updateUser } from "@/actions/user.actions";
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
+import { getUsers, createUser, updateUser, deleteUser, resetUserPassword } from "@/actions/user.actions";
 import { getDepartments } from "@/actions/settings.actions";
+import { useSession } from "@/lib/auth-client";
 
 interface User {
   id: string;
@@ -61,6 +63,8 @@ interface Department {
 }
 
 export default function UsersManagementPage() {
+  const { data: session } = useSession() as any;
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [users, setUsers] = useState<User[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -68,6 +72,9 @@ export default function UsersManagementPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -79,8 +86,15 @@ export default function UsersManagementPage() {
   });
 
   useEffect(() => {
+    const user = session?.user as any;
+    if (user?.role !== "ADMIN") {
+      toast.error("Accès non autorisé");
+      window.location.href = "/dashboard/settings";
+      return;
+    }
     loadData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   useEffect(() => {
     const filtered = users.filter(
@@ -237,6 +251,72 @@ export default function UsersManagementPage() {
     ["MANAGER", "HR", "ADMIN"].includes(u.role) && (!editingUser || u.id !== editingUser.id)
   );
 
+  const handleDeleteUser = async (user: User) => {
+    const confirmed = await showConfirmation({
+      title: "Supprimer l'utilisateur",
+      description: `Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.name || user.email} ? Cette action est irréversible.`,
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const result = await deleteUser({ id: user.id });
+          if (result?.data) {
+            toast.success("Utilisateur supprimé avec succès");
+            loadData();
+          } else {
+            toast.error(result?.serverError || "Erreur lors de la suppression");
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la suppression");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetPasswordUser) return;
+
+    setIsLoading(true);
+    try {
+      const result = await resetUserPassword({
+        id: resetPasswordUser.id,
+        newPassword: newPassword,
+      });
+
+      if (result?.data) {
+        toast.success(`Mot de passe réinitialisé ! Nouveau mot de passe : ${result.data.tempPassword}`);
+        setIsResetPasswordDialogOpen(false);
+        setResetPasswordUser(null);
+        setNewPassword("");
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la réinitialisation");
+      }
+    } catch (error) {
+      toast.error("Erreur lors de la réinitialisation");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openResetPasswordDialog = (user: User) => {
+    setResetPasswordUser(user);
+    setNewPassword("");
+    setIsResetPasswordDialogOpen(true);
+  };
+
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -380,6 +460,52 @@ export default function UsersManagementPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Reset Password Dialog */}
+        <Dialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
+              <DialogDescription>
+                Définissez un nouveau mot de passe pour {resetPasswordUser?.name || resetPasswordUser?.email}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nouveau mot de passe *</Label>
+                <Input
+                  id="new-password"
+                  type="text"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Saisir le nouveau mot de passe"
+                  required
+                  minLength={6}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Le mot de passe doit contenir au moins 6 caractères
+                </p>
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsResetPasswordDialogOpen(false);
+                    setResetPasswordUser(null);
+                    setNewPassword("");
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit" className="bg-rusty-red hover:bg-ou-crimson" disabled={isLoading}>
+                  Réinitialiser
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search bar */}
@@ -467,13 +593,33 @@ export default function UsersManagementPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(user)}
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openResetPasswordDialog(user)}
+                          title="Réinitialiser le mot de passe"
+                        >
+                          <Key className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -482,6 +628,7 @@ export default function UsersManagementPage() {
           )}
         </CardContent>
       </Card>
+      <ConfirmationDialog />
     </div>
   );
 }

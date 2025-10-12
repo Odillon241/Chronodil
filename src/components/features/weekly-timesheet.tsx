@@ -188,16 +188,16 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                           "p-2 rounded border cursor-pointer hover:shadow-sm transition-shadow",
                           getStatusColor(entry.status)
                         )}
-                        title={`${entry.project.name} - ${entry.duration}h\n${entry.description || ""}`}
+                        title={`${entry.project?.name || "Projet non assigné"} - ${entry.duration}h\n${entry.description || ""}`}
                       >
                         <div className="flex items-start justify-between gap-1">
                           <div
                             className="w-1 h-full rounded-full flex-shrink-0"
-                            style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                            style={{ backgroundColor: entry.project?.color || "#3b82f6" }}
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-xs font-medium truncate">
-                              {entry.project.name}
+                              {entry.project?.name || "Projet non assigné"}
                             </div>
                             {entry.description && (
                               <div className="text-[10px] text-muted-foreground truncate">
