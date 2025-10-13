@@ -13,6 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen } from "lucide-react";
+import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { createTask, updateTask, deleteTask, getMyTasks } from "@/actions/task.actions";
@@ -35,11 +44,12 @@ export default function TasksPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    projectId: "",
+    projectId: "none",
     estimatedHours: "",
   });
 
@@ -98,7 +108,7 @@ export default function TasksPage() {
         const result = await createTask({
           name: formData.name,
           description: formData.description,
-          projectId: formData.projectId,
+          projectId: formData.projectId === "none" ? undefined : formData.projectId || undefined,
           estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
         });
 
@@ -171,24 +181,62 @@ export default function TasksPage() {
     setFormData({
       name: "",
       description: "",
-      projectId: "",
+      projectId: "none",
       estimatedHours: "",
     });
     setEditingTask(null);
   };
 
-  const groupedTasks = tasks.reduce((acc, task) => {
-    // Vérifier que le projet existe avant d'accéder à ses propriétés
-    if (!task.Project || !task.Project.name) {
-      return acc;
+  const handleSelectTask = (taskId: string) => {
+    const newSelected = new Set(selectedTasks);
+    if (newSelected.has(taskId)) {
+      newSelected.delete(taskId);
+    } else {
+      newSelected.add(taskId);
     }
-    const projectName = task.Project.name;
-    if (!acc[projectName]) {
-      acc[projectName] = [];
+    setSelectedTasks(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTasks.size === tasks.length) {
+      setSelectedTasks(new Set());
+    } else {
+      setSelectedTasks(new Set(tasks.map(task => task.id)));
     }
-    acc[projectName].push(task);
-    return acc;
-  }, {} as Record<string, any[]>);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedTasks.size === 0) return;
+
+    const confirmed = await showConfirmation({
+      title: "Supprimer les tâches sélectionnées",
+      description: `Êtes-vous sûr de vouloir supprimer ${selectedTasks.size} tâche(s) ? Cette action est irréversible.`,
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const deletePromises = Array.from(selectedTasks).map(id => deleteTask({ id }));
+          await Promise.all(deletePromises);
+          toast.success(`${selectedTasks.size} tâche(s) supprimée(s)`);
+          setSelectedTasks(new Set());
+          loadTasks();
+        } catch (error) {
+          toast.error("Erreur lors de la suppression");
+        }
+      },
+    });
+  };
+
+  // Trier les tâches par projet puis par nom
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const projectA = a.Project?.name || "Sans projet";
+    const projectB = b.Project?.name || "Sans projet";
+    if (projectA !== projectB) {
+      return projectA.localeCompare(projectB);
+    }
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -219,15 +267,16 @@ export default function TasksPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!editingTask && (
                 <div className="space-y-2">
-                  <Label htmlFor="project">Projet *</Label>
+                  <Label htmlFor="project">Projet</Label>
                   <Select
                     value={formData.projectId}
                     onValueChange={(value) => setFormData({ ...formData, projectId: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un projet" />
+                      <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Aucun projet</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
@@ -297,7 +346,7 @@ export default function TasksPage() {
         </Dialog>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-center justify-between">
         <Select value={selectedProject} onValueChange={setSelectedProject}>
           <SelectTrigger className="w-[250px]">
             <SelectValue placeholder="Tous les projets" />
@@ -311,6 +360,22 @@ export default function TasksPage() {
             ))}
           </SelectContent>
         </Select>
+        
+        {selectedTasks.size > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {selectedTasks.size} tâche(s) sélectionnée(s)
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteSelected}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer sélection
+            </Button>
+          </div>
+        )}
       </div>
 
       {tasks.length === 0 ? (
@@ -326,91 +391,111 @@ export default function TasksPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {Object.entries(groupedTasks).map(([projectName, projectTasks]) => {
-            const tasksArray = projectTasks as any[];
-            return (
-            <Card key={projectName}>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: tasksArray[0]?.Project?.color || '#3b82f6' }}
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={selectedTasks.size === tasks.length && tasks.length > 0}
+                    onCheckedChange={handleSelectAll}
                   />
-                  <div>
-                    <CardTitle>{projectName}</CardTitle>
-                    <CardDescription>{tasksArray.length} tâche(s)</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {tasksArray.map((task: any) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                </TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Projet</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Estimation</TableHead>
+                <TableHead>Saisies</TableHead>
+                <TableHead className="w-20">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedTasks.map((task: any) => (
+                <TableRow key={task.id} className={selectedTasks.has(task.id) ? "bg-muted/50" : ""}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedTasks.has(task.id)}
+                      onCheckedChange={() => handleSelectTask(task.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleToggleActive(task)}
                     >
-                      <div className="flex items-center gap-4 flex-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleToggleActive(task)}
-                        >
-                          {task.isActive ? (
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                          ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </Button>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className={`font-medium ${!task.isActive && "line-through text-muted-foreground"}`}>
-                              {task.name}
-                            </h3>
-                            {!task.isActive && (
-                              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                                Inactive
-                              </span>
-                            )}
-                          </div>
-                          {task.description && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {task.description}
-                            </p>
-                          )}
-                          <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                            {task.estimatedHours && (
-                              <span>Estimation: {task.estimatedHours}h</span>
-                            )}
-                            <span>Saisies: {task._count.TimesheetEntry}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(task)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(task.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {task.isActive ? (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium ${!task.isActive && "line-through text-muted-foreground"}`}>
+                        {task.name}
+                      </span>
+                      {!task.isActive && (
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                          Inactive
+                        </span>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          )}
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ 
+                          backgroundColor: task.Project?.color || '#6b7280'
+                        }}
+                      />
+                      <span>{task.Project?.name || "Sans projet"}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground truncate max-w-xs block">
+                      {task.description || "-"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">
+                      {task.estimatedHours ? `${task.estimatedHours}h` : "-"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {task._count.TimesheetEntry}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(task)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(task.id)}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
       <ConfirmationDialog />
     </div>

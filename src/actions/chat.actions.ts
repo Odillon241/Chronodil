@@ -95,14 +95,14 @@ export const createOrGetConversation = authActionClient
       const existingConversation = await prisma.conversation.findFirst({
         where: {
           type: "DIRECT",
-          Members: {
+          ConversationMember: {
             every: {
               userId: { in: [userId, otherUserId] },
             },
           },
         },
         include: {
-          Members: {
+          ConversationMember: {
             include: {
               User: {
                 select: {
@@ -116,11 +116,11 @@ export const createOrGetConversation = authActionClient
               },
             },
           },
-          Messages: {
+          Message: {
             orderBy: { createdAt: "desc" },
             take: 1,
             include: {
-              Sender: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -145,7 +145,7 @@ export const createOrGetConversation = authActionClient
           createdBy: userId,
           createdAt: new Date(),
           updatedAt: new Date(),
-          Members: {
+          ConversationMember: {
             create: [
               { id: crypto.randomUUID(), userId },
               { id: crypto.randomUUID(), userId: otherUserId },
@@ -153,7 +153,7 @@ export const createOrGetConversation = authActionClient
           },
         },
         include: {
-          Members: {
+          ConversationMember: {
             include: {
               User: {
                 select: {
@@ -167,7 +167,7 @@ export const createOrGetConversation = authActionClient
               },
             },
           },
-          Messages: true,
+          Message: true,
         },
       });
 
@@ -198,7 +198,7 @@ export const createOrGetConversation = authActionClient
         createdBy: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        Members: {
+        ConversationMember: {
           create: allMemberIds.map((memberId) => ({
             id: crypto.randomUUID(),
             userId: memberId,
@@ -207,7 +207,7 @@ export const createOrGetConversation = authActionClient
         },
       },
       include: {
-        Members: {
+        ConversationMember: {
           include: {
             User: {
               select: {
@@ -222,7 +222,7 @@ export const createOrGetConversation = authActionClient
           },
         },
         Project: true,
-        Messages: true,
+        Message: true,
       },
     });
 
@@ -240,12 +240,12 @@ export const getUserConversations = authActionClient
 
   const conversations = await prisma.conversation.findMany({
     where: {
-      Members: {
+      ConversationMember: {
         some: { userId },
       },
     },
     include: {
-      Members: {
+      ConversationMember: {
         include: {
           User: {
             select: {
@@ -267,11 +267,11 @@ export const getUserConversations = authActionClient
           color: true,
         },
       },
-      Messages: {
+      Message: {
         orderBy: { createdAt: "desc" },
         take: 1,
         include: {
-          Sender: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -283,7 +283,7 @@ export const getUserConversations = authActionClient
       },
       _count: {
         select: {
-          Messages: true,
+          Message: true,
         },
       },
     },
@@ -295,7 +295,7 @@ export const getUserConversations = authActionClient
   // Calculer les messages non lus pour chaque conversation
   const conversationsWithUnread = await Promise.all(
     conversations.map(async (conv) => {
-      const member = conv.Members.find((m) => m.userId === userId);
+      const member = conv.ConversationMember.find((m) => m.userId === userId);
       const unreadCount = member?.lastReadAt
         ? await prisma.message.count({
             where: {
@@ -304,7 +304,7 @@ export const getUserConversations = authActionClient
               senderId: { not: userId },
             },
           })
-        : conv._count.Messages;
+        : conv._count.Message;
 
       return {
         ...conv,
@@ -328,12 +328,12 @@ export const getConversationById = authActionClient
     const conversation = await prisma.conversation.findFirst({
       where: {
         id: conversationId,
-        Members: {
+        ConversationMember: {
           some: { userId },
         },
       },
       include: {
-        Members: {
+        ConversationMember: {
           include: {
             User: {
               select: {
@@ -348,10 +348,10 @@ export const getConversationById = authActionClient
           },
         },
         Project: true,
-        Messages: {
+        Message: {
           orderBy: { createdAt: "asc" },
           include: {
-            Sender: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -359,12 +359,12 @@ export const getConversationById = authActionClient
                 image: true,
               },
             },
-            ReplyTo: {
+            Message: {
               select: {
                 id: true,
                 content: true,
                 senderId: true,
-                Sender: {
+                User: {
                   select: {
                     id: true,
                     name: true,
@@ -421,7 +421,7 @@ export const sendMessage = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        Sender: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -519,7 +519,7 @@ export const updateMessage = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        Sender: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -776,7 +776,7 @@ export const deleteConversation = authActionClient
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
       include: {
-        Members: {
+        ConversationMember: {
           where: { userId },
         },
       },
@@ -795,7 +795,7 @@ export const deleteConversation = authActionClient
 
     // Pour les groupes et projets, seuls les admins peuvent supprimer
     if (conversation.type === "GROUP" || conversation.type === "PROJECT") {
-      const userMembership = conversation.Members[0];
+      const userMembership = conversation.ConversationMember[0];
       if (!userMembership?.isAdmin) {
         throw new Error("Seuls les administrateurs peuvent supprimer cette conversation");
       }

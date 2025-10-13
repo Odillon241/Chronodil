@@ -23,12 +23,9 @@ const projectSchema = z.object({
 export const createProject = authActionClient
   .schema(projectSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole, userId } = ctx;
+    const { userId } = ctx;
 
-    // Vérifier les permissions
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
-      throw new Error("Permissions insuffisantes");
-    }
+    // Tous les utilisateurs authentifiés peuvent créer un projet
 
     const project = await prisma.project.create({
       data: {
@@ -87,7 +84,7 @@ export const getProjects = authActionClient
       },
       include: {
         Department: true,
-        Creator: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -139,7 +136,7 @@ export const getProjectById = authActionClient
       where: { id: parsedInput.id },
       include: {
         Department: true,
-        Creator: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -185,11 +182,25 @@ export const updateProject = authActionClient
     })
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
     const { id, data } = parsedInput;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
-      throw new Error("Permissions insuffisantes");
+    // Récupérer le projet avec son créateur
+    const existingProject = await prisma.project.findUnique({
+      where: { id },
+      select: { id: true, createdBy: true },
+    });
+
+    if (!existingProject) {
+      throw new Error("Projet non trouvé");
+    }
+
+    // Vérifier les permissions : ADMIN/MANAGER/HR ou créateur du projet
+    const isAdmin = ["ADMIN", "MANAGER", "HR"].includes(userRole);
+    const isCreator = existingProject.createdBy === userId;
+
+    if (!isAdmin && !isCreator) {
+      throw new Error("Vous n'avez pas la permission de modifier ce projet");
     }
 
     const project = await prisma.project.update({
@@ -201,19 +212,34 @@ export const updateProject = authActionClient
     return project;
   });
 
-// Archiver un projet
+// Archiver/Réactiver un projet (toggle)
 export const archiveProject = authActionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
-      throw new Error("Permissions insuffisantes");
+    // Récupérer le projet avec son créateur et son état actuel
+    const existingProject = await prisma.project.findUnique({
+      where: { id: parsedInput.id },
+      select: { id: true, createdBy: true, isActive: true },
+    });
+
+    if (!existingProject) {
+      throw new Error("Projet non trouvé");
     }
 
+    // Vérifier les permissions : ADMIN/MANAGER/HR ou créateur du projet
+    const isAdmin = ["ADMIN", "MANAGER", "HR"].includes(userRole);
+    const isCreator = existingProject.createdBy === userId;
+
+    if (!isAdmin && !isCreator) {
+      throw new Error("Vous n'avez pas la permission de gérer ce projet");
+    }
+
+    // Basculer l'état isActive (toggle)
     const project = await prisma.project.update({
       where: { id: parsedInput.id },
-      data: { isActive: false },
+      data: { isActive: !existingProject.isActive },
     });
 
     revalidatePath("/dashboard/projects");
@@ -230,10 +256,24 @@ export const addProjectMember = authActionClient
     })
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
-      throw new Error("Permissions insuffisantes");
+    // Récupérer le projet avec son créateur
+    const project = await prisma.project.findUnique({
+      where: { id: parsedInput.projectId },
+      select: { id: true, createdBy: true },
+    });
+
+    if (!project) {
+      throw new Error("Projet non trouvé");
+    }
+
+    // Vérifier les permissions : ADMIN/MANAGER/HR ou créateur du projet
+    const isAdmin = ["ADMIN", "MANAGER", "HR"].includes(userRole);
+    const isCreator = project.createdBy === userId;
+
+    if (!isAdmin && !isCreator) {
+      throw new Error("Vous n'avez pas la permission de gérer les membres de ce projet");
     }
 
     const member = await prisma.projectMember.create({
@@ -257,10 +297,28 @@ export const addProjectMember = authActionClient
 export const removeProjectMember = authActionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
-      throw new Error("Permissions insuffisantes");
+    // Récupérer le membre avec le projet
+    const member = await prisma.projectMember.findUnique({
+      where: { id: parsedInput.id },
+      include: {
+        Project: {
+          select: { id: true, createdBy: true },
+        },
+      },
+    });
+
+    if (!member) {
+      throw new Error("Membre non trouvé");
+    }
+
+    // Vérifier les permissions : ADMIN/MANAGER/HR ou créateur du projet
+    const isAdmin = ["ADMIN", "MANAGER", "HR"].includes(userRole);
+    const isCreator = member.Project.createdBy === userId;
+
+    if (!isAdmin && !isCreator) {
+      throw new Error("Vous n'avez pas la permission de gérer les membres de ce projet");
     }
 
     await prisma.projectMember.delete({
@@ -300,11 +358,10 @@ export const getMyProjects = authActionClient
 export const cloneProject = authActionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole, userId } = ctx;
+    const { userId } = ctx;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
-      throw new Error("Permissions insuffisantes");
-    }
+    // Tous les utilisateurs authentifiés peuvent cloner un projet
+    // Le clone appartient à l'utilisateur qui le crée
 
     // Récupérer le projet original
     const originalProject = await prisma.project.findUnique({

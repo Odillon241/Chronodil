@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Separator } from "@/components/ui/separator";
 import { NotificationDropdown } from "@/components/features/notification-dropdown";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
 
 export default function DashboardLayout({
   children,
@@ -17,7 +18,7 @@ export default function DashboardLayout({
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex flex-1 items-center gap-2">
-            <h1 className="text-lg font-semibold">Chronodil</h1>
+            <DynamicBreadcrumb />
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />

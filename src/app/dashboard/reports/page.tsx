@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, Loader2, FilePlus, FileDown } from "lucide-react";
+import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, Loader2, FilePlus, FileDown, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -40,11 +40,10 @@ import {
   sendReportByEmail,
   getReports,
   downloadReport,
+  deleteReport,
 } from "@/actions/report.actions";
 import { exportTimesheetToExcel, exportTimesheetToPDF } from "@/actions/export.actions";
 import { getAllUsers } from "@/actions/user.actions";
-import { WeeklyActivityChart } from "@/components/features/weekly-activity-chart";
-import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
 
 type Period = "week" | "month" | "quarter" | "year" | "custom";
 type ReportType = "summary" | "detailed" | "by-project" | "by-user";
@@ -71,11 +70,13 @@ export default function ReportsPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [sendToUsers, setSendToUsers] = useState(false);
+  
+  // États pour la sélection des rapports
+  const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
+  const [isSelectAll, setIsSelectAll] = useState(false);
 
   // État pour les données
   const [summary, setSummary] = useState<any>(null);
-  const [weeklyData, setWeeklyData] = useState<any[]>([]);
-  const [projectData, setProjectData] = useState<any[]>([]);
   const [detailedData, setDetailedData] = useState<any[]>([]);
   const [projectReport, setProjectReport] = useState<any[]>([]);
   const [userReport, setUserReport] = useState<any[]>([]);
@@ -120,17 +121,6 @@ export default function ReportsPage() {
         setSummary(summaryResult.data);
       }
 
-      // Charger l'activité hebdomadaire
-      const weeklyResult = await getWeeklyActivity(filters);
-      if (weeklyResult?.data) {
-        setWeeklyData(weeklyResult.data);
-      }
-
-      // Charger la distribution par projet
-      const projectDistResult = await getProjectDistribution(filters);
-      if (projectDistResult?.data) {
-        setProjectData(projectDistResult.data);
-      }
 
       // Charger les données selon le type de rapport
       if (reportType === "detailed") {
@@ -425,7 +415,6 @@ export default function ReportsPage() {
     }
   };
 
-  const maxHours = projectData.length > 0 ? Math.max(...projectData.map(p => p.hours)) : 0;
 
   const getPeriodLabel = () => {
     switch (period) {
@@ -443,6 +432,161 @@ export default function ReportsPage() {
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  };
+
+  // Fonctions de gestion des sélections
+  const handleSelectAll = (checked: boolean) => {
+    setIsSelectAll(checked);
+    if (checked) {
+      setSelectedReportIds(reports.map((report: any) => report.id));
+    } else {
+      setSelectedReportIds([]);
+    }
+  };
+
+  const handleSelectReport = (reportId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedReportIds([...selectedReportIds, reportId]);
+    } else {
+      setSelectedReportIds(selectedReportIds.filter(id => id !== reportId));
+    }
+  };
+
+  // Nouvelles actions pour les rapports
+  const handleEditReport = (report: any) => {
+    // Pré-remplir le formulaire avec les données du rapport
+    setCustomReportData({
+      title: report.title,
+      content: report.content,
+      includeSummary: report.includeSummary,
+      recipientEmail: "",
+      recipientName: "",
+      attachPdf: true,
+    });
+    setCustomReportDialogOpen(true);
+  };
+
+  const handleSendExistingReport = (report: any) => {
+    // Pré-remplir le formulaire avec les données du rapport pour l'envoi
+    setCustomReportData({
+      title: report.title,
+      content: report.content,
+      includeSummary: report.includeSummary,
+      recipientEmail: "",
+      recipientName: "",
+      attachPdf: true,
+    });
+    setSendEmailDialogOpen(true);
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce rapport ?")) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await deleteReport(reportId);
+      if (result?.data) {
+        toast.success("Rapport supprimé avec succès");
+        loadReports();
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la suppression du rapport");
+      }
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      toast.error("Erreur lors de la suppression du rapport");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteSelectedReports = async () => {
+    if (selectedReportIds.length === 0) return;
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedReportIds.length} rapport(s) ?`)) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const reportId of selectedReportIds) {
+        try {
+          const result = await deleteReport(reportId);
+          if (result?.data) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          errorCount++;
+          console.error(`Error deleting report ${reportId}:`, error);
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} rapport(s) supprimé(s) avec succès`);
+      }
+      if (errorCount > 0) {
+        toast.error(`${errorCount} rapport(s) n'ont pas pu être supprimés`);
+      }
+
+      setSelectedReportIds([]);
+      setIsSelectAll(false);
+      loadReports();
+    } catch (error) {
+      console.error("Error deleting reports:", error);
+      toast.error("Erreur lors de la suppression des rapports");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveReport = async () => {
+    if (!customReportData.title || !customReportData.content) {
+      toast.error("Veuillez remplir le titre et le contenu du rapport");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const result = await generateCustomReport({
+        title: customReportData.title,
+        content: customReportData.content,
+        includeSummary: customReportData.includeSummary,
+        period: period === "custom" ? undefined : period,
+        format: "pdf",
+        saveToDatabase: true, // Enregistrer en base de données
+      });
+
+      if (result?.data) {
+        toast.success("Rapport enregistré avec succès !");
+        setCustomReportDialogOpen(false);
+        
+        // Réinitialiser le formulaire
+        setCustomReportData({
+          title: "",
+          content: "",
+          includeSummary: false,
+          recipientEmail: "",
+          recipientName: "",
+          attachPdf: true,
+        });
+        
+        // Recharger la liste des rapports
+        loadReports();
+      } else {
+        toast.error(result?.serverError || "Erreur lors de l'enregistrement du rapport");
+      }
+    } catch (error) {
+      console.error("Error saving report:", error);
+      toast.error("Erreur lors de l'enregistrement du rapport");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -521,6 +665,24 @@ export default function ReportsPage() {
                   Annuler
                 </Button>
                 <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleSaveReport()}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Enregistrer
+                      </>
+                    )}
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -840,47 +1002,70 @@ export default function ReportsPage() {
             </Card>
           </div>
 
-          {/* Graphiques */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <WeeklyActivityChart
-              data={weeklyData}
-              title="Activité hebdomadaire"
-              description="Heures saisies par jour"
-            />
-
-            <ProjectDistributionChart
-              data={projectData}
-              title="Répartition par projet"
-              description={`Heures par projet ${getPeriodLabel().toLowerCase()}`}
-            />
-          </div>
 
           {/* Liste des rapports générés */}
-          {reports.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Historique des rapports</CardTitle>
-                <CardDescription>
-                  Liste de tous les rapports générés et envoyés
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="relative overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-xs uppercase bg-muted">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Historique des rapports</CardTitle>
+                  <CardDescription>
+                    Liste de tous les rapports générés et envoyés
+                  </CardDescription>
+                </div>
+                {reports.length > 0 && selectedReportIds.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={handleDeleteSelectedReports}
+                      disabled={isLoading}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Supprimer ({selectedReportIds.length})
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="relative overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs uppercase bg-muted">
+                    <tr>
+                      <th className="px-6 py-3">
+                        <Checkbox
+                          checked={isSelectAll}
+                          onCheckedChange={handleSelectAll}
+                        />
+                      </th>
+                      <th className="px-6 py-3">Titre</th>
+                      <th className="px-6 py-3">Créé par</th>
+                      <th className="px-6 py-3">Date</th>
+                      <th className="px-6 py-3">Format</th>
+                      <th className="px-6 py-3">Taille</th>
+                      <th className="px-6 py-3">Destinataires</th>
+                      <th className="px-6 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reports.length === 0 ? (
                       <tr>
-                        <th className="px-6 py-3">Titre</th>
-                        <th className="px-6 py-3">Créé par</th>
-                        <th className="px-6 py-3">Date</th>
-                        <th className="px-6 py-3">Format</th>
-                        <th className="px-6 py-3">Taille</th>
-                        <th className="px-6 py-3">Destinataires</th>
-                        <th className="px-6 py-3">Actions</th>
+                        <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
+                          Aucun rapport généré pour le moment
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {reports.map((report: any) => (
+                    ) : (
+                      reports.map((report: any) => (
                         <tr key={report.id} className="border-b hover:bg-muted/50">
+                          <td className="px-6 py-4">
+                            <Checkbox
+                              checked={selectedReportIds.includes(report.id)}
+                              onCheckedChange={(checked) => 
+                                handleSelectReport(report.id, checked as boolean)
+                              }
+                            />
+                          </td>
                           <td className="px-6 py-4">
                             <div className="font-medium">{report.title}</div>
                             {report.period && (
@@ -927,24 +1112,53 @@ export default function ReportsPage() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDownloadReport(report.id)}
-                              disabled={isLoading}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Télécharger
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditReport(report)}
+                                disabled={isLoading}
+                                title="Modifier"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSendExistingReport(report)}
+                                disabled={isLoading}
+                                title="Envoyer"
+                              >
+                                <Mail className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDownloadReport(report.id)}
+                                disabled={isLoading}
+                                title="Télécharger"
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteReport(report.id)}
+                                disabled={isLoading}
+                                title="Supprimer"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Vue détaillée selon le type de rapport */}
           {reportType === "detailed" && detailedData.length > 0 && (

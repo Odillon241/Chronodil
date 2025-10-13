@@ -66,24 +66,30 @@ async function getDashboardData(userId: string) {
     },
   });
 
-  // Fetch all projects in a single query
-  const projectIds = projectsData.map(item => item.projectId);
-  const projects = await prisma.project.findMany({
-    where: { id: { in: projectIds } },
-    select: { id: true, name: true, color: true },
-  });
+  // Fetch all projects in a single query (filter out null projectIds)
+  const projectIds = projectsData
+    .map(item => item.projectId)
+    .filter((id): id is string => id !== null);
+  
+  const projects = projectIds.length > 0 
+    ? await prisma.project.findMany({
+        where: { id: { in: projectIds } },
+        select: { id: true, name: true, color: true },
+      })
+    : [];
 
   // Create a map for O(1) lookup
   const projectMap = new Map(projects.map(p => [p.id, p]));
 
   const projectsWithDetails = projectsData.map((item) => {
-    const project = projectMap.get(item.projectId);
+    const project = item.projectId ? projectMap.get(item.projectId) : null;
     return {
-      name: project?.name || "Inconnu",
+      name: project?.name || (item.projectId ? "Projet supprimé" : "Sans projet"),
       hours: item._sum.duration || 0,
-      color: project?.color || "#3b82f6",
+      color: project?.color || "#6b7280", // Couleur grise pour les entrées sans projet
     };
   });
+
 
   // Données pour le graphique radar (activité par jour de la semaine) - Optimized with single query
   const daysOfWeek = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -235,7 +241,7 @@ export default async function DashboardPage() {
                   >
                     <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {entry.Project.name}
+                        {entry.Project?.name || "Sans projet"}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {entry.Task?.name || "Sans tâche"}

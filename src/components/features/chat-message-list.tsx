@@ -62,17 +62,17 @@ interface Message {
   attachments?: any;
   createdAt: Date;
   reactions?: Record<string, string[]> | null;
-  Sender: {
+  User: {
     id: string;
     name: string;
     avatar?: string | null;
     image?: string | null;
   };
-  ReplyTo?: {
+  Message?: {
     id: string;
     content: string;
     senderId: string;
-    Sender: {
+    User: {
       id: string;
       name: string;
     };
@@ -83,7 +83,7 @@ interface Conversation {
   id: string;
   type: "DIRECT" | "GROUP" | "PROJECT";
   name?: string | null;
-  Members: {
+  ConversationMember: {
     User: {
       id: string;
       name: string;
@@ -98,7 +98,7 @@ interface Conversation {
     code: string;
     color: string;
   } | null;
-  Messages: Message[];
+  Message: Message[];
 }
 
 interface ChatMessageListProps {
@@ -145,7 +145,7 @@ export function ChatMessageList({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [conversation.Messages]);
+  }, [conversation.Message]);
 
   // Cleanup du timeout de typing à la fermeture
   useEffect(() => {
@@ -161,8 +161,8 @@ export function ChatMessageList({
   useEffect(() => {
     // Pour la démo, simuler aléatoirement qu'un utilisateur tape
     const simulateTyping = () => {
-      if (Math.random() > 0.95 && conversation.Members.length > 1) {
-        const otherMember = conversation.Members.find(m => m.User.id !== currentUserId);
+      if (Math.random() > 0.95 && conversation.ConversationMember.length > 1) {
+        const otherMember = conversation.ConversationMember.find(m => m.User.id !== currentUserId);
         if (otherMember) {
           setTypingUsers([otherMember.User.name]);
           setTimeout(() => setTypingUsers([]), 3000);
@@ -173,7 +173,7 @@ export function ChatMessageList({
     // Vérifier toutes les 10 secondes (juste pour la démo)
     const interval = setInterval(simulateTyping, 10000);
     return () => clearInterval(interval);
-  }, [conversation.Members, currentUserId]);
+  }, [conversation.ConversationMember, currentUserId]);
 
   // Marquer comme lu quand on ouvre la conversation
   useEffect(() => {
@@ -341,7 +341,7 @@ export function ChatMessageList({
 
   const getConversationTitle = () => {
     if (conversation.type === "DIRECT") {
-      const otherUser = conversation.Members.find(
+      const otherUser = conversation.ConversationMember.find(
         (m) => m.User.id !== currentUserId
       )?.User;
       return otherUser?.name || "Utilisateur inconnu";
@@ -393,11 +393,11 @@ export function ChatMessageList({
 
   // Filtrer les messages selon la recherche
   const filteredMessages = searchQuery
-    ? conversation.Messages.filter((msg) =>
+    ? conversation.Message.filter((msg) =>
         msg.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        msg.Sender.name.toLowerCase().includes(searchQuery.toLowerCase())
+        msg.User.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : conversation.Messages;
+    : conversation.Message;
 
   const messageGroups = groupMessagesByDate(filteredMessages);
 
@@ -421,9 +421,9 @@ export function ChatMessageList({
             <Avatar className="h-10 w-10">
               <AvatarImage
                 src={
-                  conversation.Members.find((m) => m.User.id !== currentUserId)
+                  conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
                     ?.User.avatar ||
-                  conversation.Members.find((m) => m.User.id !== currentUserId)
+                  conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
                     ?.User.image ||
                   undefined
                 }
@@ -436,7 +436,7 @@ export function ChatMessageList({
           <div>
             <h2 className="font-semibold">{getConversationTitle()}</h2>
             <p className="text-xs text-muted-foreground">
-              {conversation.Members.length} membre{conversation.Members.length > 1 ? "s" : ""}
+              {conversation.ConversationMember.length} membre{conversation.ConversationMember.length > 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -535,7 +535,7 @@ export function ChatMessageList({
 
               {/* Messages of the day */}
               {group.messages.map((msg) => {
-                const isCurrentUser = msg.Sender.id === currentUserId;
+                const isCurrentUser = msg.User.id === currentUserId;
                 const isEditing = editingMessageId === msg.id;
 
                 return (
@@ -550,10 +550,10 @@ export function ChatMessageList({
                     {!isCurrentUser && (
                       <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage
-                          src={msg.Sender.avatar || msg.Sender.image || undefined}
+                          src={msg.User.avatar || msg.User.image || undefined}
                         />
                         <AvatarFallback>
-                          {msg.Sender.name.substring(0, 2).toUpperCase()}
+                          {msg.User.name.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     )}
@@ -567,7 +567,7 @@ export function ChatMessageList({
                     >
                       {!isCurrentUser && (
                         <span className="text-xs font-medium">
-                          {msg.Sender.name}
+                          {msg.User.name}
                         </span>
                       )}
 
@@ -606,7 +606,7 @@ export function ChatMessageList({
                               )}
                             >
                               {/* Reply preview */}
-                              {msg.ReplyTo && (
+                              {msg.Message && (
                                 <div
                                   className={cn(
                                     "mb-2 pb-2 border-b text-xs opacity-80",
@@ -618,11 +618,11 @@ export function ChatMessageList({
                                   <div className="flex items-center gap-1">
                                     <Reply className="h-3 w-3" />
                                     <span className="font-medium">
-                                      {msg.ReplyTo.Sender.name}
+                                      {msg.Message.User?.name}
                                     </span>
                                   </div>
                                   <p className="truncate mt-1">
-                                    {msg.ReplyTo.content}
+                                    {msg.Message.content}
                                   </p>
                                 </div>
                               )}
@@ -822,7 +822,7 @@ export function ChatMessageList({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                 <Reply className="h-3 w-3" />
-                <span>Répondre à {replyingTo.Sender.name}</span>
+                <span>Répondre à {replyingTo.User.name}</span>
               </div>
               <p className="text-sm truncate">{replyingTo.content}</p>
             </div>
@@ -894,7 +894,7 @@ export function ChatMessageList({
           </Button>
           <Input
             ref={inputRef}
-            placeholder={replyingTo ? `Répondre à ${replyingTo.Sender.name}...` : "Écrivez votre message..."}
+            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message..."}
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);
@@ -963,10 +963,10 @@ export function ChatMessageList({
             {/* Membres */}
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-2">
-                Membres ({conversation.Members.length})
+                Membres ({conversation.ConversationMember.length})
               </p>
               <div className="space-y-2">
-                {conversation.Members.map((member: any) => (
+                {conversation.ConversationMember.map((member: any) => (
                   <div key={member.User.id} className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={member.User.avatar || member.User.image || ""} />

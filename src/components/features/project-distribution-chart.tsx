@@ -1,13 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { TrendingUp, Target } from "lucide-react";
-import { RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -31,18 +28,15 @@ interface ProjectDistributionChartProps {
 export function ProjectDistributionChart({
   data,
   title = "Répartition par projet",
-  description = "Distribution des heures par projet",
+  description = "Heures de cette semaine",
 }: ProjectDistributionChartProps) {
-  // Transform data for radial chart
-  const chartData = data.map((project, index) => ({
-    name: project.name,
-    hours: project.hours,
-    fill: project.color,
-    cx: 150,
-    cy: 150,
-    innerRadius: 60 + (index * 20),
-    outerRadius: 80 + (index * 20),
-  }));
+  // Transform data for bar chart - create a single data point with all projects
+  const chartData = [
+    data.reduce((acc, project, index) => {
+      acc[`project${index}`] = project.hours;
+      return acc;
+    }, {} as Record<string, number>)
+  ];
 
   // Create config dynamically from data
   const chartConfig = data.reduce((config, project, index) => {
@@ -55,23 +49,19 @@ export function ProjectDistributionChart({
       },
     };
   }, {
-    hours: {
-      label: "Heures",
+    projects: {
+      label: "Projets",
     },
   } as ChartConfig);
 
-  const totalHours = React.useMemo(() => {
-    return data.reduce((acc, curr) => acc + curr.hours, 0);
-  }, [data]);
-
   if (data.length === 0) {
     return (
-      <Card className="flex flex-col">
-        <CardHeader className="items-center pb-0">
+      <Card>
+        <CardHeader>
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
+        <CardContent>
           <div className="flex items-center justify-center h-[250px] text-muted-foreground">
             Aucune donnée disponible
           </div>
@@ -81,45 +71,48 @@ export function ProjectDistributionChart({
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
+    <Card>
+      <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[350px]"
-        >
-          <RadialBarChart
-            cx="50%"
-            cy="50%"
-            innerRadius="20%"
-            outerRadius="90%"
-            barSize={15}
-            data={chartData}
-            startAngle={180}
-            endAngle={0}
-          >
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-[250px]">
+          <BarChart accessibilityLayer data={chartData}>
+            <XAxis
+              dataKey="projects"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              hide
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => `${value}h`}
+            />
+            {data.map((project, index) => (
+              <Bar
+                key={project.name}
+                dataKey={`project${index}`}
+                stackId="a"
+                fill={`var(--color-project${index})`}
+                radius={index === 0 ? [0, 0, 4, 4] : index === data.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+              />
+            ))}
             <ChartTooltip
-              content={<ChartTooltipContent 
-                labelKey="name"
-                indicator="dashed"
-              />}
+              content={
+                <ChartTooltipContent 
+                  labelKey="projects" 
+                  indicator="line"
+                  labelFormatter={() => "Projets"}
+                />
+              }
+              cursor={false}
             />
-            <RadialBar
-              dataKey="hours"
-              background
-            />
-          </RadialBarChart>
+          </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium text-primary">
-          <Target className="h-4 w-4" />
-          {totalHours.toFixed(1)}h total • {data.length} projet{data.length > 1 ? "s" : ""} actif{data.length > 1 ? "s" : ""}
-        </div>
-      </CardFooter>
     </Card>
   );
 }

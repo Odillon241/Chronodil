@@ -18,15 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, Edit, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
-import { createTimesheetEntry, getMyTimesheetEntries, deleteTimesheetEntry, submitTimesheetEntries } from "@/actions/timesheet.actions";
+import { createTimesheetEntry, getMyTimesheetEntries, deleteTimesheetEntry, submitTimesheetEntries, updateTimesheetEntry } from "@/actions/timesheet.actions";
 import { getMyProjects } from "@/actions/project.actions";
 import { WeeklyTimesheet } from "@/components/features/weekly-timesheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function TimesheetPage() {
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
@@ -36,6 +43,8 @@ export default function TimesheetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"week" | "history">("week");
   const [showFilters, setShowFilters] = useState(false);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [selectedEntryForDetails, setSelectedEntryForDetails] = useState<any | null>(null);
   const [filters, setFilters] = useState({
     status: "all",
     projectId: "all",
@@ -115,11 +124,26 @@ export default function TimesheetPage() {
   const onSubmit = async (data: TimesheetEntryInput) => {
     setIsLoading(true);
     try {
-      const result = await createTimesheetEntry(data);
+      let result;
+      
+      if (editingEntryId) {
+        // Mode modification
+        result = await updateTimesheetEntry({
+          id: editingEntryId,
+          data: {
+            ...data,
+            projectId: data.projectId || undefined,
+          },
+        });
+      } else {
+        // Mode création
+        result = await createTimesheetEntry(data);
+      }
 
       if (result?.data) {
-        toast.success("Temps enregistré !");
+        toast.success(editingEntryId ? "Temps modifié !" : "Temps enregistré !");
         reset();
+        setEditingEntryId(null);
         loadData();
       } else {
         toast.error(result?.serverError || "Erreur");
@@ -150,6 +174,33 @@ export default function TimesheetPage() {
         }
       },
     });
+  };
+
+  const handleEdit = (entry: any) => {
+    // Définir l'ID de l'entrée en cours de modification
+    setEditingEntryId(entry.id);
+    
+    // Pré-remplir le formulaire avec les données de l'entrée
+    setValue("date", new Date(entry.date));
+    setValue("projectId", entry.projectId || "none");
+    setValue("startTime", entry.startTime ? format(new Date(entry.startTime), "HH:mm") : "");
+    setValue("endTime", entry.endTime ? format(new Date(entry.endTime), "HH:mm") : "");
+    setValue("duration", entry.duration);
+    setValue("type", entry.type);
+    setValue("description", entry.description || "");
+    
+    // Passer à l'onglet de saisie
+    setViewMode("week");
+    
+    // Scroll vers le formulaire
+    setTimeout(() => {
+      const formElement = document.querySelector('[data-tab="form"]');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+    
+    toast.info("Entrée chargée pour modification. N'oubliez pas de sauvegarder !");
   };
 
   const handleSubmitDay = async () => {
@@ -190,7 +241,11 @@ export default function TimesheetPage() {
       const endMinutes = endHour * 60 + endMin;
 
       const duration = (endMinutes - startMinutes) / 60;
-      setValue("duration", duration > 0 ? duration : 0);
+      
+      // Arrondir à l'incrément de 0.25 le plus proche (15 minutes)
+      const roundedDuration = Math.round(duration * 4) / 4;
+      
+      setValue("duration", duration > 0 ? roundedDuration : 0);
     }
   };
 
@@ -230,8 +285,17 @@ export default function TimesheetPage() {
   };
 
   const handleAddEntry = (date: Date) => {
+    setSelectedDate(date);
     setValue("date", date);
-    // Le formulaire est déjà prêt avec la date sélectionnée
+    // Passer automatiquement à l'onglet "Nouvelle saisie"
+    setViewMode("week");
+    // Scroll vers le formulaire pour une meilleure UX
+    setTimeout(() => {
+      const formElement = document.querySelector('[data-tab="form"]');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleSubmitWeek = async (weekStart: Date, weekEnd: Date) => {
@@ -302,18 +366,20 @@ export default function TimesheetPage() {
       />
 
       {/* Tabs pour Saisie et Historique */}
-      <Tabs defaultValue="form" className="w-full">
+      <Tabs value={viewMode === "week" ? "form" : "history"} onValueChange={(value) => setViewMode(value === "form" ? "week" : "history")} className="w-full">
         <TabsList className="grid w-full md:w-[400px] grid-cols-2">
           <TabsTrigger value="form">Nouvelle saisie</TabsTrigger>
           <TabsTrigger value="history">Historique</TabsTrigger>
         </TabsList>
 
         {/* Formulaire de saisie */}
-        <TabsContent value="form" className="space-y-4">
+        <TabsContent value="form" className="space-y-4" data-tab="form">
           <Card>
             <CardHeader>
-              <CardTitle>Nouvelle saisie</CardTitle>
-              <CardDescription>Ajoutez vos heures travaillées</CardDescription>
+              <CardTitle>{editingEntryId ? "Modifier la saisie" : "Nouvelle saisie"}</CardTitle>
+              <CardDescription>
+                {editingEntryId ? "Modifiez vos heures travaillées" : "Ajoutez vos heures travaillées"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -345,12 +411,13 @@ export default function TimesheetPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="project">Projet *</Label>
-                  <Select onValueChange={(value) => setValue("projectId", value)}>
+                  <Label htmlFor="project">Projet</Label>
+                  <Select onValueChange={(value) => setValue("projectId", value === "none" ? undefined : value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un projet" />
+                      <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Aucun projet</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
@@ -399,11 +466,24 @@ export default function TimesheetPage() {
                     step="0.25"
                     min="0.25"
                     max="24"
-                    {...register("duration", { valueAsNumber: true })}
+                    {...register("duration", { 
+                      valueAsNumber: true,
+                      onChange: (e) => {
+                        const value = parseFloat(e.target.value);
+                        if (!isNaN(value)) {
+                          // Arrondir automatiquement à l'incrément de 0.25
+                          const rounded = Math.round(value * 4) / 4;
+                          setValue("duration", rounded);
+                        }
+                      }
+                    })}
                   />
                   {errors.duration && (
                     <p className="text-sm text-destructive">{errors.duration.message}</p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    Incréments de 15 minutes (0,25h, 0,5h, 0,75h, 1h, etc.)
+                  </p>
                 </div>
               </div>
 
@@ -441,9 +521,19 @@ export default function TimesheetPage() {
                   disabled={isLoading}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  {isLoading ? "Ajout..." : "Ajouter"}
+                  {isLoading 
+                    ? (editingEntryId ? "Modification..." : "Ajout...") 
+                    : (editingEntryId ? "Modifier" : "Ajouter")
+                  }
                 </Button>
-                <Button type="button" variant="outline" onClick={() => reset()}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    reset();
+                    setEditingEntryId(null);
+                  }}
+                >
                   Réinitialiser
                 </Button>
               </div>
@@ -594,11 +684,17 @@ export default function TimesheetPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <div
-                                className="w-2 h-2 rounded-full"
-                                style={{ backgroundColor: entry.project?.color || "#3b82f6" }}
-                              />
-                              {entry.project?.name || "Projet non assigné"}
+                              {entry.project ? (
+                                <>
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                                  />
+                                  {entry.project.name}
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground italic">Aucun projet</span>
+                              )}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -615,16 +711,39 @@ export default function TimesheetPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            {entry.status === "DRAFT" && (
+                            <div className="flex items-center gap-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDelete(entry.id)}
-                                className="text-destructive hover:text-destructive"
+                                onClick={() => setSelectedEntryForDetails(entry)}
+                                className="text-green-600 hover:text-green-800"
+                                title="Voir les détails de cette entrée"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Eye className="h-4 w-4" />
                               </Button>
-                            )}
+                              {entry.status === "DRAFT" && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEdit(entry)}
+                                    className="text-blue-600 hover:text-blue-800"
+                                    title="Modifier cette entrée"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(entry.id)}
+                                    className="text-destructive hover:text-destructive"
+                                    title="Supprimer cette entrée"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -637,6 +756,157 @@ export default function TimesheetPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Modal de détails d'une entrée */}
+      <Dialog open={!!selectedEntryForDetails} onOpenChange={() => setSelectedEntryForDetails(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Détails de la saisie de temps</DialogTitle>
+            <DialogDescription>
+              Informations complètes de cette entrée de timesheet
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedEntryForDetails && (
+            <div className="space-y-6">
+              {/* Informations générales */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Date</Label>
+                  <p className="text-sm">
+                    {format(new Date(selectedEntryForDetails.date), "dd/MM/yyyy", { locale: fr })}
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Durée</Label>
+                  <p className="text-sm font-bold text-rusty-red">{selectedEntryForDetails.duration}h</p>
+                </div>
+              </div>
+
+              {/* Projet et tâche */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Projet</Label>
+                  <div className="flex items-center gap-2">
+                    {selectedEntryForDetails.project ? (
+                      <>
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: selectedEntryForDetails.project.color || "#3b82f6" }}
+                        />
+                        <span className="text-sm">{selectedEntryForDetails.project.name}</span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground italic">Aucun projet</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Tâche</Label>
+                  <p className="text-sm">
+                    {selectedEntryForDetails.task?.name || "Aucune tâche"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Horaires */}
+              {(selectedEntryForDetails.startTime || selectedEntryForDetails.endTime) && (
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium text-muted-foreground">Horaires</Label>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {selectedEntryForDetails.startTime && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground">Heure de début</Label>
+                        <p className="text-sm">
+                          {format(new Date(selectedEntryForDetails.startTime), "HH:mm")}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {selectedEntryForDetails.endTime && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground">Heure de fin</Label>
+                        <p className="text-sm">
+                          {format(new Date(selectedEntryForDetails.endTime), "HH:mm")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Type et statut */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Type</Label>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                    {selectedEntryForDetails.type}
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Statut</Label>
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusBadge(selectedEntryForDetails.status)}`}
+                  >
+                    {getStatusLabel(selectedEntryForDetails.status)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedEntryForDetails.description && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                  <p className="text-sm bg-muted p-3 rounded-md">
+                    {selectedEntryForDetails.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Informations système */}
+              <div className="space-y-4 border-t pt-4">
+                <Label className="text-sm font-medium text-muted-foreground">Informations système</Label>
+                <div className="grid gap-4 md:grid-cols-2 text-xs text-muted-foreground">
+                  <div>
+                    <Label className="text-xs font-medium">Créé le</Label>
+                    <p>{format(new Date(selectedEntryForDetails.createdAt), "dd/MM/yyyy à HH:mm", { locale: fr })}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Modifié le</Label>
+                    <p>{format(new Date(selectedEntryForDetails.updatedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions selon le statut */}
+              {selectedEntryForDetails.status === "DRAFT" && (
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button
+                    onClick={() => {
+                      setSelectedEntryForDetails(null);
+                      handleEdit(selectedEntryForDetails);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modifier
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedEntryForDetails(null)}
+                  >
+                    Fermer
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
       <ConfirmationDialog />
     </div>
   );

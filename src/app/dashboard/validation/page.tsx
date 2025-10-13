@@ -13,21 +13,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CheckCircle2, XCircle, Clock } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { getPendingValidations, validateTimesheetEntry, getValidationStats } from "@/actions/validation.actions";
-import { ValidationStatsChart } from "@/components/features/validation-stats-chart";
+import { getPendingValidations, validateTimesheetEntry } from "@/actions/validation.actions";
+import { ChartAreaInteractive } from "@/components/features/chart-area-interactive";
 
 export default function ValidationPage() {
   const [entries, setEntries] = useState<any[]>([]);
-  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [selectedEntry, setSelectedEntry] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [action, setAction] = useState<"APPROVED" | "REJECTED" | null>(null);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [hasPermission, setHasPermission] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -35,23 +35,21 @@ export default function ValidationPage() {
 
   const loadData = async () => {
     try {
-      const [entriesResult, statsResult] = await Promise.all([
-        getPendingValidations({}),
-        getValidationStats({
-          startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-          endDate: new Date(),
-        }),
-      ]);
+      const entriesResult = await getPendingValidations({});
 
       if (entriesResult?.data) {
         setEntries(entriesResult.data);
+      } else if (entriesResult?.serverError?.includes("Permissions insuffisantes")) {
+        setHasPermission(false);
+        toast.error("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
       }
-
-      if (statsResult?.data) {
-        setStats(statsResult.data);
+    } catch (error: any) {
+      if (error?.message?.includes("Permissions insuffisantes")) {
+        setHasPermission(false);
+        toast.error("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
+      } else {
+        toast.error("Erreur lors du chargement");
       }
-    } catch (error) {
-      toast.error("Erreur lors du chargement");
     } finally {
       setLoading(false);
     }
@@ -89,34 +87,32 @@ export default function ValidationPage() {
     }
   };
 
-  const statsCards = [
-    {
-      title: "En attente",
-      value: stats.pending,
-      icon: Clock,
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
-    },
-    {
-      title: "Approuvées",
-      value: stats.approved,
-      icon: CheckCircle2,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-    },
-    {
-      title: "Rejetées",
-      value: stats.rejected,
-      icon: XCircle,
-      color: "text-red-600",
-      bgColor: "bg-red-100",
-    },
-  ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <p className="text-muted-foreground">Chargement...</p>
+      </div>
+    );
+  }
+
+  if (!hasPermission) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <XCircle className="h-16 w-16 text-red-500" />
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold">Accès refusé</h2>
+          <p className="text-muted-foreground max-w-md">
+            Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Seuls les <span className="font-semibold">Managers</span>, <span className="font-semibold">RH</span> et{" "}
+            <span className="font-semibold">Administrateurs</span> peuvent valider les temps.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => window.history.back()}>
+          Retour
+        </Button>
       </div>
     );
   }
@@ -130,29 +126,7 @@ export default function ValidationPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statsCards.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <div className={`${stat.bgColor} p-2 rounded-md`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-
-        <div className="md:col-span-2 lg:col-span-1">
-          <ValidationStatsChart
-            pending={stats.pending}
-            approved={stats.approved}
-            rejected={stats.rejected}
-          />
-        </div>
-      </div>
+      <ChartAreaInteractive />
 
       <Card>
         <CardHeader>

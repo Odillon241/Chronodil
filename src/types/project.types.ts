@@ -36,7 +36,9 @@ export interface Project {
   endDate: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  createdBy?: string | null;
   Department?: Department | null;
+  User?: User | null; // Créateur du projet
   ProjectMember?: ProjectMember[];
   usedHours?: number;
   _count?: {

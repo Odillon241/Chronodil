@@ -1,16 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateProfileSchema, type UpdateProfileInput } from "@/lib/validations/user";
 import { getMyProfile, updateMyProfile } from "@/actions/user.actions";
+import { uploadAvatar } from "@/actions/upload.actions";
+import { ImageCropper } from "@/components/features/image-cropper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   User,
   Mail,
@@ -23,9 +40,13 @@ import {
   Save,
   X,
   Loader2,
+  Camera,
+  Smile,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession } from "@/lib/auth-client";
 
 interface UserProfile {
   id: string;
@@ -47,10 +68,20 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [avatarType, setAvatarType] = useState<'upload' | 'emoji'>('upload');
+  const [avatarValue, setAvatarValue] = useState('');
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [croppedImageUrl, setCroppedImageUrl] = useState<string>('');
+  const [showCropper, setShowCropper] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -145,6 +176,156 @@ export default function ProfilePage() {
       .slice(0, 2);
   };
 
+  const openAvatarDialog = () => {
+    setAvatarValue(user?.avatar || '');
+    setAvatarType(user?.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? 'emoji' : 'upload');
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setCroppedImageUrl('');
+    setShowCropper(false);
+    // Réinitialiser l'input de fichier
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setIsAvatarDialogOpen(true);
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Valider le type de fichier
+      if (!file.type.startsWith('image/')) {
+        toast.error("Veuillez sélectionner un fichier image");
+        return;
+      }
+      
+      // Valider la taille (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Le fichier ne doit pas dépasser 5MB");
+        return;
+      }
+
+      setSelectedFile(file);
+      
+      // Créer une URL de prévisualisation
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      
+      // Afficher le recadreur
+      setShowCropper(true);
+    }
+  };
+
+  const handleCropComplete = (croppedUrl: string) => {
+    setCroppedImageUrl(croppedUrl);
+    setShowCropper(false);
+    toast.success("Image recadrée avec succès !");
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setSelectedFile(null);
+    setPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAvatarUpdate = async () => {
+    setIsUpdatingAvatar(true);
+    try {
+      let avatarUrl = avatarValue.trim();
+
+      // Si c'est un upload de fichier
+      if (avatarType === 'upload' && (selectedFile || croppedImageUrl)) {
+        let base64: string;
+        
+        if (croppedImageUrl) {
+          // Utiliser l'image recadrée
+          base64 = croppedImageUrl;
+        } else if (selectedFile) {
+          // Convertir le fichier original en base64
+          base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(selectedFile);
+          });
+        } else {
+          toast.error("Aucun fichier sélectionné");
+          return;
+        }
+
+        // Uploader le fichier
+        const uploadResult = await uploadAvatar({
+          fileName: selectedFile?.name || 'cropped-avatar.png',
+          fileContent: base64,
+          fileType: selectedFile?.type || 'image/png',
+        });
+
+        if (uploadResult?.data?.fileUrl) {
+          avatarUrl = uploadResult.data.fileUrl;
+        } else {
+          toast.error("Erreur lors de l'upload du fichier");
+          return;
+        }
+      } else if (avatarType === 'emoji' && avatarValue.trim()) {
+        avatarUrl = avatarValue.trim();
+      } else {
+        toast.error("Veuillez sélectionner un fichier ou saisir un emoji");
+        return;
+      }
+
+      // Mettre à jour le profil
+      const result = await updateMyProfile({
+        name: user?.name || '',
+        email: user?.email || '',
+        avatar: avatarUrl,
+      });
+
+      if (result?.data) {
+        toast.success("Avatar mis à jour avec succès !");
+        setUser(result.data as any);
+        setIsAvatarDialogOpen(false);
+        
+        // Nettoyer l'URL de prévisualisation
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl('');
+        }
+        
+        // Réinitialiser l'input de fichier
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        
+        // Réinitialiser l'image recadrée
+        setCroppedImageUrl('');
+        
+        // Recharger la page pour mettre à jour la session
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la mise à jour");
+      }
+    } catch (error) {
+      toast.error("Une erreur s'est produite");
+      console.error(error);
+    } finally {
+      setIsUpdatingAvatar(false);
+    }
+  };
+
+  const popularEmojis = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃',
+    '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙',
+    '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+    '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+    '😔', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢',
+    '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱',
+    '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤨', '😐'
+  ];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
@@ -183,12 +364,29 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
-              <Avatar className="h-32 w-32">
-                <AvatarImage src={user.avatar || undefined} alt={user.name || "User"} />
-                <AvatarFallback className="bg-rusty-red text-white text-2xl">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-32 w-32">
+                  <AvatarImage 
+                    src={
+                      user.avatar?.startsWith('/uploads') || user.avatar?.startsWith('http') 
+                        ? user.avatar 
+                        : undefined
+                    } 
+                    alt={user.name || "User"}
+                  />
+                  <AvatarFallback className="bg-rusty-red text-white text-2xl">
+                    {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  onClick={openAvatarDialog}
+                  size="sm"
+                  variant="outline"
+                  className="absolute -bottom-2 -right-2 bg-white shadow-md hover:bg-gray-50"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="text-center space-y-1">
                 <h3 className="font-semibold text-lg">{user.name || "Utilisateur"}</h3>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -449,6 +647,163 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de sélection d'avatar */}
+      <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Modifier votre avatar</DialogTitle>
+            <DialogDescription>
+              Importez une photo depuis votre ordinateur ou sélectionnez un emoji
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Sélection du type d'avatar */}
+            <div className="space-y-2">
+              <Label>Type d'avatar</Label>
+              <Select value={avatarType} onValueChange={(value: 'upload' | 'emoji') => setAvatarType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="upload">
+                    <div className="flex items-center gap-2">
+                      <Upload className="h-4 w-4" />
+                      Importer une photo
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="emoji">
+                    <div className="flex items-center gap-2">
+                      <Smile className="h-4 w-4" />
+                      Emoji
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Aperçu de l'avatar */}
+            <div className="flex justify-center">
+              <Avatar className="h-20 w-20">
+                <AvatarImage 
+                  src={
+                    avatarType === 'upload' && croppedImageUrl
+                      ? croppedImageUrl
+                      : avatarType === 'upload' && previewUrl 
+                        ? previewUrl 
+                        : avatarType === 'upload' && avatarValue.startsWith('/uploads') 
+                          ? avatarValue 
+                          : undefined
+                  } 
+                  alt="Preview"
+                />
+                <AvatarFallback className="bg-rusty-red text-white text-xl">
+                  {avatarType === 'emoji' ? avatarValue : getInitials(user?.name)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            {/* Champ de saisie */}
+            {avatarType === 'upload' ? (
+              <div className="space-y-2">
+                {!showCropper && (
+                  <>
+                    <Label htmlFor="avatar-file">Sélectionner une image</Label>
+                    <Input
+                      ref={fileInputRef}
+                      id="avatar-file"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
+                    </p>
+                    {selectedFile && !croppedImageUrl && (
+                      <p className="text-sm text-green-600">
+                        ✓ Fichier sélectionné : {selectedFile.name}
+                      </p>
+                    )}
+                    {croppedImageUrl && (
+                      <p className="text-sm text-blue-600">
+                        ✓ Image recadrée prête à être sauvegardée
+                      </p>
+                    )}
+                  </>
+                )}
+                
+                {showCropper && previewUrl && (
+                  <ImageCropper
+                    src={previewUrl}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="avatar-emoji">Emoji</Label>
+                <Input
+                  id="avatar-emoji"
+                  placeholder="😊"
+                  value={avatarValue}
+                  onChange={(e) => setAvatarValue(e.target.value)}
+                  maxLength={2}
+                />
+                
+                {/* Sélection d'emojis populaires */}
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Emojis populaires</Label>
+                  <div className="grid grid-cols-10 gap-1 max-h-32 overflow-y-auto">
+                    {popularEmojis.map((emoji, index) => (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-lg hover:bg-muted"
+                        onClick={() => setAvatarValue(emoji)}
+                      >
+                        {emoji}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Boutons d'action */}
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={handleAvatarUpdate}
+                className="bg-rusty-red hover:bg-ou-crimson flex-1"
+                disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
+              >
+                {isUpdatingAvatar ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Mise à jour...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Sauvegarder
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsAvatarDialogOpen(false)}
+                disabled={isUpdatingAvatar}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Annuler
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

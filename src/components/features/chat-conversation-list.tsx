@@ -33,7 +33,7 @@ interface Conversation {
   type: "DIRECT" | "GROUP" | "PROJECT";
   name?: string | null;
   createdBy?: string | null;
-  Members: {
+  ConversationMember: {
     User: {
       id: string;
       name: string;
@@ -48,11 +48,11 @@ interface Conversation {
     code: string;
     color: string;
   } | null;
-  Messages: {
+  Message: {
     id: string;
     content: string;
     createdAt: Date;
-    Sender: {
+    User: {
       id: string;
       name: string;
     };
@@ -125,7 +125,7 @@ export function ChatConversationList({
     }
     
     // Pour les groupes et projets, seuls les admins peuvent supprimer
-    const userMembership = conv.Members.find(m => m.User.id === currentUserId);
+    const userMembership = conv.ConversationMember.find(m => m.User.id === currentUserId);
     return (userMembership as any)?.isAdmin || false;
   };
 
@@ -140,7 +140,7 @@ export function ChatConversationList({
 
     // Pour les conversations directes, chercher par nom d'utilisateur
     if (conv.type === "DIRECT") {
-      const otherUser = conv.Members.find(
+      const otherUser = conv.ConversationMember.find(
         (m) => m.User.id !== currentUserId
       )?.User;
       return otherUser?.name.toLowerCase().includes(searchLower);
@@ -161,7 +161,7 @@ export function ChatConversationList({
 
   const getConversationDisplay = (conv: Conversation) => {
     if (conv.type === "DIRECT") {
-      const otherUser = conv.Members.find(
+      const otherUser = conv.ConversationMember.find(
         (m) => m.User.id !== currentUserId
       )?.User;
       return {
@@ -179,7 +179,7 @@ export function ChatConversationList({
         icon: <FolderKanban className="h-4 w-4" />,
         color: conv.Project.color,
         isGroup: true,
-        members: conv.Members.filter(m => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
+        members: conv.ConversationMember.filter(m => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
       };
     }
 
@@ -189,15 +189,15 @@ export function ChatConversationList({
       icon: <Users className="h-4 w-4" />,
       color: "bg-green-500",
       isGroup: true,
-      members: conv.Members.filter(m => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
+      members: conv.ConversationMember.filter(m => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
     };
   };
 
   const getLastMessage = (conv: Conversation) => {
-    if (conv.Messages.length === 0) return null;
-    const lastMsg = conv.Messages[0];
-    const isCurrentUser = lastMsg.Sender.id === currentUserId;
-    const prefix = isCurrentUser ? "Vous: " : `${lastMsg.Sender.name}: `;
+    if (conv.Message.length === 0) return null;
+    const lastMsg = conv.Message[0];
+    const isCurrentUser = lastMsg.User.id === currentUserId;
+    const prefix = isCurrentUser ? "Vous: " : `${lastMsg.User.name}: `;
     return prefix + lastMsg.content;
   };
 
@@ -281,10 +281,10 @@ export function ChatConversationList({
                             </AvatarFallback>
                           </Avatar>
                         ))}
-                        {conv.Members.length > 4 && (
+                        {conv.ConversationMember.length > 4 && (
                           <Avatar className="h-12 w-12 border-2 border-background bg-muted">
                             <AvatarFallback className="text-xs">
-                              +{conv.Members.length - 3}
+                              +{conv.ConversationMember.length - 3}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -305,10 +305,10 @@ export function ChatConversationList({
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="font-medium truncate">{display.name}</h3>
                         <div className="flex items-center gap-2">
-                          {conv.Messages.length > 0 && (
+                          {conv.Message.length > 0 && (
                             <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {formatDistanceToNow(
-                                new Date(conv.Messages[0].createdAt),
+                                new Date(conv.Message[0].createdAt),
                                 {
                                   addSuffix: true,
                                   locale: fr,

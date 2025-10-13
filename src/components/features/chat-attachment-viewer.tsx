@@ -201,6 +201,7 @@ export function ChatAttachmentViewer({
     if (isImage) {
       return (
         <div className="flex items-center justify-center max-h-[80vh]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={fileUrl}
             alt={attachment.name}

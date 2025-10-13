@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2, Key } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
@@ -42,6 +42,7 @@ interface User {
   name: string | null;
   email: string;
   role: string;
+  avatar: string | null;
   department: {
     id: string;
     name: string;
@@ -80,19 +81,32 @@ export default function UsersManagementPage() {
     name: "",
     email: "",
     password: "",
-    role: "EMPLOYEE" as "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN",
+    role: "EMPLOYEE" as "EMPLOYEE" | "MANAGER" | "HR" | "DIRECTEUR" | "ADMIN",
     departmentId: "",
     managerId: "",
   });
 
   useEffect(() => {
+    // Attendre que la session soit chargée
+    if (!session) return;
+
     const user = session?.user as any;
-    if (user?.role !== "ADMIN") {
-      toast.error("Accès non autorisé");
-      window.location.href = "/dashboard/settings";
+    console.log("Session user:", user); // Debug
+    console.log("User role:", user?.role); // Debug
+
+    // Permettre l'accès aux ADMIN, DIRECTEUR, et HR
+    if (user && !["ADMIN", "DIRECTEUR", "HR"].includes(user.role)) {
+      toast.error("Accès non autorisé - Rôle requis: ADMIN, DIRECTEUR ou HR");
+      setTimeout(() => {
+        window.location.href = "/dashboard/settings";
+      }, 1500);
       return;
     }
-    loadData();
+
+    // Si la session est chargée et le rôle est autorisé, charger les données
+    if (user && ["ADMIN", "DIRECTEUR", "HR"].includes(user.role)) {
+      loadData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
@@ -115,8 +129,16 @@ export default function UsersManagementPage() {
       ]);
 
       if (usersResult?.data) {
-        setUsers(usersResult.data as unknown as User[]);
-        setFilteredUsers(usersResult.data as unknown as User[]);
+        let usersList = usersResult.data as unknown as User[];
+
+        // Filtrer les comptes ADMIN si l'utilisateur est DIRECTEUR ou HR
+        const currentUser = session?.user as any;
+        if (currentUser && ["DIRECTEUR", "HR"].includes(currentUser.role)) {
+          usersList = usersList.filter((u) => u.role !== "ADMIN");
+        }
+
+        setUsers(usersList);
+        setFilteredUsers(usersList);
       }
 
       if (departmentsResult?.data) {
@@ -159,6 +181,11 @@ export default function UsersManagementPage() {
   };
 
   const handleEdit = (user: User) => {
+    // Empêcher la modification du rôle et de l'email de l'admin principal
+    if (user.email === "admin@chronodil.com" && user.role === "ADMIN") {
+      toast.info("Seul le mot de passe peut être modifié pour le compte administrateur principal");
+    }
+
     setEditingUser(user);
     setForm({
       name: user.name || "",
@@ -219,6 +246,7 @@ export default function UsersManagementPage() {
   const getRoleBadgeColor = (role: string) => {
     const colors = {
       ADMIN: "bg-red-100 text-red-800 border-red-200",
+      DIRECTEUR: "bg-orange-100 text-orange-800 border-orange-200",
       HR: "bg-purple-100 text-purple-800 border-purple-200",
       MANAGER: "bg-blue-100 text-blue-800 border-blue-200",
       EMPLOYEE: "bg-green-100 text-green-800 border-green-200",
@@ -228,7 +256,8 @@ export default function UsersManagementPage() {
 
   const getRoleLabel = (role: string) => {
     const labels = {
-      ADMIN: "Administrateur",
+      ADMIN: "Admin Technique",
+      DIRECTEUR: "Directeur",
       HR: "RH",
       MANAGER: "Manager",
       EMPLOYEE: "Employé",
@@ -246,12 +275,18 @@ export default function UsersManagementPage() {
       .slice(0, 2);
   };
 
-  // Get available managers (managers, HR, and admins)
+  // Get available managers (managers, HR, directeurs - exclude ADMIN as it's technical)
   const availableManagers = users.filter((u) =>
-    ["MANAGER", "HR", "ADMIN"].includes(u.role) && (!editingUser || u.id !== editingUser.id)
+    ["MANAGER", "HR", "DIRECTEUR"].includes(u.role) && (!editingUser || u.id !== editingUser.id)
   );
 
   const handleDeleteUser = async (user: User) => {
+    // Empêcher la suppression de l'admin principal
+    if (user.email === "admin@chronodil.com" && user.role === "ADMIN") {
+      toast.error("Le compte administrateur principal ne peut pas être supprimé");
+      return;
+    }
+
     const confirmed = await showConfirmation({
       title: "Supprimer l'utilisateur",
       description: `Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.name || user.email} ? Cette action est irréversible.`,
@@ -321,9 +356,15 @@ export default function UsersManagementPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestion des utilisateurs</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {((session?.user as any)?.role === "DIRECTEUR")
+              ? "Gestion de l'équipe"
+              : "Gestion des utilisateurs"}
+          </h1>
           <p className="text-muted-foreground">
-            Gérez les comptes utilisateurs et leurs permissions
+            {((session?.user as any)?.role === "DIRECTEUR")
+              ? "Gérez votre équipe et assignez des managers"
+              : "Gérez les comptes utilisateurs et leurs permissions"}
           </p>
         </div>
         <Dialog
@@ -374,7 +415,13 @@ export default function UsersManagementPage() {
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="jean.dupont@example.com"
                     required
+                    disabled={editingUser?.email === "admin@chronodil.com" && editingUser?.role === "ADMIN"}
                   />
+                  {editingUser?.email === "admin@chronodil.com" && editingUser?.role === "ADMIN" && (
+                    <p className="text-xs text-muted-foreground">
+                      L'email du compte administrateur principal ne peut pas être modifié
+                    </p>
+                  )}
                 </div>
 
                 {!editingUser && (
@@ -394,7 +441,11 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="role">Rôle *</Label>
-                  <Select value={form.role} onValueChange={(val: any) => setForm({ ...form, role: val })}>
+                  <Select
+                    value={form.role}
+                    onValueChange={(val: any) => setForm({ ...form, role: val })}
+                    disabled={editingUser?.email === "admin@chronodil.com" && editingUser?.role === "ADMIN"}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -402,9 +453,17 @@ export default function UsersManagementPage() {
                       <SelectItem value="EMPLOYEE">Employé</SelectItem>
                       <SelectItem value="MANAGER">Manager</SelectItem>
                       <SelectItem value="HR">RH</SelectItem>
-                      <SelectItem value="ADMIN">Administrateur</SelectItem>
+                      <SelectItem value="DIRECTEUR">Directeur</SelectItem>
+                      {((session?.user as any)?.role === "ADMIN") && (
+                        <SelectItem value="ADMIN">Admin Technique (Maintenance)</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
+                  {editingUser?.email === "admin@chronodil.com" && editingUser?.role === "ADMIN" && (
+                    <p className="text-xs text-muted-foreground">
+                      Le rôle du compte administrateur principal ne peut pas être modifié
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -554,6 +613,15 @@ export default function UsersManagementPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
+                          <AvatarImage 
+                            src={
+                              user.avatar?.startsWith('/uploads') || 
+                              user.avatar?.startsWith('http') 
+                                ? user.avatar 
+                                : undefined
+                            } 
+                            alt={user.name || "User"} 
+                          />
                           <AvatarFallback className="bg-rusty-red/10 text-rusty-red">
                             {getInitials(user.name)}
                           </AvatarFallback>
@@ -598,7 +666,7 @@ export default function UsersManagementPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(user)}
-                          title="Modifier"
+                          title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Modification limitée" : "Modifier"}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -614,8 +682,9 @@ export default function UsersManagementPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteUser(user)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Supprimer"
+                          className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                          title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Compte protégé" : "Supprimer"}
+                          disabled={user.email === "admin@chronodil.com" && user.role === "ADMIN"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

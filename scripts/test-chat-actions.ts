@@ -73,12 +73,12 @@ async function main() {
     
     const conversations = await prisma.conversation.findMany({
       where: {
-        Members: {
+        ConversationMember: {
           some: { userId: adminUser.id },
         },
       },
       include: {
-        Members: {
+        ConversationMember: {
           include: {
             User: {
               select: {
@@ -100,11 +100,11 @@ async function main() {
             color: true,
           },
         },
-        Messages: {
+        Message: {
           orderBy: { createdAt: 'desc' },
           take: 1,
           include: {
-            Sender: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -116,7 +116,7 @@ async function main() {
         },
         _count: {
           select: {
-            Messages: true,
+            Message: true,
           },
         },
       },
@@ -127,7 +127,7 @@ async function main() {
 
     console.log(`✅ ${conversations.length} conversations récupérées pour l'admin:`);
     conversations.forEach((conv, index) => {
-      const otherUsers = conv.Members.filter(m => m.User.id !== adminUser.id);
+      const otherUsers = conv.ConversationMember.filter(m => m.User.id !== adminUser.id);
       const otherUserNames = otherUsers.map(m => m.User.name).join(', ');
       console.log(`   ${index + 1}. ${conv.type} - ${conv.name || otherUserNames || 'Conversation'}`);
     });

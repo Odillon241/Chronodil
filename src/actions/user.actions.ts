@@ -17,8 +17,21 @@ export const getMyProfile = authActionClient
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        createdAt: true,
+        updatedAt: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -62,21 +75,22 @@ export const updateMyProfile = authActionClient
     });
 
     revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard");
     return user;
   });
 
-// Récupérer tous les utilisateurs (Admin/HR)
+// Récupérer tous les utilisateurs (Admin/HR/DIRECTEUR)
 export const getUsers = authActionClient
   .schema(
     z.object({
-      role: z.enum(["EMPLOYEE", "MANAGER", "HR", "ADMIN"]).optional(),
+      role: z.enum(["EMPLOYEE", "MANAGER", "HR", "DIRECTEUR", "ADMIN"]).optional(),
       departmentId: z.string().optional(),
     })
   )
   .action(async ({ parsedInput, ctx }) => {
     const { userRole } = ctx;
 
-    if (!["HR", "ADMIN"].includes(userRole)) {
+    if (!["HR", "DIRECTEUR", "ADMIN"].includes(userRole)) {
       throw new Error("Permissions insuffisantes");
     }
 
@@ -109,14 +123,14 @@ export const getUsers = authActionClient
     return users;
   });
 
-// Créer un utilisateur (Admin/HR)
+// Créer un utilisateur (Admin/HR/DIRECTEUR)
 export const createUser = authActionClient
   .schema(
     z.object({
       name: z.string().min(2),
       email: z.string().email(),
       password: z.string().min(6),
-      role: z.enum(["EMPLOYEE", "MANAGER", "HR", "ADMIN"]),
+      role: z.enum(["EMPLOYEE", "MANAGER", "HR", "DIRECTEUR", "ADMIN"]),
       departmentId: z.string().optional(),
       managerId: z.string().optional(),
     })
@@ -124,8 +138,13 @@ export const createUser = authActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { userRole } = ctx;
 
-    if (!["HR", "ADMIN"].includes(userRole)) {
+    if (!["HR", "DIRECTEUR", "ADMIN"].includes(userRole)) {
       throw new Error("Permissions insuffisantes");
+    }
+
+    // DIRECTEUR ne peut pas créer d'ADMIN
+    if (userRole === "DIRECTEUR" && parsedInput.role === "ADMIN") {
+      throw new Error("Seul un ADMIN peut créer un compte ADMIN");
     }
 
     // Vérifier que l'email n'existe pas déjà
@@ -137,25 +156,51 @@ export const createUser = authActionClient
       throw new Error("Cet email est déjà utilisé");
     }
 
-    const user = await prisma.user.create({
-      data: {
-        id: require("nanoid").nanoid(),
-        name: parsedInput.name,
+    // Créer l'utilisateur via l'API Better Auth pour obtenir le bon hash
+    const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+    const response = await fetch(`${betterAuthUrl}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         email: parsedInput.email,
+        password: parsedInput.password,
+        name: parsedInput.name,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Erreur lors de la création du compte: ${error}`);
+    }
+
+    // Récupérer l'utilisateur créé
+    const createdUser = await prisma.user.findUnique({
+      where: { email: parsedInput.email },
+    });
+
+    if (!createdUser) {
+      throw new Error("Utilisateur créé mais non trouvé");
+    }
+
+    // Mettre à jour avec les informations supplémentaires
+    const user = await prisma.user.update({
+      where: { id: createdUser.id },
+      data: {
         role: parsedInput.role,
         ...(parsedInput.departmentId && { departmentId: parsedInput.departmentId }),
         ...(parsedInput.managerId && { managerId: parsedInput.managerId }),
-        emailVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        emailVerified: true, // Marquer comme vérifié pour les utilisateurs créés par admin
       },
     });
 
     revalidatePath("/dashboard/team");
+    revalidatePath("/dashboard/settings/users");
     return user;
   });
 
-// Mettre à jour un utilisateur (Admin/HR)
+// Mettre à jour un utilisateur (Admin/HR/DIRECTEUR)
 export const updateUser = authActionClient
   .schema(
     z.object({
@@ -163,17 +208,36 @@ export const updateUser = authActionClient
       data: z.object({
         name: z.string().min(2).optional(),
         email: z.string().email().optional(),
-        role: z.enum(["EMPLOYEE", "MANAGER", "HR", "ADMIN"]).optional(),
+        role: z.enum(["EMPLOYEE", "MANAGER", "HR", "DIRECTEUR", "ADMIN"]).optional(),
         departmentId: z.string().optional(),
         managerId: z.string().optional(),
       }),
     })
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
 
-    if (!["HR", "ADMIN"].includes(userRole)) {
+    if (!["HR", "DIRECTEUR", "ADMIN"].includes(userRole)) {
       throw new Error("Permissions insuffisantes");
+    }
+
+    // Récupérer l'utilisateur à modifier
+    const targetUser = await prisma.user.findUnique({
+      where: { id: parsedInput.id },
+    });
+
+    if (!targetUser) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // DIRECTEUR ne peut pas modifier d'ADMIN ni créer d'ADMIN
+    if (userRole === "DIRECTEUR") {
+      if (targetUser.role === "ADMIN") {
+        throw new Error("Seul un ADMIN peut modifier un compte ADMIN");
+      }
+      if (parsedInput.data.role === "ADMIN") {
+        throw new Error("Seul un ADMIN peut créer un compte ADMIN");
+      }
     }
 
     const user = await prisma.user.update({
@@ -255,7 +319,7 @@ export const getMyTeam = authActionClient
   .action(async ({ ctx }) => {
     const { userId, userRole } = ctx;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
+    if (!["MANAGER", "HR", "DIRECTEUR", "ADMIN"].includes(userRole)) {
       throw new Error("Permissions insuffisantes");
     }
 
@@ -279,13 +343,13 @@ export const getMyTeam = authActionClient
     return subordinates;
   });
 
-// Récupérer tous les utilisateurs (pour les MANAGER, HR, ADMIN)
+// Récupérer tous les utilisateurs (pour les MANAGER, HR, DIRECTEUR, ADMIN)
 export const getAllUsers = authActionClient
   .schema(z.object({}))
   .action(async ({ ctx }) => {
     const { userRole } = ctx;
 
-    if (!["MANAGER", "HR", "ADMIN"].includes(userRole)) {
+    if (!["MANAGER", "HR", "DIRECTEUR", "ADMIN"].includes(userRole)) {
       throw new Error("Permissions insuffisantes");
     }
 
@@ -388,26 +452,79 @@ export const resetUserPassword = authActionClient
     // Vérifier que l'utilisateur existe
     const user = await prisma.user.findUnique({
       where: { id: parsedInput.id },
+      include: { Account: true },
     });
 
     if (!user) {
       throw new Error("Utilisateur non trouvé");
     }
 
-    // Note: Dans une application réelle avec authentification,
-    // vous devriez hasher le mot de passe avant de le stocker
-    // Pour l'instant, nous simulons la réinitialisation
-    await prisma.user.update({
-      where: { id: parsedInput.id },
-      data: {
-        updatedAt: new Date(),
+    // Créer un hash temporaire via Better Auth
+    // 1. Créer un utilisateur temporaire avec le nouveau mot de passe
+    const tempEmail = `temp_${Date.now()}_${Math.random().toString(36)}@temp.chronodil.local`;
+    const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+    const response = await fetch(`${betterAuthUrl}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        email: tempEmail,
+        password: parsedInput.newPassword,
+        name: "Temp User",
+      }),
     });
 
+    if (!response.ok) {
+      throw new Error("Erreur lors de la génération du hash");
+    }
+
+    // 2. Récupérer le hash
+    const tempUser = await prisma.user.findUnique({
+      where: { email: tempEmail },
+      include: { Account: true },
+    });
+
+    if (!tempUser || !tempUser.Account || tempUser.Account.length === 0) {
+      throw new Error("Erreur lors de la génération du hash");
+    }
+
+    const newPasswordHash = tempUser.Account[0].password;
+
+    // 3. Mettre à jour le mot de passe de l'utilisateur cible
+    const userAccount = user.Account.find(acc => acc.providerId === "credential");
+    if (userAccount) {
+      await prisma.account.update({
+        where: { id: userAccount.id },
+        data: {
+          password: newPasswordHash,
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // Créer un compte si aucun n'existe
+      await prisma.account.create({
+        data: {
+          id: require("nanoid").nanoid(),
+          userId: user.id,
+          accountId: user.id,
+          providerId: "credential",
+          password: newPasswordHash,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
+
+    // 4. Nettoyer l'utilisateur temporaire
+    await prisma.account.deleteMany({ where: { userId: tempUser.id } });
+    await prisma.user.delete({ where: { id: tempUser.id } });
+
     revalidatePath("/dashboard/settings/users");
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: "Mot de passe réinitialisé avec succès",
-      tempPassword: parsedInput.newPassword 
+      tempPassword: parsedInput.newPassword
     };
   });

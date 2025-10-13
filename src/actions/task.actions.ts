@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 const createTaskSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   description: z.string().optional(),
-  projectId: z.string(),
+  projectId: z.string().optional(),
   parentId: z.string().optional(),
   estimatedHours: z.number().min(0).optional(),
 });
@@ -34,16 +34,18 @@ export const createTask = actionClient
       throw new Error("Non authentifié");
     }
 
-    // Vérifier que l'utilisateur est membre du projet
-    const member = await prisma.projectMember.findFirst({
-      where: {
-        projectId: parsedInput.projectId,
-        userId: session.user.id,
-      },
-    });
+    // Vérifier que l'utilisateur est membre du projet seulement si un projet est spécifié
+    if (parsedInput.projectId) {
+      const member = await prisma.projectMember.findFirst({
+        where: {
+          projectId: parsedInput.projectId,
+          userId: session.user.id,
+        },
+      });
 
-    if (!member && session.user.role !== "ADMIN") {
-      throw new Error("Vous n'êtes pas membre de ce projet");
+      if (!member && session.user.role !== "ADMIN") {
+        throw new Error("Vous n'êtes pas membre de ce projet");
+      }
     }
 
     const task = await prisma.task.create({
@@ -88,16 +90,18 @@ export const updateTask = actionClient
       throw new Error("Tâche non trouvée");
     }
 
-    // Vérifier que l'utilisateur est membre du projet
-    const member = await prisma.projectMember.findFirst({
-      where: {
-        projectId: task.projectId,
-        userId: session.user.id,
-      },
-    });
+    // Vérifier que l'utilisateur est membre du projet seulement si un projet est associé
+    if (task.projectId) {
+      const member = await prisma.projectMember.findFirst({
+        where: {
+          projectId: task.projectId,
+          userId: session.user.id,
+        },
+      });
 
-    if (!member && session.user.role !== "ADMIN") {
-      throw new Error("Vous n'êtes pas membre de ce projet");
+      if (!member && session.user.role !== "ADMIN") {
+        throw new Error("Vous n'êtes pas membre de ce projet");
+      }
     }
 
     const updatedTask = await prisma.task.update({
@@ -139,16 +143,18 @@ export const deleteTask = actionClient
       throw new Error("Tâche non trouvée");
     }
 
-    // Vérifier que l'utilisateur est membre du projet
-    const member = await prisma.projectMember.findFirst({
-      where: {
-        projectId: task.projectId,
-        userId: session.user.id,
-      },
-    });
+    // Vérifier que l'utilisateur est membre du projet seulement si un projet est associé
+    if (task.projectId) {
+      const member = await prisma.projectMember.findFirst({
+        where: {
+          projectId: task.projectId,
+          userId: session.user.id,
+        },
+      });
 
-    if (!member && session.user.role !== "ADMIN") {
-      throw new Error("Vous n'êtes pas membre de ce projet");
+      if (!member && session.user.role !== "ADMIN") {
+        throw new Error("Vous n'êtes pas membre de ce projet");
+      }
     }
 
     await prisma.task.delete({
@@ -225,9 +231,17 @@ export const getMyTasks = actionClient
 
     const tasks = await prisma.task.findMany({
       where: {
-        projectId: parsedInput.projectId
-          ? parsedInput.projectId
-          : { in: projectIds },
+        OR: parsedInput.projectId
+          ? [
+              // Si un projet spécifique est demandé
+              { projectId: parsedInput.projectId }
+            ]
+          : [
+              // Tâches des projets dont l'utilisateur est membre
+              { projectId: { in: projectIds } },
+              // Tâches sans projet (projectId est null)
+              { projectId: null },
+            ],
         isActive: true,
       },
       include: {

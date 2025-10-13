@@ -47,6 +47,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession, signOut } from "@/lib/auth-client";
 
 // Navigation items
@@ -85,6 +86,7 @@ const navMain = [
     title: "Validation",
     url: "/dashboard/validation",
     icon: CheckSquare,
+    roles: ["MANAGER", "HR", "ADMIN"],
   },
   {
     title: "Validations Manager",
@@ -257,9 +259,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-rusty-red text-white">
-                    <User className="size-4" />
-                  </div>
+                  <Avatar className="size-8">
+                    <AvatarImage 
+                      src={
+                        (session?.user as any)?.avatar?.startsWith('/uploads') || 
+                        (session?.user as any)?.avatar?.startsWith('http') 
+                          ? (session?.user as any)?.avatar 
+                          : undefined
+                      } 
+                      alt={(session?.user as any)?.name || "User"} 
+                    />
+                    <AvatarFallback className="bg-rusty-red text-white text-xs">
+                      {(session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
                       {session?.user?.name || "Utilisateur"}
@@ -279,9 +292,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-rusty-red text-white">
-                      <User className="size-4" />
-                    </div>
+                    <Avatar className="size-8">
+                      <AvatarImage 
+                        src={
+                          (session?.user as any)?.avatar?.startsWith('/uploads') || 
+                          (session?.user as any)?.avatar?.startsWith('http') 
+                            ? (session?.user as any)?.avatar 
+                            : undefined
+                        } 
+                        alt={(session?.user as any)?.name || "User"} 
+                      />
+                      <AvatarFallback className="bg-rusty-red text-white text-xs">
+                        {(session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
                         {session?.user?.name || "Utilisateur"}

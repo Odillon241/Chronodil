@@ -69,8 +69,8 @@ export const createTimesheetEntry = authActionClient
       data: {
         id: require("nanoid").nanoid(),
         userId,
-        projectId: parsedInput.projectId,
-        taskId: parsedInput.taskId,
+        ...(parsedInput.projectId && { projectId: parsedInput.projectId }),
+        ...(parsedInput.taskId && { taskId: parsedInput.taskId }),
         date: parsedInput.date,
         startTime,
         endTime,
@@ -200,7 +200,7 @@ export const updateTimesheetEntry = authActionClient
     const entry = await prisma.timesheetEntry.update({
       where: { id },
       data: {
-        ...(data.projectId && { projectId: data.projectId }),
+        projectId: data.projectId && data.projectId !== "none" ? data.projectId : null,
         ...(data.taskId && { taskId: data.taskId }),
         ...(data.date && { date: data.date }),
         ...(data.startTime && { startTime: updatedStartTime }),

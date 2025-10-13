@@ -31,7 +31,7 @@ async function testChatSystem() {
         createdBy: user1.id,
         createdAt: new Date(),
         updatedAt: new Date(),
-        Members: {
+        ConversationMember: {
           create: [
             {
               id: crypto.randomUUID(),
@@ -47,7 +47,7 @@ async function testChatSystem() {
         },
       },
       include: {
-        Members: {
+        ConversationMember: {
           include: {
             User: true,
           },
@@ -104,10 +104,10 @@ async function testChatSystem() {
     const messages = await prisma.message.findMany({
       where: { conversationId: conversation.id },
       include: {
-        Sender: {
+        User: {
           select: { name: true },
         },
-        ReplyTo: {
+        Message: {
           select: { content: true },
         },
       },
@@ -115,9 +115,9 @@ async function testChatSystem() {
     });
     console.log(`   ✅ ${messages.length} messages trouvés:`);
     messages.forEach((msg, idx) => {
-      console.log(`      ${idx + 1}. ${msg.Sender.name}: "${msg.content}"`);
-      if (msg.ReplyTo) {
-        console.log(`         ↳ Répond à: "${msg.ReplyTo.content}"`);
+      console.log(`      ${idx + 1}. ${msg.User.name}: "${msg.content}"`);
+      if (msg.Message) {
+        console.log(`         ↳ Répond à: "${msg.Message.content}"`);
       }
       if (msg.reactions) {
         const reactions = msg.reactions as Record<string, string[]>;
@@ -129,19 +129,19 @@ async function testChatSystem() {
     console.log("\n7️⃣ Vérification des conversations...");
     const userConversations = await prisma.conversation.findMany({
       where: {
-        Members: {
+        ConversationMember: {
           some: { userId: user1.id },
         },
       },
       include: {
-        Members: {
+        ConversationMember: {
           include: {
             User: {
               select: { name: true },
             },
           },
         },
-        Messages: {
+        Message: {
           take: 1,
           orderBy: { createdAt: "desc" },
         },
@@ -149,8 +149,8 @@ async function testChatSystem() {
     });
     console.log(`   ✅ ${userConversations.length} conversation(s) pour ${user1.name}`);
     userConversations.forEach((conv) => {
-      const memberNames = conv.Members.map(m => m.User.name).join(", ");
-      const lastMessage = conv.Messages[0]?.content || "Aucun message";
+      const memberNames = conv.ConversationMember.map(m => m.User.name).join(", ");
+      const lastMessage = conv.Message[0]?.content || "Aucun message";
       console.log(`      - ${conv.type}: ${memberNames}`);
       console.log(`        Dernier message: "${lastMessage}"`);
     });

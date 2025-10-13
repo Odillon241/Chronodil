@@ -89,8 +89,8 @@ export const exportTimesheetToExcel = authActionClient
       worksheet.addRow({
         date: entry.date.toLocaleDateString("fr-FR"),
         employee: entry.User.name || entry.User.email,
-        project: entry.Project.name,
-        projectCode: entry.Project.code,
+        project: entry.Project?.name || "-",
+        projectCode: entry.Project?.code || "-",
         task: entry.Task?.name || "-",
         type: getTypeLabel(entry.type),
         duration: entry.duration,
@@ -207,8 +207,8 @@ export const exportTimesheetToPDF = authActionClient
     const tableData = entries.map((entry) => [
       entry.date.toLocaleDateString("fr-FR"),
       entry.User.name || entry.User.email,
-      entry.Project.name,
-      entry.Project.code,
+      entry.Project?.name || "-",
+      entry.Project?.code || "-",
       entry.Task?.name || "-",
       getTypeLabel(entry.type),
       `${entry.duration}h`,

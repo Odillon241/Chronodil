@@ -5,14 +5,21 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
-import { nanoid } from "nanoid";
+
+/**
+ * REMARQUE: Ce fichier est actuellement désactivé car le modèle UserPreferences
+ * n'existe pas dans le schéma Prisma. Les préférences de l'utilisateur sont
+ * stockées directement dans le modèle User.
+ *
+ * Pour activer ces fonctionnalités, vous devez soit:
+ * 1. Créer un modèle UserPreferences dans le schéma Prisma
+ * 2. OU adapter ce code pour utiliser les champs du modèle User
+ */
 
 const updatePreferencesSchema = z.object({
-  notificationSoundEnabled: z.boolean().optional(),
-  notificationSoundType: z.enum(["default", "soft", "alert"]).optional(),
-  notificationSoundVolume: z.number().min(0).max(1).optional(),
-  emailNotificationsEnabled: z.boolean().optional(),
-  desktopNotificationsEnabled: z.boolean().optional(),
+  enableTimesheetReminders: z.boolean().optional(),
+  reminderTime: z.string().optional(),
+  reminderDays: z.array(z.string()).optional(),
 });
 
 /**
@@ -29,28 +36,25 @@ export const getUserPreferences = actionClient
       throw new Error("Non authentifié");
     }
 
-    let preferences = await prisma.userPreferences.findUnique({
-      where: { userId: session.user.id },
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        enableTimesheetReminders: true,
+        reminderTime: true,
+        reminderDays: true,
+      },
     });
 
-    // Si les préférences n'existent pas, les créer avec les valeurs par défaut
-    if (!preferences) {
-      preferences = await prisma.userPreferences.create({
-        data: {
-          id: nanoid(),
-          userId: session.user.id,
-          notificationSoundEnabled: true,
-          notificationSoundType: "default",
-          notificationSoundVolume: 0.5,
-          emailNotificationsEnabled: true,
-          desktopNotificationsEnabled: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
     }
 
-    return preferences;
+    return {
+      enableTimesheetReminders: user.enableTimesheetReminders,
+      reminderTime: user.reminderTime,
+      reminderDays: user.reminderDays,
+    };
   });
 
 /**
@@ -67,77 +71,20 @@ export const updateUserPreferences = actionClient
       throw new Error("Non authentifié");
     }
 
-    // Vérifier si les préférences existent
-    let preferences = await prisma.userPreferences.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    // Si elles n'existent pas, les créer
-    if (!preferences) {
-      preferences = await prisma.userPreferences.create({
-        data: {
-          id: nanoid(),
-          userId: session.user.id,
-          notificationSoundEnabled: parsedInput.notificationSoundEnabled ?? true,
-          notificationSoundType: parsedInput.notificationSoundType ?? "default",
-          notificationSoundVolume: parsedInput.notificationSoundVolume ?? 0.5,
-          emailNotificationsEnabled: parsedInput.emailNotificationsEnabled ?? true,
-          desktopNotificationsEnabled: parsedInput.desktopNotificationsEnabled ?? true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
-    } else {
-      // Sinon, les mettre à jour
-      preferences = await prisma.userPreferences.update({
-        where: { userId: session.user.id },
-        data: {
-          ...parsedInput,
-          updatedAt: new Date(),
-        },
-      });
-    }
-
-    return preferences;
-  });
-
-/**
- * Réinitialise les préférences de notification aux valeurs par défaut
- */
-export const resetNotificationPreferences = actionClient
-  .schema(z.object({}))
-  .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      throw new Error("Non authentifié");
-    }
-
-    const preferences = await prisma.userPreferences.upsert({
-      where: { userId: session.user.id },
-      create: {
-        id: nanoid(),
-        userId: session.user.id,
-        notificationSoundEnabled: true,
-        notificationSoundType: "default",
-        notificationSoundVolume: 0.5,
-        emailNotificationsEnabled: true,
-        desktopNotificationsEnabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      update: {
-        notificationSoundEnabled: true,
-        notificationSoundType: "default",
-        notificationSoundVolume: 0.5,
-        emailNotificationsEnabled: true,
-        desktopNotificationsEnabled: true,
-        updatedAt: new Date(),
+    const user = await prisma.user.update({
+      where: { id: session.user.id },
+      data: parsedInput,
+      select: {
+        id: true,
+        enableTimesheetReminders: true,
+        reminderTime: true,
+        reminderDays: true,
       },
     });
 
-    return preferences;
+    return {
+      enableTimesheetReminders: user.enableTimesheetReminders,
+      reminderTime: user.reminderTime,
+      reminderDays: user.reminderDays,
+    };
   });
-

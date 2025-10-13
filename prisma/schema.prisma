@@ -26,6 +26,24 @@ model Account {
   @@unique([providerId, accountId])
 }
 
+model ActivityCatalog {
+  id                 String         @id
+  name               String         @unique
+  category           String
+  type               HRActivityType
+  defaultPeriodicity HRPeriodicity?
+  description        String?
+  isActive           Boolean        @default(true)
+  sortOrder          Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime
+  HRActivity         HRActivity[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
 model AuditLog {
   id        String   @id
   userId    String?
@@ -56,6 +74,41 @@ model CompanySetting {
   @@index([key])
 }
 
+model Conversation {
+  id                 String               @id
+  type               ConversationType
+  name               String?
+  projectId          String?
+  createdBy          String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  User               User?                @relation(fields: [createdBy], references: [id])
+  Project            Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ConversationMember ConversationMember[]
+  Message            Message[]
+
+  @@index([createdAt])
+  @@index([createdBy])
+  @@index([projectId])
+  @@index([type])
+}
+
+model ConversationMember {
+  id             String       @id
+  conversationId String
+  userId         String
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+  isAdmin        Boolean      @default(false)
+  isMuted        Boolean      @default(false)
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
 model Department {
   id          String    @id
   name        String
@@ -69,6 +122,61 @@ model Department {
   @@index([code])
 }
 
+model HRActivity {
+  id              String           @id
+  hrTimesheetId   String
+  activityType    HRActivityType
+  activityName    String
+  description     String?
+  periodicity     HRPeriodicity
+  weeklyQuantity  Int?
+  startDate       DateTime
+  endDate         DateTime
+  totalHours      Float
+  status          HRActivityStatus
+  catalogId       String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime
+  ActivityCatalog ActivityCatalog? @relation(fields: [catalogId], references: [id])
+  hrTimesheet     HRTimesheet      @relation("HRTimesheetActivities", fields: [hrTimesheetId], references: [id], onDelete: Cascade)
+
+  @@index([catalogId])
+  @@index([hrTimesheetId])
+  @@index([status])
+}
+
+model HRTimesheet {
+  id                   String            @id
+  weekStartDate        DateTime
+  weekEndDate          DateTime
+  userId               String
+  employeeName         String
+  position             String
+  site                 String
+  totalHours           Float             @default(0)
+  status               HRTimesheetStatus @default(DRAFT)
+  employeeSignedAt     DateTime?
+  managerSignedAt      DateTime?
+  managerSignedById    String?
+  odillonSignedAt      DateTime?
+  odillonSignedById    String?
+  employeeObservations String?
+  managerComments      String?
+  odillonComments      String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime
+  activities           HRActivity[]      @relation("HRTimesheetActivities")
+  ManagerSigner        User?             @relation("HRTimesheet_managerSignedByIdToUser", fields: [managerSignedById], references: [id])
+  OdillonSigner        User?             @relation("HRTimesheet_odillonSignedByIdToUser", fields: [odillonSignedById], references: [id])
+  User                 User              @relation("HRTimesheet_userIdToUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStartDate])
+  @@index([managerSignedById])
+  @@index([status])
+  @@index([userId])
+  @@index([weekStartDate])
+}
+
 model Holiday {
   id          String   @id
   name        String
@@ -80,6 +188,29 @@ model Holiday {
 
   @@unique([date, name])
   @@index([date])
+}
+
+model Message {
+  id             String       @id
+  conversationId String
+  senderId       String
+  content        String
+  attachments    Json?
+  isEdited       Boolean      @default(false)
+  isDeleted      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime
+  replyToId      String?
+  reactions      Json?
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  Message        Message?     @relation("MessageToMessage", fields: [replyToId], references: [id])
+  other_Message  Message[]    @relation("MessageToMessage")
+  User           User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([replyToId])
+  @@index([senderId])
 }
 
 model Notification {
@@ -110,20 +241,20 @@ model Project {
   isActive       Boolean          @default(true)
   startDate      DateTime?
   endDate        DateTime?
-  createdBy      String?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime
-  Creator        User?            @relation("ProjectCreator", fields: [createdBy], references: [id])
+  createdBy      String?
+  Conversation   Conversation[]
+  User           User?            @relation(fields: [createdBy], references: [id])
   Department     Department?      @relation(fields: [departmentId], references: [id])
   ProjectMember  ProjectMember[]
   Task           Task[]
   TimesheetEntry TimesheetEntry[]
-  Conversation   Conversation[]
 
   @@index([code])
+  @@index([createdBy])
   @@index([departmentId])
   @@index([isActive])
-  @@index([createdBy])
 }
 
 model ProjectMember {
@@ -138,6 +269,54 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
+}
+
+model Report {
+  id             String            @id
+  title          String
+  content        String
+  format         String            @default("pdf") // "pdf" ou "word"
+  period         String?
+  includeSummary Boolean           @default(false)
+  fileSize       Int               @default(0)
+  createdById    String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  CreatedBy      User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  Recipients     ReportRecipient[]
+
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model ReportRecipient {
+  id       String   @id
+  reportId String
+  userId   String?
+  email    String
+  name     String?
+  status   String   @default("sent") // "sent", "pending", "failed"
+  sentAt   DateTime @default(now())
+  Report   Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  User     User?    @relation(fields: [userId], references: [id])
+
+  @@index([reportId])
+  @@index([userId])
+  @@index([email])
+}
+
+model ReportType {
+  id          String          @id
+  name        String          @unique
+  frequency   ReportFrequency
+  description String?
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime
+
+  @@index([frequency])
+  @@index([isActive])
 }
 
 model Session {
@@ -158,7 +337,7 @@ model Task {
   id             String           @id
   name           String
   description    String?
-  projectId      String
+  projectId      String?
   parentId       String?
   estimatedHours Float?
   isActive       Boolean          @default(true)
@@ -166,7 +345,7 @@ model Task {
   updatedAt      DateTime
   Task           Task?            @relation("TaskToTask", fields: [parentId], references: [id])
   other_Task     Task[]           @relation("TaskToTask")
-  Project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Project        Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   TimesheetEntry TimesheetEntry[]
 
   @@index([isActive])
@@ -177,7 +356,7 @@ model Task {
 model TimesheetEntry {
   id                  String               @id
   userId              String
-  projectId           String
+  projectId           String?
   taskId              String?
   date                DateTime
   startTime           DateTime?
@@ -189,12 +368,12 @@ model TimesheetEntry {
   isLocked            Boolean              @default(false)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime
-  Project             Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Project             Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   Task                Task?                @relation(fields: [taskId], references: [id])
   User                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   TimesheetValidation TimesheetValidation?
 
-  @@unique([userId, projectId, date, startTime])
+  @@unique([userId, date, startTime])
   @@index([date])
   @@index([projectId])
   @@index([status])
@@ -228,52 +407,33 @@ model User {
   updatedAt                DateTime
   emailVerified            Boolean               @default(false)
   image                    String?
+  // Préférences de notification et rappel
+  enableTimesheetReminders Boolean               @default(true)
+  reminderTime             String?               @default("17:00") // Heure du rappel (HH:MM)
+  reminderDays             String[]              @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]) // Jours de rappel
   Account                  Account[]
   AuditLog                 AuditLog[]
+  Conversation             Conversation[]
+  ConversationMember       ConversationMember[]
+  HRTimesheetsAsManager    HRTimesheet[]         @relation("HRTimesheet_managerSignedByIdToUser")
+  HRTimesheetsAsOdillon    HRTimesheet[]         @relation("HRTimesheet_odillonSignedByIdToUser")
+  HRTimesheetsAsEmployee   HRTimesheet[]         @relation("HRTimesheet_userIdToUser")
+  Message                  Message[]
   Notification             Notification[]
+  Project                  Project[]
   ProjectMember            ProjectMember[]
-  CreatedProjects          Project[]             @relation("ProjectCreator")
+  Report                   Report[]
+  ReportRecipient          ReportRecipient[]
   Session                  Session[]
   TimesheetEntry           TimesheetEntry[]
   TimesheetValidation      TimesheetValidation[]
-  HRTimesheet              HRTimesheet[]         @relation("HRTimesheetUser")
-  HRTimesheetManagerSigned HRTimesheet[]         @relation("HRTimesheetManagerSigner")
-  HRTimesheetOdillonSigned HRTimesheet[]         @relation("HRTimesheetOdillonSigner")
   Department               Department?           @relation(fields: [departmentId], references: [id])
   User                     User?                 @relation("UserToUser", fields: [managerId], references: [id])
   other_User               User[]                @relation("UserToUser")
-  
-  // Relations pour le chat
-  ConversationMember       ConversationMember[]
-  CreatedConversations     Conversation[]        @relation("ConversationCreator")
-  Messages                 Message[]
-  
-  // Relations pour les rapports
-  CreatedReports           Report[]
-  ReportRecipients         ReportRecipient[]
-  
-  // Préférences utilisateur
-  Preferences              UserPreferences?
 
   @@index([departmentId])
   @@index([email])
   @@index([managerId])
-}
-
-model UserPreferences {
-  id                         String   @id
-  userId                     String   @unique
-  notificationSoundEnabled   Boolean  @default(true)
-  notificationSoundType      String   @default("default") // "default", "soft", "alert"
-  notificationSoundVolume    Float    @default(0.5) // 0.0 à 1.0
-  emailNotificationsEnabled  Boolean  @default(true)
-  desktopNotificationsEnabled Boolean @default(true)
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime
-  
-  User                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
 }
 
 model Verification {
@@ -287,10 +447,49 @@ model Verification {
   @@unique([identifier, value])
 }
 
+enum ConversationType {
+  DIRECT
+  GROUP
+  PROJECT
+}
+
+enum HRActivityStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum HRActivityType {
+  OPERATIONAL
+  REPORTING
+}
+
+enum HRPeriodicity {
+  DAILY
+  WEEKLY
+  MONTHLY
+  PUNCTUAL
+  WEEKLY_MONTHLY
+}
+
+enum HRTimesheetStatus {
+  DRAFT
+  PENDING
+  MANAGER_APPROVED
+  APPROVED
+  REJECTED
+}
+
+enum ReportFrequency {
+  WEEKLY
+  MONTHLY
+  INDIVIDUAL
+}
+
 enum Role {
   EMPLOYEE
   MANAGER
   HR
+  DIRECTEUR
   ADMIN
 }
 
@@ -307,249 +506,4 @@ enum TimesheetStatus {
   APPROVED
   REJECTED
   LOCKED
-}
-
-// ========================================
-// TIMESHEET RH - Feuille de temps hebdomadaire
-// ========================================
-
-model HRTimesheet {
-  id            String            @id
-  weekStartDate DateTime // Début de semaine (lundi)
-  weekEndDate   DateTime // Fin de semaine (vendredi/dimanche)
-  userId        String
-  employeeName  String
-  position      String
-  site          String
-  totalHours    Float             @default(0)
-  status        HRTimesheetStatus @default(DRAFT)
-
-  // Workflow de validation multi-niveaux
-  employeeSignedAt  DateTime?
-  managerSignedAt   DateTime?
-  managerSignedById String?
-  odillonSignedAt   DateTime?
-  odillonSignedById String?
-
-  // Observations
-  employeeObservations String?
-  managerComments      String?
-  odillonComments      String?
-
-  activities HRActivity[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime
-
-  User          User  @relation("HRTimesheetUser", fields: [userId], references: [id], onDelete: Cascade)
-  ManagerSigner User? @relation("HRTimesheetManagerSigner", fields: [managerSignedById], references: [id])
-  OdillonSigner User? @relation("HRTimesheetOdillonSigner", fields: [odillonSignedById], references: [id])
-
-  @@unique([userId, weekStartDate])
-  @@index([userId])
-  @@index([weekStartDate])
-  @@index([status])
-  @@index([managerSignedById])
-}
-
-model HRActivity {
-  id            String @id
-  hrTimesheetId String
-
-  activityType   HRActivityType
-  activityName   String
-  description    String?
-  periodicity    HRPeriodicity
-  weeklyQuantity Int? // Quantité hebdomadaire (1-20)
-  startDate      DateTime
-  endDate        DateTime
-  totalHours     Float // Calculé automatiquement: DATEDIF(start, end, "D") * 24
-  status         HRActivityStatus
-
-  // Référence optionnelle au catalogue
-  catalogId       String?
-  ActivityCatalog ActivityCatalog? @relation(fields: [catalogId], references: [id])
-
-  hrTimesheet HRTimesheet @relation(fields: [hrTimesheetId], references: [id], onDelete: Cascade)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime
-
-  @@index([hrTimesheetId])
-  @@index([status])
-  @@index([catalogId])
-}
-
-model ActivityCatalog {
-  id                 String         @id
-  name               String         @unique
-  category           String // Administration, Formation, Recrutement, etc.
-  type               HRActivityType
-  defaultPeriodicity HRPeriodicity?
-  description        String?
-  isActive           Boolean        @default(true)
-  sortOrder          Int            @default(0)
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime
-
-  HRActivity HRActivity[]
-
-  @@index([category])
-  @@index([isActive])
-  @@index([sortOrder])
-}
-
-model ReportType {
-  id          String          @id
-  name        String          @unique
-  frequency   ReportFrequency
-  description String?
-  isActive    Boolean         @default(true)
-  sortOrder   Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime
-
-  @@index([frequency])
-  @@index([isActive])
-}
-
-// ========================================
-// ENUMS pour Timesheet RH
-// ========================================
-
-enum HRTimesheetStatus {
-  DRAFT // Brouillon
-  PENDING // En attente validation manager
-  MANAGER_APPROVED // Validé par le manager
-  APPROVED // Validé final par Odillon
-  REJECTED // Rejeté
-}
-
-enum HRActivityType {
-  OPERATIONAL // Activités opérationnelles
-  REPORTING // Reportings
-}
-
-enum HRPeriodicity {
-  DAILY // Journalière
-  WEEKLY // Hebdomadaire
-  MONTHLY // Mensuelle
-  PUNCTUAL // Ponctuelle
-  WEEKLY_MONTHLY // Hebdomadaire et Mensuelle
-}
-
-enum HRActivityStatus {
-  IN_PROGRESS // En cours
-  COMPLETED // Clos
-}
-
-enum ReportFrequency {
-  WEEKLY // Hebdomadaire
-  MONTHLY // Mensuel
-  INDIVIDUAL // Individuel
-}
-
-// ========================================
-// SYSTÈME DE CHAT ET MESSAGERIE
-// ========================================
-
-model Conversation {
-  id        String              @id
-  type      ConversationType
-  name      String? // Pour les groupes et conversations de projet
-  projectId String? // Pour les conversations de projet
-  createdBy String?
-  createdAt DateTime            @default(now())
-  updatedAt DateTime
-
-  Project   Project?              @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  Creator   User?                 @relation("ConversationCreator", fields: [createdBy], references: [id])
-  Members   ConversationMember[]
-  Messages  Message[]
-
-  @@index([projectId])
-  @@index([createdBy])
-  @@index([type])
-  @@index([createdAt])
-}
-
-model ConversationMember {
-  id             String   @id
-  conversationId String
-  userId         String
-  joinedAt       DateTime @default(now())
-  lastReadAt     DateTime?
-  isAdmin        Boolean  @default(false) // Pour gérer les admins de groupe
-  isMuted        Boolean  @default(false) // Pour désactiver les notifications
-
-  Conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  User         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([conversationId, userId])
-  @@index([conversationId])
-  @@index([userId])
-}
-
-model Message {
-  id             String    @id
-  conversationId String
-  senderId       String
-  content        String
-  attachments    Json? // Pour les fichiers joints
-  reactions      Json? // Réactions emoji { "emoji": ["userId1", "userId2"] }
-  replyToId      String? // ID du message auquel on répond
-  isEdited       Boolean   @default(false)
-  isDeleted      Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime
-
-  Conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  Sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  ReplyTo      Message?     @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
-  Replies      Message[]    @relation("MessageReplies")
-
-  @@index([conversationId])
-  @@index([senderId])
-  @@index([replyToId])
-  @@index([createdAt])
-}
-
-enum ConversationType {
-  DIRECT // Message direct entre 2 utilisateurs
-  GROUP // Groupe personnalisé
-  PROJECT // Conversation liée à un projet
-}
-
-model Report {
-  id               String             @id
-  title            String
-  content          String
-  format           String             // "pdf" ou "word"
-  period           String?            // "week", "month", "quarter", "year"
-  includeSummary   Boolean            @default(false)
-  fileUrl          String?            // URL du fichier stocké (optionnel)
-  fileSize         Int?               // Taille du fichier en bytes
-  createdById      String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  
-  CreatedBy        User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  Recipients       ReportRecipient[]
-  
-  @@index([createdById])
-  @@index([createdAt])
-}
-
-model ReportRecipient {
-  id               String   @id
-  reportId         String
-  userId           String?  // Si envoyé à un utilisateur de la base
-  email            String?  // Si envoyé à une adresse email externe
-  name             String?  // Nom du destinataire
-  sentAt           DateTime @default(now())
-  status           String   @default("sent") // "sent", "failed", "pending"
-  
-  Report           Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  User             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  @@index([reportId])
-  @@index([userId])
 }

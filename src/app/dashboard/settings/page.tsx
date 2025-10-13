@@ -27,7 +27,6 @@ import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import {
   getUserPreferences,
   updateUserPreferences,
-  resetNotificationPreferences,
 } from "@/actions/preferences.actions";
 import {
   Dialog,
@@ -210,7 +209,12 @@ export default function SettingsPage() {
       onConfirm: async () => {
         setIsSavingPreferences(true);
         try {
-          const result = await resetNotificationPreferences({});
+          // Reset to default values
+          const result = await updateUserPreferences({
+            enableTimesheetReminders: true,
+            reminderTime: "17:00",
+            reminderDays: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+          });
           if (result?.data) {
             setPreferences(result.data);
             toast.success("Préférences réinitialisées");
@@ -324,7 +328,8 @@ export default function SettingsPage() {
           <TabsTrigger value="holidays">Jours fériés</TabsTrigger>
           <TabsTrigger value="departments">Départements</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          {(session?.user as any)?.role === "ADMIN" && (
+          <TabsTrigger value="reminders">Rappels</TabsTrigger>
+          {["ADMIN", "DIRECTEUR", "HR"].includes((session?.user as any)?.role) && (
             <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           )}
           <TabsTrigger value="general">Général</TabsTrigger>
@@ -827,24 +832,61 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Utilisateurs */}
-        <TabsContent value="users" className="space-y-4">
+        {/* Rappels */}
+        <TabsContent value="reminders" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Gestion des utilisateurs</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Préférences de rappel
+              </CardTitle>
               <CardDescription>
-                Accédez à la page complète de gestion des utilisateurs
+                Configurez vos préférences pour recevoir des rappels de saisie de temps
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4 text-center">
-                La gestion des utilisateurs dispose d'une interface dédiée avec des fonctionnalités avancées
+                Gérez vos préférences de rappel pour la saisie de temps
+              </p>
+              <Button
+                onClick={() => window.location.href = "/dashboard/settings/reminders"}
+                className="bg-rusty-red hover:bg-ou-crimson"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                Configurer les rappels
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Utilisateurs */}
+        <TabsContent value="users" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {(session?.user as any)?.role === "DIRECTEUR"
+                  ? "Gestion de l'équipe"
+                  : "Gestion des utilisateurs"}
+              </CardTitle>
+              <CardDescription>
+                {(session?.user as any)?.role === "DIRECTEUR"
+                  ? "Accédez à la gestion complète de votre équipe et assignez des managers"
+                  : "Accédez à la page complète de gestion des utilisateurs"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-muted-foreground mb-4 text-center">
+                {(session?.user as any)?.role === "DIRECTEUR"
+                  ? "Gérez votre équipe : créez des utilisateurs, assignez des managers et organisez votre structure"
+                  : "La gestion des utilisateurs dispose d'une interface dédiée avec des fonctionnalités avancées"}
               </p>
               <Button
                 onClick={() => window.location.href = "/dashboard/settings/users"}
                 className="bg-rusty-red hover:bg-ou-crimson"
               >
-                Accéder à la gestion des utilisateurs
+                {(session?.user as any)?.role === "DIRECTEUR"
+                  ? "Gérer mon équipe"
+                  : "Accéder à la gestion des utilisateurs"}
               </Button>
             </CardContent>
           </Card>

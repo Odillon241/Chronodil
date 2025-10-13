@@ -24,13 +24,18 @@ export async function getReportSummary(filters: ReportFilters) {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres données
+    const userIdFilter = session.user.role === "EMPLOYEE" 
+      ? session.user.id 
+      : filters.userId;
+
     const { startDate, endDate } = getDateRange(filters);
 
     // Total des heures
     const totalHoursResult = await prisma.timesheetEntry.aggregate({
       where: {
         date: { gte: startDate, lte: endDate },
-        ...(filters.userId && { userId: filters.userId }),
+        ...(userIdFilter && { userId: userIdFilter }),
         ...(filters.projectId && { projectId: filters.projectId }),
       },
       _sum: {
@@ -43,7 +48,7 @@ export async function getReportSummary(filters: ReportFilters) {
       by: ["status"],
       where: {
         date: { gte: startDate, lte: endDate },
-        ...(filters.userId && { userId: filters.userId }),
+        ...(userIdFilter && { userId: userIdFilter }),
         ...(filters.projectId && { projectId: filters.projectId }),
       },
       _sum: {
@@ -56,7 +61,7 @@ export async function getReportSummary(filters: ReportFilters) {
       by: ["type"],
       where: {
         date: { gte: startDate, lte: endDate },
-        ...(filters.userId && { userId: filters.userId }),
+        ...(userIdFilter && { userId: userIdFilter }),
         ...(filters.projectId && { projectId: filters.projectId }),
       },
       _sum: {
@@ -105,13 +110,18 @@ export async function getWeeklyActivity(filters: ReportFilters) {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres données
+    const userIdFilter = session.user.role === "EMPLOYEE" 
+      ? session.user.id 
+      : filters.userId;
+
     const { startDate, endDate } = getDateRange(filters);
 
     const entries = await prisma.timesheetEntry.groupBy({
       by: ["date"],
       where: {
         date: { gte: startDate, lte: endDate },
-        ...(filters.userId && { userId: filters.userId }),
+        ...(userIdFilter && { userId: userIdFilter }),
         ...(filters.projectId && { projectId: filters.projectId }),
       },
       _sum: {
@@ -145,13 +155,18 @@ export async function getProjectDistribution(filters: ReportFilters) {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres données
+    const userIdFilter = session.user.role === "EMPLOYEE" 
+      ? session.user.id 
+      : filters.userId;
+
     const { startDate, endDate } = getDateRange(filters);
 
     const projectData = await prisma.timesheetEntry.groupBy({
       by: ["projectId"],
       where: {
         date: { gte: startDate, lte: endDate },
-        ...(filters.userId && { userId: filters.userId }),
+        ...(userIdFilter && { userId: userIdFilter }),
         ...(filters.projectId && { projectId: filters.projectId }),
       },
       _sum: {
@@ -159,7 +174,7 @@ export async function getProjectDistribution(filters: ReportFilters) {
       },
     });
 
-    const projectIds = projectData.map(item => item.projectId);
+    const projectIds = projectData.map(item => item.projectId).filter((id): id is string => id !== null);
     const projects = await prisma.project.findMany({
       where: { id: { in: projectIds } },
       select: { id: true, name: true, color: true, code: true },
@@ -168,7 +183,7 @@ export async function getProjectDistribution(filters: ReportFilters) {
     const projectMap = new Map(projects.map(p => [p.id, p]));
 
     const distribution = projectData.map((item) => {
-      const project = projectMap.get(item.projectId);
+      const project = item.projectId ? projectMap.get(item.projectId) : null;
       return {
         name: project?.name || "Inconnu",
         code: project?.code || "",
@@ -194,12 +209,17 @@ export async function getDetailedReport(filters: ReportFilters) {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres données
+    const userIdFilter = session.user.role === "EMPLOYEE" 
+      ? session.user.id 
+      : filters.userId;
+
     const { startDate, endDate } = getDateRange(filters);
 
     const entries = await prisma.timesheetEntry.findMany({
       where: {
         date: { gte: startDate, lte: endDate },
-        ...(filters.userId && { userId: filters.userId }),
+        ...(userIdFilter && { userId: userIdFilter }),
         ...(filters.projectId && { projectId: filters.projectId }),
       },
       include: {
@@ -244,6 +264,11 @@ export async function getProjectReport(filters: ReportFilters) {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres données
+    const userIdFilter = session.user.role === "EMPLOYEE" 
+      ? session.user.id 
+      : filters.userId;
+
     const { startDate, endDate } = getDateRange(filters);
 
     const projectStats = await prisma.project.findMany({
@@ -255,7 +280,7 @@ export async function getProjectReport(filters: ReportFilters) {
         TimesheetEntry: {
           where: {
             date: { gte: startDate, lte: endDate },
-            ...(filters.userId && { userId: filters.userId }),
+            ...(userIdFilter && { userId: userIdFilter }),
           },
           select: {
             duration: true,
@@ -320,11 +345,16 @@ export async function getUserReport(filters: ReportFilters) {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres données
+    const userIdFilter = session.user.role === "EMPLOYEE" 
+      ? session.user.id 
+      : filters.userId;
+
     const { startDate, endDate } = getDateRange(filters);
 
     const userStats = await prisma.user.findMany({
       where: {
-        ...(filters.userId && { id: filters.userId }),
+        ...(userIdFilter && { id: userIdFilter }),
       },
       include: {
         TimesheetEntry: {
@@ -400,6 +430,8 @@ export async function generateCustomReport(data: {
     if (!session) {
       throw new Error("Non authentifié");
     }
+
+    // Tous les utilisateurs peuvent générer des rapports
 
     const exportFormat = data.format || "pdf";
     const reportId = data.reportId || nanoid();
@@ -656,6 +688,8 @@ export async function sendReportByEmail(data: {
       throw new Error("Non authentifié");
     }
 
+    // Tous les utilisateurs peuvent envoyer des rapports
+
     // Générer le rapport et l'enregistrer en base de données
     let reportId = data.reportId;
     let pdfAttachment = null;
@@ -735,9 +769,14 @@ export async function getReports(filters?: {
       throw new Error("Non authentifié");
     }
 
+    // Les employés voient uniquement leurs propres rapports
+    const createdByFilter = session.user.role === "EMPLOYEE"
+      ? session.user.id
+      : filters?.createdById;
+
     const reports = await prisma.report.findMany({
       where: {
-        ...(filters?.createdById && { createdById: filters.createdById }),
+        ...(createdByFilter && { createdById: createdByFilter }),
         ...(filters?.format && { format: filters.format }),
         ...(filters?.startDate && filters?.endDate && {
           createdAt: {
@@ -801,6 +840,11 @@ export async function downloadReport(reportId: string) {
       return { serverError: "Rapport non trouvé" };
     }
 
+    // Les employés peuvent uniquement télécharger leurs propres rapports
+    if (session.user.role === "EMPLOYEE" && report.createdById !== session.user.id) {
+      throw new Error("Permissions insuffisantes");
+    }
+
     // Régénérer le rapport
     const result = await generateCustomReport({
       title: report.title,
@@ -816,6 +860,48 @@ export async function downloadReport(reportId: string) {
   } catch (error) {
     console.error("Error downloading report:", error);
     return { serverError: "Erreur lors du téléchargement du rapport" };
+  }
+}
+
+export async function deleteReport(reportId: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    // Vérifier que l'utilisateur peut supprimer ce rapport
+    const report = await prisma.report.findUnique({
+      where: { id: reportId },
+      select: { createdById: true },
+    });
+
+    if (!report) {
+      throw new Error("Rapport non trouvé");
+    }
+
+    // Les employés peuvent uniquement supprimer leurs propres rapports
+    if (session.user.role === "EMPLOYEE" && report.createdById !== session.user.id) {
+      throw new Error("Permissions insuffisantes");
+    }
+
+    // Supprimer le rapport et ses destinataires (cascade)
+    await prisma.report.delete({
+      where: { id: reportId },
+    });
+
+    return {
+      data: {
+        success: true,
+        message: "Rapport supprimé avec succès",
+      },
+    };
+  } catch (error) {
+    console.error("Error deleting report:", error);
+    return { serverError: "Erreur lors de la suppression du rapport" };
   }
 }
 

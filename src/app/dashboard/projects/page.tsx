@@ -30,7 +30,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   Search,
@@ -126,9 +125,7 @@ export default function ProjectsPage() {
 
   // Reload projects when filterStatus changes
   useEffect(() => {
-    if (projects.length > 0) { // Only reload if we already have data
-      loadProjects();
-    }
+    loadProjects();
   }, [filterStatus]);
 
   // Reset to page 1 when filters change
@@ -140,7 +137,9 @@ export default function ProjectsPage() {
     setLoading(true);
     try {
       const [projectsResult, deptResult, usersResult] = await Promise.all([
-        getProjects({ isActive: filterStatus === "active" }),
+        getProjects({ 
+          isActive: filterStatus === "all" ? undefined : filterStatus === "active" ? true : false
+        }),
         getDepartments({}),
         getAllUsers({}),
       ]);
@@ -163,7 +162,9 @@ export default function ProjectsPage() {
 
   const loadProjects = async () => {
     try {
-      const result = await getProjects({ isActive: filterStatus === "active" });
+      const filterParam = filterStatus === "all" ? undefined : filterStatus === "active" ? true : false;
+      const result = await getProjects({ isActive: filterParam });
+      
       if (result?.data) {
         setProjects(result.data);
       }
@@ -871,12 +872,38 @@ export default function ProjectsPage() {
               </SelectContent>
             </Select>
 
-            <Tabs value={filterStatus} onValueChange={setFilterStatus}>
-              <TabsList>
-                <TabsTrigger value="active">Actifs</TabsTrigger>
-                <TabsTrigger value="inactive">Archivés</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex rounded-lg border p-1">
+              <button
+                onClick={() => setFilterStatus("active")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === "active"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Actifs
+              </button>
+              <button
+                onClick={() => setFilterStatus("inactive")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === "inactive"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Archivés
+              </button>
+              <button
+                onClick={() => setFilterStatus("all")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === "all"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Tous
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
