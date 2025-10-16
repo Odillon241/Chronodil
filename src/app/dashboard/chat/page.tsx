@@ -175,10 +175,10 @@ export default function ChatPage() {
 
   if (!currentUser) {
     return (
-      <div className="fixed inset-0 top-16 left-64 right-0 flex items-center justify-center">
+      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <MessageSquare className="h-16 w-16 mx-auto text-muted-foreground opacity-20" />
-          <p className="text-muted-foreground">Chargement...</p>
+          <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-20" />
+          <p className="text-xs sm:text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -186,24 +186,24 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 top-16 left-64 right-0 flex">
+      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex">
         {/* Sidebar Skeleton */}
-        <div className="w-80 border-r p-4 space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <div className="w-full md:w-80 border-r p-3 md:p-4 space-y-3 md:space-y-4">
+          <Skeleton className="h-9 md:h-10 w-full" />
+          <Skeleton className="h-9 md:h-10 w-full" />
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex gap-3">
-              <Skeleton className="h-12 w-12 rounded-full" />
+            <div key={i} className="flex gap-2 md:gap-3">
+              <Skeleton className="h-10 w-10 md:h-12 md:w-12 rounded-full" />
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-3 md:h-4 w-3/4" />
+                <Skeleton className="h-2 md:h-3 w-1/2" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Main Content Skeleton */}
-        <div className="flex-1 p-4">
+        <div className="hidden md:flex flex-1 p-4">
           <Skeleton className="h-full w-full" />
         </div>
       </div>
@@ -211,10 +211,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="fixed inset-0 top-16 left-64 right-0">
-      <div className="grid grid-cols-[350px,1fr] h-full">
+    <div className="fixed inset-0 top-16 left-0 md:left-64 right-0">
+      <div className="grid grid-cols-1 md:grid-cols-[350px,1fr] h-full">
         {/* Sidebar - Liste des conversations */}
-        <Card className="rounded-none border-l-0 border-t-0 border-b-0">
+        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 ${selectedConversation ? 'hidden md:block' : 'block'}`}>
           <ChatConversationList
             conversations={conversations}
             currentUserId={currentUser.id}
@@ -227,7 +227,7 @@ export default function ChatPage() {
         </Card>
 
         {/* Main Content - Messages */}
-        <Card className="rounded-none border-0">
+        <Card className={`rounded-none border-0 ${selectedConversation ? 'block' : 'hidden md:block'}`}>
           {selectedConversation ? (
             <ChatMessageList
               conversation={selectedConversation}
@@ -235,26 +235,26 @@ export default function ChatPage() {
               onUpdate={handleRefreshConversation}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center p-8">
-              <div className="max-w-md space-y-6">
-                <div className="bg-muted rounded-full h-24 w-24 flex items-center justify-center mx-auto">
-                  <MessageSquare className="h-12 w-12 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-8">
+              <div className="max-w-md space-y-4 sm:space-y-6">
+                <div className="bg-muted rounded-full h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center mx-auto">
+                  <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold">
+                  <h2 className="text-xl sm:text-2xl font-semibold">
                     Bienvenue dans la messagerie Chronodil
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Sélectionnez une conversation existante ou créez-en une nouvelle
                     pour commencer à échanger avec vos collègues.
                   </p>
                 </div>
                 <Button
                   onClick={() => setNewChatDialogOpen(true)}
-                  className="bg-rusty-red hover:bg-ou-crimson"
+                  className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
                   size="lg"
                 >
-                  <MessageSquare className="mr-2 h-5 w-5" />
+                  <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Nouvelle conversation
                 </Button>
               </div>

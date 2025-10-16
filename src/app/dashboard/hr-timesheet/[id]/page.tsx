@@ -125,8 +125,8 @@ export default function HRTimesheetDetailPage() {
       } else {
         toast.error(result?.serverError || "Erreur lors de la soumission");
       }
-    } catch (error) {
-      toast.error("Erreur lors de la soumission");
+    } catch (error: any) {
+      toast.error(error.message || String(error) || "Erreur lors de la soumission");
     }
   };
 

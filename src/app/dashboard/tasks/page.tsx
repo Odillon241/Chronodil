@@ -30,27 +30,60 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen, Check } from "lucide-react";
+import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen, Check, Search, Calendar, Bell, Users, X, Volume2, VolumeX, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
-import { createTask, updateTask, deleteTask, getMyTasks } from "@/actions/task.actions";
+import { createTask, updateTask, deleteTask, getMyTasks, getAvailableUsersForSharing, updateTaskStatus, updateTaskPriority } from "@/actions/task.actions";
 import { getMyProjects } from "@/actions/project.actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { isSameDay } from "date-fns";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
+import { useTaskReminders } from "@/hooks/use-task-reminders";
+import { TaskStatusBadge } from "@/components/features/task-status-badge";
+import { TaskPriorityBadge } from "@/components/features/task-priority-badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TaskComments } from "@/components/features/task-comments";
+import { TaskActivityTimeline } from "@/components/features/task-activity-timeline";
+import { useSession } from "@/lib/auth-client";
 
 export default function TasksPage() {
+  const { data: session } = useSession();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [tasks, setTasks] = useState<any[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showCalendar, setShowCalendar] = useState(true);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  // Activer les rappels de tâches
+  useTaskReminders({ tasks });
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     projectId: "none",
     estimatedHours: "",
+    dueDate: "",
+    reminderDate: "",
+    reminderTime: "",
+    soundEnabled: true,
+    isShared: false,
+    status: "TODO",
+    priority: "MEDIUM",
   });
 
   useEffect(() => {
@@ -60,6 +93,34 @@ export default function TasksPage() {
   useEffect(() => {
     loadTasks();
   }, [selectedProject]);
+
+  useEffect(() => {
+    // Filtrer les tâches en temps réel basé sur la recherche, statut et priorité
+    let filtered = tasks;
+
+    // Filtre par recherche
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (task) =>
+          task.name.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.Project?.name.toLowerCase().includes(query)
+      );
+    }
+
+    // Filtre par statut
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((task) => task.status === statusFilter);
+    }
+
+    // Filtre par priorité
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter((task) => task.priority === priorityFilter);
+    }
+
+    setFilteredTasks(filtered);
+  }, [searchQuery, tasks, statusFilter, priorityFilter]);
 
   const loadProjects = async () => {
     try {
@@ -79,10 +140,24 @@ export default function TasksPage() {
       });
       if (result?.data) {
         setTasks(result.data);
+        setFilteredTasks(result.data);
       }
     } catch (error) {
       console.error("Erreur lors du chargement des tâches:", error);
       toast.error("Erreur lors du chargement");
+    }
+  };
+
+  const loadAvailableUsers = async (projectId?: string) => {
+    try {
+      const result = await getAvailableUsersForSharing({
+        projectId: projectId === "none" ? undefined : projectId,
+      });
+      if (result?.data) {
+        setAvailableUsers(result.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des utilisateurs:", error);
     }
   };
 
@@ -97,6 +172,10 @@ export default function TasksPage() {
           name: formData.name,
           description: formData.description,
           estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
+          dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
+          reminderDate: formData.reminderDate ? new Date(formData.reminderDate) : undefined,
+          reminderTime: formData.reminderTime || undefined,
+          soundEnabled: formData.soundEnabled,
         });
 
         if (result?.data) {
@@ -110,10 +189,21 @@ export default function TasksPage() {
           description: formData.description,
           projectId: formData.projectId === "none" ? undefined : formData.projectId || undefined,
           estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
+          dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
+          reminderDate: formData.reminderDate ? new Date(formData.reminderDate) : undefined,
+          reminderTime: formData.reminderTime || undefined,
+          soundEnabled: formData.soundEnabled,
+          isShared: formData.isShared,
+          sharedWith: formData.isShared ? selectedUsers : undefined,
+          status: formData.status as "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED",
+          priority: formData.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
         });
 
         if (result?.data) {
           toast.success("Tâche créée !");
+          if (formData.isShared && selectedUsers.length > 0) {
+            toast.success(`Tâche partagée avec ${selectedUsers.length} utilisateur(s)`);
+          }
         } else {
           toast.error(result?.serverError || "Erreur");
         }
@@ -134,8 +224,15 @@ export default function TasksPage() {
     setFormData({
       name: task.name,
       description: task.description || "",
-      projectId: task.projectId,
+      projectId: task.projectId || "none",
       estimatedHours: task.estimatedHours?.toString() || "",
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
+      reminderDate: task.reminderDate ? new Date(task.reminderDate).toISOString().split("T")[0] : "",
+      reminderTime: task.reminderTime || "",
+      soundEnabled: task.soundEnabled !== undefined ? task.soundEnabled : true,
+      isShared: task.isShared || false,
+      status: task.status || "TODO",
+      priority: task.priority || "MEDIUM",
     });
     setIsDialogOpen(true);
   };
@@ -183,7 +280,15 @@ export default function TasksPage() {
       description: "",
       projectId: "none",
       estimatedHours: "",
+      dueDate: "",
+      reminderDate: "",
+      reminderTime: "",
+      soundEnabled: true,
+      isShared: false,
+      status: "TODO",
+      priority: "MEDIUM",
     });
+    setSelectedUsers([]);
     setEditingTask(null);
   };
 
@@ -198,10 +303,10 @@ export default function TasksPage() {
   };
 
   const handleSelectAll = () => {
-    if (selectedTasks.size === tasks.length) {
+    if (selectedTasks.size === filteredTasks.length) {
       setSelectedTasks(new Set());
     } else {
-      setSelectedTasks(new Set(tasks.map(task => task.id)));
+      setSelectedTasks(new Set(filteredTasks.map(task => task.id)));
     }
   };
 
@@ -228,8 +333,15 @@ export default function TasksPage() {
     });
   };
 
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
   // Trier les tâches par projet puis par nom
-  const sortedTasks = [...tasks].sort((a, b) => {
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
     const projectA = a.Project?.name || "Sans projet";
     const projectB = b.Project?.name || "Sans projet";
     if (projectA !== projectB) {
@@ -239,38 +351,68 @@ export default function TasksPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tâches</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tâches</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Gérez les tâches de vos projets
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="flex items-center gap-2 flex-1 sm:flex-initial text-xs sm:text-sm"
+          >
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{showCalendar ? "Masquer" : "Afficher"} le calendrier</span>
+            <span className="sm:hidden">{showCalendar ? "Masquer" : "Calendrier"}</span>
+          </Button>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
         }}>
           <DialogTrigger asChild>
-            <Button className="bg-rusty-red hover:bg-ou-crimson">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouvelle tâche
+            <Button className="bg-rusty-red hover:bg-ou-crimson flex-1 sm:flex-initial text-xs sm:text-sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Nouvelle tâche</span>
+              <span className="sm:hidden">Nouvelle</span>
             </Button>
           </DialogTrigger>
-          <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingTask ? "Modifier la tâche" : "Nouvelle tâche"}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-base sm:text-lg">{editingTask ? "Modifier la tâche" : "Nouvelle tâche"}</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
                 {editingTask ? "Modifiez les informations de la tâche" : "Créez une nouvelle tâche pour votre projet"}
               </DialogDescription>
             </DialogHeader>
+
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="details" className="text-xs sm:text-sm">Détails</TabsTrigger>
+                <TabsTrigger value="comments" disabled={!editingTask} className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Commentaires</span>
+                  <span className="sm:hidden">💬</span>
+                  {editingTask && editingTask._count?.TaskComment > 0 && <span className="ml-1">({editingTask._count.TaskComment})</span>}
+                </TabsTrigger>
+                <TabsTrigger value="activity" disabled={!editingTask} className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Historique</span>
+                  <span className="sm:hidden">📜</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="details" className="mt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {!editingTask && (
                 <div className="space-y-2">
                   <Label htmlFor="project">Projet</Label>
                   <Select
                     value={formData.projectId}
-                    onValueChange={(value) => setFormData({ ...formData, projectId: value })}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, projectId: value });
+                        loadAvailableUsers(value);
+                      }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
@@ -309,8 +451,48 @@ export default function TasksPage() {
                 />
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="status" className="text-xs sm:text-sm">Statut</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectValue placeholder="Sélectionnez le statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TODO">À faire</SelectItem>
+                      <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                      <SelectItem value="REVIEW">Revue</SelectItem>
+                      <SelectItem value="DONE">Terminé</SelectItem>
+                      <SelectItem value="BLOCKED">Bloqué</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="priority" className="text-xs sm:text-sm">Priorité</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                  >
+                    <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectValue placeholder="Sélectionnez la priorité" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">Basse</SelectItem>
+                      <SelectItem value="MEDIUM">Moyenne</SelectItem>
+                      <SelectItem value="HIGH">Haute</SelectItem>
+                      <SelectItem value="URGENT">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="estimatedHours">Estimation (heures)</Label>
+                <Label htmlFor="estimatedHours" className="text-xs sm:text-sm">Estimation (heures)</Label>
                 <Input
                   id="estimatedHours"
                   type="number"
@@ -319,10 +501,143 @@ export default function TasksPage() {
                   value={formData.estimatedHours}
                   onChange={(e) => setFormData({ ...formData, estimatedHours: e.target.value })}
                   placeholder="Ex: 40"
+                  className="text-sm"
                 />
               </div>
 
-              <div className="flex gap-2 justify-end">
+                  <div className="space-y-2">
+                    <Label htmlFor="dueDate" className="text-xs sm:text-sm">Date d'échéance</Label>
+                    <Input
+                      id="dueDate"
+                      type="date"
+                      value={formData.dueDate}
+                      onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="reminderDate" className="flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    Date de rappel
+                  </Label>
+                  <Input
+                    id="reminderDate"
+                    type="date"
+                    value={formData.reminderDate}
+                    onChange={(e) => setFormData({ ...formData, reminderDate: e.target.value })}
+                  />
+                </div>
+
+                {formData.reminderDate && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reminderTime" className="text-xs sm:text-sm">Heure du rappel</Label>
+                      <Input
+                        id="reminderTime"
+                        type="time"
+                        value={formData.reminderTime}
+                        onChange={(e) => setFormData({ ...formData, reminderTime: e.target.value })}
+                        required={!!formData.reminderDate}
+                        className="text-sm"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="soundEnabled" className="flex items-center gap-2 text-xs sm:text-sm">
+                        {formData.soundEnabled ? <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />}
+                        Notification sonore
+                      </Label>
+                      <div className="flex items-center h-10 px-3 border rounded-md">
+                        <Checkbox
+                          id="soundEnabled"
+                          checked={formData.soundEnabled}
+                          onCheckedChange={(checked) =>
+                            setFormData({ ...formData, soundEnabled: checked as boolean })
+                          }
+                        />
+                        <label htmlFor="soundEnabled" className="ml-2 text-xs sm:text-sm cursor-pointer">
+                          {formData.soundEnabled ? "Activé" : "Désactivé"}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {formData.reminderDate && formData.reminderTime && (
+                  <p className="text-xs text-muted-foreground">
+                    Vous serez notifié le {new Date(formData.reminderDate).toLocaleDateString('fr-FR')} à {formData.reminderTime}
+                    {formData.soundEnabled && " avec un son de notification"}
+                  </p>
+                )}
+
+                {!editingTask && (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="isShared"
+                        checked={formData.isShared}
+                        onCheckedChange={(checked) => {
+                          setFormData({ ...formData, isShared: checked as boolean });
+                          if (checked && availableUsers.length === 0) {
+                            loadAvailableUsers(formData.projectId === "none" ? undefined : formData.projectId);
+                          }
+                        }}
+                      />
+                      <Label htmlFor="isShared" className="flex items-center gap-2 cursor-pointer">
+                        <Users className="h-4 w-4" />
+                        Partager cette tâche avec d'autres utilisateurs
+                      </Label>
+                    </div>
+
+                    {formData.isShared && (
+                      <div className="space-y-2">
+                        <Label>Partager avec :</Label>
+                        <div className="border rounded-md p-4 max-h-[200px] overflow-y-auto space-y-2">
+                          {availableUsers.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                              Aucun utilisateur disponible pour le partage
+                            </p>
+                          ) : (
+                            availableUsers.map((user) => (
+                              <div
+                                key={user.id}
+                                className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-accent ${
+                                  selectedUsers.includes(user.id) ? "bg-accent" : ""
+                                }`}
+                                onClick={() => toggleUserSelection(user.id)}
+                              >
+                                <Checkbox
+                                  checked={selectedUsers.includes(user.id)}
+                                  onCheckedChange={() => toggleUserSelection(user.id)}
+                                />
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={user.avatar || undefined} />
+                                  <AvatarFallback>
+                                    {user.name.split(" ").map((n: string) => n[0]).join("")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium">{user.name}</p>
+                                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                                </div>
+                                <Badge variant="outline">{user.role}</Badge>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {selectedUsers.length > 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            {selectedUsers.length} utilisateur(s) sélectionné(s)
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-2 justify-end pt-4 border-t">
                 <Button
                   type="button"
                   variant="outline"
@@ -330,82 +645,282 @@ export default function TasksPage() {
                     setIsDialogOpen(false);
                     resetForm();
                   }}
+                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-rusty-red hover:bg-ou-crimson"
+                  className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
                   disabled={isLoading}
                 >
                   {isLoading ? "Enregistrement..." : editingTask ? "Mettre à jour" : "Créer"}
                 </Button>
               </div>
             </form>
+          </TabsContent>
+
+          <TabsContent value="comments" className="mt-4">
+            {editingTask && session?.user && (
+              <TaskComments 
+                taskId={editingTask.id} 
+                currentUserId={session.user.id}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-4">
+            {editingTask && (
+              <TaskActivityTimeline taskId={editingTask.id} />
+            )}
+          </TabsContent>
+        </Tabs>
           </DialogContent>
         </Dialog>
       </div>
+      </div>
 
-      <div className="flex gap-4 items-center justify-between">
-        <Select value={selectedProject} onValueChange={setSelectedProject}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Tous les projets" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les projets</SelectItem>
-            {projects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
+      {/* Calendrier */}
+      {showCalendar && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+              Calendrier des tâches
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Visualisez vos tâches par date d'échéance
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Colonne 1 : Calendrier */}
+              <div className="flex flex-col">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  numberOfMonths={2}
+                  className="rounded-lg border shadow-sm"
+                  modifiers={{
+                    hasTasks: tasks
+                      .filter((task) => task.dueDate)
+                      .map((task) => new Date(task.dueDate)),
+                    hasReminder: tasks
+                      .filter((task) => task.reminderDate)
+                      .map((task) => new Date(task.reminderDate)),
+                  }}
+                  modifiersClassNames={{
+                    hasTasks: "bg-rusty-red/10 font-bold",
+                    hasReminder: "border-amber-500 border-2",
+                  }}
+                />
+                
+                {/* Légende */}
+                <div className="flex flex-col gap-2 mt-4 pt-4 border-t text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-rusty-red/10 border flex-shrink-0" />
+                    <span>Tâches à échéance</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded border-2 border-amber-500 flex-shrink-0" />
+                    <span>Rappel</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-3 w-3 flex-shrink-0" />
+                    <span>Tâche partagée</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Colonne 2 : Graphique */}
+              <div className="flex flex-col">
+                <h3 className="text-base font-semibold mb-4">Répartition par projet</h3>
+                {(() => {
+                  const projectStats = projects.map(project => {
+                    const projectTasks = tasks.filter(task => task.Project?.name === project.name);
+                    return {
+                      name: project.name.length > 12 ? project.name.substring(0, 12) + "..." : project.name,
+                      tasks: projectTasks.length,
+                      fill: project.color || "hsl(var(--muted))",
+                    };
+                  }).filter(stat => stat.tasks > 0);
+
+                  const tasklessCount = tasks.filter(task => !task.Project).length;
+                  if (tasklessCount > 0) {
+                    projectStats.push({
+                      name: "Sans projet",
+                      tasks: tasklessCount,
+                      fill: "hsl(var(--muted-foreground))",
+                    });
+                  }
+
+                  const chartConfig = {
+                    tasks: {
+                      label: "Tâches",
+                      color: "hsl(var(--rusty-red))",
+                    },
+                  };
+
+                  if (projectStats.length === 0) {
+                    return (
+                      <div className="flex items-center justify-center flex-1 text-sm text-muted-foreground">
+                        Aucune donnée à afficher
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <ChartContainer config={chartConfig} className="h-full w-full flex-1">
+                      <BarChart data={projectStats}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="name" 
+                          fontSize={9}
+                          angle={-45}
+                          textAnchor="end"
+                          height={60}
+                          tickLine={false} 
+                          axisLine={false} 
+                        />
+                        <YAxis fontSize={10} tickLine={false} axisLine={false} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey="tasks" radius={[4, 4, 0, 0]}>
+                          {projectStats.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ChartContainer>
+                  );
+                })()}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Barre de recherche et filtres */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher une tâche..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 sm:pl-9 text-xs sm:text-sm"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[140px] text-xs sm:text-sm">
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="TODO">À faire</SelectItem>
+                <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                <SelectItem value="REVIEW">Revue</SelectItem>
+                <SelectItem value="DONE">Terminé</SelectItem>
+                <SelectItem value="BLOCKED">Bloqué</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-full sm:w-[130px] text-xs sm:text-sm">
+                <SelectValue placeholder="Priorité" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes</SelectItem>
+                <SelectItem value="LOW">Basse</SelectItem>
+                <SelectItem value="MEDIUM">Moyenne</SelectItem>
+                <SelectItem value="HIGH">Haute</SelectItem>
+                <SelectItem value="URGENT">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedProject} onValueChange={setSelectedProject}>
+              <SelectTrigger className="w-full sm:w-[160px] text-xs sm:text-sm">
+                <SelectValue placeholder="Projets" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les projets</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {selectedTasks.size > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 bg-muted/50 rounded-lg">
+            <span className="text-xs sm:text-sm text-muted-foreground">
               {selectedTasks.size} tâche(s) sélectionnée(s)
             </span>
             <Button
               variant="destructive"
               size="sm"
               onClick={handleDeleteSelected}
+              className="w-full sm:w-auto text-xs sm:text-sm"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Supprimer sélection
             </Button>
           </div>
         )}
       </div>
 
-      {tasks.length === 0 ? (
+      {filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FolderOpen className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center">
-              Aucune tâche trouvée
+            <FolderOpen className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground text-center">
+              {searchQuery ? "Aucune tâche trouvée pour votre recherche" : "Aucune tâche trouvée"}
             </p>
-            <p className="text-sm text-muted-foreground text-center mt-2">
-              Créez votre première tâche pour commencer
+            <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
+              {searchQuery ? "Essayez avec d'autres mots-clés" : "Créez votre première tâche pour commencer"}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <Table>
+        <>
+          {/* Desktop Table View */}
+          <Card className="hidden lg:block">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
                   <Checkbox
-                    checked={selectedTasks.size === tasks.length && tasks.length > 0}
+                    checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>Statut</TableHead>
+                <TableHead>Actif</TableHead>
                 <TableHead>Nom</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead>Priorité</TableHead>
                 <TableHead>Projet</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Échéance</TableHead>
                 <TableHead>Estimation</TableHead>
+                <TableHead>Membres</TableHead>
                 <TableHead>Saisies</TableHead>
                 <TableHead className="w-20">Actions</TableHead>
               </TableRow>
@@ -443,7 +958,120 @@ export default function TasksPage() {
                           Inactive
                         </span>
                       )}
+                      {task.isShared && (
+                        <Users className="h-4 w-4 text-blue-600" aria-label="Tâche partagée" />
+                      )}
+                      {task.reminderDate && (
+                        <Bell className="h-4 w-4 text-amber-600" aria-label="Rappel activé" />
+                      )}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                          <TaskStatusBadge status={task.status} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskStatus({ id: task.id, status: "TODO" });
+                          if (result?.data) {
+                            toast.success("Statut mis à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          À faire
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
+                          if (result?.data) {
+                            toast.success("Statut mis à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          En cours
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
+                          if (result?.data) {
+                            toast.success("Statut mis à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          Revue
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskStatus({ id: task.id, status: "DONE" });
+                          if (result?.data) {
+                            toast.success("Tâche terminée !");
+                            loadTasks();
+                          }
+                        }}>
+                          Terminé
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
+                          if (result?.data) {
+                            toast.success("Statut mis à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          Bloqué
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                          <TaskPriorityBadge priority={task.priority} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
+                          if (result?.data) {
+                            toast.success("Priorité mise à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          Basse
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
+                          if (result?.data) {
+                            toast.success("Priorité mise à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          Moyenne
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
+                          if (result?.data) {
+                            toast.success("Priorité mise à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          Haute
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
+                          if (result?.data) {
+                            toast.success("Priorité mise à jour");
+                            loadTasks();
+                          }
+                        }}>
+                          Urgent
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -462,9 +1090,41 @@ export default function TasksPage() {
                     </span>
                   </TableCell>
                   <TableCell>
+                    {task.dueDate ? (
+                      <span className="text-sm">
+                        {new Date(task.dueDate).toLocaleDateString("fr-FR")}
+                      </span>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <span className="text-sm">
                       {task.estimatedHours ? `${task.estimatedHours}h` : "-"}
                     </span>
+                  </TableCell>
+                  <TableCell>
+                    {task.TaskMember && task.TaskMember.length > 0 ? (
+                      <div className="flex -space-x-2">
+                        {task.TaskMember.slice(0, 3).map((member: any) => (
+                          <Avatar key={member.User.id} className="h-6 w-6 border-2 border-background">
+                            <AvatarImage src={member.User.avatar || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {member.User.name.split(" ").map((n: string) => n[0]).join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {task.TaskMember.length > 3 && (
+                          <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">
+                              +{task.TaskMember.length - 3}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
@@ -496,6 +1156,181 @@ export default function TasksPage() {
             </TableBody>
           </Table>
         </Card>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-3">
+          {sortedTasks.map((task: any) => (
+            <Card key={task.id} className="p-3">
+              <div className="space-y-3">
+                {/* Header: Name + Badges */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Checkbox
+                        checked={selectedTasks.has(task.id)}
+                        onCheckedChange={() => handleSelectTask(task.id)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => handleToggleActive(task)}
+                      >
+                        {task.isActive ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                    <h3 className={`font-medium text-sm ${!task.isActive && "line-through text-muted-foreground"}`}>
+                      {task.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      {task.isShared && <Users className="h-3 w-3 text-blue-600" />}
+                      {task.reminderDate && <Bell className="h-3 w-3 text-amber-600" />}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEdit(task)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Status & Priority */}
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                        <TaskStatusBadge status={task.status} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskStatus({ id: task.id, status: "TODO" });
+                        if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                      }}>À faire</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
+                        if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                      }}>En cours</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
+                        if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                      }}>Revue</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskStatus({ id: task.id, status: "DONE" });
+                        if (result?.data) { toast.success("Tâche terminée !"); loadTasks(); }
+                      }}>Terminé</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
+                        if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                      }}>Bloqué</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                        <TaskPriorityBadge priority={task.priority} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
+                        if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                      }}>Basse</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
+                        if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                      }}>Moyenne</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
+                        if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                      }}>Haute</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
+                        if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                      }}>Urgent</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Project */}
+                <div className="flex items-center gap-2 text-xs">
+                  <div
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: task.Project?.color || '#6b7280' }}
+                  />
+                  <span className="truncate">{task.Project?.name || "Sans projet"}</span>
+                </div>
+
+                {/* Description */}
+                {task.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
+                )}
+
+                {/* Info row */}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t text-xs">
+                  {task.dueDate && (
+                    <div>
+                      <span className="text-muted-foreground">Échéance: </span>
+                      <span>{new Date(task.dueDate).toLocaleDateString("fr-FR", { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )}
+                  {task.estimatedHours && (
+                    <div>
+                      <span className="text-muted-foreground">Estimation: </span>
+                      <span>{task.estimatedHours}h</span>
+                    </div>
+                  )}
+                  {task._count.TimesheetEntry > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Saisies: </span>
+                      <span>{task._count.TimesheetEntry}</span>
+                    </div>
+                  )}
+                  {task.TaskMember && task.TaskMember.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Membres: </span>
+                      <div className="flex -space-x-1">
+                        {task.TaskMember.slice(0, 2).map((member: any) => (
+                          <Avatar key={member.User.id} className="h-5 w-5 border border-background">
+                            <AvatarImage src={member.User.avatar || undefined} />
+                            <AvatarFallback className="text-[8px]">
+                              {member.User.name.split(" ").map((n: string) => n[0]).join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {task.TaskMember.length > 2 && (
+                          <span className="text-[10px]">+{task.TaskMember.length - 2}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+        </>
       )}
       <ConfirmationDialog />
     </div>

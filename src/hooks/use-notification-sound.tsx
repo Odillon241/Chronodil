@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 /**
  * Hook pour gérer les sons de notification
  * Permet de jouer un son lorsqu'une nouvelle notification arrive
  */
 export function useNotificationSound() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isEnabled, setIsEnabled] = useState(true);
   const [volume, setVolume] = useState(0.5);
   const [selectedSound, setSelectedSound] = useState<"default" | "soft" | "alert">("default");
@@ -31,30 +30,9 @@ export function useNotificationSound() {
     }
   }, []);
 
-  // Initialiser l'élément audio
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      audioRef.current = new Audio();
-      audioRef.current.volume = volume;
-    }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  // Mettre à jour le volume quand il change
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
   /**
    * Joue un son de notification
-   * Utilise soit un fichier audio personnalisé, soit génère un son via Web Audio API
+   * Utilise Web Audio API pour générer un son synthétisé
    */
   const playSound = useCallback(
     async (soundType?: "default" | "soft" | "alert") => {
@@ -63,29 +41,13 @@ export function useNotificationSound() {
       const type = soundType || selectedSound;
 
       try {
-        // Essayer de charger le fichier audio personnalisé d'abord
-        const soundPath = `/sounds/notification-${type}.mp3`;
-        
-        if (audioRef.current) {
-          audioRef.current.src = soundPath;
-          audioRef.current.volume = volume;
-          
-          // Tenter de jouer le fichier audio
-          try {
-            await audioRef.current.play();
-          } catch (error) {
-            // Si le fichier n'existe pas, utiliser Web Audio API pour générer un son
-            console.log("Fichier audio non trouvé, génération d'un son via Web Audio API");
-            generateBeepSound(type);
-          }
-        } else {
-          generateBeepSound(type);
-        }
+        // Utiliser directement Web Audio API pour générer le son
+        generateBeepSound(type);
       } catch (error) {
         console.error("Erreur lors de la lecture du son:", error);
       }
     },
-    [isEnabled, volume, selectedSound]
+    [isEnabled, selectedSound, generateBeepSound]
   );
 
   /**

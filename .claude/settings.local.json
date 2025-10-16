@@ -43,7 +43,11 @@
       "Bash(tsx scripts/reset-and-create-admin.ts:*)",
       "Bash(curl:*)",
       "Bash(tsx scripts/check-projects.ts:*)",
-      "Bash(tsx scripts/check-current-user-role.ts:*)"
+      "Bash(tsx scripts/check-current-user-role.ts:*)",
+      "Bash(tsx scripts/test-validation.ts:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

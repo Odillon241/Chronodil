@@ -3,10 +3,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, format, startOfDay, endOfDay } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, format, startOfDay, endOfDay, subWeeks } from "date-fns";
 import { TimesheetRadarChart } from "@/components/features/timesheet-radar-chart";
 import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
+import { StatCardWithComparison } from "@/components/features/stat-card-with-comparison";
+import { WeeklyGoalSettings } from "@/components/features/weekly-goal-settings";
 
 async function getDashboardData(userId: string) {
   try {
@@ -14,10 +15,19 @@ async function getDashboardData(userId: string) {
     // Normalize dates to start/end of day to avoid timezone issues
     const weekStart = startOfDay(startOfWeek(now, { weekStartsOn: 1 }));
     const weekEnd = endOfDay(endOfWeek(now, { weekStartsOn: 1 }));
+    const prevWeekStart = startOfDay(subWeeks(weekStart, 1));
+    const prevWeekEnd = endOfDay(subWeeks(weekEnd, 1));
     const monthStart = startOfDay(startOfMonth(now));
     const monthEnd = endOfDay(endOfMonth(now));
 
-  // Stats de la semaine
+  // Récupérer l'objectif hebdomadaire de l'utilisateur
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { weeklyGoal: true },
+  });
+  const weeklyGoal = user?.weeklyGoal || 40;
+
+  // Stats de la semaine actuelle
   const weekEntries = await prisma.timesheetEntry.findMany({
     where: {
       userId,
@@ -26,6 +36,16 @@ async function getDashboardData(userId: string) {
   });
 
   const weekHours = weekEntries.reduce((sum, entry) => sum + entry.duration, 0);
+
+  // Stats de la semaine précédente (pour comparaison)
+  const prevWeekEntries = await prisma.timesheetEntry.findMany({
+    where: {
+      userId,
+      date: { gte: prevWeekStart, lte: prevWeekEnd },
+    },
+  });
+
+  const prevWeekHours = prevWeekEntries.reduce((sum, entry) => sum + entry.duration, 0);
 
   // Stats du mois
   const monthEntries = await prisma.timesheetEntry.findMany({
@@ -128,11 +148,13 @@ async function getDashboardData(userId: string) {
 
     return {
       weekHours,
+      prevWeekHours,
       approvedHours,
       pendingHours,
       recentEntries,
       projectsWithDetails,
       radarData,
+      weeklyGoal,
     };
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
@@ -152,110 +174,100 @@ export default async function DashboardPage() {
   const data = await getDashboardData(session.user.id);
   const maxHours = Math.max(...data.projectsWithDetails.map((p) => p.hours), 1);
 
-  const stats = [
-    {
-      title: "Heures cette semaine",
-      value: `${data.weekHours.toFixed(1)}h`,
-      description: "Semaine en cours",
-      icon: Clock,
-      color: "text-rusty-red",
-      bgColor: "bg-rusty-red/10",
-    },
-    {
-      title: "Temps approuvés",
-      value: `${data.approvedHours.toFixed(1)}h`,
-      description: "Ce mois-ci",
-      icon: CheckCircle2,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-    },
-    {
-      title: "En attente",
-      value: `${data.pendingHours.toFixed(1)}h`,
-      description: "À faire valider",
-      icon: AlertCircle,
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
-    },
-    {
-      title: "Progression",
-      value: `${Math.round((data.weekHours / 40) * 100)}%`,
-      description: "Objectif hebdomadaire (40h)",
-      icon: TrendingUp,
-      color: "text-light-cyan-300",
-      bgColor: "bg-light-cyan/20",
-    },
-  ];
-
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
-        <p className="text-muted-foreground">
-          Bienvenue {session.user.name} ! Voici un aperçu de votre activité.
-        </p>
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tableau de bord</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Bienvenue {session.user.name} ! Voici un aperçu de votre activité.
+          </p>
+        </div>
+        <WeeklyGoalSettings currentGoal={data.weeklyGoal} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <div className={`${stat.bgColor} p-2 rounded-md`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCardWithComparison
+          title="Heures cette semaine"
+          value={`${data.weekHours.toFixed(1)}h`}
+          description="Semaine en cours"
+          iconName="clock"
+          color="text-rusty-red"
+          bgColor="bg-rusty-red/10"
+          currentValue={data.weekHours}
+          previousValue={data.prevWeekHours}
+        />
+        <StatCardWithComparison
+          title="Temps approuvés"
+          value={`${data.approvedHours.toFixed(1)}h`}
+          description="Ce mois-ci"
+          iconName="check-circle"
+          color="text-green-600"
+          bgColor="bg-green-100"
+        />
+        <StatCardWithComparison
+          title="En attente"
+          value={`${data.pendingHours.toFixed(1)}h`}
+          description="À faire valider"
+          iconName="alert-circle"
+          color="text-amber-600"
+          bgColor="bg-amber-100"
+        />
+        <StatCardWithComparison
+          title="Progression"
+          value={`${Math.round((data.weekHours / data.weeklyGoal) * 100)}%`}
+          description={`Objectif hebdomadaire (${data.weeklyGoal}h)`}
+          iconName="trending-up"
+          color="text-light-cyan-300"
+          bgColor="bg-light-cyan/20"
+          currentValue={data.weekHours}
+          previousValue={data.prevWeekHours}
+        />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 lg:col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+        <div className="lg:col-span-4">
           <TimesheetRadarChart
             data={data.radarData}
             weekTotal={data.weekHours}
-            weekTarget={40}
+            weekTarget={data.weeklyGoal}
           />
         </div>
 
-        <Card className="col-span-4 lg:col-span-3">
+        <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Activité récente</CardTitle>
-            <CardDescription>Vos dernières saisies de temps</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Activité récente</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Vos dernières saisies de temps</CardDescription>
           </CardHeader>
           <CardContent>
             {data.recentEntries.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center py-8">
                 Aucune saisie récente
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {data.recentEntries.map((entry) => (
                   <div
                     key={entry.id}
-                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-b pb-3 sm:pb-4 last:border-0 last:pb-0"
                   >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium leading-none truncate">
                         {entry.Project?.name || "Sans projet"}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {entry.Task?.name || "Sans tâche"}
                       </p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium">{entry.duration}h</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs sm:text-sm font-medium">{entry.duration}h</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
                           {new Date(entry.date).toLocaleDateString("fr-FR")}
                         </p>
                       </div>
                       <div
-                        className={`w-2 h-2 rounded-full ${
+                        className={`w-2 h-2 rounded-full shrink-0 ${
                           entry.status === "APPROVED"
                             ? "bg-green-500"
                             : entry.status === "SUBMITTED"
@@ -272,7 +284,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <ProjectDistributionChart
           data={data.projectsWithDetails}
           title="Répartition par projet"

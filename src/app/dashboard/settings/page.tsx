@@ -317,42 +317,42 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Paramètres</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Configuration de l'application et gestion des référentiels
         </p>
       </div>
 
       <Tabs defaultValue="holidays" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="holidays">Jours fériés</TabsTrigger>
-          <TabsTrigger value="departments">Départements</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="reminders">Rappels</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto gap-1">
+          <TabsTrigger value="holidays" className="text-xs sm:text-sm">Jours fériés</TabsTrigger>
+          <TabsTrigger value="departments" className="text-xs sm:text-sm">Départements</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
+          <TabsTrigger value="reminders" className="text-xs sm:text-sm">Rappels</TabsTrigger>
           {["ADMIN", "DIRECTEUR", "HR"].includes((session?.user as any)?.role) && (
-            <TabsTrigger value="users">Utilisateurs</TabsTrigger>
+            <TabsTrigger value="users" className="text-xs sm:text-sm">Utilisateurs</TabsTrigger>
           )}
-          <TabsTrigger value="general">Général</TabsTrigger>
+          <TabsTrigger value="general" className="text-xs sm:text-sm">Général</TabsTrigger>
         </TabsList>
 
         {/* Jours fériés */}
         <TabsContent value="holidays" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <CardTitle>Jours fériés</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Jours fériés</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Gérez les jours fériés pour le calcul des temps (Gabon)
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         disabled={isInitializingHolidays}
-                        className="border-powder-blue text-powder-blue hover:bg-powder-blue hover:text-white"
+                        className="w-full sm:w-auto border-powder-blue text-powder-blue hover:bg-powder-blue hover:text-white text-xs sm:text-sm"
                       >
                         {isInitializingHolidays ? "Ajout en cours..." : "🇬🇦 Initialiser jours fériés"}
                       </Button>
@@ -384,12 +384,12 @@ export default function SettingsPage() {
                   </Popover>
                   <Dialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-rusty-red hover:bg-ou-crimson">
-                        <Plus className="mr-2 h-4 w-4" />
+                      <Button className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+                        <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Ajouter
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-[95vw] sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Nouveau jour férié</DialogTitle>
                       <DialogDescription>
@@ -439,11 +439,11 @@ export default function SettingsPage() {
                         />
                       </div>
 
-                      <div className="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => setIsHolidayDialogOpen(false)}>
+                      <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                        <Button type="button" variant="outline" onClick={() => setIsHolidayDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
                           Annuler
                         </Button>
-                        <Button type="submit" className="bg-rusty-red hover:bg-ou-crimson">
+                        <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
                           Ajouter
                         </Button>
                       </div>
@@ -494,41 +494,73 @@ export default function SettingsPage() {
                   </Popover>
                 </div>
               ) : (
-                <div className="border rounded-lg">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="text-left p-3 font-medium">Nom</th>
-                        <th className="text-left p-3 font-medium">Date</th>
-                        <th className="text-left p-3 font-medium">Description</th>
-                        <th className="text-right p-3 font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {holidays.map((holiday) => (
-                        <tr key={holiday.id} className="border-b last:border-0 hover:bg-muted/30">
-                          <td className="p-3 font-medium">{holiday.name}</td>
-                          <td className="p-3 text-sm text-muted-foreground">
-                            {format(new Date(holiday.date), "dd/MM/yyyy")}
-                          </td>
-                          <td className="p-3 text-sm text-muted-foreground">
-                            {holiday.description || "-"}
-                          </td>
-                          <td className="p-3 text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteHoliday(holiday.id)}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </td>
+                <>
+                  {/* Desktop table view */}
+                  <div className="hidden md:block border rounded-lg overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="text-left p-3 font-medium text-sm">Nom</th>
+                          <th className="text-left p-3 font-medium text-sm">Date</th>
+                          <th className="text-left p-3 font-medium text-sm">Description</th>
+                          <th className="text-right p-3 font-medium text-sm">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {holidays.map((holiday) => (
+                          <tr key={holiday.id} className="border-b last:border-0 hover:bg-muted/30">
+                            <td className="p-3 font-medium text-sm">{holiday.name}</td>
+                            <td className="p-3 text-sm text-muted-foreground">
+                              {format(new Date(holiday.date), "dd/MM/yyyy")}
+                            </td>
+                            <td className="p-3 text-sm text-muted-foreground">
+                              {holiday.description || "-"}
+                            </td>
+                            <td className="p-3 text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteHoliday(holiday.id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile card view */}
+                  <div className="md:hidden space-y-2">
+                    {holidays.map((holiday) => (
+                      <div key={holiday.id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{holiday.name}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {format(new Date(holiday.date), "dd/MM/yyyy")}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteHoliday(holiday.id)}
+                            className="text-red-600 hover:text-red-800 -mt-1 -mr-2"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {holiday.description && (
+                          <div className="text-xs text-muted-foreground border-t pt-2">
+                            {holiday.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -538,21 +570,21 @@ export default function SettingsPage() {
         <TabsContent value="departments" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <CardTitle>Départements</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Départements</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Gérez les départements de votre organisation
                   </CardDescription>
                 </div>
                 <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-rusty-red hover:bg-ou-crimson">
-                      <Plus className="mr-2 h-4 w-4" />
+                    <Button className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+                      <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       Ajouter
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-[95vw] sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Nouveau département</DialogTitle>
                       <DialogDescription>
@@ -593,11 +625,11 @@ export default function SettingsPage() {
                         />
                       </div>
 
-                      <div className="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => setIsDepartmentDialogOpen(false)}>
+                      <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                        <Button type="button" variant="outline" onClick={() => setIsDepartmentDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
                           Annuler
                         </Button>
-                        <Button type="submit" className="bg-rusty-red hover:bg-ou-crimson">
+                        <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
                           Créer
                         </Button>
                       </div>
@@ -614,13 +646,13 @@ export default function SettingsPage() {
                   {departments.map((dept) => (
                     <div
                       key={dept.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-muted/50 gap-3"
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">{dept.name}</div>
-                          <div className="text-sm text-muted-foreground">
+                      <div className="flex items-start sm:items-center gap-3 flex-1">
+                        <Building2 className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm sm:text-base">{dept.name}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">
                             Code: {dept.code} • {dept._count.User} utilisateur(s) • {dept._count.Project} projet(s)
                           </div>
                           {dept.description && (
@@ -634,6 +666,7 @@ export default function SettingsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteDepartment(dept.id)}
+                        className="self-end sm:self-center"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

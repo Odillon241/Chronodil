@@ -73,6 +73,7 @@ import { ProjectTeamDialog } from "@/components/features/project-team-dialog";
 import type { Project } from "@/types/project.types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSession } from "@/lib/auth-client";
+import { ProjectHealthIndicator } from "@/components/features/project-health-indicator";
 
 type ViewMode = "grid" | "list";
 type SortField = "name" | "code" | "createdAt" | "budgetHours" | "progress";
@@ -586,23 +587,23 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projets</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Projets</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Gérez vos projets et suivez leur avancement
           </p>
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-rusty-red hover:bg-ou-crimson">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Nouveau projet
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleCreateProject}>
               <DialogHeader>
                 <DialogTitle>Créer un nouveau projet</DialogTitle>
@@ -789,7 +790,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projets</CardTitle>
@@ -1045,6 +1046,12 @@ export default function ProjectsPage() {
                           style={{ backgroundColor: project.color || "#dd2d4a" }}
                         />
                         <span className="line-clamp-1">{project.name}</span>
+                        {project.budgetHours && (
+                          <ProjectHealthIndicator
+                            budgetHours={project.budgetHours}
+                            consumedHours={project.usedHours || 0}
+                          />
+                        )}
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         <CardDescription>{project.code}</CardDescription>

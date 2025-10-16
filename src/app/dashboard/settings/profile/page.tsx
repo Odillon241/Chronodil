@@ -349,18 +349,18 @@ export default function ProfilePage() {
     <div className="space-y-6">
       {/* En-tête */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Mon Profil</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Gérez vos informations personnelles et vos préférences
         </p>
       </div>
 
       {/* Carte principale */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
         {/* Colonne gauche - Avatar et infos rapides */}
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>Photo de profil</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Photo de profil</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
@@ -397,36 +397,36 @@ export default function ProfilePage() {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Rôle</span>
-                <Badge className={getRoleBadgeColor(user.role)}>
+                <span className="text-xs sm:text-sm text-muted-foreground">Rôle</span>
+                <Badge className={`${getRoleBadgeColor(user.role)} text-xs`}>
                   {getRoleLabel(user.role)}
                 </Badge>
               </div>
 
               {user.department && (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Département</span>
-                  <span className="text-sm font-medium">{user.department.name}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">Département</span>
+                  <span className="text-xs sm:text-sm font-medium">{user.department.name}</span>
                 </div>
               )}
 
               {user.manager && (
                 <div className="space-y-1">
-                  <span className="text-sm text-muted-foreground">Manager</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">Manager</span>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarFallback className="bg-ou-crimson text-white text-xs">
                         {getInitials(user.manager.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{user.manager.name}</span>
+                    <span className="text-xs sm:text-sm font-medium">{user.manager.name}</span>
                   </div>
                 </div>
               )}
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Membre depuis</span>
-                <span className="text-sm font-medium">
+                <span className="text-xs sm:text-sm text-muted-foreground">Membre depuis</span>
+                <span className="text-xs sm:text-sm font-medium">
                   {new Date(user.createdAt).toLocaleDateString("fr-FR", {
                     month: "long",
                     year: "numeric",
@@ -440,18 +440,18 @@ export default function ProfilePage() {
         {/* Colonne droite - Informations détaillées */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle>Informations personnelles</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Informations personnelles</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   {isEditing
                     ? "Modifiez vos informations personnelles"
                     : "Consultez vos informations personnelles"}
                 </CardDescription>
               </div>
               {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
+                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                  <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Modifier
                 </Button>
               )}
@@ -515,20 +515,20 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     type="submit"
-                    className="bg-rusty-red hover:bg-ou-crimson"
+                    className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm"
                     disabled={isSaving}
                   >
                     {isSaving ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                         Enregistrement...
                       </>
                     ) : (
                       <>
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Enregistrer
                       </>
                     )}
@@ -538,8 +538,9 @@ export default function ProfilePage() {
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isSaving}
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
-                    <X className="mr-2 h-4 w-4" />
+                    <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     Annuler
                   </Button>
                 </div>
@@ -547,7 +548,7 @@ export default function ProfilePage() {
             ) : (
               // Mode consultation
               <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <User className="h-4 w-4" />
@@ -616,8 +617,8 @@ export default function ProfilePage() {
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Informations contractuelles</h3>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <h3 className="font-semibold text-sm sm:text-base">Informations contractuelles</h3>
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                     <div className="p-4 border rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
                         <Clock className="h-4 w-4" />
@@ -650,7 +651,7 @@ export default function ProfilePage() {
 
       {/* Modal de sélection d'avatar */}
       <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Modifier votre avatar</DialogTitle>
             <DialogDescription>
@@ -774,20 +775,20 @@ export default function ProfilePage() {
             )}
 
             {/* Boutons d'action */}
-            <div className="flex gap-2 pt-4">
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
               <Button
                 onClick={handleAvatarUpdate}
-                className="bg-rusty-red hover:bg-ou-crimson flex-1"
+                className="w-full sm:flex-1 bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm"
                 disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
               >
                 {isUpdatingAvatar ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                     Mise à jour...
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     Sauvegarder
                   </>
                 )}
@@ -796,8 +797,9 @@ export default function ProfilePage() {
                 variant="outline"
                 onClick={() => setIsAvatarDialogOpen(false)}
                 disabled={isUpdatingAvatar}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <X className="mr-2 h-4 w-4" />
+                <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Annuler
               </Button>
             </div>

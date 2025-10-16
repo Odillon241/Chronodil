@@ -34,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { TimesheetQuickEntry } from "@/components/features/timesheet-quick-entry";
 
 export default function TimesheetPage() {
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
@@ -85,10 +86,12 @@ export default function TimesheetPage() {
 
       if (entriesResult?.data) {
         setEntries(entriesResult.data);
+      } else {
+        toast.error(entriesResult?.serverError || "Erreur lors du chargement");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors du chargement:", error);
-      toast.error("Erreur lors du chargement");
+      toast.error(error.message || String(error) || "Erreur lors du chargement");
     }
   }, [selectedDate]);
 
@@ -106,10 +109,12 @@ export default function TimesheetPage() {
           filtered = filtered.filter((e: any) => e.projectId === filters.projectId);
         }
         setEntries(filtered);
+      } else {
+        toast.error(entriesResult?.serverError || "Erreur lors du chargement");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors du chargement:", error);
-      toast.error("Erreur lors du chargement");
+      toast.error(error.message || String(error) || "Erreur lors du chargement");
     }
   }, [filters]);
 
@@ -148,8 +153,8 @@ export default function TimesheetPage() {
       } else {
         toast.error(result?.serverError || "Erreur");
       }
-    } catch (error) {
-      toast.error("Erreur lors de l'enregistrement");
+    } catch (error: any) {
+      toast.error(error.message || String(error) || "Erreur lors de l'enregistrement");
     } finally {
       setIsLoading(false);
     }
@@ -168,9 +173,11 @@ export default function TimesheetPage() {
           if (result?.data) {
             toast.success("Entrée supprimée");
             loadData();
+          } else {
+            toast.error(result?.serverError || "Erreur lors de la suppression");
           }
-        } catch (error) {
-          toast.error("Erreur lors de la suppression");
+        } catch (error: any) {
+          toast.error(error.message || String(error) || "Erreur lors de la suppression");
         }
       },
     });
@@ -223,9 +230,11 @@ export default function TimesheetPage() {
       if (result?.data) {
         toast.success("Journée soumise !");
         loadData();
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la soumission");
       }
-    } catch (error) {
-      toast.error("Erreur lors de la soumission");
+    } catch (error: any) {
+      toast.error(error.message || String(error) || "Erreur lors de la soumission");
     }
   };
 
@@ -350,10 +359,13 @@ export default function TimesheetPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Saisie des temps</h1>
-        <p className="text-muted-foreground">Enregistrez vos heures de travail quotidiennes</p>
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Saisie des temps</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Enregistrez vos heures de travail quotidiennes</p>
+        </div>
+        <TimesheetQuickEntry projects={projects} onEntryCreated={loadData} />
       </div>
 
       {/* Vue hebdomadaire */}
@@ -368,8 +380,8 @@ export default function TimesheetPage() {
       {/* Tabs pour Saisie et Historique */}
       <Tabs value={viewMode === "week" ? "form" : "history"} onValueChange={(value) => setViewMode(value === "form" ? "week" : "history")} className="w-full">
         <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-          <TabsTrigger value="form">Nouvelle saisie</TabsTrigger>
-          <TabsTrigger value="history">Historique</TabsTrigger>
+          <TabsTrigger value="form" className="text-xs sm:text-sm">Nouvelle saisie</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm">Historique</TabsTrigger>
         </TabsList>
 
         {/* Formulaire de saisie */}
@@ -431,7 +443,7 @@ export default function TimesheetPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="startTime">Heure début</Label>
                   <Input
@@ -565,7 +577,7 @@ export default function TimesheetPage() {
               {/* Filtres */}
               {showFilters && (
                 <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
-                  <div className="grid gap-4 md:grid-cols-4">
+                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
                     <div className="space-y-2">
                       <Label>Statut</Label>
                       <Select
@@ -656,8 +668,8 @@ export default function TimesheetPage() {
                 </div>
               )}
 
-              {/* Tableau historique */}
-              <div className="relative overflow-x-auto rounded-lg border">
+              {/* Tableau historique - Desktop */}
+              <div className="hidden md:block relative overflow-x-auto rounded-lg border">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs uppercase bg-muted">
                     <tr>
@@ -752,6 +764,89 @@ export default function TimesheetPage() {
                 </table>
               </div>
 
+              {/* Vue Mobile - Cards */}
+              <div className="md:hidden space-y-3">
+                {entries.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucune entrée trouvée
+                  </div>
+                ) : (
+                  entries.map((entry) => (
+                    <Card key={entry.id} className="p-3">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm mb-1">
+                              {format(new Date(entry.date), "dd/MM/yyyy", { locale: fr })}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              {entry.project ? (
+                                <>
+                                  <div
+                                    className="w-2 h-2 rounded-full flex-shrink-0"
+                                    style={{ backgroundColor: entry.project.color || "#3b82f6" }}
+                                  />
+                                  <span className="truncate">{entry.project.name}</span>
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground italic">Aucun projet</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="font-bold text-rusty-red text-sm whitespace-nowrap">
+                            {entry.duration}h
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 text-[10px] rounded-full bg-blue-100 text-blue-800">
+                            {entry.type}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 text-[10px] rounded-full ${getStatusBadge(entry.status)}`}
+                          >
+                            {getStatusLabel(entry.status)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedEntryForDetails(entry)}
+                            className="flex-1 text-green-600 hover:text-green-800 text-xs h-8"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Détails
+                          </Button>
+                          {entry.status === "DRAFT" && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(entry)}
+                                className="flex-1 text-blue-600 hover:text-blue-800 text-xs h-8"
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Modifier
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(entry.id)}
+                                className="text-destructive hover:text-destructive text-xs h-8 px-2"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+
             </CardContent>
           </Card>
         </TabsContent>
@@ -759,18 +854,18 @@ export default function TimesheetPage() {
       
       {/* Modal de détails d'une entrée */}
       <Dialog open={!!selectedEntryForDetails} onOpenChange={() => setSelectedEntryForDetails(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Détails de la saisie de temps</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Détails de la saisie de temps</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               Informations complètes de cette entrée de timesheet
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedEntryForDetails && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Informations générales */}
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Date</Label>
                   <p className="text-sm">

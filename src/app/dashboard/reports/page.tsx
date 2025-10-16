@@ -591,22 +591,22 @@ export default function ReportsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Rapports</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Rapports</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Analysez vos données de temps et générez des rapports
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Dialog open={customReportDialogOpen} onOpenChange={setCustomReportDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-rusty-red hover:bg-ou-crimson">
+              <Button className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm">
                 <FilePlus className="mr-2 h-4 w-4" />
                 Nouveau rapport
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Créer un rapport personnalisé</DialogTitle>
                 <DialogDescription>
@@ -660,16 +660,17 @@ export default function ReportsPage() {
                   variant="outline"
                   onClick={() => setCustomReportDialogOpen(false)}
                   disabled={isGenerating}
-                  className="sm:mr-auto"
+                  className="sm:mr-auto w-full sm:w-auto text-xs sm:text-sm"
                 >
                   Annuler
                 </Button>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => handleSaveReport()}
                     disabled={isGenerating}
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
                     {isGenerating ? (
                       <>
@@ -694,6 +695,7 @@ export default function ReportsPage() {
                       setSendEmailDialogOpen(true);
                     }}
                     disabled={isGenerating}
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Envoyer
@@ -703,6 +705,7 @@ export default function ReportsPage() {
                     variant="outline"
                     onClick={() => handleGenerateCustomReport("word")}
                     disabled={isGenerating}
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
                     {isGenerating ? (
                       <>
@@ -719,7 +722,7 @@ export default function ReportsPage() {
                   <Button
                     type="button"
                     onClick={() => handleGenerateCustomReport("pdf")}
-                    className="bg-rusty-red hover:bg-ou-crimson"
+                    className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
                     disabled={isGenerating}
                   >
                     {isGenerating ? (
@@ -739,11 +742,11 @@ export default function ReportsPage() {
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline" onClick={() => handleExport("excel")} disabled={isLoading}>
+          <Button variant="outline" onClick={() => handleExport("excel")} disabled={isLoading} className="w-full sm:w-auto text-xs sm:text-sm">
             <Download className="mr-2 h-4 w-4" />
             Excel
           </Button>
-          <Button variant="outline" onClick={() => handleExport("pdf")} disabled={isLoading}>
+          <Button variant="outline" onClick={() => handleExport("pdf")} disabled={isLoading} className="w-full sm:w-auto text-xs sm:text-sm">
             <Download className="mr-2 h-4 w-4" />
             PDF
           </Button>
@@ -752,7 +755,7 @@ export default function ReportsPage() {
 
       {/* Dialogue d'envoi par email */}
       <Dialog open={sendEmailDialogOpen} onOpenChange={setSendEmailDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Envoyer le rapport par email</DialogTitle>
             <DialogDescription>
@@ -876,7 +879,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
@@ -886,13 +889,14 @@ export default function ReportsPage() {
                 setSelectedUserIds([]);
               }}
               disabled={isGenerating}
+              className="w-full sm:w-auto text-xs sm:text-sm"
             >
               Annuler
             </Button>
             <Button
               type="button"
               onClick={handleSendReport}
-              className="bg-rusty-red hover:bg-ou-crimson"
+              className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
               disabled={isGenerating}
             >
               {isGenerating ? (
@@ -911,9 +915,9 @@ export default function ReportsPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Select value={period} onValueChange={(val) => setPeriod(val as Period)}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -925,7 +929,7 @@ export default function ReportsPage() {
         </Select>
 
         <Select value={reportType} onValueChange={(val) => setReportType(val as ReportType)}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -944,14 +948,14 @@ export default function ReportsPage() {
       ) : (
         <>
           {/* KPIs */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total heures</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Total heures</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
                   {summary?.totalHours?.toFixed(1) || "0"}h
                 </div>
                 <p className="text-xs text-muted-foreground">{getPeriodLabel()}</p>
@@ -960,11 +964,11 @@ export default function ReportsPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Heures facturables</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Heures facturables</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
                   {summary?.billableHours?.toFixed(1) || "0"}h
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -977,11 +981,11 @@ export default function ReportsPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Projets actifs</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Projets actifs</CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
                   {summary?.activeProjects || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">Projets en cours</p>
@@ -990,11 +994,11 @@ export default function ReportsPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Taux validation</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Taux validation</CardTitle>
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
                   {summary?.validationRate || 0}%
                 </div>
                 <p className="text-xs text-muted-foreground">Heures approuvées</p>
@@ -1006,20 +1010,21 @@ export default function ReportsPage() {
           {/* Liste des rapports générés */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle>Historique des rapports</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Historique des rapports</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Liste de tous les rapports générés et envoyés
                   </CardDescription>
                 </div>
                 {reports.length > 0 && selectedReportIds.length > 0 && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     <Button
                       size="sm"
                       variant="destructive"
                       onClick={handleDeleteSelectedReports}
                       disabled={isLoading}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
                     >
                       <FileText className="mr-2 h-4 w-4" />
                       Supprimer ({selectedReportIds.length})
@@ -1030,7 +1035,7 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent>
               <div className="relative overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full text-xs sm:text-sm text-left hidden md:table">
                   <thead className="text-xs uppercase bg-muted">
                     <tr>
                       <th className="px-6 py-3">
@@ -1156,6 +1161,121 @@ export default function ReportsPage() {
                     )}
                   </tbody>
                 </table>
+
+                {/* Mobile view */}
+                <div className="md:hidden space-y-4">
+                  {reports.length === 0 ? (
+                    <div className="text-center text-sm text-muted-foreground py-8">
+                      Aucun rapport généré pour le moment
+                    </div>
+                  ) : (
+                    reports.map((report: any) => (
+                      <Card key={report.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-start gap-2 flex-1">
+                              <Checkbox
+                                checked={selectedReportIds.includes(report.id)}
+                                onCheckedChange={(checked) =>
+                                  handleSelectReport(report.id, checked as boolean)
+                                }
+                              />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm">{report.title}</div>
+                                {report.period && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Période: {report.period}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <Badge variant={report.format === "pdf" ? "default" : "secondary"} className="text-xs">
+                              {report.format === "pdf" ? "PDF" : "Word"}
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Créé par: </span>
+                              <span className="font-medium">{report.CreatedBy.name}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Email: </span>
+                              <span>{report.CreatedBy.email}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Date: </span>
+                              <span>{format(new Date(report.createdAt), "dd/MM/yyyy à HH:mm")}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Taille: </span>
+                              <span>{formatFileSize(report.fileSize)}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Destinataires: </span>
+                              <span className="font-medium">{report._count.Recipients}</span>
+                              {report.Recipients.length > 0 && (
+                                <div className="text-xs text-muted-foreground mt-1 ml-2">
+                                  {report.Recipients.slice(0, 2).map((recipient: any, idx: number) => (
+                                    <div key={recipient.id}>
+                                      {recipient.User ? recipient.User.name : recipient.email}
+                                    </div>
+                                  ))}
+                                  {report.Recipients.length > 2 && (
+                                    <div>+{report.Recipients.length - 2} autre(s)</div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditReport(report)}
+                              disabled={isLoading}
+                              className="flex-1 text-xs"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Modifier
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleSendExistingReport(report)}
+                              disabled={isLoading}
+                              className="flex-1 text-xs"
+                            >
+                              <Mail className="h-3 w-3 mr-1" />
+                              Envoyer
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDownloadReport(report.id)}
+                              disabled={isLoading}
+                              className="flex-1 text-xs"
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              Télécharger
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteReport(report.id)}
+                              disabled={isLoading}
+                              className="flex-1 text-xs"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Supprimer
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1164,12 +1284,12 @@ export default function ReportsPage() {
           {reportType === "detailed" && detailedData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Rapport détaillé</CardTitle>
-                <CardDescription>Toutes les saisies pour la période</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Rapport détaillé</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Toutes les saisies pour la période</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative overflow-x-auto">
-                  <table className="w-full text-sm text-left">
+                  <table className="w-full text-xs sm:text-sm text-left hidden md:table">
                     <thead className="text-xs uppercase bg-muted">
                       <tr>
                         <th className="px-6 py-3">Date</th>
@@ -1208,6 +1328,52 @@ export default function ReportsPage() {
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Mobile view for detailed report */}
+                  <div className="md:hidden space-y-3">
+                    {detailedData.map((entry: any) => (
+                      <Card key={entry.id}>
+                        <CardContent className="p-4">
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Date: </span>
+                              <span className="font-medium">{format(new Date(entry.date), "dd/MM/yyyy")}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Utilisateur: </span>
+                              <span>{entry.User.name}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Projet: </span>
+                              <span>{entry.Project?.name || "Projet non assigné"}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Tâche: </span>
+                              <span>{entry.Task?.name || "-"}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Type: </span>
+                              <Badge variant="secondary" className="text-xs">{entry.type}</Badge>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Durée: </span>
+                              <span className="font-bold">{entry.duration}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Statut: </span>
+                              <Badge variant={
+                                entry.status === "APPROVED" ? "default" :
+                                entry.status === "SUBMITTED" ? "secondary" :
+                                "destructive"
+                              } className="text-xs">
+                                {entry.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1216,12 +1382,12 @@ export default function ReportsPage() {
           {reportType === "by-project" && projectReport.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Rapport par projet</CardTitle>
-                <CardDescription>Statistiques détaillées par projet</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Rapport par projet</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Statistiques détaillées par projet</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative overflow-x-auto">
-                  <table className="w-full text-sm text-left">
+                  <table className="w-full text-xs sm:text-sm text-left hidden md:table">
                     <thead className="text-xs uppercase bg-muted">
                       <tr>
                         <th className="px-6 py-3">Projet</th>
@@ -1267,6 +1433,61 @@ export default function ReportsPage() {
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Mobile view for project report */}
+                  <div className="md:hidden space-y-3">
+                    {projectReport.map((project: any) => (
+                      <Card key={project.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: project.color }}
+                            />
+                            <span className="font-medium text-sm">{project.name}</span>
+                          </div>
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Budget: </span>
+                              <span>{project.budgetHours ? `${project.budgetHours}h` : "-"}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Total heures: </span>
+                              <span className="font-bold">{project.totalHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Heures normales: </span>
+                              <span>{project.normalHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Heures sup.: </span>
+                              <span>{project.overtimeHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Approuvé: </span>
+                              <span>{project.approvedHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Membres: </span>
+                              <span>{project.members}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Progression: </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-rusty-red"
+                                    style={{ width: `${Math.min(project.progress, 100)}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium">{project.progress.toFixed(0)}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1275,12 +1496,12 @@ export default function ReportsPage() {
           {reportType === "by-user" && userReport.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Rapport par utilisateur</CardTitle>
-                <CardDescription>Statistiques détaillées par utilisateur</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Rapport par utilisateur</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Statistiques détaillées par utilisateur</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative overflow-x-auto">
-                  <table className="w-full text-sm text-left">
+                  <table className="w-full text-xs sm:text-sm text-left hidden md:table">
                     <thead className="text-xs uppercase bg-muted">
                       <tr>
                         <th className="px-6 py-3">Utilisateur</th>
@@ -1325,6 +1546,54 @@ export default function ReportsPage() {
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Mobile view for user report */}
+                  <div className="md:hidden space-y-3">
+                    {userReport.map((user: any) => (
+                      <Card key={user.id}>
+                        <CardContent className="p-4">
+                          <div className="mb-3">
+                            <div className="font-medium text-sm">{user.name}</div>
+                            <div className="text-xs text-muted-foreground">{user.email}</div>
+                          </div>
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Département: </span>
+                              <span>{user.department}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Rôle: </span>
+                              <Badge variant="secondary" className="text-xs">{user.role}</Badge>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Total heures: </span>
+                              <span className="font-bold">{user.totalHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Approuvé: </span>
+                              <span className="text-green-600 font-medium">{user.approvedHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">En attente: </span>
+                              <span className="text-amber-600 font-medium">{user.pendingHours.toFixed(1)}h</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Taux validation: </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-green-500"
+                                    style={{ width: `${user.validationRate}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium">{user.validationRate}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>

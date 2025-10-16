@@ -354,14 +354,14 @@ export default function UsersManagementPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {((session?.user as any)?.role === "DIRECTEUR")
               ? "Gestion de l'équipe"
               : "Gestion des utilisateurs"}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {((session?.user as any)?.role === "DIRECTEUR")
               ? "Gérez votre équipe et assignez des managers"
               : "Gérez les comptes utilisateurs et leurs permissions"}
@@ -377,12 +377,12 @@ export default function UsersManagementPage() {
           }}
         >
           <DialogTrigger asChild>
-            <Button className="bg-rusty-red hover:bg-ou-crimson">
-              <UserPlus className="mr-2 h-4 w-4" />
+            <Button className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+              <UserPlus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Nouvel utilisateur
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingUser ? "Modifier l'utilisateur" : "Nouvel utilisateur"}
@@ -394,7 +394,7 @@ export default function UsersManagementPage() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={editingUser ? handleUpdate : handleCreateUser} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nom complet *</Label>
                   <Input
@@ -501,7 +501,7 @@ export default function UsersManagementPage() {
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
                 <Button
                   type="button"
                   variant="outline"
@@ -509,10 +509,11 @@ export default function UsersManagementPage() {
                     setIsDialogOpen(false);
                     resetForm();
                   }}
+                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
                   Annuler
                 </Button>
-                <Button type="submit" className="bg-rusty-red hover:bg-ou-crimson" disabled={isLoading}>
+                <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm" disabled={isLoading}>
                   {editingUser ? "Mettre à jour" : "Créer"}
                 </Button>
               </div>
@@ -522,7 +523,7 @@ export default function UsersManagementPage() {
 
         {/* Reset Password Dialog */}
         <Dialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-[95vw] sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
               <DialogDescription>
@@ -546,7 +547,7 @@ export default function UsersManagementPage() {
                 </p>
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
                 <Button
                   type="button"
                   variant="outline"
@@ -555,10 +556,11 @@ export default function UsersManagementPage() {
                     setResetPasswordUser(null);
                     setNewPassword("");
                   }}
+                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
                   Annuler
                 </Button>
-                <Button type="submit" className="bg-rusty-red hover:bg-ou-crimson" disabled={isLoading}>
+                <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm" disabled={isLoading}>
                   Réinitialiser
                 </Button>
               </div>
@@ -581,8 +583,8 @@ export default function UsersManagementPage() {
       {/* Users table */}
       <Card>
         <CardHeader>
-          <CardTitle>Utilisateurs ({filteredUsers.length})</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Utilisateurs ({filteredUsers.length})</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             Liste de tous les utilisateurs de l'application
           </CardDescription>
         </CardHeader>
@@ -592,11 +594,14 @@ export default function UsersManagementPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground text-sm">
               Aucun utilisateur trouvé
             </div>
           ) : (
-            <Table>
+            <>
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Utilisateur</TableHead>
@@ -694,6 +699,93 @@ export default function UsersManagementPage() {
                 ))}
               </TableBody>
             </Table>
+              </div>
+
+              {/* Mobile card view */}
+              <div className="md:hidden space-y-3">
+                {filteredUsers.map((user) => (
+                  <div key={user.id} className="border rounded-lg p-3 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-12 w-12 flex-shrink-0">
+                        <AvatarImage
+                          src={
+                            user.avatar?.startsWith('/uploads') ||
+                            user.avatar?.startsWith('http')
+                              ? user.avatar
+                              : undefined
+                          }
+                          alt={user.name || "User"}
+                        />
+                        <AvatarFallback className="bg-rusty-red/10 text-rusty-red text-sm">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm">{user.name || "Sans nom"}</div>
+                        <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                        <div className="mt-1">
+                          <Badge className={`${getRoleBadgeColor(user.role)} text-xs`}>
+                            {getRoleLabel(user.role)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs border-t pt-2">
+                      {user.department && (
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-muted-foreground">{user.department.name}</span>
+                        </div>
+                      )}
+                      {user.manager && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Manager: {user.manager.name || "Manager"}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <span>{user._count.timesheetEntries} saisies</span>
+                        <span>•</span>
+                        <span>{user._count.subordinates} subordonné(s)</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 border-t pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(user)}
+                        className="flex-1 text-xs"
+                        title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Modification limitée" : "Modifier"}
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Modifier
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openResetPasswordDialog(user)}
+                        className="flex-1 text-xs"
+                        title="Réinitialiser le mot de passe"
+                      >
+                        <Key className="h-3 w-3 mr-1" />
+                        Mot de passe
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteUser(user)}
+                        className="text-red-600 hover:text-red-800 disabled:opacity-50 text-xs"
+                        title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Compte protégé" : "Supprimer"}
+                        disabled={user.email === "admin@chronodil.com" && user.role === "ADMIN"}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

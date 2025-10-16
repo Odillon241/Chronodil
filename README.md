@@ -211,6 +211,16 @@ pnpm db:migrate      # Créer/exécuter une migration
 pnpm db:studio       # Interface admin Prisma
 ```
 
+## 🗣️ Dictée vocale rapide (Cursor)
+
+- **Windows**: appuyez sur `Windows + H` dans Cursor (éditeur ou chat), puis dictez. Si cela ne fonctionne pas:
+  - Paramètres > Confidentialité et sécurité > Microphone → autoriser les applications de bureau
+  - Paramètres > Heure et langue > Parole → activer les services de reconnaissance vocale en ligne
+- **macOS**: Réglages Système > Clavier > Dictée → activer; démarrer la dictée avec la touche `Fn` (deux pressions).
+- **Astuce**: placez le curseur là où vous voulez insérer le texte avant de démarrer.
+- **Ponctuation (fr)**: dites « virgule », « point », « point d’interrogation », « point-virgule », « deux-points », « nouvelle ligne ».
+- **Mise à jour**: Cursor ne propose pas encore de saisie vocale native; surveillez les nouveautés dans les docs: `https://docs.cursor.com`.
+
 ## 🐛 Debugging
 
 ### Problèmes de connexion à la base de données

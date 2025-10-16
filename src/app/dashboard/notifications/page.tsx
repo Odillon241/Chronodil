@@ -152,11 +152,11 @@ export default function NotificationsPage() {
   const someSelected = selectedIds.length > 0 && selectedIds.length < notifications.length;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Notifications</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             {selectedIds.length > 0 ? (
               `${selectedIds.length} notification${selectedIds.length > 1 ? "s" : ""} sélectionnée${selectedIds.length > 1 ? "s" : ""}`
             ) : unreadCount > 0 ? (
@@ -166,22 +166,23 @@ export default function NotificationsPage() {
             )}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
           {selectedIds.length > 0 ? (
             <>
               <Button
                 variant="outline"
                 onClick={handleMarkSelectedAsRead}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <CheckCheck className="mr-2 h-4 w-4" />
+                <CheckCheck className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Marquer comme lu
               </Button>
               <Button
                 variant="outline"
                 onClick={handleDeleteSelected}
-                className="text-destructive hover:text-destructive"
+                className="w-full sm:w-auto text-xs sm:text-sm text-destructive hover:text-destructive"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Supprimer
               </Button>
             </>
@@ -190,8 +191,9 @@ export default function NotificationsPage() {
               <Button
                 variant="outline"
                 onClick={handleMarkAllAsRead}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <CheckCheck className="mr-2 h-4 w-4" />
+                <CheckCheck className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Tout marquer comme lu
               </Button>
             )
@@ -205,12 +207,12 @@ export default function NotificationsPage() {
         </div>
       ) : notifications.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Bell className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center">
+          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+            <Bell className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground text-center">
               Aucune notification
             </p>
-            <p className="text-sm text-muted-foreground text-center mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
               Vous serez notifié ici des événements importants
             </p>
           </CardContent>
@@ -218,107 +220,198 @@ export default function NotificationsPage() {
       ) : (
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <Checkbox
-                      checked={allSelected}
-                      onCheckedChange={handleSelectAll}
-                      aria-label="Sélectionner tout"
-                      className={someSelected ? "data-[state=checked]:bg-muted" : ""}
-                    />
-                  </TableHead>
-                  <TableHead className="w-[50px]">Type</TableHead>
-                  <TableHead className="w-[60px]">Statut</TableHead>
-                  <TableHead>Titre</TableHead>
-                  <TableHead>Message</TableHead>
-                  <TableHead className="w-[180px]">Date</TableHead>
-                  <TableHead className="w-[120px] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {notifications.map((notification) => (
-                  <TableRow
-                    key={notification.id}
-                    className={!notification.isRead ? "bg-muted/30" : ""}
-                  >
-                    <TableCell>
+            {/* Desktop Table View - Hidden on mobile */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Sélectionner tout"
+                        className={someSelected ? "data-[state=checked]:bg-muted" : ""}
+                      />
+                    </TableHead>
+                    <TableHead className="w-[50px]">Type</TableHead>
+                    <TableHead className="w-[60px]">Statut</TableHead>
+                    <TableHead>Titre</TableHead>
+                    <TableHead>Message</TableHead>
+                    <TableHead className="w-[180px]">Date</TableHead>
+                    <TableHead className="w-[120px] text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {notifications.map((notification) => (
+                    <TableRow
+                      key={notification.id}
+                      className={!notification.isRead ? "bg-muted/30" : ""}
+                    >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.includes(notification.id)}
+                          onCheckedChange={(checked) =>
+                            handleSelectOne(notification.id, checked as boolean)
+                          }
+                          aria-label={`Sélectionner ${notification.title}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center">
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {!notification.isRead && (
+                          <Badge variant="default" className="bg-rusty-red hover:bg-rusty-red text-xs">
+                            Nouveau
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium text-sm">
+                        {notification.title}
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        <div className="space-y-1">
+                          <p className="text-sm">{notification.message}</p>
+                          {notification.link && (
+                            <Button
+                              variant="link"
+                              className="h-auto p-0 text-xs"
+                              onClick={() => window.location.href = notification.link}
+                            >
+                              Voir plus →
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(notification.createdAt), "dd MMM yyyy", {
+                          locale: fr,
+                        })}
+                        <br />
+                        <span className="text-xs">
+                          {format(new Date(notification.createdAt), "HH:mm", {
+                            locale: fr,
+                          })}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          {!notification.isRead && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMarkAsRead(notification.id)}
+                              title="Marquer comme lu"
+                            >
+                              <CheckCheck className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(notification.id)}
+                            title="Supprimer"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View - Visible only on mobile */}
+            <div className="md:hidden divide-y">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-4 space-y-3 ${
+                    !notification.isRead ? "bg-muted/30" : ""
+                  }`}
+                >
+                  {/* Header with checkbox and status */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       <Checkbox
                         checked={selectedIds.includes(notification.id)}
                         onCheckedChange={(checked) =>
                           handleSelectOne(notification.id, checked as boolean)
                         }
                         aria-label={`Sélectionner ${notification.title}`}
+                        className="mt-0.5"
                       />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center gap-2">
                         {getNotificationIcon(notification.type)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {!notification.isRead && (
-                        <Badge variant="default" className="bg-rusty-red hover:bg-rusty-red">
-                          Nouveau
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {notification.title}
-                    </TableCell>
-                    <TableCell className="max-w-md">
-                      <div className="space-y-1">
-                        <p className="text-sm">{notification.message}</p>
-                        {notification.link && (
-                          <Button
-                            variant="link"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => window.location.href = notification.link}
-                          >
-                            Voir plus →
-                          </Button>
+                        {!notification.isRead && (
+                          <Badge variant="default" className="bg-rusty-red hover:bg-rusty-red text-xs">
+                            Nouveau
+                          </Badge>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(notification.createdAt), "dd MMM yyyy", {
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <div className="pl-9">
+                    <h3 className="font-medium text-sm leading-tight">
+                      {notification.title}
+                    </h3>
+                  </div>
+
+                  {/* Message */}
+                  <div className="pl-9 space-y-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {notification.message}
+                    </p>
+                    {notification.link && (
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-xs"
+                        onClick={() => window.location.href = notification.link}
+                      >
+                        Voir plus →
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Date and Actions */}
+                  <div className="pl-9 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                    <div className="text-xs text-muted-foreground">
+                      {format(new Date(notification.createdAt), "dd MMM yyyy 'à' HH:mm", {
                         locale: fr,
                       })}
-                      <br />
-                      <span className="text-xs">
-                        {format(new Date(notification.createdAt), "HH:mm", {
-                          locale: fr,
-                        })}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        {!notification.isRead && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            title="Marquer comme lu"
-                          >
-                            <CheckCheck className="h-4 w-4" />
-                          </Button>
-                        )}
+                    </div>
+                    <div className="flex gap-2">
+                      {!notification.isRead && (
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(notification.id)}
-                          title="Supprimer"
-                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="flex-1 sm:flex-none text-xs"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <CheckCheck className="mr-1 h-3 w-3" />
+                          Lu
                         </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(notification.id)}
+                        className="flex-1 sm:flex-none text-xs text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

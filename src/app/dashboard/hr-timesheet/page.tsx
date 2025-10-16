@@ -167,10 +167,10 @@ export default function HRTimesheetPage() {
                       });
                       loadMyTimesheets();
                     } else {
-                      toast.error("Erreur lors de l'annulation");
+                      toast.error(undoResult?.serverError || "Erreur lors de l'annulation");
                     }
-                  } catch (error) {
-                    toast.error("Erreur lors de l'annulation");
+                  } catch (error: any) {
+                    toast.error(error.message || String(error) || "Erreur lors de l'annulation");
                   }
                 },
               },
@@ -179,8 +179,8 @@ export default function HRTimesheetPage() {
           } else {
             toast.error(result?.serverError || "Erreur lors de la soumission");
           }
-        } catch (error) {
-          toast.error("Erreur lors de la soumission");
+        } catch (error: any) {
+          toast.error(error.message || String(error) || "Erreur lors de la soumission");
         }
       },
     });
@@ -369,17 +369,17 @@ export default function HRTimesheetPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Feuilles de temps RH</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Feuilles de temps RH</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Gestion des timesheets hebdomadaires des activités RH
           </p>
         </div>
         <Button
           onClick={() => router.push("/dashboard/hr-timesheet/new")}
-          className="bg-rusty-red hover:bg-ou-crimson"
+          className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nouveau timesheet
@@ -387,9 +387,9 @@ export default function HRTimesheetPage() {
       </div>
 
       <Tabs value={currentTab} onValueChange={(v) => setCurrentTab(v as "my" | "pending")}>
-        <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-          <TabsTrigger value="my">Mes timesheets</TabsTrigger>
-          <TabsTrigger value="pending">
+        <TabsList className="grid w-full sm:w-[400px] grid-cols-2">
+          <TabsTrigger value="my" className="text-xs sm:text-sm">Mes timesheets</TabsTrigger>
+          <TabsTrigger value="pending" className="text-xs sm:text-sm">
             À valider
             {pendingTimesheets.length > 0 && (
               <Badge variant="destructive" className="ml-2">
@@ -403,10 +403,10 @@ export default function HRTimesheetPage() {
         <TabsContent value="my" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle>Mes timesheets RH</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-base sm:text-lg">Mes timesheets RH</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Consultez et gérez vos feuilles de temps hebdomadaires
                   </CardDescription>
                 </div>
@@ -414,6 +414,7 @@ export default function HRTimesheetPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowFilters(!showFilters)}
+                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
                   <Filter className="h-4 w-4 mr-2" />
                   Filtres
