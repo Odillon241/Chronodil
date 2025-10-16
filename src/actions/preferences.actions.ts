@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -7,19 +7,18 @@ import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
 
 /**
- * REMARQUE: Ce fichier est actuellement désactivé car le modèle UserPreferences
- * n'existe pas dans le schéma Prisma. Les préférences de l'utilisateur sont
- * stockées directement dans le modèle User.
- *
- * Pour activer ces fonctionnalités, vous devez soit:
- * 1. Créer un modèle UserPreferences dans le schéma Prisma
- * 2. OU adapter ce code pour utiliser les champs du modèle User
+ * Schéma de validation pour la mise à jour des préférences utilisateur
  */
-
 const updatePreferencesSchema = z.object({
   enableTimesheetReminders: z.boolean().optional(),
   reminderTime: z.string().optional(),
   reminderDays: z.array(z.string()).optional(),
+  weeklyGoal: z.number().min(1).max(168).optional(), // 1h minimum, 168h maximum (24h*7 jours)
+  notificationSoundEnabled: z.boolean().optional(),
+  notificationSoundType: z.enum(["default", "soft", "alert"]).optional(),
+  notificationSoundVolume: z.number().min(0).max(1).optional(),
+  emailNotificationsEnabled: z.boolean().optional(),
+  desktopNotificationsEnabled: z.boolean().optional(),
 });
 
 /**
@@ -43,6 +42,12 @@ export const getUserPreferences = actionClient
         enableTimesheetReminders: true,
         reminderTime: true,
         reminderDays: true,
+        weeklyGoal: true,
+        notificationSoundEnabled: true,
+        notificationSoundType: true,
+        notificationSoundVolume: true,
+        emailNotificationsEnabled: true,
+        desktopNotificationsEnabled: true,
       },
     });
 
@@ -50,10 +55,21 @@ export const getUserPreferences = actionClient
       throw new Error("Utilisateur non trouvé");
     }
 
+    // Set default values for reminderDays if not set
+    const reminderDays = user.reminderDays && user.reminderDays.length > 0 
+      ? user.reminderDays 
+      : ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
+
     return {
       enableTimesheetReminders: user.enableTimesheetReminders,
       reminderTime: user.reminderTime,
-      reminderDays: user.reminderDays,
+      reminderDays,
+      weeklyGoal: user.weeklyGoal,
+      notificationSoundEnabled: user.notificationSoundEnabled,
+      notificationSoundType: user.notificationSoundType,
+      notificationSoundVolume: user.notificationSoundVolume,
+      emailNotificationsEnabled: user.emailNotificationsEnabled,
+      desktopNotificationsEnabled: user.desktopNotificationsEnabled,
     };
   });
 
@@ -79,6 +95,12 @@ export const updateUserPreferences = actionClient
         enableTimesheetReminders: true,
         reminderTime: true,
         reminderDays: true,
+        weeklyGoal: true,
+        notificationSoundEnabled: true,
+        notificationSoundType: true,
+        notificationSoundVolume: true,
+        emailNotificationsEnabled: true,
+        desktopNotificationsEnabled: true,
       },
     });
 
@@ -86,5 +108,11 @@ export const updateUserPreferences = actionClient
       enableTimesheetReminders: user.enableTimesheetReminders,
       reminderTime: user.reminderTime,
       reminderDays: user.reminderDays,
+      weeklyGoal: user.weeklyGoal,
+      notificationSoundEnabled: user.notificationSoundEnabled,
+      notificationSoundType: user.notificationSoundType,
+      notificationSoundVolume: user.notificationSoundVolume,
+      emailNotificationsEnabled: user.emailNotificationsEnabled,
+      desktopNotificationsEnabled: user.desktopNotificationsEnabled,
     };
   });

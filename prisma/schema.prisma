@@ -343,14 +343,82 @@ model Task {
   isActive       Boolean          @default(true)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime
+  createdBy      String?
+  dueDate        DateTime?
+  reminderDate   DateTime?
+  reminderTime   String?
+  soundEnabled   Boolean          @default(true)
+  isShared       Boolean          @default(false)
+  status         String           @default("TODO")
+  priority       String           @default("MEDIUM")
+  completedAt    DateTime?
   Task           Task?            @relation("TaskToTask", fields: [parentId], references: [id])
   other_Task     Task[]           @relation("TaskToTask")
   Project        Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Creator        User?            @relation(fields: [createdBy], references: [id])
   TimesheetEntry TimesheetEntry[]
+  TaskMember     TaskMember[]
+  TaskComment    TaskComment[]
+  TaskActivity   TaskActivity[]
 
   @@index([isActive])
   @@index([parentId])
   @@index([projectId])
+  @@index([createdBy])
+  @@index([dueDate])
+  @@index([reminderDate])
+  @@index([status])
+  @@index([priority])
+}
+
+model TaskMember {
+  id        String   @id
+  taskId    String
+  userId    String
+  role      String   @default("member") // "creator", "member"
+  createdAt DateTime @default(now())
+  Task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@index([taskId])
+  @@index([userId])
+}
+
+model TaskComment {
+  id        String   @id
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isEdited  Boolean  @default(false)
+  Task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model TaskActivity {
+  id          String   @id
+  taskId      String
+  userId      String
+  action      String   // "created", "updated", "status_changed", "priority_changed", "assigned", "unassigned", "commented", "completed"
+  field       String?  // Champ modifié (ex: "status", "priority", "name")
+  oldValue    String?  // Ancienne valeur
+  newValue    String?  // Nouvelle valeur
+  description String?  // Description formatée (ex: "a changé le statut de TODO à IN_PROGRESS")
+  metadata    String?  // JSON pour données supplémentaires
+  createdAt   DateTime @default(now())
+  Task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
 }
 
 model TimesheetEntry {
@@ -410,7 +478,13 @@ model User {
   // Préférences de notification et rappel
   enableTimesheetReminders Boolean               @default(true)
   reminderTime             String?               @default("17:00") // Heure du rappel (HH:MM)
-  reminderDays             String[]              @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]) // Jours de rappel
+  reminderDays             String[]              // defaults handled in app // Jours de rappel
+  weeklyGoal               Float                 @default(40) // Objectif hebdomadaire en heures
+  notificationSoundEnabled Boolean               @default(true)
+  notificationSoundType    String                @default("default") // "default", "soft", "alert"
+  notificationSoundVolume  Float                 @default(0.7) // 0.0 à 1.0
+  emailNotificationsEnabled Boolean              @default(true)
+  desktopNotificationsEnabled Boolean            @default(true)
   Account                  Account[]
   AuditLog                 AuditLog[]
   Conversation             Conversation[]
@@ -427,6 +501,10 @@ model User {
   Session                  Session[]
   TimesheetEntry           TimesheetEntry[]
   TimesheetValidation      TimesheetValidation[]
+  Task                     Task[]
+  TaskMember               TaskMember[]
+  TaskComment              TaskComment[]
+  TaskActivity             TaskActivity[]
   Department               Department?           @relation(fields: [departmentId], references: [id])
   User                     User?                 @relation("UserToUser", fields: [managerId], references: [id])
   other_User               User[]                @relation("UserToUser")
