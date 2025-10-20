@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Accent Colors - Chronodil</title>
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --primary: 330 81% 60%;
+      --primary-foreground: 210 40% 98%;
+      --ring: 330 81% 60%;
+    }
+
+    .dark {
+      --background: 0 0% 0%;
+      --foreground: 0 0% 98%;
+      --primary: 330 81% 60%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --ring: 330 81% 60%;
+    }
+
+    /* Accent colors - Light Mode */
+    [data-accent="rusty-red"] {
+      --primary: 0 77% 53%;
+      --ring: 0 77% 53%;
+    }
+
+    [data-accent="ou-crimson"] {
+      --primary: 353 80% 29%;
+      --ring: 353 80% 29%;
+    }
+
+    [data-accent="powder-blue"] {
+      --primary: 192 76% 70%;
+      --ring: 192 76% 70%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+    }
+
+    [data-accent="forest-green"] {
+      --primary: 152 50% 35%;
+      --ring: 152 50% 35%;
+    }
+
+    [data-accent="golden-orange"] {
+      --primary: 35 88% 55%;
+      --ring: 35 88% 55%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+    }
+
+    /* Accent colors - Dark Mode */
+    .dark[data-accent="rusty-red"] {
+      --primary: 0 77% 60%;
+      --ring: 0 77% 60%;
+    }
+
+    .dark[data-accent="ou-crimson"] {
+      --primary: 353 80% 45%;
+      --ring: 353 80% 45%;
+    }
+
+    .dark[data-accent="powder-blue"] {
+      --primary: 192 76% 75%;
+      --ring: 192 76% 75%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+    }
+
+    .dark[data-accent="forest-green"] {
+      --primary: 152 50% 50%;
+      --ring: 152 50% 50%;
+    }
+
+    .dark[data-accent="golden-orange"] {
+      --primary: 35 88% 65%;
+      --ring: 35 88% 65%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: hsl(var(--foreground) / 0.05);
+      border-radius: 8px;
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      border: 2px solid hsl(var(--primary));
+      background: transparent;
+      color: hsl(var(--primary));
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .controls button:hover {
+      background: hsl(var(--primary) / 0.1);
+    }
+
+    .controls button.active {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border: 2px solid hsl(var(--foreground) / 0.1);
+      border-radius: 8px;
+    }
+
+    .btn-primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: hsl(var(--primary));
+      padding: 0.5rem 1rem;
+      border: 2px solid hsl(var(--primary));
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+
+    .focus-ring {
+      width: 50px;
+      height: 50px;
+      border: 3px solid hsl(var(--ring));
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .focus-ring:focus {
+      outline: 3px solid hsl(var(--ring) / 0.5);
+      outline-offset: 2px;
+    }
+
+    .text-primary {
+      color: hsl(var(--primary));
+      font-weight: 600;
+      margin: 0.5rem 0;
+    }
+
+    .badge {
+      display: inline-block;
+      background: hsl(var(--primary) / 0.1);
+      color: hsl(var(--primary));
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin: 0.25rem;
+    }
+
+    .info {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: hsl(var(--foreground) / 0.05);
+      border-radius: 8px;
+    }
+
+    .mode-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <button class="mode-toggle" onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+
+  <div class="container">
+    <h1>🎨 Test des couleurs d'accentuation</h1>
+    <p style="margin-bottom: 1rem;">Testez les différentes couleurs d'accentuation en mode clair et sombre</p>
+
+    <div class="controls">
+      <button onclick="setAccent('rusty-red')" data-accent="rusty-red">Rusty Red</button>
+      <button onclick="setAccent('ou-crimson')" data-accent="ou-crimson">OU Crimson</button>
+      <button onclick="setAccent('powder-blue')" data-accent="powder-blue">Powder Blue</button>
+      <button onclick="setAccent('forest-green')" data-accent="forest-green">Forest Green</button>
+      <button onclick="setAccent('golden-orange')" data-accent="golden-orange">Golden Orange</button>
+    </div>
+
+    <div class="grid">
+      <div class="component-card">
+        <h3>Buttons</h3>
+        <button class="btn-primary">Primary Button</button>
+        <button class="btn-outline">Outline Button</button>
+      </div>
+
+      <div class="component-card">
+        <h3>Text Primary</h3>
+        <p class="text-primary">Texte en couleur primaire</p>
+        <p class="text-primary">Primary colored text</p>
+      </div>
+
+      <div class="component-card">
+        <h3>Badges</h3>
+        <span class="badge">Badge 1</span>
+        <span class="badge">Badge 2</span>
+        <span class="badge">Badge 3</span>
+      </div>
+
+      <div class="component-card">
+        <h3>Focus Ring</h3>
+        <div class="focus-ring" tabindex="0"></div>
+        <p style="font-size: 0.875rem; margin-top: 0.5rem;">Cliquez pour voir le ring</p>
+      </div>
+    </div>
+
+    <div class="info">
+      <h3>Informations actuelles:</h3>
+      <p>Mode: <span id="current-mode">light</span></p>
+      <p>Accent: <span id="current-accent">rusty-red</span></p>
+      <p>--primary: <span id="primary-value"></span></p>
+      <p>--ring: <span id="ring-value"></span></p>
+    </div>
+  </div>
+
+  <script>
+    let currentAccent = 'rusty-red';
+
+    function setAccent(accent) {
+      currentAccent = accent;
+      document.documentElement.setAttribute('data-accent', accent);
+      document.getElementById('current-accent').textContent = accent;
+      updateValues();
+      updateActiveButton();
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      document.getElementById('current-mode').textContent = isDark ? 'dark' : 'light';
+      updateValues();
+    }
+
+    function updateValues() {
+      const styles = getComputedStyle(document.documentElement);
+      const primary = styles.getPropertyValue('--primary').trim();
+      const ring = styles.getPropertyValue('--ring').trim();
+      document.getElementById('primary-value').textContent = primary;
+      document.getElementById('ring-value').textContent = ring;
+    }
+
+    function updateActiveButton() {
+      document.querySelectorAll('.controls button').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-accent') === currentAccent) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    // Initialize
+    setAccent('rusty-red');
+    updateValues();
+  </script>
+</body>
+</html>

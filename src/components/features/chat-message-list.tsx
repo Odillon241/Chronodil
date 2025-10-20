@@ -404,21 +404,21 @@ export function ChatMessageList({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="p-3 sm:p-4 border-b flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {conversation.type === "PROJECT" && conversation.Project ? (
             <div
-              className="h-10 w-10 rounded-full flex items-center justify-center text-white"
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
               style={{ backgroundColor: conversation.Project.color }}
             >
-              <FolderKanban className="h-5 w-5" />
+              <FolderKanban className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           ) : conversation.type === "GROUP" ? (
-            <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center text-white">
-              <Users className="h-5 w-5" />
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-green-500 flex items-center justify-center text-white flex-shrink-0">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           ) : (
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
               <AvatarImage
                 src={
                   conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
@@ -433,26 +433,27 @@ export function ChatMessageList({
               </AvatarFallback>
             </Avatar>
           )}
-          <div>
-            <h2 className="font-semibold">{getConversationTitle()}</h2>
-            <p className="text-xs text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h2 className="font-semibold text-sm sm:text-base truncate">{getConversationTitle()}</h2>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               {conversation.ConversationMember.length} membre{conversation.ConversationMember.length > 1 ? "s" : ""}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => setShowSearch(!showSearch)}
+            className="h-8 w-8 sm:h-10 sm:w-10"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -522,13 +523,13 @@ export function ChatMessageList({
 
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        <div className="space-y-6">
+      <ScrollArea className="flex-1 p-2 sm:p-4" ref={scrollRef}>
+        <div className="space-y-4 sm:space-y-6">
           {messageGroups.map((group) => (
-            <div key={group.date} className="space-y-4">
+            <div key={group.date} className="space-y-3 sm:space-y-4">
               {/* Date Separator */}
               <div className="flex items-center justify-center">
-                <div className="bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground">
+                <div className="bg-muted px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs text-muted-foreground">
                   {getDateLabel(group.date)}
                 </div>
               </div>
@@ -542,17 +543,17 @@ export function ChatMessageList({
                   <div
                     key={msg.id}
                     className={cn(
-                      "flex gap-3",
+                      "flex gap-2 sm:gap-3",
                       isCurrentUser && "flex-row-reverse"
                     )}
                   >
                     {/* Avatar */}
                     {!isCurrentUser && (
-                      <Avatar className="h-8 w-8 flex-shrink-0">
+                      <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
                         <AvatarImage
                           src={msg.User.avatar || msg.User.image || undefined}
                         />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-[10px] sm:text-xs">
                           {msg.User.name.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -561,12 +562,12 @@ export function ChatMessageList({
                     {/* Message Bubble */}
                     <div
                       className={cn(
-                        "flex flex-col gap-1 max-w-[70%]",
+                        "flex flex-col gap-1 max-w-[85%] sm:max-w-[70%]",
                         isCurrentUser && "items-end"
                       )}
                     >
                       {!isCurrentUser && (
-                        <span className="text-xs font-medium">
+                        <span className="text-[10px] sm:text-xs font-medium">
                           {msg.User.name}
                         </span>
                       )}
@@ -598,7 +599,7 @@ export function ChatMessageList({
                           <>
                             <div
                               className={cn(
-                                "px-4 py-2 rounded-2xl",
+                                "px-3 py-2 sm:px-4 rounded-2xl",
                                 isCurrentUser
                                   ? "bg-rusty-red text-white"
                                   : "bg-muted",
@@ -609,7 +610,7 @@ export function ChatMessageList({
                               {msg.Message && (
                                 <div
                                   className={cn(
-                                    "mb-2 pb-2 border-b text-xs opacity-80",
+                                    "mb-2 pb-2 border-b text-[10px] sm:text-xs opacity-80",
                                     isCurrentUser
                                       ? "border-white/30"
                                       : "border-border"
@@ -626,8 +627,8 @@ export function ChatMessageList({
                                   </p>
                                 </div>
                               )}
-                              
-                              <p className="text-sm whitespace-pre-wrap break-words">
+
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                                 {renderMessageContent(msg.content)}
                               </p>
 
@@ -651,7 +652,7 @@ export function ChatMessageList({
                             {/* Actions */}
                             {!msg.isDeleted && (
                               <div className={cn(
-                                "absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity",
+                                "absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex",
                                 isCurrentUser ? "-left-12" : "-right-12"
                               )}>
                                 <DropdownMenu>
@@ -701,7 +702,7 @@ export function ChatMessageList({
 
                       <div
                         className={cn(
-                          "flex items-center gap-1 text-xs text-muted-foreground",
+                          "flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground",
                           isCurrentUser && "flex-row-reverse"
                         )}
                       >
@@ -797,8 +798,8 @@ export function ChatMessageList({
 
       {/* Typing indicator */}
       {typingUsers.length > 0 && (
-        <div className="px-4 py-2 border-t">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="px-2 sm:px-4 py-2 border-t">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
             <div className="flex gap-1">
               <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]"></span>
               <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.15s]"></span>
@@ -817,14 +818,14 @@ export function ChatMessageList({
 
       {/* Reply preview bar */}
       {replyingTo && (
-        <div className="px-4 py-2 border-t bg-muted/50">
+        <div className="px-2 sm:px-4 py-2 border-t bg-muted/50">
           <div className="flex items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground mb-1">
                 <Reply className="h-3 w-3" />
                 <span>Répondre à {replyingTo.User.name}</span>
               </div>
-              <p className="text-sm truncate">{replyingTo.content}</p>
+              <p className="text-xs sm:text-sm truncate">{replyingTo.content}</p>
             </div>
             <Button
               variant="ghost"
@@ -840,7 +841,7 @@ export function ChatMessageList({
 
       {/* Attachments preview */}
       {attachments.length > 0 && (
-        <div className="px-4 py-2 border-t bg-muted/50">
+        <div className="px-2 sm:px-4 py-2 border-t bg-muted/50">
           <div className="flex flex-wrap gap-2">
             {attachments.map((file, index) => (
               <div
@@ -852,7 +853,7 @@ export function ChatMessageList({
                 ) : (
                   <File className="h-4 w-4" />
                 )}
-                <span className="text-sm truncate max-w-[150px]">{file.name}</span>
+                <span className="text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[150px]">{file.name}</span>
                 <span className="text-xs text-muted-foreground">
                   {formatFileSize(file.size)}
                 </span>
@@ -871,8 +872,8 @@ export function ChatMessageList({
       )}
 
       {/* Input */}
-      <div className="p-4 border-t">
-        <div className="flex gap-2">
+      <div className="p-2 sm:p-4 border-t">
+        <div className="flex gap-1 sm:gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -889,8 +890,9 @@ export function ChatMessageList({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             disabled={sending}
+            className="h-8 w-8 sm:h-10 sm:w-10"
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <Input
             ref={inputRef}
@@ -909,16 +911,17 @@ export function ChatMessageList({
               }
             }}
             disabled={sending}
+            className="text-sm"
           />
           <Button
             onClick={handleSendMessage}
             disabled={(!message.trim() && attachments.length === 0) || sending}
-            className="bg-rusty-red hover:bg-ou-crimson"
+            className="bg-rusty-red hover:bg-ou-crimson h-8 w-8 sm:h-10 sm:w-10"
           >
             {sending ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
             ) : (
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             )}
           </Button>
         </div>

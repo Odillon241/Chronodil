@@ -22,6 +22,10 @@ const createTaskSchema = z.object({
   sharedWith: z.array(z.string()).optional(), // Array of user IDs
   status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  complexity: z.enum(["FAIBLE", "MOYEN", "ÉLEVÉ"]).optional(),
+  trainingLevel: z.enum(["NONE", "BASIC", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional().nullable(),
+  masteryLevel: z.enum(["NOVICE", "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional().nullable(),
+  understandingLevel: z.enum(["NONE", "SUPERFICIAL", "WORKING", "COMPREHENSIVE", "EXPERT"]).optional().nullable(),
 });
 
 const updateTaskSchema = z.object({
@@ -589,6 +593,112 @@ export const updateTaskPriority = actionClient
       field: "priority",
       oldValue: task.priority,
       newValue: parsedInput.priority,
+    });
+
+    return updatedTask;
+  });
+
+const evaluateTaskSchema = z.object({
+  id: z.string(),
+  trainingLevel: z.enum(["NONE", "BASIC", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional(),
+  masteryLevel: z.enum(["NOVICE", "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional(),
+  understandingLevel: z.enum(["NONE", "SUPERFICIAL", "WORKING", "COMPREHENSIVE", "EXPERT"]).optional(),
+  evaluationNotes: z.string().optional(),
+});
+
+export const evaluateTask = actionClient
+  .schema(evaluateTaskSchema)
+  .action(async ({ parsedInput }) => {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    // Vérifier que seul un manager ou directeur peut évaluer
+    if (!["MANAGER", "DIRECTEUR", "ADMIN"].includes(session.user.role as string)) {
+      throw new Error("Seuls les managers et directeurs peuvent évaluer les tâches");
+    }
+
+    const task = await prisma.task.findUnique({
+      where: { id: parsedInput.id },
+    });
+
+    if (!task) {
+      throw new Error("Tâche non trouvée");
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id: parsedInput.id },
+      data: {
+        trainingLevel: parsedInput.trainingLevel,
+        masteryLevel: parsedInput.masteryLevel,
+        understandingLevel: parsedInput.understandingLevel,
+        evaluationNotes: parsedInput.evaluationNotes,
+        evaluatedBy: session.user.id,
+        evaluatedAt: new Date(),
+      },
+    });
+
+    // Logger l'évaluation
+    await logTaskActivity({
+      taskId: parsedInput.id,
+      userId: session.user.id,
+      action: "task_evaluated",
+      description: `Évaluation: Formation=${parsedInput.trainingLevel}, Maîtrise=${parsedInput.masteryLevel}, Compréhension=${parsedInput.understandingLevel}`,
+    });
+
+    return updatedTask;
+  });
+
+const updateTaskComplexitySchema = z.object({
+  id: z.string(),
+  complexity: z.enum(["FAIBLE", "MOYEN", "ÉLEVÉ"]),
+  recurrence: z.string().optional(),
+});
+
+export const updateTaskComplexity = actionClient
+  .schema(updateTaskComplexitySchema)
+  .action(async ({ parsedInput }) => {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    const task = await prisma.task.findUnique({
+      where: { id: parsedInput.id },
+    });
+
+    if (!task) {
+      throw new Error("Tâche non trouvée");
+    }
+
+    // Vérifier les permissions - créateur ou manager
+    if (task.createdBy !== session.user.id && !["MANAGER", "DIRECTEUR", "ADMIN"].includes(session.user.role as string)) {
+      throw new Error("Vous n'avez pas les permissions pour modifier cette tâche");
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id: parsedInput.id },
+      data: {
+        complexity: parsedInput.complexity,
+        recurrence: parsedInput.recurrence,
+      },
+    });
+
+    // Logger le changement de complexité
+    await logTaskActivity({
+      taskId: parsedInput.id,
+      userId: session.user.id,
+      action: "complexity_changed",
+      field: "complexity",
+      oldValue: task.complexity,
+      newValue: parsedInput.complexity,
     });
 
     return updatedTask;

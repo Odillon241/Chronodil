@@ -73,6 +73,62 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  /* Thèmes de couleur d'accentuation - Light Mode */
+  [data-accent="rusty-red"] {
+    --primary: 0 77% 53%;
+    --ring: 0 77% 53%;
+  }
+
+  [data-accent="ou-crimson"] {
+    --primary: 353 80% 29%;
+    --ring: 353 80% 29%;
+  }
+
+  [data-accent="powder-blue"] {
+    --primary: 192 76% 70%;
+    --ring: 192 76% 70%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+  }
+
+  [data-accent="forest-green"] {
+    --primary: 152 50% 35%;
+    --ring: 152 50% 35%;
+  }
+
+  [data-accent="golden-orange"] {
+    --primary: 35 88% 55%;
+    --ring: 35 88% 55%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+  }
+
+  /* Thèmes de couleur d'accentuation - Dark Mode */
+  .dark[data-accent="rusty-red"] {
+    --primary: 0 77% 60%;
+    --ring: 0 77% 60%;
+  }
+
+  .dark[data-accent="ou-crimson"] {
+    --primary: 353 80% 45%;
+    --ring: 353 80% 45%;
+  }
+
+  .dark[data-accent="powder-blue"] {
+    --primary: 192 76% 75%;
+    --ring: 192 76% 75%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+  }
+
+  .dark[data-accent="forest-green"] {
+    --primary: 152 50% 50%;
+    --ring: 152 50% 50%;
+  }
+
+  .dark[data-accent="golden-orange"] {
+    --primary: 35 88% 65%;
+    --ring: 35 88% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+  }
 }
 
 @layer base {
@@ -82,4 +138,52 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Paramètres généraux - Contraste élevé */
+.high-contrast {
+  --foreground: 0 0% 0%;
+  --background: 0 0% 100%;
+  --border: 0 0% 0%;
+  --primary: 0 0% 0%;
+}
+
+.dark.high-contrast {
+  --foreground: 0 0% 100%;
+  --background: 0 0% 0%;
+  --border: 0 0% 100%;
+  --primary: 0 0% 100%;
+}
+
+/* Paramètres généraux - Réduction des animations */
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Paramètres généraux - Densité d'affichage */
+[data-density="compact"] {
+  --spacing-scale: 0.75;
+}
+
+[data-density="compact"] .p-4 {
+  padding: calc(1rem * 0.75);
+}
+
+[data-density="compact"] .gap-4 {
+  gap: calc(1rem * 0.75);
+}
+
+[data-density="comfortable"] {
+  --spacing-scale: 1.25;
+}
+
+[data-density="comfortable"] .p-4 {
+  padding: calc(1rem * 1.25);
+}
+
+[data-density="comfortable"] .gap-4 {
+  gap: calc(1rem * 1.25);
 }

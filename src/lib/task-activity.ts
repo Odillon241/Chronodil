@@ -21,7 +21,9 @@ export type TaskActionType =
   | "due_date_changed"
   | "reminder_set"
   | "shared"
-  | "unshared";
+  | "unshared"
+  | "task_evaluated"
+  | "complexity_changed";
 
 // Labels français pour les statuts
 const STATUS_LABELS: Record<string, string> = {
@@ -57,6 +59,8 @@ const ACTION_LABELS: Record<TaskActionType, string> = {
   reminder_set: "a défini un rappel",
   shared: "a partagé la tâche",
   unshared: "a rendu la tâche privée",
+  task_evaluated: "a évalué la tâche",
+  complexity_changed: "a modifié la complexité",
 };
 
 interface LogActivityParams {
@@ -66,6 +70,7 @@ interface LogActivityParams {
   field?: string;
   oldValue?: string;
   newValue?: string;
+  description?: string;
   metadata?: Record<string, any>;
 }
 

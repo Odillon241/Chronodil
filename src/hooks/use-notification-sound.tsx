@@ -31,26 +31,6 @@ export function useNotificationSound() {
   }, []);
 
   /**
-   * Joue un son de notification
-   * Utilise Web Audio API pour générer un son synthétisé
-   */
-  const playSound = useCallback(
-    async (soundType?: "default" | "soft" | "alert") => {
-      if (!isEnabled) return;
-
-      const type = soundType || selectedSound;
-
-      try {
-        // Utiliser directement Web Audio API pour générer le son
-        generateBeepSound(type);
-      } catch (error) {
-        console.error("Erreur lors de la lecture du son:", error);
-      }
-    },
-    [isEnabled, selectedSound, generateBeepSound]
-  );
-
-  /**
    * Génère un son de notification en utilisant Web Audio API
    * Différents sons selon le type sélectionné
    */
@@ -111,6 +91,26 @@ export function useNotificationSound() {
       }
     },
     [volume]
+  );
+
+  /**
+   * Joue un son de notification
+   * Utilise Web Audio API pour générer un son synthétisé
+   */
+  const playSound = useCallback(
+    async (soundType?: "default" | "soft" | "alert") => {
+      if (!isEnabled) return;
+
+      const type = soundType || selectedSound;
+
+      try {
+        // Utiliser directement Web Audio API pour générer le son
+        generateBeepSound(type);
+      } catch (error) {
+        console.error("Erreur lors de la lecture du son:", error);
+      }
+    },
+    [isEnabled, selectedSound, generateBeepSound]
   );
 
   /**

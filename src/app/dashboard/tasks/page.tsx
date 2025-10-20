@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TaskComplexitySelector } from "@/components/features/task-complexity-selector";
+import { TaskEvaluationForm } from "@/components/features/task-evaluation-form";
+import { TaskComplexityBadge } from "@/components/features/task-complexity-badge";
 import {
   Select,
   SelectContent,
@@ -84,6 +87,10 @@ export default function TasksPage() {
     isShared: false,
     status: "TODO",
     priority: "MEDIUM",
+    complexity: "MOYEN",
+    trainingLevel: undefined,
+    masteryLevel: undefined,
+    understandingLevel: undefined,
   });
 
   useEffect(() => {
@@ -197,6 +204,10 @@ export default function TasksPage() {
           sharedWith: formData.isShared ? selectedUsers : undefined,
           status: formData.status as "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED",
           priority: formData.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
+          complexity: formData.complexity as "FAIBLE" | "MOYEN" | "ÉLEVÉ",
+          trainingLevel: formData.trainingLevel,
+          masteryLevel: formData.masteryLevel,
+          understandingLevel: formData.understandingLevel,
         });
 
         if (result?.data) {
@@ -233,6 +244,10 @@ export default function TasksPage() {
       isShared: task.isShared || false,
       status: task.status || "TODO",
       priority: task.priority || "MEDIUM",
+      complexity: task.complexity || "MOYEN",
+      trainingLevel: task.trainingLevel || undefined,
+      masteryLevel: task.masteryLevel || undefined,
+      understandingLevel: task.understandingLevel || undefined,
     });
     setIsDialogOpen(true);
   };
@@ -287,6 +302,10 @@ export default function TasksPage() {
       isShared: false,
       status: "TODO",
       priority: "MEDIUM",
+      complexity: "MOYEN",
+      trainingLevel: undefined,
+      masteryLevel: undefined,
+      understandingLevel: undefined,
     });
     setSelectedUsers([]);
     setEditingTask(null);
@@ -572,6 +591,15 @@ export default function TasksPage() {
                   </p>
                 )}
 
+                <div className="space-y-2 border-t pt-4">
+                  <TaskComplexitySelector
+                    value={formData.complexity as any}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, complexity: value })
+                    }
+                  />
+                </div>
+
                 {!editingTask && (
                   <div className="space-y-4 border-t pt-4">
                     <div className="flex items-center space-x-2">
@@ -579,9 +607,14 @@ export default function TasksPage() {
                         id="isShared"
                         checked={formData.isShared}
                         onCheckedChange={(checked) => {
-                          setFormData({ ...formData, isShared: checked as boolean });
-                          if (checked && availableUsers.length === 0) {
+                          const isChecked = checked as boolean;
+                          setFormData({ ...formData, isShared: isChecked });
+                          if (isChecked && availableUsers.length === 0) {
                             loadAvailableUsers(formData.projectId === "none" ? undefined : formData.projectId);
+                          } else if (!isChecked) {
+                            // Reset availableUsers et selectedUsers quand on décoche
+                            setAvailableUsers([]);
+                            setSelectedUsers([]);
                           }
                         }}
                       />
@@ -606,7 +639,6 @@ export default function TasksPage() {
                                 className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-accent ${
                                   selectedUsers.includes(user.id) ? "bg-accent" : ""
                                 }`}
-                                onClick={() => toggleUserSelection(user.id)}
                               >
                                 <Checkbox
                                   checked={selectedUsers.includes(user.id)}

@@ -1,0 +1,413 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "export": "Exporter",
+    "import": "Importer",
+    "download": "Télécharger",
+    "upload": "Téléverser",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "actions": "Actions",
+    "status": "Statut",
+    "date": "Date",
+    "time": "Heure",
+    "duration": "Durée",
+    "description": "Description",
+    "name": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "submit": "Soumettre",
+    "reset": "Réinitialiser"
+  },
+
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "timesheets": "Feuilles de temps",
+    "projects": "Projets",
+    "tasks": "Tâches",
+    "hrTimesheets": "Feuilles RH",
+    "reports": "Rapports",
+    "chat": "Chat",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue",
+    "stats": {
+      "totalHours": "Total des heures",
+      "thisWeek": "Cette semaine",
+      "thisMonth": "Ce mois",
+      "projects": "Projets",
+      "tasks": "Tâches",
+      "pending": "En attente",
+      "approved": "Approuvées"
+    }
+  },
+
+  "timesheets": {
+    "title": "Feuilles de temps",
+    "new": "Nouvelle saisie",
+    "myTimesheets": "Mes feuilles de temps",
+    "project": "Projet",
+    "task": "Tâche",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin",
+    "totalHours": "Total heures",
+    "status": {
+      "draft": "Brouillon",
+      "submitted": "Soumis",
+      "approved": "Approuvé",
+      "rejected": "Rejeté"
+    },
+    "messages": {
+      "created": "Saisie de temps créée avec succès",
+      "updated": "Saisie de temps mise à jour",
+      "deleted": "Saisie de temps supprimée",
+      "error": "Erreur lors de l'opération"
+    }
+  },
+
+  "projects": {
+    "title": "Projets",
+    "subtitle": "Gérez vos projets et suivez leur avancement",
+    "new": "Nouveau projet",
+    "myProjects": "Mes projets",
+    "allProjects": "Tous les projets",
+    "code": "Code",
+    "name": "Nom",
+    "department": "Département",
+    "color": "Couleur",
+    "budget": "Budget",
+    "budgetHours": "Budget (heures)",
+    "hourlyRate": "Taux horaire (F CFA)",
+    "spent": "Consommées",
+    "remaining": "Restantes",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "description": "Description",
+    "members": "Membres",
+    "membersCount": "{count} membres",
+    "noMembers": "Aucun membre",
+    "hoursRemaining": "{hours}h restantes",
+    "noBudget": "Pas de budget",
+    "usedHours": "{hours}h utilisées",
+    "totalBudget": "Budget total",
+    "avgProgress": "Progression moyenne",
+    "totalProjects": "Total Projets",
+    "activePlural": "actifs",
+    "used": "utilisées",
+    "involved": "Impliqués",
+    "onActiveProjects": "Sur projets actifs",
+    "noProjects": "Aucun projet trouvé",
+    "noProjectsFilter": "Aucun projet ne correspond à vos filtres",
+    "startCreating": "Commencez par créer votre premier projet",
+    "searchPlaceholder": "Rechercher un projet...",
+    "allDepartments": "Tous les départements",
+    "active": "Actifs",
+    "archived": "Archivés",
+    "all": "Tous",
+    "exportCSV": "Exporter CSV",
+    "sort": "Trier",
+    "sortByName": "Nom",
+    "sortByCode": "Code",
+    "sortByDate": "Date",
+    "sortByBudget": "Budget",
+    "sortByProgress": "Progression",
+    "details": "Détails",
+    "edit": "Modifier",
+    "manageTeam": "Gérer l'équipe",
+    "clone": "Cloner",
+    "archive": "Archiver",
+    "reactivate": "Réactiver",
+    "delete": "Supprimer",
+    "progress": "Progression",
+    "noDescription": "Aucune description",
+    "team": "Équipe",
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "archived": "Archivé",
+      "completed": "Terminé"
+    },
+    "view": {
+      "grid": "Grille",
+      "list": "Liste"
+    },
+    "create": {
+      "title": "Créer un nouveau projet",
+      "subtitle": "Ajoutez les informations du projet",
+      "namePlaceholder": "Ex: Application Mobile",
+      "codePlaceholder": "Ex: APP-MOB",
+      "descPlaceholder": "Brève description du projet",
+      "selectDepartment": "Sélectionner...",
+      "budgetPlaceholder": "500",
+      "ratePlaceholder": "20000",
+      "selectMembers": "Sélectionnez les membres à ajouter au projet (vous serez automatiquement ajouté)",
+      "noUsers": "Aucun utilisateur disponible",
+      "membersSelected": "{count} membre(s) sélectionné(s)",
+      "creating": "Création...",
+      "createButton": "Créer"
+    },
+    "edit": {
+      "title": "Modifier le projet",
+      "subtitle": "Modifiez les informations du projet",
+      "updating": "Mise à jour...",
+      "updateButton": "Mettre à jour"
+    },
+    "filters": {
+      "startDate": "Date de début:",
+      "endDate": "Date de fin:",
+      "resetDates": "Réinitialiser dates"
+    },
+    "pagination": {
+      "showing": "Affichage de {start} à {end} sur {total} projets",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "detailsDialog": {
+      "description": "Description",
+      "stats": "Statistiques",
+      "timeline": "Calendrier",
+      "start": "Début:",
+      "end": "Fin:",
+      "financial": "Informations financières",
+      "rate": "Taux horaire:",
+      "totalBudget": "Budget total:",
+      "status": "Statut",
+      "completed": "Complété"
+    },
+    "messages": {
+      "created": "Projet créé avec succès !",
+      "updated": "Projet mis à jour avec succès !",
+      "deleted": "Projet \"{name}\" supprimé avec succès !",
+      "archived": "Projet archivé",
+      "archivedDesc": "{name} a été archivé avec succès",
+      "reactivated": "Projet réactivé",
+      "reactivatedDesc": "{name} a été réactivé avec succès",
+      "cloned": "Projet cloné avec succès !",
+      "undo": "Annuler",
+      "loadError": "Erreur lors du chargement des données",
+      "loadProjectsError": "Erreur lors du chargement des projets",
+      "createError": "Erreur lors de la création du projet",
+      "updateError": "Erreur lors de la mise à jour du projet",
+      "archiveError": "Erreur lors de l'opération",
+      "cloneError": "Erreur lors du clonage du projet",
+      "deleteError": "Erreur lors de la suppression du projet",
+      "undoError": "Erreur lors de l'annulation",
+      "exportSuccess": "Export CSV réussi !",
+      "noPermissionDelete": "Vous n'avez pas la permission de supprimer ce projet. Seul le créateur ou un administrateur peut supprimer un projet."
+    },
+    "confirmations": {
+      "archiveTitle": "{status} le projet",
+      "archiveDesc": "Voulez-vous vraiment {action} le projet \"{name}\" ?",
+      "archiveText": "Archiver",
+      "reactivateText": "Réactiver",
+      "cloneTitle": "Cloner le projet",
+      "cloneDesc": "Voulez-vous vraiment cloner le projet \"{name}\" ?\n\nLe nouveau projet sera créé avec tous les membres de l'équipe.",
+      "cloneText": "Cloner",
+      "deleteTitle": "⚠️ Supprimer définitivement le projet",
+      "deleteDesc": "Voulez-vous vraiment supprimer définitivement le projet \"{name}\" ?\n\nCette action est irréversible et supprimera :\n- Le projet et toutes ses données\n- Tous les membres associés\n- Toutes les tâches du projet\n- Toutes les entrées de timesheet associées",
+      "deleteText": "Supprimer"
+    }
+  },
+
+  "tasks": {
+    "title": "Tâches",
+    "new": "Nouvelle tâche",
+    "myTasks": "Mes tâches",
+    "allTasks": "Toutes les tâches",
+    "assignedTo": "Assignée à",
+    "dueDate": "Date d'échéance",
+    "priority": {
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute",
+      "urgent": "Urgente"
+    },
+    "status": {
+      "todo": "À faire",
+      "inProgress": "En cours",
+      "review": "En révision",
+      "done": "Terminée",
+      "cancelled": "Annulée"
+    },
+    "messages": {
+      "created": "Tâche créée avec succès",
+      "updated": "Tâche mise à jour",
+      "deleted": "Tâche supprimée",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette tâche ?",
+      "error": "Erreur lors de l'opération"
+    }
+  },
+
+  "reports": {
+    "title": "Rapports",
+    "new": "Nouveau rapport",
+    "generate": "Générer un rapport",
+    "types": {
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel",
+      "individual": "Individuel"
+    },
+    "period": "Période",
+    "selectPeriod": "Sélectionner une période",
+    "includeSummary": "Inclure le résumé",
+    "format": {
+      "pdf": "PDF",
+      "word": "Word",
+      "excel": "Excel"
+    },
+    "messages": {
+      "generated": "Rapport généré avec succès",
+      "error": "Erreur lors de la génération du rapport"
+    }
+  },
+
+  "settings": {
+    "title": "Paramètres",
+    "general": "Général",
+    "profile": "Profil",
+    "notifications": "Notifications",
+    "holidays": "Jours fériés",
+    "departments": "Départements",
+    "users": "Utilisateurs",
+    "appearance": {
+      "title": "Apparence",
+      "description": "Personnalisez l'apparence de l'application",
+      "darkMode": "Mode sombre",
+      "darkModeDesc": "Utiliser le thème sombre pour réduire la fatigue oculaire",
+      "accentColor": "Couleur d'accentuation",
+      "viewDensity": "Densité d'affichage",
+      "fontSize": "Taille de police",
+      "fontSizeDesc": "Ajustez la taille de la police pour une meilleure lisibilité",
+      "density": {
+        "compact": "Compact - Interface condensée",
+        "normal": "Normal - Par défaut",
+        "comfortable": "Confortable - Plus espacée"
+      }
+    },
+    "localization": {
+      "title": "Localisation",
+      "description": "Configurez votre langue, fuseau horaire et formats",
+      "language": "Langue",
+      "languageDesc": "Sélectionnez votre langue préférée pour l'interface",
+      "dateFormat": "Format de date",
+      "hourFormat": "Format d'heure",
+      "timezone": "Fuseau horaire",
+      "timezoneDesc": "Utilisé pour la programmation des rappels et les affichages d'heure"
+    },
+    "accessibility": {
+      "title": "Accessibilité",
+      "description": "Améliorez l'accessibilité de l'application",
+      "highContrast": "Contraste élevé",
+      "highContrastDesc": "Augmente le contraste entre les couleurs pour une meilleure lisibilité",
+      "screenReader": "Mode lecteur d'écran",
+      "screenReaderDesc": "Optimise l'interface pour les lecteurs d'écran (ARIA labels, etc.)",
+      "reduceMotion": "Réduire les animations",
+      "reduceMotionDesc": "Diminue les animations et les transitions pour les personnes sensibles au mouvement",
+      "tip": "💡 Astuce: Ces paramètres d'accessibilité aident à rendre l'application plus confortable à utiliser pour tous. N'hésitez pas à les activer si vous ressentez une fatigue oculaire ou si vous utilisez des outils d'assistance."
+    },
+    "messages": {
+      "saved": "Paramètre enregistré",
+      "reset": "Paramètres réinitialisés",
+      "resetConfirm": "Êtes-vous sûr de vouloir réinitialiser tous les paramètres généraux aux valeurs par défaut ?",
+      "error": "Erreur lors de la mise à jour"
+    }
+  },
+
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "alreadyHaveAccount": "Déjà un compte ?",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "messages": {
+      "loginSuccess": "Connexion réussie",
+      "loginError": "Erreur de connexion",
+      "logoutSuccess": "Déconnexion réussie"
+    }
+  },
+
+  "validation": {
+    "required": "Ce champ est requis",
+    "email": "Adresse e-mail invalide",
+    "minLength": "Minimum {min} caractères",
+    "maxLength": "Maximum {max} caractères",
+    "pattern": "Format invalide",
+    "min": "La valeur minimale est {min}",
+    "max": "La valeur maximale est {max}",
+    "positiveNumber": "Doit être un nombre positif",
+    "integer": "Doit être un nombre entier",
+    "startBeforeEnd": "L'heure de début doit être avant l'heure de fin",
+    "pastDate": "La date ne peut pas être dans le passé",
+    "futureDate": "La date ne peut pas être dans le futur"
+  },
+
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "networkError": "Erreur réseau, vérifiez votre connexion",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès interdit",
+    "notFound": "Ressource non trouvée",
+    "serverError": "Erreur serveur",
+    "tryAgain": "Veuillez réessayer"
+  },
+
+  "dates": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "tomorrow": "Demain",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "Semaine dernière",
+    "thisMonth": "Ce mois",
+    "lastMonth": "Mois dernier",
+    "days": {
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi",
+      "saturday": "Samedi",
+      "sunday": "Dimanche"
+    },
+    "months": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    }
+  }
+}
+

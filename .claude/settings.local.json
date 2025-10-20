@@ -47,7 +47,17 @@
       "Bash(tsx scripts/test-validation.ts:*)",
       "Bash(cat:*)",
       "Bash(pnpm tsc:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(while read file)",
+      "Bash(do if file \"$file\")",
+      "Bash(then echo \"Fixing BOM in: $file\" fi done)",
+      "Bash(findstr node)",
+      "Bash(wmic process where ProcessId=11012 delete)",
+      "Bash(timeout 60 pnpm build)",
+      "Bash(tsx scripts/test-general-settings.ts)",
+      "Bash(tsx scripts/test-accent-colors.ts)",
+      "Bash(timeout 60 pnpm dev)",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force\")"
     ],
     "deny": [],
     "ask": []

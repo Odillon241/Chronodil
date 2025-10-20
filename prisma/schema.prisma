@@ -275,7 +275,7 @@ model Report {
   id             String            @id
   title          String
   content        String
-  format         String            @default("pdf") // "pdf" ou "word"
+  format         String            @default("pdf")
   period         String?
   includeSummary Boolean           @default(false)
   fileSize       Int               @default(0)
@@ -295,7 +295,7 @@ model ReportRecipient {
   userId   String?
   email    String
   name     String?
-  status   String   @default("sent") // "sent", "pending", "failed"
+  status   String   @default("sent")
   sentAt   DateTime @default(now())
   Report   Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   User     User?    @relation(fields: [userId], references: [id])
@@ -334,32 +334,41 @@ model Session {
 }
 
 model Task {
-  id             String           @id
+  id             String               @id
   name           String
   description    String?
   projectId      String?
   parentId       String?
   estimatedHours Float?
-  isActive       Boolean          @default(true)
-  createdAt      DateTime         @default(now())
+  isActive       Boolean              @default(true)
+  createdAt      DateTime             @default(now())
   updatedAt      DateTime
   createdBy      String?
   dueDate        DateTime?
+  isShared       Boolean              @default(false)
   reminderDate   DateTime?
   reminderTime   String?
-  soundEnabled   Boolean          @default(true)
-  isShared       Boolean          @default(false)
-  status         String           @default("TODO")
-  priority       String           @default("MEDIUM")
+  soundEnabled   Boolean              @default(true)
   completedAt    DateTime?
-  Task           Task?            @relation("TaskToTask", fields: [parentId], references: [id])
-  other_Task     Task[]           @relation("TaskToTask")
-  Project        Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  Creator        User?            @relation(fields: [createdBy], references: [id])
-  TimesheetEntry TimesheetEntry[]
-  TaskMember     TaskMember[]
-  TaskComment    TaskComment[]
+  priority       String               @default("MEDIUM")
+  status         String               @default("TODO")
+  complexity     TaskComplexity       @default(MOYEN)
+  recurrence     String?
+  trainingLevel  TrainingLevel?
+  masteryLevel   MasteryLevel?
+  understandingLevel UnderstandingLevel?
+  evaluatedBy    String?
+  evaluationNotes String?
+  evaluatedAt    DateTime?
+  Creator        User?                @relation(fields: [createdBy], references: [id])
+  Evaluator      User?                @relation("TaskEvaluation", fields: [evaluatedBy], references: [id])
+  Task           Task?                @relation("TaskToTask", fields: [parentId], references: [id])
+  other_Task     Task[]               @relation("TaskToTask")
+  Project        Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   TaskActivity   TaskActivity[]
+  TaskComment    TaskComment[]
+  TaskMember     TaskMember[]
+  TimesheetEntry TimesheetEntry[]
 
   @@index([isActive])
   @@index([parentId])
@@ -369,13 +378,15 @@ model Task {
   @@index([reminderDate])
   @@index([status])
   @@index([priority])
+  @@index([complexity])
+  @@index([evaluatedBy])
 }
 
 model TaskMember {
   id        String   @id
   taskId    String
   userId    String
-  role      String   @default("member") // "creator", "member"
+  role      String   @default("member")
   createdAt DateTime @default(now())
   Task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -405,12 +416,12 @@ model TaskActivity {
   id          String   @id
   taskId      String
   userId      String
-  action      String   // "created", "updated", "status_changed", "priority_changed", "assigned", "unassigned", "commented", "completed"
-  field       String?  // Champ modifié (ex: "status", "priority", "name")
-  oldValue    String?  // Ancienne valeur
-  newValue    String?  // Nouvelle valeur
-  description String?  // Description formatée (ex: "a changé le statut de TODO à IN_PROGRESS")
-  metadata    String?  // JSON pour données supplémentaires
+  action      String
+  field       String?
+  oldValue    String?
+  newValue    String?
+  description String?
+  metadata    String?
   createdAt   DateTime @default(now())
   Task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -464,50 +475,61 @@ model TimesheetValidation {
 }
 
 model User {
-  id                       String                @id
-  email                    String                @unique
-  name                     String
-  role                     Role                  @default(EMPLOYEE)
-  avatar                   String?
-  departmentId             String?
-  managerId                String?
-  createdAt                DateTime              @default(now())
-  updatedAt                DateTime
-  emailVerified            Boolean               @default(false)
-  image                    String?
-  // Préférences de notification et rappel
-  enableTimesheetReminders Boolean               @default(true)
-  reminderTime             String?               @default("17:00") // Heure du rappel (HH:MM)
-  reminderDays             String[]              // defaults handled in app // Jours de rappel
-  weeklyGoal               Float                 @default(40) // Objectif hebdomadaire en heures
-  notificationSoundEnabled Boolean               @default(true)
-  notificationSoundType    String                @default("default") // "default", "soft", "alert"
-  notificationSoundVolume  Float                 @default(0.7) // 0.0 à 1.0
-  emailNotificationsEnabled Boolean              @default(true)
-  desktopNotificationsEnabled Boolean            @default(true)
-  Account                  Account[]
-  AuditLog                 AuditLog[]
-  Conversation             Conversation[]
-  ConversationMember       ConversationMember[]
-  HRTimesheetsAsManager    HRTimesheet[]         @relation("HRTimesheet_managerSignedByIdToUser")
-  HRTimesheetsAsOdillon    HRTimesheet[]         @relation("HRTimesheet_odillonSignedByIdToUser")
-  HRTimesheetsAsEmployee   HRTimesheet[]         @relation("HRTimesheet_userIdToUser")
-  Message                  Message[]
-  Notification             Notification[]
-  Project                  Project[]
-  ProjectMember            ProjectMember[]
-  Report                   Report[]
-  ReportRecipient          ReportRecipient[]
-  Session                  Session[]
-  TimesheetEntry           TimesheetEntry[]
-  TimesheetValidation      TimesheetValidation[]
-  Task                     Task[]
-  TaskMember               TaskMember[]
-  TaskComment              TaskComment[]
-  TaskActivity             TaskActivity[]
-  Department               Department?           @relation(fields: [departmentId], references: [id])
-  User                     User?                 @relation("UserToUser", fields: [managerId], references: [id])
-  other_User               User[]                @relation("UserToUser")
+  id                          String                @id
+  email                       String                @unique
+  name                        String
+  role                        Role                  @default(EMPLOYEE)
+  avatar                      String?
+  departmentId                String?
+  managerId                   String?
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime
+  emailVerified               Boolean               @default(false)
+  image                       String?
+  enableTimesheetReminders    Boolean               @default(true)
+  reminderDays                String[]
+  reminderTime                String?               @default("17:00")
+  desktopNotificationsEnabled Boolean               @default(true)
+  emailNotificationsEnabled   Boolean               @default(true)
+  notificationSoundEnabled    Boolean               @default(true)
+  notificationSoundType       String                @default("default")
+  notificationSoundVolume     Float                 @default(0.7)
+  weeklyGoal                  Float                 @default(40)
+  darkModeEnabled             Boolean               @default(true)
+  accentColor                 String                @default("rusty-red")
+  viewDensity                 String                @default("normal")
+  fontSize                    Int                   @default(16)
+  language                    String                @default("fr")
+  dateFormat                  String                @default("DD/MM/YYYY")
+  hourFormat                  String                @default("24")
+  timezone                    String                @default("Africa/Libreville")
+  highContrast                Boolean               @default(false)
+  screenReaderMode            Boolean               @default(false)
+  reduceMotion                Boolean               @default(false)
+  Account                     Account[]
+  AuditLog                    AuditLog[]
+  Conversation                Conversation[]
+  ConversationMember          ConversationMember[]
+  HRTimesheetsAsManager       HRTimesheet[]         @relation("HRTimesheet_managerSignedByIdToUser")
+  HRTimesheetsAsOdillon       HRTimesheet[]         @relation("HRTimesheet_odillonSignedByIdToUser")
+  HRTimesheetsAsEmployee      HRTimesheet[]         @relation("HRTimesheet_userIdToUser")
+  Message                     Message[]
+  Notification                Notification[]
+  Project                     Project[]
+  ProjectMember               ProjectMember[]
+  Report                      Report[]
+  ReportRecipient             ReportRecipient[]
+  Session                     Session[]
+  Task                        Task[]
+  TasksEvaluated              Task[]                @relation("TaskEvaluation")
+  TaskActivity                TaskActivity[]
+  TaskComment                 TaskComment[]
+  TaskMember                  TaskMember[]
+  TimesheetEntry              TimesheetEntry[]
+  TimesheetValidation         TimesheetValidation[]
+  Department                  Department?           @relation(fields: [departmentId], references: [id])
+  User                        User?                 @relation("UserToUser", fields: [managerId], references: [id])
+  other_User                  User[]                @relation("UserToUser")
 
   @@index([departmentId])
   @@index([email])
@@ -584,4 +606,34 @@ enum TimesheetStatus {
   APPROVED
   REJECTED
   LOCKED
+}
+
+enum TaskComplexity {
+  FAIBLE
+  MOYEN
+  ÉLEVÉ
+}
+
+enum TrainingLevel {
+  NONE
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum MasteryLevel {
+  NOVICE
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum UnderstandingLevel {
+  NONE
+  SUPERFICIAL
+  WORKING
+  COMPREHENSIVE
+  EXPERT
 }

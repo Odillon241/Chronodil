@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -56,8 +56,8 @@ export const getUserPreferences = actionClient
     }
 
     // Set default values for reminderDays if not set
-    const reminderDays = user.reminderDays && user.reminderDays.length > 0 
-      ? user.reminderDays 
+    const reminderDays = user.reminderDays && user.reminderDays.length > 0
+      ? user.reminderDays
       : ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 
     return {

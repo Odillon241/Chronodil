@@ -41,6 +41,15 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useSession } from "@/lib/auth-client";
+import { useTheme } from "next-themes";
+import {
+  getGeneralSettings,
+  updateGeneralSettings,
+  resetGeneralSettings,
+} from "@/actions/general-settings.actions";
+import { AppearanceSection } from "@/components/features/general-settings/appearance-section";
+import { LocalizationSection } from "@/components/features/general-settings/localization-section";
+import { AccessibilitySection } from "@/components/features/general-settings/accessibility-section";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -73,6 +82,45 @@ export default function SettingsPage() {
   const [preferences, setPreferences] = useState<any>(null);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
 
+  // General settings preferences (Phase 1)
+  const [generalSettings, setGeneralSettings] = useState<any>(null);
+  const [isSavingGeneralSettings, setIsSavingGeneralSettings] = useState(false);
+
+  // Import pour gérer le thème via next-themes
+  const { setTheme } = useTheme();
+
+  // Fonction pour appliquer les paramètres visuellement
+  const applySettingsToUI = (settings: any) => {
+    if (!settings) return;
+
+    // Appliquer le mode sombre via next-themes (JAMAIS manipuler directement le DOM)
+    const theme = settings.darkModeEnabled ? "dark" : "light";
+    setTheme(theme);
+
+    // Appliquer la taille de police
+    document.documentElement.style.fontSize = `${settings.fontSize}px`;
+
+    // Appliquer le contraste élevé
+    if (settings.highContrast) {
+      document.documentElement.classList.add("high-contrast");
+    } else {
+      document.documentElement.classList.remove("high-contrast");
+    }
+
+    // Appliquer la réduction des animations
+    if (settings.reduceMotion) {
+      document.documentElement.classList.add("reduce-motion");
+    } else {
+      document.documentElement.classList.remove("reduce-motion");
+    }
+
+    // Appliquer la densité d'affichage
+    document.documentElement.setAttribute("data-density", settings.viewDensity);
+
+    // Appliquer la couleur d'accentuation
+    document.documentElement.setAttribute("data-accent", settings.accentColor);
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -80,12 +128,30 @@ export default function SettingsPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [holidaysResult, departmentsResult, settingsResult, preferencesResult] = await Promise.all([
+      const [holidaysResult, departmentsResult, settingsResult, preferencesResult, generalSettingsResult] = await Promise.all([
         getHolidays({}),
         getDepartments({}),
-        getSettings({}).catch(() => ({ data: [] })),
-        getUserPreferences({}).catch(() => ({ data: null })),
+        getSettings({}).catch((e) => {
+          console.error("Erreur getSettings:", e);
+          return { data: [] };
+        }),
+        getUserPreferences({}).catch((e) => {
+          console.error("Erreur getUserPreferences:", e);
+          return { data: null };
+        }),
+        getGeneralSettings({}).catch((e) => {
+          console.error("Erreur getGeneralSettings:", e);
+          return { data: null };
+        }),
       ]);
+
+      console.log("🔍 Résultats chargés:", {
+        holidays: holidaysResult,
+        departments: departmentsResult,
+        settings: settingsResult,
+        preferences: preferencesResult,
+        generalSettings: generalSettingsResult,
+      });
 
       if (holidaysResult?.data) {
         setHolidays(holidaysResult.data);
@@ -101,6 +167,14 @@ export default function SettingsPage() {
 
       if (preferencesResult?.data) {
         setPreferences(preferencesResult.data);
+      }
+
+      if (generalSettingsResult?.data) {
+        console.log("✅ Paramètres généraux chargés:", generalSettingsResult.data);
+        setGeneralSettings(generalSettingsResult.data);
+        applySettingsToUI(generalSettingsResult.data);
+      } else {
+        console.warn("⚠️ Pas de paramètres généraux:", generalSettingsResult);
       }
     } catch (error) {
       console.error("Erreur lors du chargement:", error);
@@ -223,6 +297,59 @@ export default function SettingsPage() {
           toast.error("Erreur lors de la réinitialisation");
         } finally {
           setIsSavingPreferences(false);
+        }
+      },
+    });
+  };
+
+  // General Settings (Phase 1)
+  const handleUpdateGeneralSetting = async (key: string, value: any) => {
+    console.log("📝 Mise à jour du paramètre:", { key, value });
+    setIsSavingGeneralSettings(true);
+    try {
+      const result = await updateGeneralSettings({ [key]: value });
+      console.log("📋 Résultat de updateGeneralSettings:", result);
+      if (result?.data) {
+        console.log("✅ Mise à jour réussie:", result.data);
+        setGeneralSettings(result.data);
+        applySettingsToUI(result.data);
+        toast.success("Paramètre enregistré");
+      } else if (result?.serverError) {
+        console.error("❌ Erreur serveur:", result.serverError);
+        toast.error(result.serverError);
+      } else {
+        console.warn("⚠️ Résultat inattendu:", result);
+      }
+    } catch (error) {
+      console.error("❌ Erreur lors de la mise à jour:", error);
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setIsSavingGeneralSettings(false);
+    }
+  };
+
+  const handleResetGeneralSettings = async () => {
+    const confirmed = await showConfirmation({
+      title: "Réinitialiser les paramètres généraux",
+      description: "Êtes-vous sûr de vouloir réinitialiser tous les paramètres généraux aux valeurs par défaut ?",
+      confirmText: "Réinitialiser",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        setIsSavingGeneralSettings(true);
+        try {
+          const result = await resetGeneralSettings({});
+          if (result?.data) {
+            setGeneralSettings(result.data);
+            applySettingsToUI(result.data);
+            toast.success("Paramètres réinitialisés");
+          } else if (result?.serverError) {
+            toast.error(result.serverError);
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la réinitialisation");
+        } finally {
+          setIsSavingGeneralSettings(false);
         }
       },
     });
@@ -927,22 +1054,51 @@ export default function SettingsPage() {
 
         {/* Général */}
         <TabsContent value="general" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres généraux</CardTitle>
-              <CardDescription>
-                Configuration globale de l'application
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-center text-muted-foreground py-8">
-                  <SettingsIcon className="h-8 w-8 mr-2" />
-                  <span>Paramètres généraux à configurer</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Paramètres généraux</h2>
+              <p className="text-muted-foreground">
+                Personnalisez l'apparence, la langue et l'accessibilité
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleResetGeneralSettings}
+              disabled={isSavingGeneralSettings || !generalSettings}
+              className="text-destructive hover:text-destructive"
+            >
+              Réinitialiser
+            </Button>
+          </div>
+
+          {!generalSettings ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Chargement des paramètres...</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Phase 1 Sections */}
+              <AppearanceSection
+                settings={generalSettings}
+                onUpdate={handleUpdateGeneralSetting}
+                isSaving={isSavingGeneralSettings}
+              />
+
+              <LocalizationSection
+                settings={generalSettings}
+                onUpdate={handleUpdateGeneralSetting}
+                isSaving={isSavingGeneralSettings}
+              />
+
+              <AccessibilitySection
+                settings={generalSettings}
+                onUpdate={handleUpdateGeneralSetting}
+                isSaving={isSavingGeneralSettings}
+              />
+            </>
+          )}
         </TabsContent>
       </Tabs>
       <ConfirmationDialog />

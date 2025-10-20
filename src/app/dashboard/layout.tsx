@@ -5,6 +5,7 @@ import { NotificationDropdown } from "@/components/features/notification-dropdow
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
 import { CommandPalette } from "@/components/features/command-palette";
+import { SettingsProvider } from "@/components/providers/settings-provider";
 
 export default function DashboardLayout({
   children,
@@ -12,25 +13,27 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
-          <div className="flex flex-1 items-center gap-2 min-w-0">
-            <DynamicBreadcrumb />
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <ModeToggle />
-            <NotificationDropdown />
-          </div>
-        </header>
-        <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
-          {children}
-        </main>
-      </SidebarInset>
-      <CommandPalette />
-    </SidebarProvider>
+    <SettingsProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
+            <div className="flex flex-1 items-center gap-2 min-w-0">
+              <DynamicBreadcrumb />
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <ModeToggle />
+              <NotificationDropdown />
+            </div>
+          </header>
+          <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
+            {children}
+          </main>
+        </SidebarInset>
+        <CommandPalette />
+      </SidebarProvider>
+    </SettingsProvider>
   );
 }

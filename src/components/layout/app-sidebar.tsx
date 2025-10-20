@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   Clock,
@@ -50,75 +51,76 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession, signOut } from "@/lib/auth-client";
 
-// Navigation items
-const navMain = [
-  {
-    title: "Tableau de bord",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Saisie des temps",
-    url: "/dashboard/timesheet",
-    icon: Clock,
-  },
-  {
-    title: "Timesheets RH",
-    url: "/dashboard/hr-timesheet",
-    icon: FileText,
-  },
-  {
-    title: "Projets",
-    url: "/dashboard/projects",
-    icon: FolderKanban,
-  },
-  {
-    title: "Tâches",
-    url: "/dashboard/tasks",
-    icon: ListTodo,
-  },
-  {
-    title: "Chat",
-    url: "/dashboard/chat",
-    icon: MessageSquare,
-  },
-  {
-    title: "Validation",
-    url: "/dashboard/validation",
-    icon: CheckSquare,
-    roles: ["MANAGER", "HR", "ADMIN"],
-  },
-  {
-    title: "Validations Manager",
-    url: "/dashboard/validations",
-    icon: CheckSquare,
-    roles: ["MANAGER", "ADMIN"],
-  },
-  {
-    title: "Rapports",
-    url: "/dashboard/reports",
-    icon: BarChart3,
-  },
-];
-
-const navSettings = [
-  {
-    title: "Paramètres",
-    url: "/dashboard/settings",
-    icon: Settings,
-  },
-  {
-    title: "Audit",
-    url: "/dashboard/audit",
-    icon: Shield,
-    roles: ["ADMIN", "HR"],
-  },
-];
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = React.useState<string[]>([]);
+  const t = useTranslations();
+
+  // Navigation items - créés dynamiquement pour avoir accès aux traductions
+  const navMain = [
+    {
+      title: t("navigation.dashboard"),
+      url: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: t("navigation.timesheets"),
+      url: "/dashboard/timesheet",
+      icon: Clock,
+    },
+    {
+      title: t("navigation.hrTimesheets"),
+      url: "/dashboard/hr-timesheet",
+      icon: FileText,
+    },
+    {
+      title: t("navigation.projects"),
+      url: "/dashboard/projects",
+      icon: FolderKanban,
+    },
+    {
+      title: t("navigation.tasks"),
+      url: "/dashboard/tasks",
+      icon: ListTodo,
+    },
+    {
+      title: t("navigation.chat"),
+      url: "/dashboard/chat",
+      icon: MessageSquare,
+    },
+    {
+      title: "Validation",
+      url: "/dashboard/validation",
+      icon: CheckSquare,
+      roles: ["MANAGER", "HR", "ADMIN"],
+    },
+    {
+      title: "Validations Manager",
+      url: "/dashboard/validations",
+      icon: CheckSquare,
+      roles: ["MANAGER", "ADMIN"],
+    },
+    {
+      title: t("navigation.reports"),
+      url: "/dashboard/reports",
+      icon: BarChart3,
+    },
+  ];
+
+  const navSettings = [
+    {
+      title: t("navigation.settings"),
+      url: "/dashboard/settings",
+      icon: Settings,
+    },
+    {
+      title: "Audit",
+      url: "/dashboard/audit",
+      icon: Shield,
+      roles: ["ADMIN", "HR"],
+    },
+  ];
 
   const toggleMenu = (title: string) => {
     setOpenMenus((prev) =>
@@ -150,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Chronodil</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Gestion des temps
+                    {t("navigation.timesheets")}
                   </span>
                 </div>
               </Link>
@@ -161,7 +163,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("navigation.dashboard")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navMain
@@ -275,7 +277,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {session?.user?.name || "Utilisateur"}
+                      {session?.user?.name || t("common.name")}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
                       {session?.user?.email}
@@ -308,7 +310,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
-                        {session?.user?.name || "Utilisateur"}
+                        {session?.user?.name || t("common.name")}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
                         {session?.user?.email}
@@ -320,19 +322,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/settings/profile">
                     <User className="mr-2 h-4 w-4" />
-                    Profil
+                    {t("navigation.profile")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/settings">
                     <Settings className="mr-2 h-4 w-4" />
-                    Paramètres
+                    {t("navigation.settings")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Déconnexion
+                  {t("navigation.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

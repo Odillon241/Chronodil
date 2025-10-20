@@ -8,6 +8,7 @@ import { TimesheetRadarChart } from "@/components/features/timesheet-radar-chart
 import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
 import { StatCardWithComparison } from "@/components/features/stat-card-with-comparison";
 import { WeeklyGoalSettings } from "@/components/features/weekly-goal-settings";
+import { getTranslations } from "next-intl/server";
 
 async function getDashboardData(userId: string) {
   try {
@@ -171,6 +172,7 @@ export default async function DashboardPage() {
     redirect("/auth/login");
   }
 
+  const t = await getTranslations("dashboard");
   const data = await getDashboardData(session.user.id);
   const maxHours = Math.max(...data.projectsWithDetails.map((p) => p.hours), 1);
 
@@ -178,9 +180,9 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-4 sm:gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tableau de bord</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Bienvenue {session.user.name} ! Voici un aperçu de votre activité.
+            {t("welcome")} {session.user.name} ! Voici un aperçu de votre activité.
           </p>
         </div>
         <WeeklyGoalSettings currentGoal={data.weeklyGoal} />
@@ -188,9 +190,9 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCardWithComparison
-          title="Heures cette semaine"
+          title={t("stats.thisWeek")}
           value={`${data.weekHours.toFixed(1)}h`}
-          description="Semaine en cours"
+          description={t("stats.thisWeek")}
           iconName="clock"
           color="text-rusty-red"
           bgColor="bg-rusty-red/10"
@@ -198,15 +200,15 @@ export default async function DashboardPage() {
           previousValue={data.prevWeekHours}
         />
         <StatCardWithComparison
-          title="Temps approuvés"
+          title={t("stats.approved")}
           value={`${data.approvedHours.toFixed(1)}h`}
-          description="Ce mois-ci"
+          description={t("stats.thisMonth")}
           iconName="check-circle"
           color="text-green-600"
           bgColor="bg-green-100"
         />
         <StatCardWithComparison
-          title="En attente"
+          title={t("stats.pending")}
           value={`${data.pendingHours.toFixed(1)}h`}
           description="À faire valider"
           iconName="alert-circle"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,7 @@ export default function ProjectsPage() {
   const { data: session } = useSession();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const currentUser = session?.user;
+  const t = useTranslations("projects");
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -155,7 +157,7 @@ export default function ProjectsPage() {
         setUsers(usersResult.data);
       }
     } catch (error) {
-      toast.error("Erreur lors du chargement des données");
+      toast.error(t("messages.loadError"));
     } finally {
       setLoading(false);
     }
@@ -170,7 +172,7 @@ export default function ProjectsPage() {
         setProjects(result.data);
       }
     } catch (error) {
-      toast.error("Erreur lors du chargement des projets");
+      toast.error(t("messages.loadProjectsError"));
     }
   };
 
@@ -198,16 +200,16 @@ export default function ProjectsPage() {
       });
 
       if (result?.data) {
-        toast.success("Projet créé avec succès !");
+        toast.success(t("messages.created"));
         setCreateDialogOpen(false);
         setSelectedMemberIds([]);
         loadProjects();
         (e.target as HTMLFormElement).reset();
       } else {
-        toast.error(result?.serverError || "Erreur lors de la création");
+        toast.error(result?.serverError || t("messages.createError"));
       }
     } catch (error) {
-      toast.error("Erreur lors de la création du projet");
+      toast.error(t("messages.createError"));
     } finally {
       setSubmitting(false);
     }
@@ -241,15 +243,15 @@ export default function ProjectsPage() {
       });
 
       if (result?.data) {
-        toast.success("Projet mis à jour avec succès !");
+        toast.success(t("messages.updated"));
         setEditDialogOpen(false);
         setSelectedProject(null);
         loadProjects();
       } else {
-        toast.error(result?.serverError || "Erreur lors de la mise à jour");
+        toast.error(result?.serverError || t("messages.updateError"));
       }
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour du projet");
+      toast.error(t("messages.updateError"));
     } finally {
       setSubmitting(false);
     }
@@ -257,10 +259,10 @@ export default function ProjectsPage() {
 
   const handleArchiveProject = async (project: any) => {
     const confirmed = await showConfirmation({
-      title: `${project.isActive ? "Archiver" : "Réactiver"} le projet`,
+      title: `${project.isActive ? t("archive") : t("reactivate")} le projet`,
       description: `Voulez-vous vraiment ${project.isActive ? "archiver" : "réactiver"} le projet "${project.name}" ?`,
-      confirmText: project.isActive ? "Archiver" : "Réactiver",
-      cancelText: "Annuler",
+      confirmText: project.isActive ? t("archive") : t("reactivate"),
+      cancelText: t("messages.undo"),
       variant: project.isActive ? "destructive" : "default",
       onConfirm: async () => {
         try {
@@ -270,27 +272,27 @@ export default function ProjectsPage() {
             
             // Afficher le toast avec action Undo
             toast.success(
-              wasActive ? "Projet archivé" : "Projet réactivé",
+              wasActive ? t("messages.archived") : t("messages.reactivated"),
               {
                 description: `${project.name} a été ${wasActive ? "archivé" : "réactivé"} avec succès`,
                 action: {
-                  label: "Annuler",
+                  label: t("messages.undo"),
                   onClick: async () => {
                     try {
                       const undoResult = await archiveProject({ id: project.id });
                       if (undoResult?.data) {
                         toast.success(
-                          wasActive ? "Projet réactivé" : "Projet archivé",
+                          wasActive ? t("messages.reactivated") : t("messages.archived"),
                           {
                             description: `${project.name} a été ${wasActive ? "réactivé" : "archivé"}`,
                           }
                         );
                         loadProjects();
                       } else {
-                        toast.error("Erreur lors de l'annulation");
+                        toast.error(t("messages.undoError"));
                       }
                     } catch (error) {
-                      toast.error("Erreur lors de l'annulation");
+                      toast.error(t("messages.undoError"));
                     }
                   },
                 },
@@ -298,10 +300,10 @@ export default function ProjectsPage() {
             );
             loadProjects();
           } else {
-            toast.error(result?.serverError || "Erreur lors de l'opération");
+            toast.error(result?.serverError || t("messages.archiveError"));
           }
         } catch (error) {
-          toast.error("Erreur lors de l'opération");
+          toast.error(t("messages.archiveError"));
         }
       },
     });
@@ -326,19 +328,19 @@ export default function ProjectsPage() {
     const confirmed = await showConfirmation({
       title: "Cloner le projet",
       description: `Voulez-vous vraiment cloner le projet "${project.name}" ?\n\nLe nouveau projet sera créé avec tous les membres de l'équipe.`,
-      confirmText: "Cloner",
-      cancelText: "Annuler",
+      confirmText: t("clone"),
+      cancelText: t("messages.undo"),
       onConfirm: async () => {
         try {
           const result = await cloneProject({ id: project.id });
           if (result?.data) {
-            toast.success("Projet cloné avec succès !");
+            toast.success(t("messages.cloned"));
             loadProjects();
           } else {
             toast.error(result?.serverError || "Erreur lors du clonage");
           }
         } catch (error) {
-          toast.error("Erreur lors du clonage du projet");
+          toast.error(t("messages.cloneError"));
         }
       },
     });
@@ -352,7 +354,7 @@ export default function ProjectsPage() {
 
     if (!isAdmin && !isCreator) {
       toast.error(
-        "Vous n'avez pas la permission de supprimer ce projet. Seul le créateur ou un administrateur peut supprimer un projet."
+        t("messages.noPermissionDelete")
       );
       return;
     }
@@ -360,8 +362,8 @@ export default function ProjectsPage() {
     const confirmed = await showConfirmation({
       title: "⚠️ Supprimer définitivement le projet",
       description: `Voulez-vous vraiment supprimer définitivement le projet "${project.name}" ?\n\nCette action est irréversible et supprimera :\n- Le projet et toutes ses données\n- Tous les membres associés\n- Toutes les tâches du projet\n- Toutes les entrées de timesheet associées`,
-      confirmText: "Supprimer",
-      cancelText: "Annuler",
+      confirmText: t("delete"),
+      cancelText: t("messages.undo"),
       variant: "destructive",
       onConfirm: async () => {
         try {
@@ -373,7 +375,7 @@ export default function ProjectsPage() {
             toast.error(result?.serverError || "Erreur lors de la suppression");
           }
         } catch (error) {
-          toast.error("Erreur lors de la suppression du projet");
+          toast.error(t("messages.deleteError"));
         }
       },
     });
@@ -391,17 +393,17 @@ export default function ProjectsPage() {
   const handleExportCSV = () => {
     // Prepare CSV data
     const headers = [
-      "Code",
-      "Nom",
-      "Département",
+      t("sortByCode"),
+      t("sortByName"),
+      t("department"),
       "Budget (h)",
       "Utilisé (h)",
       "Progression (%)",
-      "Taux horaire (F CFA)",
-      "Membres",
+      t("hourlyRate"),
+      t("members"),
       "Date début",
       "Date fin",
-      "Statut",
+      t("detailsDialog.status"),
     ];
 
     const rows = processedProjects.map((project) => {
@@ -424,7 +426,7 @@ export default function ProjectsPage() {
         project.endDate
           ? new Date(project.endDate).toLocaleDateString("fr-FR")
           : "N/A",
-        project.isActive ? "Actif" : "Archivé",
+        project.isActive ? t("status.active") : t("status.archived"),
       ];
     });
 
@@ -452,7 +454,7 @@ export default function ProjectsPage() {
     link.click();
     document.body.removeChild(link);
 
-    toast.success("Export CSV réussi !");
+    toast.success(t("messages.exportSuccess"));
   };
 
   // Filtered and sorted projects with useMemo for performance
@@ -591,24 +593,24 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Projets</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Gérez vos projets et suivez leur avancement
+            {t("subtitle")}
           </p>
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              Nouveau projet
+              {t("new")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleCreateProject}>
               <DialogHeader>
-                <DialogTitle>Créer un nouveau projet</DialogTitle>
+                <DialogTitle>{t("create.title")}</DialogTitle>
                 <DialogDescription>
-                  Ajoutez les informations du projet
+                  {t("create.subtitle")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -618,7 +620,7 @@ export default function ProjectsPage() {
                     <Input
                       id="create-name"
                       name="name"
-                      placeholder="Ex: Application Mobile"
+                      placeholder={t("create.namePlaceholder")}
                       required
                     />
                   </div>
@@ -627,7 +629,7 @@ export default function ProjectsPage() {
                     <Input
                       id="create-code"
                       name="code"
-                      placeholder="Ex: APP-MOB"
+                      placeholder={t("create.codePlaceholder")}
                       required
                     />
                   </div>
@@ -638,7 +640,7 @@ export default function ProjectsPage() {
                   <Textarea
                     id="create-description"
                     name="description"
-                    placeholder="Brève description du projet"
+                    placeholder={t("create.descPlaceholder")}
                     rows={3}
                   />
                 </div>
@@ -648,7 +650,7 @@ export default function ProjectsPage() {
                     <Label htmlFor="create-department">Département</Label>
                     <Select name="departmentId">
                       <SelectTrigger id="create-department">
-                        <SelectValue placeholder="Sélectionner..." />
+                        <SelectValue placeholder={t("create.selectDepartment")} />
                       </SelectTrigger>
                       <SelectContent>
                         {departments.map((dept) => (
@@ -851,7 +853,7 @@ export default function ProjectsPage() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Rechercher un projet..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -861,7 +863,7 @@ export default function ProjectsPage() {
             <Select value={filterDepartment} onValueChange={setFilterDepartment}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Département" />
+                <SelectValue placeholder={t("department")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les départements</SelectItem>
@@ -1016,8 +1018,8 @@ export default function ProjectsPage() {
             <h3 className="text-lg font-semibold mb-2">Aucun projet trouvé</h3>
             <p className="text-sm text-muted-foreground text-center mb-4">
               {searchQuery || filterDepartment !== "all"
-                ? "Aucun projet ne correspond à vos filtres"
-                : "Commencez par créer votre premier projet"}
+                ? t("noProjectsFilter")
+                : t("startCreating")}
             </p>
           </CardContent>
         </Card>
@@ -1091,7 +1093,7 @@ export default function ProjectsPage() {
                           className="text-amber-600"
                         >
                           <Archive className="mr-2 h-4 w-4" />
-                          {project.isActive ? "Archiver" : "Réactiver"}
+                          {project.isActive ? t("archive") : t("reactivate")}
                         </DropdownMenuItem>
                         {canDeleteProject(project) && (
                           <>
@@ -1111,7 +1113,7 @@ export default function ProjectsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {project.description || "Aucune description"}
+                    {project.description || t("noDescription")}
                   </p>
 
                   {project.startDate && (
@@ -1277,7 +1279,7 @@ export default function ProjectsPage() {
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-1">
-                          {project.description || "Aucune description"}
+                          {project.description || t("noDescription")}
                         </p>
                       </div>
                     </div>
@@ -1330,7 +1332,7 @@ export default function ProjectsPage() {
                             className="text-amber-600"
                           >
                             <Archive className="mr-2 h-4 w-4" />
-                            {project.isActive ? "Archiver" : "Réactiver"}
+                            {project.isActive ? t("archive") : t("reactivate")}
                           </DropdownMenuItem>
                           {canDeleteProject(project) && (
                             <>
@@ -1436,7 +1438,7 @@ export default function ProjectsPage() {
                     <Input
                       id="edit-name"
                       name="name"
-                      placeholder="Ex: Application Mobile"
+                      placeholder={t("create.namePlaceholder")}
                       defaultValue={selectedProject.name}
                       required
                     />
@@ -1446,7 +1448,7 @@ export default function ProjectsPage() {
                     <Input
                       id="edit-code"
                       name="code"
-                      placeholder="Ex: APP-MOB"
+                      placeholder={t("create.codePlaceholder")}
                       defaultValue={selectedProject.code}
                       required
                     />
@@ -1458,7 +1460,7 @@ export default function ProjectsPage() {
                   <Textarea
                     id="edit-description"
                     name="description"
-                    placeholder="Brève description du projet"
+                    placeholder={t("create.descPlaceholder")}
                     defaultValue={selectedProject.description || ""}
                     rows={3}
                   />
@@ -1472,7 +1474,7 @@ export default function ProjectsPage() {
                       defaultValue={selectedProject.departmentId || undefined}
                     >
                       <SelectTrigger id="edit-department">
-                        <SelectValue placeholder="Sélectionner..." />
+                        <SelectValue placeholder={t("create.selectDepartment")} />
                       </SelectTrigger>
                       <SelectContent>
                         {departments.map((dept) => (
