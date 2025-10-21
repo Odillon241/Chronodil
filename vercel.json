@@ -1,7 +1,7 @@
 {
   "buildCommand": "pnpm build",
   "devCommand": "pnpm dev",
-  "installCommand": "pnpm install --frozen-lockfile",
+  "installCommand": "corepack enable pnpm && pnpm install --frozen-lockfile",
   "framework": "nextjs",
   "regions": ["cdg1"],
   "crons": [],
