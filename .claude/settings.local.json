@@ -10,7 +10,12 @@
       "Bash(pnpm build)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(vercel:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Move Tailwind CSS packages to dependencies for Vercel build\n\n- Move tailwindcss, tailwindcss-animate, autoprefixer, postcss to dependencies\n- Required for Vercel production builds (devDependencies are skipped)\n- Resolves \"Cannot find module 'tailwindcss'\" build error\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
