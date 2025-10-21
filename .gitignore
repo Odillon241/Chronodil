@@ -41,3 +41,8 @@ next-env.d.ts
 /prisma/migrations
 nul
 
+# supabase
+.supabase
+supabase/.env*.local
+supabase/functions/.env*.local
+

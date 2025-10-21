@@ -12,13 +12,13 @@
 
 ### 🗄️ **ÉTAPE 1 : Créer la base de données (2 minutes)**
 
-**Neon est ouvert dans votre navigateur**
+**Supabase est ouvert dans votre navigateur**
 
 1. Connectez-vous (GitHub Login)
 2. Cliquez sur **New Project**
 3. Nom : `chronodil-db`
-4. Région : `Frankfurt` (Europe)
-5. **Copiez la "Connection string"** (ressemble à : `postgresql://user:pass@ep-xxx.region.aws.neon.tech/chronodil?sslmode=require`)
+4. Région : `eu-central-1` (Europe)
+5. **Notez la DATABASE_URL** avec le format : `postgresql://user:password@db.region.supabase.co:5432/postgres`
 
 ---
 
@@ -34,7 +34,7 @@ Cliquez sur **"Add New"** et ajoutez ces 5 variables :
 | `BETTER_AUTH_URL` | `https://chronodil-ck8g49sqt-dereck-danel-nexons-projects.vercel.app` | Production, Preview, Development |
 | `NEXT_PUBLIC_APP_URL` | `https://chronodil-ck8g49sqt-dereck-danel-nexons-projects.vercel.app` | Production, Preview, Development |
 | `NODE_ENV` | `production` | Production, Preview, Development |
-| `DATABASE_URL` | *Votre URL Neon* | Production, Preview, Development |
+| `DATABASE_URL` | *Votre URL Supabase* | Production, Preview, Development |
 
 > 💡 **Tip** : Les valeurs sont dans le fichier `VARIABLES_VERCEL.txt` ouvert dans Notepad
 
@@ -104,4 +104,5 @@ pnpm tsx scripts/create-first-admin.ts
 ---
 
 **⏱️ Temps total : 5 minutes**
+
 

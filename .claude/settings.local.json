@@ -57,7 +57,9 @@
       "Bash(tsx scripts/test-general-settings.ts)",
       "Bash(tsx scripts/test-accent-colors.ts)",
       "Bash(timeout 60 pnpm dev)",
-      "Bash(powershell -Command \"Stop-Process -Name node -Force\")"
+      "Bash(powershell -Command \"Stop-Process -Name node -Force\")",
+      "Bash(npm install:*)",
+      "Bash(pnpm supabase:*)"
     ],
     "deny": [],
     "ask": []

@@ -10,7 +10,17 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:seed": "tsx scripts/seed.ts",
+    "db:studio": "prisma studio",
+    "db:deploy": "prisma migrate deploy",
+    "db:pull": "prisma db pull",
+    "db:push": "prisma db push",
+    "db:reset": "prisma migrate reset",
+    "supabase:login": "supabase login",
+    "supabase:link": "supabase link",
+    "supabase:pull": "supabase db pull",
+    "supabase:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-supabase-vercel.ps1",
+    "setup:vercel": "powershell -ExecutionPolicy Bypass -File scripts/setup-vercel-env.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -79,6 +89,7 @@
     "postcss": "^8.5.6",
     "prisma": "^6.17.1",
     "shadcn": "^3.4.0",
+    "supabase": "^2.53.6",
     "tailwindcss": "^3.4.18",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.20.6"

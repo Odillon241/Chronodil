@@ -21,9 +21,9 @@ Write-Host "NODE_ENV: $NODE_ENV`n" -ForegroundColor Yellow
 # Demander la DATABASE_URL
 Write-Host "⚠️  IMPORTANT : Vous devez créer une base de données PostgreSQL`n" -ForegroundColor Red
 Write-Host "Options recommandées :"
-Write-Host "1. Vercel Postgres : https://vercel.com/dashboard/stores"
-Write-Host "2. Neon : https://neon.tech (gratuit, facile)"
-Write-Host "3. Supabase : https://supabase.com (gratuit)`n"
+Write-Host "1. Supabase : https://supabase.com (gratuit, recommandé)"
+Write-Host "2. Vercel Postgres : https://vercel.com/dashboard/stores"
+Write-Host "3. Neon : https://neon.tech (gratuit)`n"
 
 $DATABASE_URL = Read-Host "Entrez votre DATABASE_URL (ou appuyez sur Entrée pour configurer plus tard)"
 
@@ -77,4 +77,5 @@ Write-Host "4. Exécutez les migrations : `$env:DATABASE_URL='votre-url'; pnpm p
 Write-Host "5. Redéployez : vercel --prod`n"
 
 Write-Host "🌐 URL de votre application : $VERCEL_URL`n" -ForegroundColor Cyan
+
 

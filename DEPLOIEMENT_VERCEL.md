@@ -4,7 +4,7 @@
 
 - Compte Vercel (gratuit ou Pro)
 - Dépôt GitHub avec le code à jour
-- Base de données PostgreSQL (recommandé: Vercel Postgres, Neon, ou Supabase)
+- Base de données PostgreSQL (recommandé: Supabase, Vercel Postgres)
 - Compte Resend pour les emails
 - Compte Inngest pour les tâches planifiées (optionnel mais recommandé)
 
@@ -12,20 +12,23 @@
 
 ## 🗄️ Étape 1 : Préparer la Base de Données
 
-### Option A : Vercel Postgres (Recommandé)
+### Option A : Supabase (Recommandé - Gratuit forever)
+1. Allez sur [supabase.com](https://supabase.com)
+2. Cliquez sur **New Project**
+3. Nom : `chronodil-db`
+4. Région : `eu-central-1` (Europe)
+5. Dans **Settings > Database > Connection Pooling**, copiez la **Connection string** (mode Session)
+6. Format : `postgresql://postgres:[password]@db.[region].supabase.co:5432/postgres`
+
+### Option B : Vercel Postgres
 1. Dans votre dashboard Vercel, allez dans **Storage**
 2. Créez un nouveau **Postgres Database**
 3. Notez la `DATABASE_URL` fournie
 
-### Option B : Neon (Gratuit, recommandé)
+### Option C : Neon
 1. Allez sur [neon.tech](https://neon.tech)
 2. Créez un nouveau projet
 3. Copiez la `DATABASE_URL` avec `?sslmode=require`
-
-### Option C : Supabase
-1. Allez sur [supabase.com](https://supabase.com)
-2. Créez un nouveau projet
-3. Dans Settings > Database, copiez la **Connection string** (mode Pooler)
 
 ---
 

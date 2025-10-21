@@ -28,9 +28,9 @@ echo ""
 echo "⚠️  IMPORTANT : Vous devez créer une base de données PostgreSQL"
 echo ""
 echo "Options recommandées :"
-echo "1. Vercel Postgres : https://vercel.com/dashboard/stores"
-echo "2. Neon : https://neon.tech (gratuit, facile)"
-echo "3. Supabase : https://supabase.com (gratuit)"
+echo "1. Supabase : https://supabase.com (gratuit, recommandé)"
+echo "2. Vercel Postgres : https://vercel.com/dashboard/stores"
+echo "3. Neon : https://neon.tech (gratuit)"
 echo ""
 read -p "Entrez votre DATABASE_URL (ou appuyez sur Entrée pour configurer plus tard) : " DATABASE_URL
 
@@ -60,4 +60,5 @@ echo "2. Mettez à jour DATABASE_URL avec : vercel env rm DATABASE_URL && vercel
 echo "3. Exécutez les migrations : vercel env pull && pnpm prisma migrate deploy"
 echo "4. Redéployez : vercel --prod"
 echo ""
+
 

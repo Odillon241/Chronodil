@@ -39,7 +39,7 @@ docker run --name chronodil-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_D
 
 ### Option 3 : Services cloud gratuits
 
-- **Supabase** : https://supabase.com/ (gratuit jusqu'à 500 Mo)
+- **Supabase** : https://supabase.com/ (gratuit, recommandé)
 - **Neon** : https://neon.tech/ (gratuit)
 - **Railway** : https://railway.app/ (essai gratuit)
 
