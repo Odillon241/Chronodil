@@ -3,7 +3,14 @@
     "allow": [
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/app/page.tsx)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" log --oneline -5)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .)"
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfeat: Implement authentication middleware and redirect login flow\n\n- Create middleware.ts to protect /dashboard routes\n  - Redirects unauthenticated users to /auth/login\n  - Uses Better-Auth getSessionCookie for session verification\n  - Applies to all dashboard sub-routes\n\n- Update home page (/) to redirect to /auth/login\n  - Changed from redirect(\"/dashboard\") to redirect(\"/auth/login\")\n  - Ensures unauthenticated users land on login page\n\n- Build verified: All TypeScript types valid, no compilation errors\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" push)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
