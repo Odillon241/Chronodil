@@ -46,3 +46,10 @@ nul
 supabase/.env*.local
 supabase/functions/.env*.local
 
+# Credentials and secrets - NEVER COMMIT
+SUPABASE_CREDENTIALS.md
+.env.local
+.env.*.local
+*.credentials
+*.secret
+
