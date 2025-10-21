@@ -8,7 +8,7 @@ Le projet utilise une stratégie de branchement pour séparer le développement 
 
 ### 🟢 `main` (Développement)
 - **Environnement**: Développement local
-- **URLs**: `http://localhost:3001`
+- **URLs**: `http://localhost:3000`
 - **NODE_ENV**: `development`
 - **Fichier .env**: `.env.development`
 - **Utilisation**: Tous les développements, nouvelles fonctionnalités, corrections de bugs
