@@ -1,30 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(__NEW_LINE__ echo \"\")",
-      "Bash(__NEW_LINE__ echo \"DOCS STRUCTURE:\")",
-      "Bash(__NEW_LINE__ find ./docs -type d)",
-      "Bash(__NEW_LINE__ echo \"SCRIPTS STRUCTURE:\")",
-      "Bash(__NEW_LINE__ find ./scripts -type d)",
-      "Bash(__NEW_LINE__ echo \"SQL-SCRIPTS STRUCTURE:\")",
-      "Bash(__NEW_LINE__ find ./sql-scripts -type d)",
-      "Bash(git add:*)",
-      "Bash(pnpm build:*)",
-      "Bash(__NEW_LINE__ grep -r \"from \"\"\\.\\.\\/src\" ./scripts --include=\"*.ts\")",
-      "Bash(__NEW_LINE__ find ./scripts -name \"*.ts\" -type f -exec sed -i 's|from \"\"\\.\\./src/|from \"\"../../src/|g' {} ;)",
-      "Bash(__NEW_LINE__ echo \"Fixed all import paths in scripts\")",
-      "Bash(__NEW_LINE__ grep -r \"from \"\"\\.\\.\\/\\.\\.\\/src\" ./scripts --include=\"*.ts\")",
-      "Bash(__NEW_LINE__ grep -r \"from ''\\.\\./src\" ./scripts --include=\"*.ts\")",
-      "Bash(__NEW_LINE__ find ./scripts -name \"*.ts\" -type f -exec sed -i \"s|from ''\\.\\./src/|from ''../../src/|g\" {} ;)",
-      "Bash(__NEW_LINE__ echo \"Fixed all single-quote import paths\")",
-      "Bash(claude mcp add:*)",
-      "Bash(claude mcp remove:*)",
-      "Bash(git commit:*)",
-      "Bash(git checkout:*)",
-      "Bash(git check-ignore:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nchore: Add environment configuration files for production and development\n\n- Add .env.production with Vercel URLs (https://chronodil-app.vercel.app)\n- Add .env.development with localhost URLs (http://localhost:3001)\n- Configure NODE_ENV appropriately for each environment\n- Separate environment configurations for better dev/prod workflow\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(cat:*)",
-      "Bash(git merge:*)"
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/app/page.tsx)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" log --oneline -5)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .)"
     ],
     "deny": [],
     "ask": []
