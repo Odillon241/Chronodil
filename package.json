@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate",
+    "postinstall": "npx prisma generate --skip-engine-check || true",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "prisma studio",
