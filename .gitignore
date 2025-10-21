@@ -4,7 +4,6 @@
 .pnp.js
 
 # pnpm
-pnpm-lock.yaml
 .pnpm-debug.log*
 
 # testing
