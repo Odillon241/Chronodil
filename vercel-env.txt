@@ -1,0 +1,79 @@
+# Vercel - Variables d'environnement pour CHRONODIL APP
+# Copiez/collez ces paires NAME=VALUE dans Vercel (Settings > Environment Variables)
+# Remplacez les exemples par vos vraies valeurs selon votre provider
+
+# --- Base de données (OBLIGATOIRE) ---
+# SUPABASE (RECOMMANDÉ - Gratuit forever):
+# DATABASE_URL=postgresql://postgres:[VOTRE_PASSWORD]@db.eu-central-1.supabase.co:5432/postgres
+# DIRECT_URL=postgresql://postgres:[VOTRE_PASSWORD]@db.eu-central-1.supabase.co:5432/postgres
+
+# VERCEL POSTGRES:
+# DATABASE_URL=postgres://default:[VOTRE_PASSWORD]@ep-xxx.eu-central-1.postgres.vercel-storage.com/verceldb
+# DIRECT_URL=postgres://default:[VOTRE_PASSWORD]@ep-xxx.eu-central-1.postgres.vercel-storage.com/verceldb
+
+# NEON:
+# DATABASE_URL=postgresql://[USER]:[PASSWORD]@ep-xxx.eu-central-1.aws.neon.tech/chronodil?sslmode=require
+# DIRECT_URL=postgresql://[USER]:[PASSWORD]@ep-xxx.eu-central-1.aws.neon.tech/chronodil?sslmode=require
+
+# ✅ VOS VRAIES VALEURS SUPABASE ⚠️
+DATABASE_URL=postgresql://postgres.ipghppjjhjbkhuqzqzyq:Reviti2025%40@db.ipghppjjhjbkhuqzqzyq.supabase.co:6543/postgres?pgbouncer=true&connection_limit=1
+DIRECT_URL=postgresql://postgres.ipghppjjhjbkhuqzqzyq:Reviti2025%40@db.ipghppjjhjbkhuqzqzyq.supabase.co:5432/postgres
+
+# --- Authentification (OBLIGATOIRE) ---
+BETTER_AUTH_SECRET=hiqwyCbIKFLM46GeZHhSotq9+UzKuww7LfF+gl7hZ9DeOcpZd9IsDmwFGf/M5KIvCp/J7HuxZQlOVQowVU2b6A==
+BETTER_AUTH_URL=https://chronodil-app.vercel.app
+BETTER_AUTH_BASEPATH=/api/auth
+
+# --- Application (OBLIGATOIRE) ---
+NEXT_PUBLIC_APP_URL=https://chronodil-app.vercel.app
+NEXT_PUBLIC_BASE_URL=https://chronodil-app.vercel.app
+NODE_ENV=production
+
+# --- Supabase (OBLIGATOIRE pour Better Auth) ---
+NEXT_PUBLIC_SUPABASE_URL=https://ipghppjjhjbkhuqzqzyq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZ2hwcGpqaGpia2h1cXpxenlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcwMzUsImV4cCI6MjA3NjU3MzAzNX0.5Yys6m-QbXr_g7FwYaBWUyeW9ZUCDmAxBMgFk9wft10
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZ2hwcGpqaGpia2h1cXpxenlxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzAzNSwiZXhwIjoyMDc2NTczMDM1fQ.bH-3bOcJfrdU66wCBYGV1v3yVnggn0KR9A2UHBcuGIs
+SUPABASE_JWT_SECRET=hiqwyCbIKFLM46GeZHhSotq9+UzKuww7LfF+gl7hZ9DeOcpZd9IsDmwFGf/M5KIvCp/J7HuxZQlOVQowVU2b6A==
+
+# --- Emails (Recommandé) ---
+RESEND_API_KEY=re_gkmdHcJp_9gUbYuZ9Ewuxx8L6aVrtbNEY
+RESEND_FROM_EMAIL=Chronodil <noreply@chronodil.app>
+
+# --- Jobs/Background (Optionnel) ---
+INNGEST_EVENT_KEY=
+INNGEST_SIGNING_KEY=
+
+# --- IA (Optionnel) ---
+OPENAI_API_KEY=
+
+# ===========================================
+# INSTRUCTIONS DÉTAILLÉES PAR PROVIDER
+# ===========================================
+
+# 🟢 SUPABASE (RECOMMANDÉ - Gratuit forever):
+# 1. Allez sur https://supabase.com
+# 2. New Project → Nom: chronodil-db → Région: Europe (eu-central-1)
+# 3. Settings → Database → Connection string (mode Session pour Prisma)
+# 4. Copiez la chaîne et remplacez [VOTRE_PASSWORD] par votre mot de passe
+# 5. Utilisez la même valeur pour DATABASE_URL et DIRECT_URL
+
+# 🟡 VERCEL POSTGRES:
+# 1. Dashboard Vercel → Storage → Create Database
+# 2. Postgres → Nom: chronodil-db → Région: Frankfurt
+# 3. La variable DATABASE_URL sera automatiquement ajoutée
+# 4. Copiez la même valeur pour DIRECT_URL
+
+# 🟠 NEON:
+# 1. Allez sur https://neon.tech
+# 2. Create Project → Nom: chronodil-db
+# 3. Copiez la "Connection string" 
+# 4. Utilisez la même valeur pour DATABASE_URL et DIRECT_URL
+
+# ===========================================
+# NOTES IMPORTANTES:
+# ===========================================
+# - Mettez les mêmes valeurs pour BETTER_AUTH_URL et NEXT_PUBLIC_APP_URL que votre URL Vercel
+# - Cochez Production/Preview/Development pour chaque variable dans Vercel
+# - Après avoir ajouté DATABASE_URL, exécutez: vercel env pull .env.production
+# - Puis: $env:DATABASE_URL='votre-url'; pnpm prisma migrate deploy
+# - Enfin: vercel --prod
