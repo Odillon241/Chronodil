@@ -1,33 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/app/page.tsx)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" log --oneline -5)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfeat: Implement authentication middleware and redirect login flow\n\n- Create middleware.ts to protect /dashboard routes\n  - Redirects unauthenticated users to /auth/login\n  - Uses Better-Auth getSessionCookie for session verification\n  - Applies to all dashboard sub-routes\n\n- Update home page (/) to redirect to /auth/login\n  - Changed from redirect(\"/dashboard\") to redirect(\"/auth/login\")\n  - Ensures unauthenticated users land on login page\n\n- Build verified: All TypeScript types valid, no compilation errors\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" push)",
-      "Bash(pnpm install:*)",
-      "Bash(pnpm build)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(vercel:*)",
-      "Bash(cat:*)",
-      "Bash(pnpm add:*)",
-      "Bash(pnpm remove:*)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Move Tailwind CSS packages to dependencies for Vercel build\n\n- Move tailwindcss, tailwindcss-animate, autoprefixer, postcss to dependencies\n- Required for Vercel production builds (devDependencies are skipped)\n- Resolves \"Cannot find module 'tailwindcss'\" build error\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Move Tailwind CSS packages to dependencies for Vercel builds\n\n- Move tailwindcss, tailwindcss-animate, autoprefixer, postcss to dependencies\n- Downgrade tailwindcss from v4.1.15 to v3.4.18 for PostCSS compatibility\n- Tailwind v4 requires @tailwindcss/postcss (breaking change)\n- Required for Vercel production builds (devDependencies are skipped)\n- Build verified locally: 26 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Move TypeScript types and build dependencies to production dependencies\n\n- Move @types/react, @types/node, @types/react-dom to dependencies\n- Move tailwindcss (v3.4.18), tailwindcss-animate, autoprefixer, postcss to dependencies\n- Required for Vercel production builds (devDependencies are skipped)\n- Resolves TypeScript validation errors during Vercel builds\n- Build verified locally: 26 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Move ESLint to dependencies for Vercel production builds\n\n- Move eslint and eslint-config-next to dependencies\n- Required for linting during Vercel builds (devDependencies are skipped)\n- Resolves ESLint warning during build process\n- Build verified locally: 26 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" status)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/app/globals.css)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/components/features/general-settings/appearance-section.tsx)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add src/app/globals.css src/components/features/general-settings/appearance-section.tsx)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Correct theme colors and accent color selector styling\n\n- Neutralize light mode base colors (muted, accent, border, input)\n  - Changed from powder-blue (212 72% 26%) to neutral grays\n  - Ensures consistent behavior between light and dark modes\n  - Removes unwanted blue borders throughout the UI\n\n- Redesign accent color selection buttons\n  - Replace blue background on selection with primary color ring\n  - Change color swatch from square to circular with shadow\n  - Add subtle hover state (muted/50) instead of border change\n  - Better visual hierarchy and modern appearance\n\n- Build verified: 26 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(pnpm tsc:*)",
-      "Bash(find:*)",
-      "Bash(node:*)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/lib/auth.ts)"
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" ls-files:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Update DATABASE_URL to use correct Supabase pooler host\n\nCRITICAL FIX for Prisma connection error:\n\n- Change DATABASE_URL host from db.ipghppjjhjbkhuqzqzyq.supabase.co:6543\n  to aws-1-us-east-2.pooler.supabase.com:6543\n- The original host doesn''t support port 6543 (transaction pooler)\n- Fixes \"Can 't reach database server\" error\n- Connection test verified: ✅ working\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
