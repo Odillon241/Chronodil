@@ -11,14 +11,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    // Configure bcrypt for Supabase compatibility
-    async password(password: string) {
-      return {
-        hash: await hash(password, 10),
-        async verify(hash: string, password: string) {
-          return await compare(password, hash);
-        },
-      };
+    password: {
+      hash: async (password: string) => hash(password, 10),
+      verify: async (data: { hash: string; password: string }) => compare(data.password, data.hash),
     },
   },
   session: {
@@ -39,15 +34,17 @@ export const auth = betterAuth({
   ],
 });
 
-// Extend the inferred session type to include the role field from Prisma
 export type Session = typeof auth.$Infer.Session & {
   user: typeof auth.$Infer.Session['user'] & {
     role?: Role;
   };
 };
 
-// Helper function to get session with correct typing including role field
 export async function getSession(headers: Headers): Promise<Session | null> {
   const session = await auth.api.getSession({ headers });
   return session as Session | null;
+}
+
+export function getUserRole(session: any): Role | undefined {
+  return session?.user?.role as Role | undefined;
 }

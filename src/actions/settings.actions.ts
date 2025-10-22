@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
@@ -26,9 +26,8 @@ const updateHolidaySchema = z.object({
 export const getHolidays = actionClient
   .schema(z.object({ year: z.number().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -56,11 +55,10 @@ export const getHolidays = actionClient
 export const createHoliday = actionClient
   .schema(holidaySchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 
@@ -79,11 +77,10 @@ export const createHoliday = actionClient
 export const updateHoliday = actionClient
   .schema(updateHolidaySchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 
@@ -100,11 +97,10 @@ export const updateHoliday = actionClient
 export const deleteHoliday = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 
@@ -126,11 +122,10 @@ const settingSchema = z.object({
 export const getSettings = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 
@@ -146,11 +141,10 @@ export const getSettings = actionClient
 export const updateSetting = actionClient
   .schema(settingSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session || getUserRole(session) !== "ADMIN") {
       throw new Error("Accès non autorisé");
     }
 
@@ -195,9 +189,8 @@ const departmentSchema = z.object({
 export const getDepartments = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -223,11 +216,10 @@ export const getDepartments = actionClient
 export const createDepartment = actionClient
   .schema(departmentSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 
@@ -246,11 +238,10 @@ export const createDepartment = actionClient
 export const deleteDepartment = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 

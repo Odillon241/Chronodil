@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
@@ -21,9 +21,8 @@ const updateCommentSchema = z.object({
 export const createTaskComment = actionClient
   .schema(createCommentSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -103,9 +102,8 @@ export const createTaskComment = actionClient
 export const getTaskComments = actionClient
   .schema(z.object({ taskId: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -136,9 +134,8 @@ export const getTaskComments = actionClient
 export const updateTaskComment = actionClient
   .schema(updateCommentSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -181,9 +178,8 @@ export const updateTaskComment = actionClient
 export const deleteTaskComment = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -198,7 +194,7 @@ export const deleteTaskComment = actionClient
       throw new Error("Commentaire non trouvé");
     }
 
-    if (existingComment.userId !== session.user.id && session.user.role !== "ADMIN") {
+    if (existingComment.userId !== session.user.id && getUserRole(session) !== "ADMIN") {
       throw new Error("Vous ne pouvez supprimer que vos propres commentaires");
     }
 

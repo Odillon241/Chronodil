@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
@@ -45,9 +45,8 @@ const updateTaskSchema = z.object({
 export const createTask = actionClient
   .schema(createTaskSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -62,7 +61,7 @@ export const createTask = actionClient
         },
       });
 
-      if (!member && session.user.role !== "ADMIN") {
+      if (!member && getUserRole(session) !== "ADMIN") {
         throw new Error("Vous n'êtes pas membre de ce projet");
       }
     }
@@ -147,9 +146,8 @@ export const createTask = actionClient
 export const updateTask = actionClient
   .schema(updateTaskSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -175,7 +173,7 @@ export const updateTask = actionClient
         },
       });
 
-      if (!member && session.user.role !== "ADMIN") {
+      if (!member && getUserRole(session) !== "ADMIN") {
         throw new Error("Vous n'êtes pas membre de ce projet");
       }
     }
@@ -205,9 +203,8 @@ export const updateTask = actionClient
 export const deleteTask = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -231,7 +228,7 @@ export const deleteTask = actionClient
         },
       });
 
-      if (!member && session.user.role !== "ADMIN") {
+      if (!member && getUserRole(session) !== "ADMIN") {
         throw new Error("Vous n'êtes pas membre de ce projet");
       }
     }
@@ -246,9 +243,8 @@ export const deleteTask = actionClient
 export const getProjectTasks = actionClient
   .schema(z.object({ projectId: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -288,9 +284,8 @@ export const getProjectTasks = actionClient
 export const getMyTasks = actionClient
   .schema(z.object({ projectId: z.string().optional(), searchQuery: z.string().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -407,9 +402,8 @@ export const getMyTasks = actionClient
 export const getAvailableUsersForSharing = actionClient
   .schema(z.object({ projectId: z.string().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -466,9 +460,8 @@ export const updateTaskStatus = actionClient
     status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]),
   }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -551,9 +544,8 @@ export const updateTaskPriority = actionClient
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
   }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -609,16 +601,15 @@ const evaluateTaskSchema = z.object({
 export const evaluateTask = actionClient
   .schema(evaluateTaskSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Vérifier que seul un manager ou directeur peut évaluer
-    if (!["MANAGER", "DIRECTEUR", "ADMIN"].includes(session.user.role as string)) {
+    if (!["MANAGER", "DIRECTEUR", "ADMIN"].includes(getUserRole(session) as string)) {
       throw new Error("Seuls les managers et directeurs peuvent évaluer les tâches");
     }
 
@@ -662,9 +653,8 @@ const updateTaskComplexitySchema = z.object({
 export const updateTaskComplexity = actionClient
   .schema(updateTaskComplexitySchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -679,7 +669,7 @@ export const updateTaskComplexity = actionClient
     }
 
     // Vérifier les permissions - créateur ou manager
-    if (task.createdBy !== session.user.id && !["MANAGER", "DIRECTEUR", "ADMIN"].includes(session.user.role as string)) {
+    if (task.createdBy !== session.user.id && !["MANAGER", "DIRECTEUR", "ADMIN"].includes(getUserRole(session) as string)) {
       throw new Error("Vous n'avez pas les permissions pour modifier cette tâche");
     }
 

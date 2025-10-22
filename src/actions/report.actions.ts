@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, format } from "date-fns";
@@ -16,16 +16,15 @@ interface ReportFilters {
 
 export async function getReportSummary(filters: ReportFilters) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres données
-    const userIdFilter = session.user.role === "EMPLOYEE" 
+    const userIdFilter = getUserRole(session) === "EMPLOYEE" 
       ? session.user.id 
       : filters.userId;
 
@@ -102,16 +101,15 @@ export async function getReportSummary(filters: ReportFilters) {
 
 export async function getWeeklyActivity(filters: ReportFilters) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres données
-    const userIdFilter = session.user.role === "EMPLOYEE" 
+    const userIdFilter = getUserRole(session) === "EMPLOYEE" 
       ? session.user.id 
       : filters.userId;
 
@@ -147,16 +145,15 @@ export async function getWeeklyActivity(filters: ReportFilters) {
 
 export async function getProjectDistribution(filters: ReportFilters) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres données
-    const userIdFilter = session.user.role === "EMPLOYEE" 
+    const userIdFilter = getUserRole(session) === "EMPLOYEE" 
       ? session.user.id 
       : filters.userId;
 
@@ -201,16 +198,15 @@ export async function getProjectDistribution(filters: ReportFilters) {
 
 export async function getDetailedReport(filters: ReportFilters) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres données
-    const userIdFilter = session.user.role === "EMPLOYEE" 
+    const userIdFilter = getUserRole(session) === "EMPLOYEE" 
       ? session.user.id 
       : filters.userId;
 
@@ -256,16 +252,15 @@ export async function getDetailedReport(filters: ReportFilters) {
 
 export async function getProjectReport(filters: ReportFilters) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres données
-    const userIdFilter = session.user.role === "EMPLOYEE" 
+    const userIdFilter = getUserRole(session) === "EMPLOYEE" 
       ? session.user.id 
       : filters.userId;
 
@@ -337,16 +332,15 @@ export async function getProjectReport(filters: ReportFilters) {
 
 export async function getUserReport(filters: ReportFilters) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres données
-    const userIdFilter = session.user.role === "EMPLOYEE" 
+    const userIdFilter = getUserRole(session) === "EMPLOYEE" 
       ? session.user.id 
       : filters.userId;
 
@@ -423,9 +417,8 @@ export async function generateCustomReport(data: {
   reportId?: string; // ID du rapport si on veut mettre à jour un existant
 }) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -680,9 +673,8 @@ export async function sendReportByEmail(data: {
   reportId?: string; // ID du rapport si on veut l'associer à un rapport existant
 }) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -761,16 +753,15 @@ export async function getReports(filters?: {
   format?: string;
 }) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
     }
 
     // Les employés voient uniquement leurs propres rapports
-    const createdByFilter = session.user.role === "EMPLOYEE"
+    const createdByFilter = getUserRole(session) === "EMPLOYEE"
       ? session.user.id
       : filters?.createdById;
 
@@ -824,9 +815,8 @@ export async function getReports(filters?: {
 
 export async function downloadReport(reportId: string) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -841,7 +831,7 @@ export async function downloadReport(reportId: string) {
     }
 
     // Les employés peuvent uniquement télécharger leurs propres rapports
-    if (session.user.role === "EMPLOYEE" && report.createdById !== session.user.id) {
+    if (getUserRole(session) === "EMPLOYEE" && report.createdById !== session.user.id) {
       throw new Error("Permissions insuffisantes");
     }
 
@@ -865,9 +855,8 @@ export async function downloadReport(reportId: string) {
 
 export async function deleteReport(reportId: string) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -884,7 +873,7 @@ export async function deleteReport(reportId: string) {
     }
 
     // Les employés peuvent uniquement supprimer leurs propres rapports
-    if (session.user.role === "EMPLOYEE" && report.createdById !== session.user.id) {
+    if (getUserRole(session) === "EMPLOYEE" && report.createdById !== session.user.id) {
       throw new Error("Permissions insuffisantes");
     }
 

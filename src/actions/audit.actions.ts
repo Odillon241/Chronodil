@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
@@ -17,11 +17,10 @@ const getAuditLogsSchema = z.object({
 export const getAuditLogs = actionClient
   .schema(getAuditLogsSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (userRole !== "ADMIN" && userRole !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 
@@ -52,11 +51,10 @@ export const getAuditLogs = actionClient
 export const getAuditStats = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "HR")) {
+    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
       throw new Error("Accès non autorisé");
     }
 

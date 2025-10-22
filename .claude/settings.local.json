@@ -24,7 +24,10 @@
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/components/features/general-settings/appearance-section.tsx)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add src/app/globals.css src/components/features/general-settings/appearance-section.tsx)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Correct theme colors and accent color selector styling\n\n- Neutralize light mode base colors (muted, accent, border, input)\n  - Changed from powder-blue (212 72% 26%) to neutral grays\n  - Ensures consistent behavior between light and dark modes\n  - Removes unwanted blue borders throughout the UI\n\n- Redesign accent color selection buttons\n  - Replace blue background on selection with primary color ring\n  - Change color swatch from square to circular with shadow\n  - Add subtle hover state (muted/50) instead of border change\n  - Better visual hierarchy and modern appearance\n\n- Build verified: 26 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(find:*)",
+      "Bash(node:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff src/lib/auth.ts)"
     ],
     "deny": [],
     "ask": []
