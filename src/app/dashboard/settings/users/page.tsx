@@ -282,8 +282,8 @@ export default function UsersManagementPage() {
 
   const handleDeleteUser = async (user: User) => {
     // Empêcher la suppression de l'admin principal
-    if (user.email === "admin@chronodil.com" && user.role === "ADMIN") {
-      toast.error("Le compte administrateur principal ne peut pas être supprimé");
+    if (user.role === "ADMIN") {
+      toast.error("Les comptes administrateurs ne peuvent pas être supprimés");
       return;
     }
 
@@ -688,8 +688,8 @@ export default function UsersManagementPage() {
                           size="sm"
                           onClick={() => handleDeleteUser(user)}
                           className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                          title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Compte protégé" : "Supprimer"}
-                          disabled={user.email === "admin@chronodil.com" && user.role === "ADMIN"}
+                          title={user.role === "ADMIN" ? "Les comptes administrateurs sont protégés" : "Supprimer"}
+                          disabled={user.role === "ADMIN"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -776,8 +776,8 @@ export default function UsersManagementPage() {
                         size="sm"
                         onClick={() => handleDeleteUser(user)}
                         className="text-red-600 hover:text-red-800 disabled:opacity-50 text-xs"
-                        title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Compte protégé" : "Supprimer"}
-                        disabled={user.email === "admin@chronodil.com" && user.role === "ADMIN"}
+                        title={user.role === "ADMIN" ? "Les comptes administrateurs sont protégés" : "Supprimer"}
+                          disabled={user.role === "ADMIN"}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" ls-files:*)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Update DATABASE_URL to use correct Supabase pooler host\n\nCRITICAL FIX for Prisma connection error:\n\n- Change DATABASE_URL host from db.ipghppjjhjbkhuqzqzyq.supabase.co:6543\n  to aws-1-us-east-2.pooler.supabase.com:6543\n- The original host doesn''t support port 6543 (transaction pooler)\n- Fixes \"Can 't reach database server\" error\n- Connection test verified: ✅ working\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Update DATABASE_URL to use correct Supabase pooler host\n\nCRITICAL FIX for Prisma connection error:\n\n- Change DATABASE_URL host from db.ipghppjjhjbkhuqzqzyq.supabase.co:6543\n  to aws-1-us-east-2.pooler.supabase.com:6543\n- The original host doesn''t support port 6543 (transaction pooler)\n- Fixes \"Can 't reach database server\" error\n- Connection test verified: ✅ working\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(npx tsx:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfeat: Protect all ADMIN accounts from deletion\n\n- Disable delete button for ALL users with ADMIN role (not just specific email)\n- Update handleDeleteUser to prevent deletion of any ADMIN account\n- Update tooltip messages: \"Les comptes administrateurs sont protégés\"\n- Applies to both desktop and mobile views\n- Prevents accidental deletion of administrator accounts via UI\n\nBuild verified: 26 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
