@@ -115,14 +115,14 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
                 key={color.value}
                 onClick={() => handleAccentColorChange(color.value)}
                 disabled={isSaving}
-                className={`p-3 rounded-lg border-2 transition-all ${
+                className={`relative p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 hover:bg-muted/50 ${
                   settings.accentColor === color.value
-                    ? "border-foreground bg-muted"
-                    : "border-border hover:border-muted-foreground"
+                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background"
+                    : "border-border"
                 }`}
               >
-                <div className={`h-6 w-6 rounded ${color.class}`} />
-                <p className="text-xs mt-2 font-medium text-center">{color.label}</p>
+                <div className={`h-8 w-8 rounded-full ${color.class} shadow-sm`} />
+                <p className="text-xs font-medium text-center">{color.label}</p>
               </button>
             ))}
           </div>
