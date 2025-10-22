@@ -833,7 +833,7 @@ export default function SettingsPage() {
                   {/* Sons de notification */}
                   <div className="space-y-4 border-b pb-6">
                     <div className="flex items-center gap-3">
-                      <Volume2 className="h-5 w-5 text-muted-foreground" />
+                      <Volume2 className="h-6 w-6 text-muted-foreground" />
                       <div>
                         <h3 className="font-semibold">Sons de notification</h3>
                         <p className="text-sm text-muted-foreground">
@@ -930,7 +930,7 @@ export default function SettingsPage() {
                   {/* Notifications par email */}
                   <div className="space-y-4 border-b pb-6">
                     <div className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 text-muted-foreground" />
+                      <Mail className="h-6 w-6 text-muted-foreground" />
                       <div>
                         <h3 className="font-semibold">Notifications par email</h3>
                         <p className="text-sm text-muted-foreground">
@@ -960,7 +960,7 @@ export default function SettingsPage() {
                   {/* Notifications bureau */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <Monitor className="h-5 w-5 text-muted-foreground" />
+                      <Monitor className="h-6 w-6 text-muted-foreground" />
                       <div>
                         <h3 className="font-semibold">Notifications bureau</h3>
                         <p className="text-sm text-muted-foreground">
@@ -997,7 +997,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
+                <Bell className="h-6 w-6" />
                 Préférences de rappel
               </CardTitle>
               <CardDescription>

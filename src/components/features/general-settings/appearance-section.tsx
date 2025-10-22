@@ -80,7 +80,7 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Palette className="h-5 w-5 text-muted-foreground" />
+          <Palette className="h-6 w-6 text-muted-foreground" />
           <div>
             <CardTitle>{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>

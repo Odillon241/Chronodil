@@ -23,7 +23,7 @@ export function AccessibilitySection({ settings, onUpdate, isSaving }: Accessibi
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Eye className="h-5 w-5 text-muted-foreground" />
+          <Eye className="h-6 w-6 text-muted-foreground" />
           <div>
             <CardTitle>{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>

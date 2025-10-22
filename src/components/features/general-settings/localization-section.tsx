@@ -61,7 +61,7 @@ export function LocalizationSection({ settings, onUpdate, isSaving }: Localizati
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Globe className="h-5 w-5 text-muted-foreground" />
+          <Globe className="h-6 w-6 text-muted-foreground" />
           <div>
             <CardTitle>{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>
