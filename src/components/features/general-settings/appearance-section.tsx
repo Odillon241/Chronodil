@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Palette } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface AppearanceSectionProps {
@@ -79,13 +78,8 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Palette className="h-6 w-6 text-muted-foreground" />
-          <div>
-            <CardTitle>{t("title")}</CardTitle>
-            <CardDescription>{t("description")}</CardDescription>
-          </div>
-        </div>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Dark Mode */}

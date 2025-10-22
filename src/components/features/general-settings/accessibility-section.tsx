@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Eye } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface AccessibilitySectionProps {
@@ -22,13 +21,8 @@ export function AccessibilitySection({ settings, onUpdate, isSaving }: Accessibi
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Eye className="h-6 w-6 text-muted-foreground" />
-          <div>
-            <CardTitle>{t("title")}</CardTitle>
-            <CardDescription>{t("description")}</CardDescription>
-          </div>
-        </div>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* High Contrast */}

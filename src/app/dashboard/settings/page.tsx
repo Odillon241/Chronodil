@@ -832,17 +832,14 @@ export default function SettingsPage() {
                 <>
                   {/* Sons de notification */}
                   <div className="space-y-4 border-b pb-6">
-                    <div className="flex items-center gap-3">
-                      <Volume2 className="h-6 w-6 text-muted-foreground" />
-                      <div>
-                        <h3 className="font-semibold">Sons de notification</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Configurez les alertes sonores
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-semibold">Sons de notification</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Configurez les alertes sonores
+                      </p>
                     </div>
 
-                    <div className="space-y-4 ml-8">
+                    <div className="space-y-4">
                       {/* Activer/Désactiver le son */}
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
@@ -929,17 +926,14 @@ export default function SettingsPage() {
 
                   {/* Notifications par email */}
                   <div className="space-y-4 border-b pb-6">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-6 w-6 text-muted-foreground" />
-                      <div>
-                        <h3 className="font-semibold">Notifications par email</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Recevez des notifications par email
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-semibold">Notifications par email</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Recevez des notifications par email
+                      </p>
                     </div>
 
-                    <div className="flex items-center justify-between ml-8">
+                    <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label htmlFor="email-enabled">Activer les emails</Label>
                         <p className="text-sm text-muted-foreground">
@@ -959,17 +953,14 @@ export default function SettingsPage() {
 
                   {/* Notifications bureau */}
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Monitor className="h-6 w-6 text-muted-foreground" />
-                      <div>
-                        <h3 className="font-semibold">Notifications bureau</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Affichez des notifications sur votre bureau
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-semibold">Notifications bureau</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Affichez des notifications sur votre bureau
+                      </p>
                     </div>
 
-                    <div className="flex items-center justify-between ml-8">
+                    <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label htmlFor="desktop-enabled">Activer les notifications bureau</Label>
                         <p className="text-sm text-muted-foreground">
@@ -996,10 +987,7 @@ export default function SettingsPage() {
         <TabsContent value="reminders" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-6 w-6" />
-                Préférences de rappel
-              </CardTitle>
+              <CardTitle>Préférences de rappel</CardTitle>
               <CardDescription>
                 Configurez vos préférences pour recevoir des rappels de saisie de temps
               </CardDescription>
