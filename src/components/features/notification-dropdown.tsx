@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Bell, CheckCheck, Info, AlertCircle, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -135,7 +136,7 @@ export function NotificationDropdown() {
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-rusty-red"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
@@ -162,7 +163,7 @@ export function NotificationDropdown() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rusty-red"></div>
+            <SpinnerCustom />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -220,7 +221,7 @@ export function NotificationDropdown() {
           }}
           className="cursor-pointer justify-center text-center"
         >
-          <span className="text-sm font-medium text-rusty-red flex items-center gap-1">
+          <span className="text-sm font-medium text-primary flex items-center gap-1">
             Voir toutes les notifications
             <ArrowRight className="h-3 w-3" />
           </span>

@@ -51,13 +51,13 @@ import {
   ArrowUpDown,
   Grid3x3,
   List,
-  Loader2,
   Download,
   Copy,
   ChevronLeft,
   ChevronRight,
   Trash2,
 } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import {
@@ -583,7 +583,7 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-rusty-red" />
+        <SpinnerCustom />
       </div>
     );
   }
@@ -600,7 +600,7 @@ export default function ProjectsPage() {
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm">
+            <Button className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {t("new")}
             </Button>
@@ -770,12 +770,12 @@ export default function ProjectsPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-rusty-red hover:bg-ou-crimson"
+                  className="bg-primary hover:bg-primary"
                   disabled={submitting}
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <SpinnerCustom />
                       Création...
                     </>
                   ) : (
@@ -1174,7 +1174,7 @@ export default function ProjectsPage() {
                     </Button>
                     <Button
                       size="sm"
-                      className="flex-1 bg-rusty-red hover:bg-ou-crimson"
+                      className="flex-1 bg-primary hover:bg-primary"
                       onClick={() => handleManageTeam(project)}
                     >
                       <Users className="mr-2 h-4 w-4" />
@@ -1225,7 +1225,7 @@ export default function ProjectsPage() {
                         onClick={() => setCurrentPage(page)}
                         className={
                           page === currentPage
-                            ? "bg-rusty-red hover:bg-ou-crimson"
+                            ? "bg-primary hover:bg-primary"
                             : ""
                         }
                       >
@@ -1394,7 +1394,7 @@ export default function ProjectsPage() {
                         onClick={() => setCurrentPage(page)}
                         className={
                           page === currentPage
-                            ? "bg-rusty-red hover:bg-ou-crimson"
+                            ? "bg-primary hover:bg-primary"
                             : ""
                         }
                       >
@@ -1569,12 +1569,12 @@ export default function ProjectsPage() {
               </Button>
               <Button
                 type="submit"
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
                 disabled={submitting}
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <SpinnerCustom />
                     Mise à jour...
                   </>
                 ) : (
@@ -1766,7 +1766,7 @@ export default function ProjectsPage() {
                   Modifier
                 </Button>
                 <Button
-                  className="bg-rusty-red hover:bg-ou-crimson"
+                  className="bg-primary hover:bg-primary"
                   onClick={() => {
                     setDetailsDialogOpen(false);
                     handleManageTeam(selectedProject);

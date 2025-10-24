@@ -142,7 +142,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Link href="/dashboard">
                 <div className="flex aspect-square size-8 items-center justify-center">
                   <Image
-                    src="/assets/media/logo avec icône seule.svg"
+                    src="/assets/media/logo-icon.svg"
                     alt="Chronodil"
                     width={32}
                     height={32}
@@ -211,7 +211,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         )}
                       </>
                     ) : (
-                      <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.title}
+                        isActive={isActive && item.url !== "/dashboard"}
+                        className={
+                          isActive && item.url === "/dashboard"
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90 [&>*]:text-white"
+                            : ""
+                        }
+                      >
                         <Link href={item.url}>
                           {item.icon && <item.icon />}
                           <span>{item.title}</span>
@@ -238,7 +247,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.title}
+                        isActive={isActive}
+                        className={
+                          isActive
+                            ? "bg-primary/10 text-primary hover:bg-primary/15"
+                            : ""
+                        }
+                      >
                         <Link href={item.url}>
                           {item.icon && <item.icon />}
                           <span>{item.title}</span>
@@ -271,7 +289,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       } 
                       alt={(session?.user as any)?.name || "User"} 
                     />
-                    <AvatarFallback className="bg-rusty-red text-white text-xs">
+                    <AvatarFallback className="bg-primary text-white text-xs">
                       {(session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -304,7 +322,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         } 
                         alt={(session?.user as any)?.name || "User"} 
                       />
-                      <AvatarFallback className="bg-rusty-red text-white text-xs">
+                      <AvatarFallback className="bg-primary text-white text-xs">
                         {(session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>

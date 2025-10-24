@@ -3,8 +3,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, format, startOfDay, endOfDay, subWeeks } from "date-fns";
-import { TimesheetRadarChart } from "@/components/features/timesheet-radar-chart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, format, startOfDay, endOfDay, subWeeks, subDays } from "date-fns";
+import { TimesheetAreaChart } from "@/components/features/timesheet-area-chart";
 import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
 import { StatCardWithComparison } from "@/components/features/stat-card-with-comparison";
 import { WeeklyGoalSettings } from "@/components/features/weekly-goal-settings";
@@ -147,6 +148,35 @@ async function getDashboardData(userId: string) {
     };
   });
 
+  // Données pour le graphique area (90 derniers jours)
+  const ninetyDaysAgo = startOfDay(subDays(now, 90));
+  const areaChartEntries = await prisma.timesheetEntry.groupBy({
+    by: ["date"],
+    where: {
+      userId,
+      date: { gte: ninetyDaysAgo, lte: endOfDay(now) },
+    },
+    _sum: {
+      duration: true,
+    },
+    orderBy: {
+      date: "asc",
+    },
+  });
+
+  // Créer un tableau avec tous les jours (même ceux sans données)
+  const areaChartData = [];
+  for (let i = 0; i <= 90; i++) {
+    const currentDate = subDays(now, 90 - i);
+    const dateKey = format(startOfDay(currentDate), "yyyy-MM-dd");
+    const entry = areaChartEntries.find(e => format(new Date(e.date), "yyyy-MM-dd") === dateKey);
+
+    areaChartData.push({
+      date: dateKey,
+      hours: entry?._sum.duration || 0,
+    });
+  }
+
     return {
       weekHours,
       prevWeekHours,
@@ -155,6 +185,7 @@ async function getDashboardData(userId: string) {
       recentEntries,
       projectsWithDetails,
       radarData,
+      areaChartData,
       weeklyGoal,
     };
   } catch (error) {
@@ -194,8 +225,8 @@ export default async function DashboardPage() {
           value={`${data.weekHours.toFixed(1)}h`}
           description={t("stats.thisWeek")}
           iconName="clock"
-          color="text-rusty-red"
-          bgColor="bg-rusty-red/10"
+          color="text-primary"
+          bgColor="bg-primary/10"
           currentValue={data.weekHours}
           previousValue={data.prevWeekHours}
         />
@@ -227,72 +258,158 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
-        <div className="lg:col-span-4">
-          <TimesheetRadarChart
-            data={data.radarData}
-            weekTotal={data.weekHours}
-            weekTarget={data.weeklyGoal}
-          />
-        </div>
+      {/* Section graphique avec onglets de période */}
+      <TimesheetAreaChart
+        data={data.areaChartData}
+        weeklyGoal={data.weeklyGoal}
+      />
 
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Activité récente</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Vos dernières saisies de temps</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.recentEntries.length === 0 ? (
-              <p className="text-xs sm:text-sm text-muted-foreground text-center py-8">
-                Aucune saisie récente
-              </p>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {data.recentEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-b pb-3 sm:pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium leading-none truncate">
-                        {entry.Project?.name || "Sans projet"}
-                      </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                        {entry.Task?.name || "Sans tâche"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="text-right">
-                        <p className="text-xs sm:text-sm font-medium">{entry.duration}h</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">
-                          {new Date(entry.date).toLocaleDateString("fr-FR")}
+      {/* Sections avec onglets */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="activity">
+            Activité récente
+            <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
+              {data.recentEntries.length}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="projects">Projets</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Performance cette semaine</CardTitle>
+                <CardDescription>Comparaison avec la semaine précédente</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Heures travaillées</span>
+                    <span className="text-sm font-medium">{data.weekHours.toFixed(1)}h</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Semaine précédente</span>
+                    <span className="text-sm font-medium">{data.prevWeekHours.toFixed(1)}h</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Évolution</span>
+                    <span className={`text-sm font-medium ${
+                      data.weekHours > data.prevWeekHours ? "text-green-600" :
+                      data.weekHours < data.prevWeekHours ? "text-red-600" :
+                      "text-muted-foreground"
+                    }`}>
+                      {data.weekHours > data.prevWeekHours ? "+" : ""}
+                      {((data.weekHours - data.prevWeekHours) / data.prevWeekHours * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Projets actifs</CardTitle>
+                <CardDescription>Distribution du temps cette semaine</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {data.projectsWithDetails.length > 0 ? (
+                  <div className="space-y-3">
+                    {data.projectsWithDetails.slice(0, 3).map((project, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: project.color }}
+                          />
+                          <span className="text-sm truncate max-w-[150px]">{project.name}</span>
+                        </div>
+                        <span className="text-sm font-medium">{project.hours.toFixed(1)}h</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Aucun projet actif
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dernières entrées</CardTitle>
+              <CardDescription>Vos saisies de temps les plus récentes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {data.recentEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Aucune saisie récente
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {data.recentEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                    >
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <p className="text-sm font-medium leading-none truncate">
+                          {entry.Project?.name || "Sans projet"}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {entry.Task?.name || "Sans tâche"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(entry.date).toLocaleDateString("fr-FR", {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
                         </p>
                       </div>
-                      <div
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          entry.status === "APPROVED"
-                            ? "bg-green-500"
-                            : entry.status === "SUBMITTED"
-                            ? "bg-amber-500"
-                            : "bg-gray-500"
-                        }`}
-                      />
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-sm font-medium">{entry.duration}h</p>
+                        </div>
+                        <div
+                          className={`w-2 h-2 rounded-full shrink-0 ${
+                            entry.status === "APPROVED"
+                              ? "bg-green-500"
+                              : entry.status === "SUBMITTED"
+                              ? "bg-amber-500"
+                              : "bg-gray-500"
+                          }`}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <div className="grid gap-4">
-        <ProjectDistributionChart
-          data={data.projectsWithDetails}
-          title="Répartition par projet"
-          description="Heures de cette semaine"
-        />
-      </div>
+        <TabsContent value="projects" className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Répartition par projet</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Visualisez comment votre temps est réparti entre vos différents projets cette semaine.
+            </p>
+            <ProjectDistributionChart
+              data={data.projectsWithDetails}
+              title="Répartition par projet"
+              description="Heures de cette semaine"
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

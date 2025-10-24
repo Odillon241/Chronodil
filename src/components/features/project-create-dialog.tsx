@@ -45,7 +45,7 @@ export function ProjectCreateDialog({ onSubmit, trigger }: ProjectCreateDialogPr
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="bg-rusty-red hover:bg-ou-crimson">
+          <Button className="bg-primary hover:bg-primary">
             <Plus className="mr-2 h-4 w-4" />
             Nouveau projet
           </Button>
@@ -154,7 +154,7 @@ export function ProjectCreateDialog({ onSubmit, trigger }: ProjectCreateDialogPr
             </Button>
             <Button
               type="submit"
-              className="bg-rusty-red hover:bg-ou-crimson"
+              className="bg-primary hover:bg-primary"
               disabled={isLoading}
             >
               {isLoading ? "Création..." : "Créer"}

@@ -8,7 +8,19 @@
       "Bash(pnpm prisma db push:*)",
       "Bash(npm run build:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(pnpm prisma migrate:*)",
+      "Bash(pnpm prisma generate:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm dlx:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm update:*)",
+      "Bash(timeout /t 3)",
+      "Bash(npx tsc:*)",
+      "Bash(npx @next/codemod@canary next-async-request-api .)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

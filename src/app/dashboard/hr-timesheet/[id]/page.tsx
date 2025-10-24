@@ -275,7 +275,7 @@ export default function HRTimesheetDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total heures</p>
-              <p className="text-2xl font-bold text-rusty-red">{timesheet.totalHours.toFixed(1)}h</p>
+              <p className="text-2xl font-bold text-primary">{timesheet.totalHours.toFixed(1)}h</p>
             </div>
           </div>
 
@@ -371,7 +371,7 @@ export default function HRTimesheetDetailPage() {
             <div className="flex gap-2 mt-6">
               <Button
                 onClick={handleSubmit}
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Soumettre pour validation
@@ -435,7 +435,7 @@ export default function HRTimesheetDetailPage() {
             <div className="space-y-6">
               {Object.entries(groupedActivities).map(([category, activities]) => (
                 <div key={category}>
-                  <h3 className="font-semibold mb-3 text-rusty-red">{category}</h3>
+                  <h3 className="font-semibold mb-3 text-primary">{category}</h3>
                   <div className="space-y-3">
                     {activities.map((activity) => (
                       <div key={activity.id} className="p-4 border rounded-lg">
@@ -465,7 +465,7 @@ export default function HRTimesheetDetailPage() {
                                   {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
                                 </span>
                               </div>
-                              <div className="font-semibold text-rusty-red">
+                              <div className="font-semibold text-primary">
                                 {activity.totalHours}h
                               </div>
                             </div>
@@ -488,11 +488,11 @@ export default function HRTimesheetDetailPage() {
               ))}
 
               {/* Total */}
-              <Card className="bg-rusty-red/10 border-rusty-red">
+              <Card className="bg-primary/10 border-primary">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-lg">Total heures</p>
-                    <p className="text-3xl font-bold text-rusty-red">
+                    <p className="text-3xl font-bold text-primary">
                       {timesheet.totalHours.toFixed(1)}h
                     </p>
                   </div>

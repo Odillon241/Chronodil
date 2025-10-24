@@ -123,7 +123,7 @@ export function TimesheetQuickEntry({ projects, onEntryCreated }: TimesheetQuick
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="bg-rusty-red hover:bg-ou-crimson"
+        className="bg-primary hover:bg-primary"
         size="sm"
       >
         <Plus className="mr-2 h-4 w-4" />
@@ -237,7 +237,7 @@ export function TimesheetQuickEntry({ projects, onEntryCreated }: TimesheetQuick
               </Button>
               <Button
                 type="submit"
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
                 disabled={isLoading}
               >
                 {isLoading ? "Enregistrement..." : "Enregistrer"}

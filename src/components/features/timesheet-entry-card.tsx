@@ -48,7 +48,7 @@ export function TimesheetEntryCard({
           )}
           <span className="text-sm font-medium">{entry.project?.name || "Projet non assigné"}</span>
         </div>
-        <span className="text-sm font-bold text-rusty-red">{entry.duration}h</span>
+        <span className="text-sm font-bold text-primary">{entry.duration}h</span>
       </div>
 
       {entry.description && (

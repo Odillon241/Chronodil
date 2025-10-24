@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
@@ -19,12 +18,13 @@ export function AccessibilitySection({ settings, onUpdate, isSaving }: Accessibi
   const t = useTranslations("settings.accessibility");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
+      </div>
+
+      <div className="space-y-6">
         {/* High Contrast */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -85,7 +85,7 @@ export function AccessibilitySection({ settings, onUpdate, isSaving }: Accessibi
             {t("tip")}
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

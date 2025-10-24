@@ -102,7 +102,7 @@ export function ProjectCard({ project, onDetails, onManage }: ProjectCardProps) 
           {onManage && (
             <Button
               size="sm"
-              className="flex-1 bg-rusty-red hover:bg-ou-crimson"
+              className="flex-1 bg-primary hover:bg-primary"
               onClick={() => onManage(project.id)}
             >
               Gérer

@@ -25,7 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, Loader2, FilePlus, FileDown, Edit, Trash2 } from "lucide-react";
+import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, FilePlus, FileDown, Edit, Trash2 } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -601,7 +602,7 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Dialog open={customReportDialogOpen} onOpenChange={setCustomReportDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm">
+              <Button className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm">
                 <FilePlus className="mr-2 h-4 w-4" />
                 Nouveau rapport
               </Button>
@@ -674,7 +675,7 @@ export default function ReportsPage() {
                   >
                     {isGenerating ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <SpinnerCustom />
                         Enregistrement...
                       </>
                     ) : (
@@ -709,7 +710,7 @@ export default function ReportsPage() {
                   >
                     {isGenerating ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <SpinnerCustom />
                         Génération...
                       </>
                     ) : (
@@ -722,12 +723,12 @@ export default function ReportsPage() {
                   <Button
                     type="button"
                     onClick={() => handleGenerateCustomReport("pdf")}
-                    className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
+                    className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
                     disabled={isGenerating}
                   >
                     {isGenerating ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <SpinnerCustom />
                         Génération...
                       </>
                     ) : (
@@ -896,12 +897,12 @@ export default function ReportsPage() {
             <Button
               type="button"
               onClick={handleSendReport}
-              className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
+              className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
               disabled={isGenerating}
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <SpinnerCustom />
                   Envoi...
                 </>
               ) : (
@@ -943,7 +944,7 @@ export default function ReportsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
+          <SpinnerCustom />
         </div>
       ) : (
         <>
@@ -955,7 +956,7 @@ export default function ReportsPage() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {summary?.totalHours?.toFixed(1) || "0"}h
                 </div>
                 <p className="text-xs text-muted-foreground">{getPeriodLabel()}</p>
@@ -968,7 +969,7 @@ export default function ReportsPage() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {summary?.billableHours?.toFixed(1) || "0"}h
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -985,7 +986,7 @@ export default function ReportsPage() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {summary?.activeProjects || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">Projets en cours</p>
@@ -998,7 +999,7 @@ export default function ReportsPage() {
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-rusty-red">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {summary?.validationRate || 0}%
                 </div>
                 <p className="text-xs text-muted-foreground">Heures approuvées</p>
@@ -1422,7 +1423,7 @@ export default function ReportsPage() {
                             <div className="flex items-center gap-2">
                               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-rusty-red"
+                                  className="h-full bg-primary"
                                   style={{ width: `${Math.min(project.progress, 100)}%` }}
                                 />
                               </div>
@@ -1476,7 +1477,7 @@ export default function ReportsPage() {
                               <div className="flex items-center gap-2 mt-1">
                                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                   <div
-                                    className="h-full bg-rusty-red"
+                                    className="h-full bg-primary"
                                     style={{ width: `${Math.min(project.progress, 100)}%` }}
                                   />
                                 </div>

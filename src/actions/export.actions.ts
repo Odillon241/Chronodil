@@ -191,7 +191,7 @@ export const exportTimesheetToPDF = authActionClient
 
     // Header
     doc.setFontSize(20);
-    doc.setTextColor(221, 45, 74); // Rusty red
+    doc.setTextColor(55, 154, 72); // Rusty red
     doc.text("Chronodil - Rapport de Temps", 14, 15);
 
     doc.setFontSize(10);
@@ -229,7 +229,7 @@ export const exportTimesheetToPDF = authActionClient
         cellPadding: 2,
       },
       headStyles: {
-        fillColor: [221, 45, 74], // Rusty red
+        fillColor: [55, 154, 72], // Rusty red
         textColor: [255, 255, 255],
         fontStyle: "bold",
       },

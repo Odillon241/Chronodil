@@ -20,7 +20,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { UserPlus, X, Users, Loader2 } from "lucide-react";
+import { UserPlus, X, Users } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { getUsers } from "@/actions/user.actions";
 import { addProjectMember, removeProjectMember } from "@/actions/project.actions";
@@ -213,13 +214,13 @@ export function ProjectTeamDialog({
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <UserPlus className="h-5 w-5 text-rusty-red" />
+                  <UserPlus className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">Ajouter un membre</h3>
                 </div>
 
                 {isLoadingUsers ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-rusty-red" />
+                    <SpinnerCustom />
                   </div>
                 ) : availableUsers.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -266,11 +267,11 @@ export function ProjectTeamDialog({
                     <Button
                       onClick={handleAddMember}
                       disabled={!selectedUserId || isLoading}
-                      className="w-full bg-rusty-red hover:bg-ou-crimson"
+                      className="w-full bg-primary hover:bg-primary"
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <SpinnerCustom />
                           Ajout en cours...
                         </>
                       ) : (
@@ -291,7 +292,7 @@ export function ProjectTeamDialog({
           {/* Section: Membres actuels */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Users className="h-5 w-5 text-rusty-red" />
+              <Users className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">
                 Membres actuels ({project.ProjectMember?.length || project.members?.length || 0})
               </h3>
@@ -314,7 +315,7 @@ export function ProjectTeamDialog({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
-                            <AvatarFallback className="bg-rusty-red/10 text-rusty-red">
+                            <AvatarFallback className="bg-primary/10 text-primary">
                               {getInitials((member.user || member.User)?.name)}
                             </AvatarFallback>
                           </Avatar>

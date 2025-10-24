@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -27,11 +26,11 @@ interface AppearanceSectionProps {
 }
 
 const accentColors = [
-  { value: "rusty-red", label: "Rusty Red", class: "bg-rusty-red" },
-  { value: "ou-crimson", label: "OU Crimson", class: "bg-ou-crimson" },
-  { value: "powder-blue", label: "Powder Blue", class: "bg-powder-blue" },
+  { value: "rusty-red", label: "Green", class: "bg-primary" },
+  { value: "ou-crimson", label: "Dark Green", class: "bg-ou-crimson" },
+  { value: "powder-blue", label: "Light Green", class: "bg-powder-blue" },
   { value: "forest-green", label: "Forest Green", class: "bg-forest-green" },
-  { value: "golden-orange", label: "Golden Orange", class: "bg-golden-orange" },
+  { value: "golden-orange", label: "Sage Green", class: "bg-golden-orange" },
 ];
 
 export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSectionProps) {
@@ -44,7 +43,6 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
     { value: "comfortable", label: t("density.comfortable") },
   ];
 
-  // Synchroniser le thème next-themes avec darkModeEnabled au chargement
   useEffect(() => {
     if (settings.darkModeEnabled !== undefined && resolvedTheme) {
       const expectedTheme = settings.darkModeEnabled ? "dark" : "light";
@@ -55,33 +53,26 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
     }
   }, [settings.darkModeEnabled, resolvedTheme, setTheme]);
 
-  // Handler pour le toggle du mode sombre
   const handleDarkModeToggle = (checked: boolean) => {
     console.log("🌓 Toggle mode sombre:", checked);
-    // 1. Changer immédiatement le thème next-themes
     setTheme(checked ? "dark" : "light");
-    // 2. Sauvegarder en base de données
     onUpdate("darkModeEnabled", checked);
   };
 
-  // Handler pour le changement de couleur d'accentuation
   const handleAccentColorChange = (colorName: string) => {
     console.log("🎨 Changement couleur d'accentuation:", colorName);
-
-    // 1. Appliquer immédiatement via data-attribute (le CSS gère le reste)
     document.documentElement.setAttribute("data-accent", colorName);
-
-    // 2. Sauvegarder en base de données
     onUpdate("accentColor", colorName);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
+      </div>
+
+      <div className="space-y-6">
         {/* Dark Mode */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -122,48 +113,49 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
           </div>
         </div>
 
-        {/* View Density */}
-        <div className="space-y-3 border-t pt-6">
-          <Label htmlFor="view-density">{t("viewDensity")}</Label>
-          <Select
-            value={settings.viewDensity}
-            onValueChange={(value) => onUpdate("viewDensity", value)}
-          >
-            <SelectTrigger id="view-density" disabled={isSaving}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {viewDensityOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* View Density & Font Size */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+          {/* View Density */}
+          <div className="space-y-3">
+            <Label htmlFor="view-density">{t("viewDensity")}</Label>
+            <Select
+              value={settings.viewDensity}
+              onValueChange={(value) => onUpdate("viewDensity", value)}
+            >
+              <SelectTrigger id="view-density" disabled={isSaving}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {viewDensityOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Font Size */}
-        <div className="space-y-3 border-t pt-6">
-          <div className="flex items-center justify-between">
+          {/* Font Size */}
+          <div className="space-y-3">
             <Label htmlFor="font-size">
               {t("fontSize")}: {settings.fontSize}px
             </Label>
+            <Slider
+              id="font-size"
+              min={12}
+              max={24}
+              step={1}
+              value={[settings.fontSize]}
+              onValueChange={([value]) => onUpdate("fontSize", value)}
+              disabled={isSaving}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              {t("fontSizeDesc")}
+            </p>
           </div>
-          <Slider
-            id="font-size"
-            min={12}
-            max={24}
-            step={1}
-            value={[settings.fontSize]}
-            onValueChange={([value]) => onUpdate("fontSize", value)}
-            disabled={isSaving}
-            className="w-full"
-          />
-          <p className="text-xs text-muted-foreground">
-            {t("fontSizeDesc")}
-          </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

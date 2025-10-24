@@ -529,7 +529,7 @@ export default function TimesheetPage() {
               <div className="flex gap-2">
                 <Button
                   type="submit"
-                  className="bg-rusty-red hover:bg-ou-crimson"
+                  className="bg-primary hover:bg-primary"
                   disabled={isLoading}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -657,7 +657,7 @@ export default function TimesheetPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button onClick={applyFilters} className="bg-rusty-red hover:bg-ou-crimson">
+                    <Button onClick={applyFilters} className="bg-primary hover:bg-primary">
                       Appliquer
                     </Button>
                     <Button variant="outline" onClick={resetFilters}>
@@ -714,7 +714,7 @@ export default function TimesheetPage() {
                               {entry.type}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-bold text-rusty-red">{entry.duration}h</td>
+                          <td className="px-6 py-4 font-bold text-primary">{entry.duration}h</td>
                           <td className="px-6 py-4">
                             <span
                               className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(entry.status)}`}
@@ -793,7 +793,7 @@ export default function TimesheetPage() {
                               )}
                             </div>
                           </div>
-                          <div className="font-bold text-rusty-red text-sm whitespace-nowrap">
+                          <div className="font-bold text-primary text-sm whitespace-nowrap">
                             {entry.duration}h
                           </div>
                         </div>
@@ -875,7 +875,7 @@ export default function TimesheetPage() {
                 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Durée</Label>
-                  <p className="text-sm font-bold text-rusty-red">{selectedEntryForDetails.duration}h</p>
+                  <p className="text-sm font-bold text-primary">{selectedEntryForDetails.duration}h</p>
                 </div>
               </div>
 

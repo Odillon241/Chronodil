@@ -193,8 +193,8 @@ export default function ValidationPage() {
               entries.map((entry) => (
                 <div
                   key={entry.id}
-                  className={`border rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4 hover:border-rusty-red transition-colors ${
-                    selectedEntries.includes(entry.id) ? "bg-muted/50 border-rusty-red" : ""
+                  className={`border rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4 hover:border-primary transition-colors ${
+                    selectedEntries.includes(entry.id) ? "bg-muted/50 border-primary" : ""
                   }`}
                 >
                   <div className="flex gap-3">
@@ -214,7 +214,7 @@ export default function ValidationPage() {
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                        <span className="font-medium text-rusty-red truncate">
+                        <span className="font-medium text-primary truncate">
                           {entry.Project?.name || "Projet non assigné"}
                         </span>
                         {entry.Task && (
@@ -226,7 +226,7 @@ export default function ValidationPage() {
                       </div>
                     </div>
                     <div className="text-left sm:text-right shrink-0">
-                      <div className="text-xl sm:text-2xl font-bold text-rusty-red">
+                      <div className="text-xl sm:text-2xl font-bold text-primary">
                         {entry.duration}h
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">
@@ -244,7 +244,7 @@ export default function ValidationPage() {
                       <span
                         className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full whitespace-nowrap ${
                           entry.type === "OVERTIME"
-                            ? "bg-bright-pink/20 text-bright-pink-700"
+                            ? "bg-primary/20 text-primary"
                             : "bg-blue-100 text-blue-800"
                         }`}
                       >

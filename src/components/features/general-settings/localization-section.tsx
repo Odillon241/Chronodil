@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
@@ -52,103 +51,105 @@ export function LocalizationSection({ settings, onUpdate, isSaving }: Localizati
 
   const handleLanguageChange = async (value: string) => {
     await onUpdate("language", value);
-    // Rafraîchir la page pour appliquer la nouvelle langue
     setTimeout(() => router.refresh(), 500);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Language */}
-        <div className="space-y-3">
-          <Label htmlFor="language">{t("language")}</Label>
-          <Select
-            value={settings.language}
-            onValueChange={handleLanguageChange}
-          >
-            <SelectTrigger id="language" disabled={isSaving}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value}>
-                  {lang.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            {t("languageDesc")}
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
+      </div>
 
-        {/* Date Format */}
-        <div className="space-y-3 border-t pt-6">
-          <Label htmlFor="date-format">{t("dateFormat")}</Label>
-          <Select
-            value={settings.dateFormat}
-            onValueChange={(value) => onUpdate("dateFormat", value)}
-          >
-            <SelectTrigger id="date-format" disabled={isSaving}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {dateFormats.map((format) => (
-                <SelectItem key={format.value} value={format.value}>
-                  {format.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Language */}
+          <div className="space-y-3">
+            <Label htmlFor="language">{t("language")}</Label>
+            <Select
+              value={settings.language}
+              onValueChange={handleLanguageChange}
+            >
+              <SelectTrigger id="language" disabled={isSaving}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {t("languageDesc")}
+            </p>
+          </div>
 
-        {/* Hour Format */}
-        <div className="space-y-3 border-t pt-6">
-          <Label htmlFor="hour-format">{t("hourFormat")}</Label>
-          <Select
-            value={settings.hourFormat}
-            onValueChange={(value) => onUpdate("hourFormat", value)}
-          >
-            <SelectTrigger id="hour-format" disabled={isSaving}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {hourFormats.map((format) => (
-                <SelectItem key={format.value} value={format.value}>
-                  {format.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          {/* Date Format */}
+          <div className="space-y-3">
+            <Label htmlFor="date-format">{t("dateFormat")}</Label>
+            <Select
+              value={settings.dateFormat}
+              onValueChange={(value) => onUpdate("dateFormat", value)}
+            >
+              <SelectTrigger id="date-format" disabled={isSaving}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {dateFormats.map((format) => (
+                  <SelectItem key={format.value} value={format.value}>
+                    {format.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Timezone */}
-        <div className="space-y-3 border-t pt-6">
-          <Label htmlFor="timezone">{t("timezone")}</Label>
-          <Select
-            value={settings.timezone}
-            onValueChange={(value) => onUpdate("timezone", value)}
-          >
-            <SelectTrigger id="timezone" disabled={isSaving}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px]">
-              {timezones.map((tz) => (
-                <SelectItem key={tz.value} value={tz.value}>
-                  {tz.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            {t("timezoneDesc")}
-          </p>
+          {/* Hour Format */}
+          <div className="space-y-3">
+            <Label htmlFor="hour-format">{t("hourFormat")}</Label>
+            <Select
+              value={settings.hourFormat}
+              onValueChange={(value) => onUpdate("hourFormat", value)}
+            >
+              <SelectTrigger id="hour-format" disabled={isSaving}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {hourFormats.map((format) => (
+                  <SelectItem key={format.value} value={format.value}>
+                    {format.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Timezone */}
+          <div className="space-y-3">
+            <Label htmlFor="timezone">{t("timezone")}</Label>
+            <Select
+              value={settings.timezone}
+              onValueChange={(value) => onUpdate("timezone", value)}
+            >
+              <SelectTrigger id="timezone" disabled={isSaving}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                {timezones.map((tz) => (
+                  <SelectItem key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {t("timezoneDesc")}
+            </p>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

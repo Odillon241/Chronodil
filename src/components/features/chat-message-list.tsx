@@ -42,6 +42,7 @@ import {
   BellOff,
   Info,
 } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
 import { format, isToday, isYesterday } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -601,7 +602,7 @@ export function ChatMessageList({
                               className={cn(
                                 "px-3 py-2 sm:px-4 rounded-2xl",
                                 isCurrentUser
-                                  ? "bg-rusty-red text-white"
+                                  ? "bg-primary text-white"
                                   : "bg-muted",
                                 msg.isDeleted && "italic opacity-70"
                               )}
@@ -916,10 +917,10 @@ export function ChatMessageList({
           <Button
             onClick={handleSendMessage}
             disabled={(!message.trim() && attachments.length === 0) || sending}
-            className="bg-rusty-red hover:bg-ou-crimson h-8 w-8 sm:h-10 sm:w-10"
+            className="bg-primary hover:bg-primary h-8 w-8 sm:h-10 sm:w-10"
           >
             {sending ? (
-              <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <SpinnerCustom />
             ) : (
               <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             )}

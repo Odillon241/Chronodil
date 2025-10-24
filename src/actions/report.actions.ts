@@ -577,7 +577,7 @@ export async function generateCustomReport(data: {
 
       // En-tête
       doc.setFontSize(20);
-      doc.setTextColor(221, 45, 74); // rusty-red
+      doc.setTextColor(55, 154, 72); // rusty-red
       doc.text(data.title, 20, 20);
 
       // Date de génération
@@ -598,7 +598,7 @@ export async function generateCustomReport(data: {
         if (summaryResult.data) {
           const y = 50 + splitContent.length * 7 + 20;
           doc.setFontSize(14);
-          doc.setTextColor(221, 45, 74);
+          doc.setTextColor(55, 154, 72);
           doc.text("Statistiques de la période", 20, y);
 
           doc.setFontSize(11);

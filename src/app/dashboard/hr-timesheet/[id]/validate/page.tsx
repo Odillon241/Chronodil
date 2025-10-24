@@ -321,7 +321,7 @@ export default function ValidateHRTimesheetPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total heures</p>
-              <p className="text-2xl font-bold text-rusty-red">{timesheet.totalHours.toFixed(1)}h</p>
+              <p className="text-2xl font-bold text-primary">{timesheet.totalHours.toFixed(1)}h</p>
             </div>
           </div>
 
@@ -372,7 +372,7 @@ export default function ValidateHRTimesheetPage() {
             <div className="space-y-6">
               {Object.entries(groupedActivities).map(([category, activities]) => (
                 <div key={category}>
-                  <h3 className="font-semibold mb-3 text-rusty-red">{category}</h3>
+                  <h3 className="font-semibold mb-3 text-primary">{category}</h3>
                   <div className="space-y-3">
                     {activities.map((activity) => (
                       <div key={activity.id} className="p-4 border rounded-lg bg-muted/30">
@@ -400,7 +400,7 @@ export default function ValidateHRTimesheetPage() {
                               {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
                             </span>
                           </div>
-                          <div className="font-bold text-rusty-red text-lg">
+                          <div className="font-bold text-primary text-lg">
                             {activity.totalHours}h
                           </div>
                         </div>
@@ -411,11 +411,11 @@ export default function ValidateHRTimesheetPage() {
               ))}
 
               {/* Total */}
-              <Card className="bg-rusty-red/10 border-rusty-red">
+              <Card className="bg-primary/10 border-primary">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-lg">Total heures déclarées</p>
-                    <p className="text-3xl font-bold text-rusty-red">
+                    <p className="text-3xl font-bold text-primary">
                       {timesheet.totalHours.toFixed(1)}h
                     </p>
                   </div>

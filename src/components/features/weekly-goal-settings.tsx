@@ -85,7 +85,7 @@ export function WeeklyGoalSettings({ currentGoal, onGoalUpdated }: WeeklyGoalSet
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
             Annuler
           </Button>
-          <Button onClick={handleSave} disabled={isLoading} className="bg-rusty-red hover:bg-ou-crimson">
+          <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary">
             {isLoading ? "Enregistrement..." : "Enregistrer"}
           </Button>
         </DialogFooter>

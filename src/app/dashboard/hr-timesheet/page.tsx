@@ -253,7 +253,7 @@ export default function HRTimesheetPage() {
           </div>
           <div>
             <p className="text-muted-foreground">Total heures</p>
-            <p className="font-bold text-rusty-red text-lg">{timesheet.totalHours.toFixed(1)}h</p>
+            <p className="font-bold text-primary text-lg">{timesheet.totalHours.toFixed(1)}h</p>
           </div>
         </div>
 
@@ -336,7 +336,7 @@ export default function HRTimesheetPage() {
               <Button
                 variant="default"
                 size="sm"
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
                 onClick={() => handleSubmit(timesheet.id)}
               >
                 <FileText className="h-4 w-4 mr-1" />
@@ -356,7 +356,7 @@ export default function HRTimesheetPage() {
             <Button
               variant="default"
               size="sm"
-              className="bg-rusty-red hover:bg-ou-crimson"
+              className="bg-primary hover:bg-primary"
               onClick={() => router.push(`/dashboard/hr-timesheet/${timesheet.id}/validate`)}
             >
               <CheckCircle className="h-4 w-4 mr-1" />
@@ -379,7 +379,7 @@ export default function HRTimesheetPage() {
         </div>
         <Button
           onClick={() => router.push("/dashboard/hr-timesheet/new")}
-          className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto"
+          className="bg-primary hover:bg-primary w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nouveau timesheet
@@ -486,7 +486,7 @@ export default function HRTimesheetPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button onClick={applyFilters} className="bg-rusty-red hover:bg-ou-crimson">
+                    <Button onClick={applyFilters} className="bg-primary hover:bg-primary">
                       Appliquer
                     </Button>
                     <Button variant="outline" onClick={resetFilters}>
@@ -508,7 +508,7 @@ export default function HRTimesheetPage() {
                   <p className="text-muted-foreground">Aucun timesheet trouvé</p>
                   <Button
                     onClick={() => router.push("/dashboard/hr-timesheet/new")}
-                    className="mt-4 bg-rusty-red hover:bg-ou-crimson"
+                    className="mt-4 bg-primary hover:bg-primary"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Créer mon premier timesheet

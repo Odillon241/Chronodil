@@ -125,8 +125,8 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                 key={day.toString()}
                 className={cn(
                   "border rounded-lg p-3 min-h-[200px] flex flex-col transition-colors",
-                  isToday && "border-rusty-red border-2",
-                  isSelected && !isToday && "border-ou-crimson",
+                  isToday && "border-primary border-2",
+                  isSelected && !isToday && "border-primary",
                   isWeekendDay && "bg-gray-50"
                 )}
               >
@@ -141,7 +141,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                     </span>
                     <span className={cn(
                       "text-lg font-bold",
-                      isToday && "text-rusty-red",
+                      isToday && "text-primary",
                       isWeekendDay && !isToday && "text-gray-500"
                     )}>
                       {format(day, "d")}
@@ -173,7 +173,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                           onDateSelect(day);
                           onAddEntry(day);
                         }}
-                        className="text-xs text-muted-foreground hover:text-rusty-red"
+                        className="text-xs text-muted-foreground hover:text-primary"
                       >
                         <Plus className="h-3 w-3 mr-1" />
                         Ajouter
@@ -245,7 +245,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
             <div className="flex items-center gap-6">
               <div>
                 <div className="text-sm text-muted-foreground">Total semaine</div>
-                <div className="text-2xl font-bold text-rusty-red">{weekTotal.toFixed(1)}h</div>
+                <div className="text-2xl font-bold text-primary">{weekTotal.toFixed(1)}h</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Objectif</div>
@@ -291,7 +291,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                 </div>
                 <Button
                   onClick={() => onSubmitWeek(weekStart, weekEnd)}
-                  className="bg-ou-crimson hover:bg-ou-crimson/90"
+                  className="bg-primary hover:bg-primary/90"
                   disabled={hasSubmitted && draftCount === 0}
                 >
                   <Save className="h-4 w-4 mr-2" />

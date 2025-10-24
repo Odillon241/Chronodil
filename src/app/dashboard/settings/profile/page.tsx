@@ -39,11 +39,11 @@ import {
   Edit,
   Save,
   X,
-  Loader2,
   Camera,
   Smile,
   Upload,
 } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
@@ -330,8 +330,8 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-rusty-red" />
-          <p className="text-muted-foreground">Chargement du profil...</p>
+          <SpinnerCustom />
+          <p className="text-muted-foreground mt-4">Chargement du profil...</p>
         </div>
       </div>
     );
@@ -374,7 +374,7 @@ export default function ProfilePage() {
                     } 
                     alt={user.name || "User"}
                   />
-                  <AvatarFallback className="bg-rusty-red text-white text-2xl">
+                  <AvatarFallback className="bg-primary text-white text-2xl">
                     {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -415,7 +415,7 @@ export default function ProfilePage() {
                   <span className="text-xs sm:text-sm text-muted-foreground">Manager</span>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
-                      <AvatarFallback className="bg-ou-crimson text-white text-xs">
+                      <AvatarFallback className="bg-primary text-white text-xs">
                         {getInitials(user.manager.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -518,12 +518,12 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     type="submit"
-                    className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm"
+                    className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
                     disabled={isSaving}
                   >
                     {isSaving ? (
                       <>
-                        <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                        <SpinnerCustom />
                         Enregistrement...
                       </>
                     ) : (
@@ -699,7 +699,7 @@ export default function ProfilePage() {
                   } 
                   alt="Preview"
                 />
-                <AvatarFallback className="bg-rusty-red text-white text-xl">
+                <AvatarFallback className="bg-primary text-white text-xl">
                   {avatarType === 'emoji' ? avatarValue : getInitials(user?.name)}
                 </AvatarFallback>
               </Avatar>
@@ -778,12 +778,12 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row gap-2 pt-4">
               <Button
                 onClick={handleAvatarUpdate}
-                className="w-full sm:flex-1 bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm"
+                className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
                 disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
               >
                 {isUpdatingAvatar ? (
                   <>
-                    <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                    <SpinnerCustom />
                     Mise à jour...
                   </>
                 ) : (

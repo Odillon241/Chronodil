@@ -210,7 +210,7 @@ export function ChatConversationList({
           <Button
             size="sm"
             onClick={onNewChat}
-            className="bg-rusty-red hover:bg-ou-crimson"
+            className="bg-primary hover:bg-primary"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nouveau

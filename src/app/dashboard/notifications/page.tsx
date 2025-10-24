@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Bell, CheckCheck, Trash2, Info, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -203,7 +204,7 @@ export default function NotificationsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
+          <SpinnerCustom />
         </div>
       ) : notifications.length === 0 ? (
         <Card>
@@ -263,7 +264,7 @@ export default function NotificationsPage() {
                       </TableCell>
                       <TableCell>
                         {!notification.isRead && (
-                          <Badge variant="default" className="bg-rusty-red hover:bg-rusty-red text-xs">
+                          <Badge variant="default" className="bg-primary hover:bg-primary text-xs">
                             Nouveau
                           </Badge>
                         )}
@@ -348,7 +349,7 @@ export default function NotificationsPage() {
                       <div className="flex items-center gap-2">
                         {getNotificationIcon(notification.type)}
                         {!notification.isRead && (
-                          <Badge variant="default" className="bg-rusty-red hover:bg-rusty-red text-xs">
+                          <Badge variant="default" className="bg-primary hover:bg-primary text-xs">
                             Nouveau
                           </Badge>
                         )}

@@ -309,7 +309,7 @@ export default function EditHRTimesheetPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total heures</p>
-              <p className="text-2xl font-bold text-rusty-red">{timesheet.totalHours.toFixed(1)}h</p>
+              <p className="text-2xl font-bold text-primary">{timesheet.totalHours.toFixed(1)}h</p>
             </div>
           </div>
         </CardContent>
@@ -383,7 +383,7 @@ export default function EditHRTimesheetPage() {
                   <div className="space-y-6">
                     {Object.entries(groupedCatalog).map(([category, items]) => (
                       <div key={category}>
-                        <h3 className="font-semibold mb-2 text-rusty-red">{category}</h3>
+                        <h3 className="font-semibold mb-2 text-primary">{category}</h3>
                         <div className="grid gap-2">
                           {items.map(item => (
                             <Button
@@ -409,7 +409,7 @@ export default function EditHRTimesheetPage() {
 
               <Button
                 onClick={() => setShowActivityForm(!showActivityForm)}
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Nouvelle activité
@@ -548,7 +548,7 @@ export default function EditHRTimesheetPage() {
                 <div className="flex gap-2">
                   <Button
                     type="submit"
-                    className="bg-rusty-red hover:bg-ou-crimson"
+                    className="bg-primary hover:bg-primary"
                     disabled={isSaving}
                   >
                     <Plus className="mr-2 h-4 w-4" />
@@ -581,7 +581,7 @@ export default function EditHRTimesheetPage() {
             <div className="space-y-6">
               {Object.entries(groupedActivities).map(([category, activities]) => (
                 <div key={category}>
-                  <h3 className="font-semibold mb-3 text-rusty-red">{category}</h3>
+                  <h3 className="font-semibold mb-3 text-primary">{category}</h3>
                   <div className="space-y-3">
                     {activities.map((activity) => (
                       <div key={activity.id} className="p-4 border rounded-lg">
@@ -611,7 +611,7 @@ export default function EditHRTimesheetPage() {
                                   {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
                                 </span>
                               </div>
-                              <div className="font-semibold text-rusty-red text-lg">
+                              <div className="font-semibold text-primary text-lg">
                                 {activity.totalHours}h
                               </div>
                             </div>
@@ -632,11 +632,11 @@ export default function EditHRTimesheetPage() {
               ))}
 
               {/* Total */}
-              <Card className="bg-rusty-red/10 border-rusty-red">
+              <Card className="bg-primary/10 border-primary">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-lg">Total heures des activités</p>
-                    <p className="text-3xl font-bold text-rusty-red">
+                    <p className="text-3xl font-bold text-primary">
                       {timesheet.totalHours.toFixed(1)}h
                     </p>
                   </div>

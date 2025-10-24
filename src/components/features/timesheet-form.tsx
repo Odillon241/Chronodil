@@ -209,7 +209,7 @@ export function TimesheetForm({
       <div className="flex gap-2">
         <Button
           type="submit"
-          className="bg-rusty-red hover:bg-ou-crimson"
+          className="bg-primary hover:bg-primary"
           disabled={isLoading}
         >
           <Plus className="mr-2 h-4 w-4" />

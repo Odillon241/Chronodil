@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2, Key } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { getUsers, createUser, updateUser, deleteUser, resetUserPassword } from "@/actions/user.actions";
@@ -347,7 +348,7 @@ export default function UsersManagementPage() {
   if (!session) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
+        <SpinnerCustom />
       </div>
     );
   }
@@ -377,7 +378,7 @@ export default function UsersManagementPage() {
           }}
         >
           <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+            <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
               <UserPlus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Nouvel utilisateur
             </Button>
@@ -513,7 +514,7 @@ export default function UsersManagementPage() {
                 >
                   Annuler
                 </Button>
-                <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm" disabled={isLoading}>
+                <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm" disabled={isLoading}>
                   {editingUser ? "Mettre à jour" : "Créer"}
                 </Button>
               </div>
@@ -560,7 +561,7 @@ export default function UsersManagementPage() {
                 >
                   Annuler
                 </Button>
-                <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm" disabled={isLoading}>
+                <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm" disabled={isLoading}>
                   Réinitialiser
                 </Button>
               </div>
@@ -591,7 +592,7 @@ export default function UsersManagementPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
+              <SpinnerCustom />
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
@@ -627,7 +628,7 @@ export default function UsersManagementPage() {
                             } 
                             alt={user.name || "User"} 
                           />
-                          <AvatarFallback className="bg-rusty-red/10 text-rusty-red">
+                          <AvatarFallback className="bg-primary/10 text-primary">
                             {getInitials(user.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -716,7 +717,7 @@ export default function UsersManagementPage() {
                           }
                           alt={user.name || "User"}
                         />
-                        <AvatarFallback className="bg-rusty-red/10 text-rusty-red text-sm">
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm">
                           {getInitials(user.name)}
                         </AvatarFallback>
                       </Avatar>

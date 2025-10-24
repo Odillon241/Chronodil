@@ -49,7 +49,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ou-crimson via-rusty-red to-bright-pink p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary to-primary p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
@@ -121,14 +121,14 @@ export default function RegisterPage() {
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
-              className="w-full bg-rusty-red hover:bg-ou-crimson"
+              className="w-full bg-primary hover:bg-primary"
               disabled={isLoading}
             >
               {isLoading ? "Inscription..." : "S'inscrire"}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Vous avez déjà un compte ?{" "}
-              <Link href="/auth/login" className="text-rusty-red hover:text-ou-crimson font-medium">
+              <Link href="/auth/login" className="text-primary hover:text-primary font-medium">
                 Se connecter
               </Link>
             </p>

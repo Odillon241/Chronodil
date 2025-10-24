@@ -442,15 +442,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Paramètres</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
+        <p className="text-base text-muted-foreground mt-1">
           Configuration de l'application et gestion des référentiels
         </p>
       </div>
 
-      <Tabs defaultValue="holidays" className="space-y-4">
+      <Tabs defaultValue="holidays" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto gap-1">
           <TabsTrigger value="holidays" className="text-xs sm:text-sm">Jours fériés</TabsTrigger>
           <TabsTrigger value="departments" className="text-xs sm:text-sm">Départements</TabsTrigger>
@@ -511,7 +511,7 @@ export default function SettingsPage() {
                   </Popover>
                   <Dialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+                      <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
                         <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Ajouter
                       </Button>
@@ -570,7 +570,7 @@ export default function SettingsPage() {
                         <Button type="button" variant="outline" onClick={() => setIsHolidayDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
                           Annuler
                         </Button>
-                        <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+                        <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
                           Ajouter
                         </Button>
                       </div>
@@ -706,7 +706,7 @@ export default function SettingsPage() {
                 </div>
                 <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+                    <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
                       <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       Ajouter
                     </Button>
@@ -756,7 +756,7 @@ export default function SettingsPage() {
                         <Button type="button" variant="outline" onClick={() => setIsDepartmentDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
                           Annuler
                         </Button>
-                        <Button type="submit" className="w-full sm:w-auto bg-rusty-red hover:bg-ou-crimson text-xs sm:text-sm">
+                        <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
                           Créer
                         </Button>
                       </div>
@@ -807,31 +807,30 @@ export default function SettingsPage() {
 
         {/* Notifications */}
         <TabsContent value="notifications" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Préférences de notification</CardTitle>
-                  <CardDescription>
-                    Gérez vos préférences de notification sonore et visuelle
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={handleResetPreferences}
-                  disabled={isSavingPreferences || !preferences}
-                >
-                  Réinitialiser
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Préférences de notification</h2>
+              <p className="text-muted-foreground mt-1">
+                Gérez vos préférences de notification sonore et visuelle
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleResetPreferences}
+              disabled={isSavingPreferences || !preferences}
+              className="mt-1"
+            >
+              Réinitialiser
+            </Button>
+          </div>
+
+          <div className="space-y-0">
               {!preferences ? (
                 <p className="text-center text-muted-foreground py-8">Chargement des préférences...</p>
               ) : (
                 <>
                   {/* Sons de notification */}
-                  <div className="space-y-4 border-b pb-6">
+                  <div className="space-y-4 border-t pt-6">
                     <div>
                       <h3 className="font-semibold">Sons de notification</h3>
                       <p className="text-sm text-muted-foreground">
@@ -925,7 +924,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Notifications par email */}
-                  <div className="space-y-4 border-b pb-6">
+                  <div className="space-y-4 border-t pt-6">
                     <div>
                       <h3 className="font-semibold">Notifications par email</h3>
                       <p className="text-sm text-muted-foreground">
@@ -952,7 +951,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Notifications bureau */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 border-t pt-6">
                     <div>
                       <h3 className="font-semibold">Notifications bureau</h3>
                       <p className="text-sm text-muted-foreground">
@@ -979,8 +978,7 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
+          </div>
         </TabsContent>
 
         {/* Rappels */}
@@ -998,7 +996,7 @@ export default function SettingsPage() {
               </p>
               <Button
                 onClick={() => window.location.href = "/dashboard/settings/reminders"}
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
               >
                 <Bell className="mr-2 h-4 w-4" />
                 Configurer les rappels
@@ -1030,7 +1028,7 @@ export default function SettingsPage() {
               </p>
               <Button
                 onClick={() => window.location.href = "/dashboard/settings/users"}
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
               >
                 {(session?.user as any)?.role === "DIRECTEUR"
                   ? "Gérer mon équipe"
@@ -1041,11 +1039,11 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Général */}
-        <TabsContent value="general" className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
+        <TabsContent value="general" className="space-y-6">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Paramètres généraux</h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mt-1">
                 Personnalisez l'apparence, la langue et l'accessibilité
               </p>
             </div>
@@ -1053,39 +1051,39 @@ export default function SettingsPage() {
               variant="outline"
               onClick={handleResetGeneralSettings}
               disabled={isSavingGeneralSettings || !generalSettings}
-              className="text-destructive hover:text-destructive"
+              className="text-destructive hover:text-destructive mt-1"
             >
               Réinitialiser
             </Button>
           </div>
 
           {!generalSettings ? (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground">Chargement des paramètres...</p>
-              </CardContent>
-            </Card>
+            <div className="border rounded-lg p-12 text-center">
+              <p className="text-muted-foreground">Chargement des paramètres...</p>
+            </div>
           ) : (
-            <>
-              {/* Phase 1 Sections */}
+            <div className="space-y-8">
+              {/* Appearance Section */}
               <AppearanceSection
                 settings={generalSettings}
                 onUpdate={handleUpdateGeneralSetting}
                 isSaving={isSavingGeneralSettings}
               />
 
+              {/* Localization Section */}
               <LocalizationSection
                 settings={generalSettings}
                 onUpdate={handleUpdateGeneralSetting}
                 isSaving={isSavingGeneralSettings}
               />
 
+              {/* Accessibility Section */}
               <AccessibilitySection
                 settings={generalSettings}
                 onUpdate={handleUpdateGeneralSetting}
                 isSaving={isSavingGeneralSettings}
               />
-            </>
+            </div>
           )}
         </TabsContent>
       </Tabs>

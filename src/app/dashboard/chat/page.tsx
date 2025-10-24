@@ -251,7 +251,7 @@ export default function ChatPage() {
                 </div>
                 <Button
                   onClick={() => setNewChatDialogOpen(true)}
-                  className="bg-rusty-red hover:bg-ou-crimson w-full sm:w-auto text-xs sm:text-sm"
+                  className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
                   size="lg"
                 >
                   <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

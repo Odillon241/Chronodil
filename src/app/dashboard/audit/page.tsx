@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Shield, Activity, Database, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -175,7 +176,7 @@ export default function AuditPage() {
               <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-rusty-red">{stats.total}</div>
+              <div className="text-xl sm:text-2xl font-bold text-primary">{stats.total}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">Actions enregistrées</p>
             </CardContent>
           </Card>
@@ -186,7 +187,7 @@ export default function AuditPage() {
               <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-rusty-red truncate">
+              <div className="text-xl sm:text-2xl font-bold text-primary truncate">
                 {stats.byAction[0]?.action || "N/A"}
               </div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -201,7 +202,7 @@ export default function AuditPage() {
               <Database className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-rusty-red truncate">
+              <div className="text-xl sm:text-2xl font-bold text-primary truncate">
                 {stats.byEntity[0]?.entity || "N/A"}
               </div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -282,7 +283,7 @@ export default function AuditPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rusty-red"></div>
+              <SpinnerCustom />
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">

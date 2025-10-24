@@ -323,7 +323,7 @@ export function ChatNewConversationDialog({
               <Button
                 onClick={handleCreateGroup}
                 disabled={creating || selectedUsers.length === 0 || !groupName.trim()}
-                className="bg-rusty-red hover:bg-ou-crimson"
+                className="bg-primary hover:bg-primary"
               >
                 Créer le groupe
               </Button>

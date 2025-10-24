@@ -318,16 +318,13 @@ import { FolderKanban } from "lucide-react"
 />
 ```
 
-### LoadingSpinner
-Spinner de chargement.
+### SpinnerCustom
+Spinner de chargement standardisé.
 
 ```tsx
-import { LoadingSpinner, LoadingPage } from "@/components/features/loading-spinner"
+import { SpinnerCustom } from "@/components/features/loading-spinner"
 
-<LoadingSpinner size="md" text="Chargement..." />
-
-// Ou version pleine page
-<LoadingPage text="Chargement des données..." />
+<SpinnerCustom />
 ```
 
 ---

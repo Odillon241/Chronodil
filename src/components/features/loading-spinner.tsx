@@ -1,31 +1,22 @@
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { LoaderIcon } from "lucide-react"
 
-interface LoadingSpinnerProps {
-  className?: string;
-  size?: "sm" | "md" | "lg";
-  text?: string;
+import { cn } from "@/lib/utils"
+
+function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
+  return (
+    <LoaderIcon
+      role="status"
+      aria-label="Loading"
+      className={cn("size-4 animate-spin", className)}
+      {...props}
+    />
+  )
 }
 
-const sizeClasses = {
-  sm: "h-4 w-4",
-  md: "h-8 w-8",
-  lg: "h-12 w-12",
-};
-
-export function LoadingSpinner({ className, size = "md", text }: LoadingSpinnerProps) {
+export function SpinnerCustom() {
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <Loader2 className={cn("animate-spin text-muted-foreground", sizeClasses[size], className)} />
-      {text && <p className="text-sm text-muted-foreground">{text}</p>}
+    <div className="flex items-center gap-4">
+      <Spinner />
     </div>
-  );
-}
-
-export function LoadingPage({ text = "Chargement..." }: { text?: string }) {
-  return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <LoadingSpinner size="lg" text={text} />
-    </div>
-  );
+  )
 }

@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CheckCircle, XCircle, Clock, User, Calendar, AlertCircle } from "lucide-react";
+import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { getPendingValidations, getValidationStats } from "@/actions/validation.actions";
 import { ValidationDialog } from "@/components/features/validation-dialog";
 import { ValidationStatsChart } from "@/components/features/validation-stats-chart";
@@ -176,8 +177,8 @@ export default function ValidationsPage() {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
         <div className="text-center">
-          <Clock className="h-8 w-8 animate-spin mx-auto mb-4 text-rusty-red" />
-          <p className="text-muted-foreground">Chargement des validations...</p>
+          <SpinnerCustom />
+          <p className="text-muted-foreground mt-4">Chargement des validations...</p>
         </div>
       </div>
     );
@@ -242,8 +243,8 @@ export default function ValidationsPage() {
                   {/* En-tête utilisateur */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-rusty-red/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-rusty-red" />
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
                       </div>
                       <div>
                         <h3 className="font-semibold">{user.name || "Utilisateur inconnu"}</h3>
@@ -252,7 +253,7 @@ export default function ValidationsPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="text-xl font-bold text-rusty-red">
+                      <p className="text-xl font-bold text-primary">
                         {formatDuration(totalHours)}
                       </p>
                     </div>
