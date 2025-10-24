@@ -23,9 +23,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MinimalTiptap } from "@/components/ui/shadcn-io/minimal-tiptap";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, FilePlus, FileDown, Edit, Trash2 } from "lucide-react";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia, EmptyContent } from "@/components/ui/empty";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
+import { StatusTabs } from "@/components/ui/status-menubar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Download, FileText, Calendar, TrendingUp, BarChart3, Clock, Plus, Mail, FilePlus, FileDown, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -54,6 +65,13 @@ export default function ReportsPage() {
   const [reportType, setReportType] = useState<ReportType>("summary");
   const [isLoading, setIsLoading] = useState(false);
   
+  // États pour les nouveaux composants de filtre
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  
   // États pour le dialogue de rapport personnalisé
   const [customReportDialogOpen, setCustomReportDialogOpen] = useState(false);
   const [sendEmailDialogOpen, setSendEmailDialogOpen] = useState(false);
@@ -75,6 +93,11 @@ export default function ReportsPage() {
   // États pour la sélection des rapports
   const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
   const [isSelectAll, setIsSelectAll] = useState(false);
+  
+  // États pour le dialogue de confirmation
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState(false);
+  const [deleteMultipleConfirmDialogOpen, setDeleteMultipleConfirmDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null);
 
   // État pour les données
   const [summary, setSummary] = useState<any>(null);
@@ -480,14 +503,17 @@ export default function ReportsPage() {
     setSendEmailDialogOpen(true);
   };
 
-  const handleDeleteReport = async (reportId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce rapport ?")) {
-      return;
-    }
+  const handleDeleteReport = (reportId: string) => {
+    setReportToDelete(reportId);
+    setDeleteConfirmDialogOpen(true);
+  };
+
+  const confirmDeleteReport = async () => {
+    if (!reportToDelete) return;
 
     setIsLoading(true);
     try {
-      const result = await deleteReport(reportId);
+      const result = await deleteReport(reportToDelete);
       if (result?.data) {
         toast.success("Rapport supprimé avec succès");
         loadReports();
@@ -499,16 +525,17 @@ export default function ReportsPage() {
       toast.error("Erreur lors de la suppression du rapport");
     } finally {
       setIsLoading(false);
+      setDeleteConfirmDialogOpen(false);
+      setReportToDelete(null);
     }
   };
 
-  const handleDeleteSelectedReports = async () => {
+  const handleDeleteSelectedReports = () => {
     if (selectedReportIds.length === 0) return;
-    
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedReportIds.length} rapport(s) ?`)) {
-      return;
-    }
+    setDeleteMultipleConfirmDialogOpen(true);
+  };
 
+  const confirmDeleteSelectedReports = async () => {
     setIsLoading(true);
     try {
       let successCount = 0;
@@ -543,6 +570,7 @@ export default function ReportsPage() {
       toast.error("Erreur lors de la suppression des rapports");
     } finally {
       setIsLoading(false);
+      setDeleteMultipleConfirmDialogOpen(false);
     }
   };
 
@@ -628,13 +656,11 @@ export default function ReportsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="report-content">Contenu du rapport *</Label>
-                  <Textarea
-                    id="report-content"
+                  <MinimalTiptap
+                    content={customReportData.content}
+                    onChange={(content) => setCustomReportData({ ...customReportData, content })}
                     placeholder="Rédigez le contenu de votre rapport..."
-                    rows={10}
-                    value={customReportData.content}
-                    onChange={(e) => setCustomReportData({ ...customReportData, content: e.target.value })}
-                    className="resize-none"
+                    className="min-h-[300px]"
                   />
                   <p className="text-xs text-muted-foreground">
                     {customReportData.content.length} caractères
@@ -916,30 +942,67 @@ export default function ReportsPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Select value={period} onValueChange={(val) => setPeriod(val as Period)}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="week">Cette semaine</SelectItem>
-            <SelectItem value="month">Ce mois</SelectItem>
-            <SelectItem value="quarter">Ce trimestre</SelectItem>
-            <SelectItem value="year">Cette année</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Nouveaux composants de filtre */}
+      <div className="space-y-4">
+        {/* Filtres de recherche et période */}
+        <FilterButtonGroup
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          filterOptions={[
+            { id: 'period', label: 'Période', value: 'period' },
+            { id: 'type', label: 'Type de rapport', value: 'type' },
+            { id: 'status', label: 'Statut', value: 'status' },
+          ]}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+          startDate={startDate}
+          endDate={endDate}
+          onDateChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+          placeholder="Rechercher un rapport..."
+        />
 
-        <Select value={reportType} onValueChange={(val) => setReportType(val as ReportType)}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="summary">Vue d'ensemble</SelectItem>
-            <SelectItem value="detailed">Détaillé</SelectItem>
-            <SelectItem value="by-project">Par projet</SelectItem>
-            <SelectItem value="by-user">Par utilisateur</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Onglets de statut */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <StatusTabs
+            options={[
+              { id: 'active', label: 'Actifs', value: 'active', count: 12 },
+              { id: 'archived', label: 'Archivés', value: 'archived', count: 3 },
+              { id: 'all', label: 'Tous', value: 'all', count: 15 },
+            ]}
+            selectedValue={statusFilter}
+            onValueChange={setStatusFilter}
+          />
+
+          {/* Filtres de période et type de rapport */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Select value={period} onValueChange={(value) => setPeriod(value as Period)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Période" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Cette semaine</SelectItem>
+                <SelectItem value="month">Ce mois</SelectItem>
+                <SelectItem value="quarter">Ce trimestre</SelectItem>
+                <SelectItem value="year">Cette année</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={reportType} onValueChange={(value) => setReportType(value as ReportType)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Type de rapport" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="summary">Vue d'ensemble</SelectItem>
+                <SelectItem value="detailed">Détaillé</SelectItem>
+                <SelectItem value="by-project">Par projet</SelectItem>
+                <SelectItem value="by-user">Par utilisateur</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -1009,60 +1072,75 @@ export default function ReportsPage() {
 
 
           {/* Liste des rapports générés */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <CardTitle className="text-lg sm:text-xl">Historique des rapports</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Liste de tous les rapports générés et envoyés
-                  </CardDescription>
-                </div>
-                {reports.length > 0 && selectedReportIds.length > 0 && (
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={handleDeleteSelectedReports}
-                      disabled={isLoading}
-                      className="w-full sm:w-auto text-xs sm:text-sm"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Supprimer ({selectedReportIds.length})
-                    </Button>
-                  </div>
-                )}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold">Historique des rapports</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Liste de tous les rapports générés et envoyés
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="relative overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm text-left hidden md:table">
-                  <thead className="text-xs uppercase bg-muted">
-                    <tr>
-                      <th className="px-6 py-3">
-                        <Checkbox
-                          checked={isSelectAll}
-                          onCheckedChange={handleSelectAll}
-                        />
-                      </th>
-                      <th className="px-6 py-3">Titre</th>
-                      <th className="px-6 py-3">Créé par</th>
-                      <th className="px-6 py-3">Date</th>
-                      <th className="px-6 py-3">Format</th>
-                      <th className="px-6 py-3">Taille</th>
-                      <th className="px-6 py-3">Destinataires</th>
-                      <th className="px-6 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reports.length === 0 ? (
+              {reports.length > 0 && selectedReportIds.length > 0 && (
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={handleDeleteSelectedReports}
+                    disabled={isLoading}
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Supprimer ({selectedReportIds.length})
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="border-t pt-4">
+              {reports.length === 0 ? (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <FileText className="h-6 w-6" />
+                    </EmptyMedia>
+                    <EmptyTitle>Aucun rapport généré</EmptyTitle>
+                    <EmptyDescription>
+                      Commencez par créer votre premier rapport personnalisé
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Dialog open={customReportDialogOpen} onOpenChange={setCustomReportDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-primary hover:bg-primary">
+                          <FilePlus className="mr-2 h-4 w-4" />
+                          Créer un rapport
+                        </Button>
+                      </DialogTrigger>
+                    </Dialog>
+                  </EmptyContent>
+                </Empty>
+              ) : (
+                <div className="relative overflow-x-auto">
+                  <table className="w-full text-xs sm:text-sm text-left hidden md:table">
+                    <thead className="text-xs uppercase bg-muted">
                       <tr>
-                        <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
-                          Aucun rapport généré pour le moment
-                        </td>
+                        <th className="px-6 py-3">
+                          <Checkbox
+                            checked={isSelectAll}
+                            onCheckedChange={handleSelectAll}
+                          />
+                        </th>
+                        <th className="px-6 py-3">Titre</th>
+                        <th className="px-6 py-3">Créé par</th>
+                        <th className="px-6 py-3">Date</th>
+                        <th className="px-6 py-3">Format</th>
+                        <th className="px-6 py-3">Taille</th>
+                        <th className="px-6 py-3">Destinataires</th>
+                        <th className="px-6 py-3">Actions</th>
                       </tr>
-                    ) : (
-                      reports.map((report: any) => (
+                    </thead>
+                    <tbody>
+                      {reports.map((report: any) => (
                         <tr key={report.id} className="border-b hover:bg-muted/50">
                           <td className="px-6 py-4">
                             <Checkbox
@@ -1118,59 +1196,48 @@ export default function ReportsPage() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditReport(report)}
-                                disabled={isLoading}
-                                title="Modifier"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleSendExistingReport(report)}
-                                disabled={isLoading}
-                                title="Envoyer"
-                              >
-                                <Mail className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDownloadReport(report.id)}
-                                disabled={isLoading}
-                                title="Télécharger"
-                              >
-                                <Download className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteReport(report.id)}
-                                disabled={isLoading}
-                                title="Supprimer"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={isLoading}
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditReport(report)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Modifier
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendExistingReport(report)}>
+                                  <Mail className="mr-2 h-4 w-4" />
+                                  Envoyer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownloadReport(report.id)}>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Télécharger
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteReport(report.id)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
 
-                {/* Mobile view */}
-                <div className="md:hidden space-y-4">
-                  {reports.length === 0 ? (
-                    <div className="text-center text-sm text-muted-foreground py-8">
-                      Aucun rapport généré pour le moment
-                    </div>
-                  ) : (
-                    reports.map((report: any) => (
+                  {/* Mobile view */}
+                  <div className="md:hidden space-y-4">
+                    {reports.map((report: any) => (
                       <Card key={report.id}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
@@ -1230,56 +1297,49 @@ export default function ReportsPage() {
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditReport(report)}
-                              disabled={isLoading}
-                              className="flex-1 text-xs"
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Modifier
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleSendExistingReport(report)}
-                              disabled={isLoading}
-                              className="flex-1 text-xs"
-                            >
-                              <Mail className="h-3 w-3 mr-1" />
-                              Envoyer
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDownloadReport(report.id)}
-                              disabled={isLoading}
-                              className="flex-1 text-xs"
-                            >
-                              <Download className="h-3 w-3 mr-1" />
-                              Télécharger
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteReport(report.id)}
-                              disabled={isLoading}
-                              className="flex-1 text-xs"
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Supprimer
-                            </Button>
+                          <div className="flex justify-end mt-3">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={isLoading}
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditReport(report)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Modifier
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendExistingReport(report)}>
+                                  <Mail className="mr-2 h-4 w-4" />
+                                  Envoyer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownloadReport(report.id)}>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Télécharger
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteReport(report.id)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </CardContent>
                       </Card>
-                    ))
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </div>
 
           {/* Vue détaillée selon le type de rapport */}
           {reportType === "detailed" && detailedData.length > 0 && (
@@ -1601,6 +1661,76 @@ export default function ReportsPage() {
           )}
         </>
       )}
+
+      {/* Dialogue de confirmation pour suppression d'un rapport */}
+      <Dialog open={deleteConfirmDialogOpen} onOpenChange={setDeleteConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce rapport ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteReport}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <SpinnerCustom />
+                  Suppression...
+                </>
+              ) : (
+                'Supprimer'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialogue de confirmation pour suppression multiple */}
+      <Dialog open={deleteMultipleConfirmDialogOpen} onOpenChange={setDeleteMultipleConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer {selectedReportIds.length} rapport(s) ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteMultipleConfirmDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteSelectedReports}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <SpinnerCustom />
+                  Suppression...
+                </>
+              ) : (
+                `Supprimer ${selectedReportIds.length} rapport(s)`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

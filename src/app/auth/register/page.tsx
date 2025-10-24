@@ -14,6 +14,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
+// Note: dynamic='force-dynamic' supprimé pour compatibilité avec cacheComponents (PPR)
+// La page Client Component reste dynamique par nature
+
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

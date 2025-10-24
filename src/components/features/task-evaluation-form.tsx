@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { MinimalTiptap } from '@/components/ui/shadcn-io/minimal-tiptap';
 import { Button } from '@/components/ui/button';
 import { TrainingLevel, MasteryLevel, UnderstandingLevel } from '@prisma/client';
 
@@ -169,12 +170,12 @@ export function TaskEvaluationForm({
       {/* Notes */}
       <div className="space-y-2">
         <label className="text-sm font-medium">Notes d'Évaluation</label>
-        <Textarea
-          value={localNotes || ''}
-          onChange={(e) => setLocalNotes(e.target.value)}
+        <MinimalTiptap
+          content={localNotes || ''}
+          onChange={(content) => setLocalNotes(content)}
           placeholder="Ajouter des commentaires sur la performance et les domaines d'amélioration..."
-          disabled={isReadOnly}
-          rows={4}
+          editable={!isReadOnly}
+          className="min-h-[250px]"
         />
         <p className="text-xs text-slate-500">Observations et recommandations pour le collaborateur</p>
       </div>

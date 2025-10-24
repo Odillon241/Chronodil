@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MinimalTiptap } from "@/components/ui/shadcn-io/minimal-tiptap";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
@@ -66,6 +67,7 @@ export function ValidationDialog({
 }: ValidationDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<"APPROVED" | "REJECTED" | null>(null);
+  const [comment, setComment] = useState("");
 
   const isBulkMode = Boolean(entryIds && entryIds.length > 0);
 
@@ -92,7 +94,7 @@ export function ValidationDialog({
         const result = await bulkValidateEntries({
           entryIds,
           status: selectedStatus,
-          comment: data.comment,
+          comment: comment,
         });
 
         if (result?.data) {
@@ -103,6 +105,7 @@ export function ValidationDialog({
           );
           reset();
           setSelectedStatus(null);
+          setComment("");
           onComplete();
         }
       } else if (entry) {
@@ -110,7 +113,7 @@ export function ValidationDialog({
         const result = await validateTimesheetEntry({
           timesheetEntryId: entry.id,
           status: selectedStatus,
-          comment: data.comment,
+          comment: comment,
         });
 
         if (result?.data) {
@@ -119,6 +122,7 @@ export function ValidationDialog({
           );
           reset();
           setSelectedStatus(null);
+          setComment("");
           onComplete();
         }
       }
@@ -141,6 +145,7 @@ export function ValidationDialog({
   const handleClose = () => {
     reset();
     setSelectedStatus(null);
+    setComment("");
     onOpenChange(false);
   };
 
@@ -268,17 +273,14 @@ export function ValidationDialog({
               <Label htmlFor="comment" className="text-red-600">
                 Commentaire de rejet *
               </Label>
-              <Textarea
-                id="comment"
+              <MinimalTiptap
+                content={comment}
+                onChange={setComment}
                 placeholder="Expliquez pourquoi vous rejetez cette entrée..."
-                {...register("comment", {
-                  required: selectedStatus === "REJECTED" ? "Le commentaire est requis pour un rejet" : false,
-                })}
-                rows={4}
-                className="resize-none"
+                className="min-h-[200px]"
               />
-              {errors.comment && (
-                <p className="text-sm text-red-600">{errors.comment.message}</p>
+              {selectedStatus === "REJECTED" && !comment.trim() && (
+                <p className="text-sm text-red-600">Le commentaire est requis pour un rejet</p>
               )}
             </div>
           )}
@@ -291,6 +293,7 @@ export function ValidationDialog({
                 variant="outline"
                 onClick={() => {
                   setSelectedStatus(null);
+                  setComment("");
                   reset();
                 }}
                 disabled={isLoading}

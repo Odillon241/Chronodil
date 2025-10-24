@@ -20,13 +20,17 @@
       "Bash(timeout /t 3)",
       "Bash(npx tsc:*)",
       "Bash(npx @next/codemod@canary next-async-request-api .)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(echo:*)",
+      "Read(//c/Users/nexon/AppData/Roaming/**)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "shadcn"
+    "shadcn",
+    "next-devtools"
   ]
 }

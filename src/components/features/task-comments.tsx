@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MinimalTiptap } from "@/components/ui/shadcn-io/minimal-tiptap";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Edit2, Trash2, Send } from "lucide-react";
@@ -187,11 +188,11 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
 
                   {editingId === comment.id ? (
                     <div className="space-y-2">
-                      <Textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="text-sm min-h-[80px]"
-                        autoFocus
+                      <MinimalTiptap
+                        content={editContent}
+                        onChange={(content) => setEditContent(content)}
+                        placeholder="Modifier votre commentaire..."
+                        className="text-sm min-h-[200px]"
                       />
                       <div className="flex gap-2">
                         <Button
@@ -212,9 +213,10 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-foreground break-words whitespace-pre-wrap">
-                        {comment.content}
-                      </p>
+                      <div
+                        className="text-sm text-foreground break-words prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: comment.content }}
+                      />
 
                       {comment.User.id === currentUserId && (
                         <div className="flex gap-2 mt-2">
@@ -249,12 +251,12 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
 
       {/* Formulaire nouveau commentaire */}
       <form onSubmit={handleSubmit} className="space-y-3 pt-4 border-t">
-        <Textarea
+        <MinimalTiptap
+          content={newComment}
+          onChange={(content) => setNewComment(content)}
           placeholder="Ajouter un commentaire..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="min-h-[100px]"
-          disabled={isLoading}
+          className="min-h-[200px]"
+          editable={!isLoading}
         />
         <div className="flex justify-between items-center">
           <span className="text-xs text-muted-foreground">
