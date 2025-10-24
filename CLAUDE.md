@@ -3,7 +3,51 @@
 ## Build Status
 ✅ Build successful - No syntax errors detected
 ✅ TypeScript check passed
-✅ All pages compile successfully
+✅ All pages compile successfully (25 pages)
+
+## Tech Stack
+- **Next.js**: 16.0.0 (Turbopack enabled by default)
+- **React**: 19.2.0
+- **TypeScript**: 5.9.3
+- **Node.js**: 20.9.0+ (minimum required)
+- **next-intl**: 4.4.0 (internationalization)
+- **Prisma**: 6.17.1 (ORM)
+
+## Next.js 16 Features & Optimizations
+
+### Active Performance Optimizations
+
+1. **⚡ React Compiler** (Stable)
+   - Status: **ENABLED** in `next.config.js`
+   - Feature: Automatic memoization of components
+   - Benefit: Reduces unnecessary re-renders with zero manual code changes
+   - Package: `babel-plugin-react-compiler@1.0.0`
+
+2. **🚀 Turbopack** (Stable - Default Bundler)
+   - Status: **ENABLED BY DEFAULT**
+   - Speed: 5-10x faster Fast Refresh, 2-5x faster builds
+   - No configuration needed - replaces Webpack
+
+3. **💾 Turbopack Filesystem Caching**
+   - Status: **ENABLED** in `next.config.js`
+   - Feature: Stores compiler artifacts on disk between runs
+   - Benefit: Significantly faster compile times across dev server restarts
+
+### Breaking Changes from Next.js 15
+
+1. **Async Dynamic APIs** ✅ HANDLED
+   - `params`, `searchParams`, `cookies()`, `headers()` require `await`
+   - All instances verified with Next.js codemod
+   - TypeScript types updated accordingly
+
+2. **middleware.ts → proxy.ts**
+   - Status: **Using middleware.ts** (still supported in Next.js 16)
+   - Migration optional - current setup works fine
+   - `proxy.ts` runs on Node.js runtime only (no Edge runtime)
+
+3. **Node.js & TypeScript Requirements**
+   - Node.js: ≥20.9.0 (Node 18 not supported)
+   - TypeScript: ≥5.1.0
 
 ## Known Issues & Solutions
 
@@ -53,7 +97,26 @@ Si vous rencontrez des erreurs Prisma similaires:
    pnpm prisma migrate dev --name descriptive_name
    ```
 
+## Development Commands
+
+```bash
+# Development (uses Turbopack by default)
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+
+# Database management
+pnpm db:studio     # Open Prisma Studio
+pnpm db:push       # Push schema changes
+pnpm db:migrate    # Run migrations
+```
+
 ## Development Notes
-- Next.js version: 15.5.4
-- Build output: 24 pages generated successfully
+- Build output: 25 pages generated successfully
 - All TypeScript types valid
+- React Compiler enabled for automatic optimization
+- Turbopack filesystem caching improves dev server restart speed
