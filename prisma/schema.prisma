@@ -381,6 +381,10 @@ model Task {
   @@index([priority])
   @@index([complexity])
   @@index([evaluatedBy])
+  // ⚡ Index composites pour optimiser les filtres de tâches
+  @@index([status, priority])
+  @@index([projectId, status])
+  @@index([createdBy, status])
 }
 
 model TaskMember {
@@ -459,6 +463,10 @@ model TimesheetEntry {
   @@index([status])
   @@index([taskId])
   @@index([userId])
+  // ⚡ Index composites pour optimiser les requêtes du dashboard
+  @@index([userId, date])
+  @@index([projectId, status])
+  @@index([userId, status])
 }
 
 model TimesheetValidation {

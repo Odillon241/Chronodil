@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { MinimalTiptap } from '@/components/ui/shadcn-io/minimal-tiptap';
+import { MinimalTiptap } from '@/components/ui/minimal-tiptap-dynamic';
 import { Button } from '@/components/ui/button';
 import { TrainingLevel, MasteryLevel, UnderstandingLevel } from '@prisma/client';
 

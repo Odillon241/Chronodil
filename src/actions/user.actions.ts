@@ -6,8 +6,9 @@ type ActionContext = {
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
+import { CacheTags } from "@/lib/cache";
 
 // Récupérer le profil de l'utilisateur connecté
 export const getMyProfile = authActionClient
@@ -76,6 +77,7 @@ export const updateMyProfile = authActionClient
 
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard");
+    revalidateTag(CacheTags.USERS);
     return user;
   });
 
@@ -197,6 +199,7 @@ export const createUser = authActionClient
 
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard/settings/users");
+    revalidateTag(CacheTags.USERS);
     return user;
   });
 
@@ -431,6 +434,7 @@ export const deleteUser = authActionClient
     });
 
     revalidatePath("/dashboard/settings/users");
+    revalidateTag(CacheTags.USERS);
     return { success: true, message: "Utilisateur supprimé avec succès" };
   });
 
@@ -522,6 +526,7 @@ export const resetUserPassword = authActionClient
     await prisma.user.delete({ where: { id: tempUser.id } });
 
     revalidatePath("/dashboard/settings/users");
+    revalidateTag(CacheTags.USERS);
     return {
       success: true,
       message: "Mot de passe réinitialisé avec succès",

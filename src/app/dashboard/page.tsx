@@ -9,7 +9,7 @@ import { TimesheetAreaChart } from "@/components/features/timesheet-area-chart";
 import { ProjectDistributionChart } from "@/components/features/project-distribution-chart";
 import { StatCardWithComparison } from "@/components/features/stat-card-with-comparison";
 import { WeeklyGoalSettings } from "@/components/features/weekly-goal-settings";
-import { getTranslations } from "next-intl/server";
+import { getTranslations } from "@/lib/i18n";
 
 async function getDashboardData(userId: string) {
   try {
@@ -21,41 +21,96 @@ async function getDashboardData(userId: string) {
     const prevWeekEnd = endOfDay(subWeeks(weekEnd, 1));
     const monthStart = startOfDay(startOfMonth(now));
     const monthEnd = endOfDay(endOfMonth(now));
+    const ninetyDaysAgo = startOfDay(subDays(now, 90));
 
-  // Récupérer l'objectif hebdomadaire de l'utilisateur
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { weeklyGoal: true },
-  });
+  // 🚀 PARALLÉLISATION : Exécuter toutes les requêtes en même temps !
+  const [
+    user,
+    weekEntries,
+    prevWeekEntries,
+    monthEntries,
+    recentEntries,
+    projectsData,
+    dailyEntries,
+    areaChartEntries,
+  ] = await Promise.all([
+    // 1. Objectif hebdomadaire
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { weeklyGoal: true },
+    }),
+    // 2. Semaine actuelle
+    prisma.timesheetEntry.findMany({
+      where: {
+        userId,
+        date: { gte: weekStart, lte: weekEnd },
+      },
+    }),
+    // 3. Semaine précédente
+    prisma.timesheetEntry.findMany({
+      where: {
+        userId,
+        date: { gte: prevWeekStart, lte: prevWeekEnd },
+      },
+    }),
+    // 4. Mois actuel
+    prisma.timesheetEntry.findMany({
+      where: {
+        userId,
+        date: { gte: monthStart, lte: monthEnd },
+      },
+    }),
+    // 5. Entrées récentes
+    prisma.timesheetEntry.findMany({
+      where: { userId },
+      include: {
+        Project: true,
+        Task: true,
+      },
+      orderBy: { date: "desc" },
+      take: 5,
+    }),
+    // 6. Répartition par projet
+    prisma.timesheetEntry.groupBy({
+      by: ["projectId"],
+      where: {
+        userId,
+        date: { gte: weekStart, lte: weekEnd },
+      },
+      _sum: {
+        duration: true,
+      },
+    }),
+    // 7. Données journalières (radar)
+    prisma.timesheetEntry.groupBy({
+      by: ["date"],
+      where: {
+        userId,
+        date: { gte: weekStart, lte: weekEnd },
+      },
+      _sum: {
+        duration: true,
+      },
+    }),
+    // 8. Données 90 jours (area chart)
+    prisma.timesheetEntry.groupBy({
+      by: ["date"],
+      where: {
+        userId,
+        date: { gte: ninetyDaysAgo, lte: endOfDay(now) },
+      },
+      _sum: {
+        duration: true,
+      },
+      orderBy: {
+        date: "asc",
+      },
+    }),
+  ]);
+
   const weeklyGoal = user?.weeklyGoal || 40;
-
-  // Stats de la semaine actuelle
-  const weekEntries = await prisma.timesheetEntry.findMany({
-    where: {
-      userId,
-      date: { gte: weekStart, lte: weekEnd },
-    },
-  });
-
   const weekHours = weekEntries.reduce((sum, entry) => sum + entry.duration, 0);
-
-  // Stats de la semaine précédente (pour comparaison)
-  const prevWeekEntries = await prisma.timesheetEntry.findMany({
-    where: {
-      userId,
-      date: { gte: prevWeekStart, lte: prevWeekEnd },
-    },
-  });
-
   const prevWeekHours = prevWeekEntries.reduce((sum, entry) => sum + entry.duration, 0);
-
-  // Stats du mois
-  const monthEntries = await prisma.timesheetEntry.findMany({
-    where: {
-      userId,
-      date: { gte: monthStart, lte: monthEnd },
-    },
-  });
 
   const approvedHours = monthEntries
     .filter((e) => e.status === "APPROVED")
@@ -65,35 +120,12 @@ async function getDashboardData(userId: string) {
     .filter((e) => e.status === "SUBMITTED")
     .reduce((sum, entry) => sum + entry.duration, 0);
 
-  // Entrées récentes
-  const recentEntries = await prisma.timesheetEntry.findMany({
-    where: { userId },
-    include: {
-      Project: true,
-      Task: true,
-    },
-    orderBy: { date: "desc" },
-    take: 5,
-  });
-
-  // Répartition par projet (cette semaine) - Optimized with single query
-  const projectsData = await prisma.timesheetEntry.groupBy({
-    by: ["projectId"],
-    where: {
-      userId,
-      date: { gte: weekStart, lte: weekEnd },
-    },
-    _sum: {
-      duration: true,
-    },
-  });
-
-  // Fetch all projects in a single query (filter out null projectIds)
+  // Fetch projects en parallèle
   const projectIds = projectsData
     .map(item => item.projectId)
     .filter((id): id is string => id !== null);
-  
-  const projects = projectIds.length > 0 
+
+  const projects = projectIds.length > 0
     ? await prisma.project.findMany({
         where: { id: { in: projectIds } },
         select: { id: true, name: true, color: true },
@@ -117,19 +149,7 @@ async function getDashboardData(userId: string) {
   const daysOfWeek = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
   const dailyTarget = 8; // 8h par jour
 
-  // Group entries by day in a single aggregation query
-  const dailyEntries = await prisma.timesheetEntry.groupBy({
-    by: ["date"],
-    where: {
-      userId,
-      date: { gte: weekStart, lte: weekEnd },
-    },
-    _sum: {
-      duration: true,
-    },
-  });
-
-  // Create a map of date -> total hours
+  // Traiter les dailyEntries (déjà fetchés en parallèle)
   const dailyHoursMap = new Map<string, number>();
   dailyEntries.forEach((entry) => {
     const dateKey = format(new Date(entry.date), "yyyy-MM-dd");
@@ -148,23 +168,7 @@ async function getDashboardData(userId: string) {
     };
   });
 
-  // Données pour le graphique area (90 derniers jours)
-  const ninetyDaysAgo = startOfDay(subDays(now, 90));
-  const areaChartEntries = await prisma.timesheetEntry.groupBy({
-    by: ["date"],
-    where: {
-      userId,
-      date: { gte: ninetyDaysAgo, lte: endOfDay(now) },
-    },
-    _sum: {
-      duration: true,
-    },
-    orderBy: {
-      date: "asc",
-    },
-  });
-
-  // Créer un tableau avec tous les jours (même ceux sans données)
+  // Traiter les areaChartEntries (déjà fetchés en parallèle)
   const areaChartData = [];
   for (let i = 0; i <= 90; i++) {
     const currentDate = subDays(now, 90 - i);

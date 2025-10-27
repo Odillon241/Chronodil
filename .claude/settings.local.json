@@ -23,7 +23,10 @@
       "Bash(node:*)",
       "Bash(echo:*)",
       "Read(//c/Users/nexon/AppData/Roaming/**)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(del:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm dev)"
     ],
     "deny": [],
     "ask": []

@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MinimalTiptap } from "@/components/ui/shadcn-io/minimal-tiptap";
+import { MinimalTiptap } from "@/components/ui/minimal-tiptap-dynamic";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";

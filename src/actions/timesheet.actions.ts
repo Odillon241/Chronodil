@@ -7,8 +7,9 @@ type ActionContext = {
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
 import { timesheetEntrySchema, timesheetValidationSchema } from "@/lib/validations/timesheet";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
+import { CacheTags } from "@/lib/cache";
 import {
   validateTimesheetEntry,
   suggestTimeType,
@@ -88,6 +89,7 @@ export const createTimesheetEntry = authActionClient
     });
 
     revalidatePath("/dashboard/timesheet");
+    revalidateTag(CacheTags.TIMESHEETS);
     return {
       ...entry,
       warnings: validation.warnings,
@@ -217,6 +219,7 @@ export const updateTimesheetEntry = authActionClient
     });
 
     revalidatePath("/dashboard/timesheet");
+    revalidateTag(CacheTags.TIMESHEETS);
     return {
       ...entry,
       warnings: validation.warnings,
@@ -248,6 +251,7 @@ export const deleteTimesheetEntry = authActionClient
     });
 
     revalidatePath("/dashboard/timesheet");
+    revalidateTag(CacheTags.TIMESHEETS);
     return { success: true };
   });
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MinimalTiptap } from "@/components/ui/shadcn-io/minimal-tiptap";
+import { MinimalTiptap } from "@/components/ui/minimal-tiptap-dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Edit2, Trash2, Send } from "lucide-react";

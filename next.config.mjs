@@ -1,4 +1,9 @@
-const withNextIntl = require('next-intl/plugin')();
+// ⚡ Plugin next-intl restauré avec configuration STATIQUE compatible Cache Components
+// Le fichier src/i18n.ts charge la locale 'fr' de manière statique (pas de cookies/headers)
+
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -7,10 +12,11 @@ const nextConfig = {
   // ⚡ React Compiler - Mémoïsation automatique des composants (Next.js 16)
   reactCompiler: true,
 
-  // 🎯 Partial Pre-Rendering - Rendu hybride statique/dynamique (Next.js 16)
-  // Note: Désactivé temporairement - nécessite de wrapper les données non-cachées dans <Suspense>
-  // TODO: Activer après refactoring des pages pour utiliser <Suspense>
-  // cacheComponents: true,
+  // 🎯 Cache Components - Rendu hybride statique/dynamique (Next.js 16)
+  // ✅ ACTIVÉ - Migration vers système i18n custom compatible
+  // next-intl utilisé uniquement pour NextIntlClientProvider (client-side)
+  // Chargement des messages géré par src/lib/i18n.ts (compatible Cache Components)
+  cacheComponents: true,
 
   experimental: {
     serverActions: {
@@ -44,4 +50,4 @@ const nextConfig = {
   },
 }
 
-module.exports = withNextIntl(nextConfig)
+export default withNextIntl(nextConfig);

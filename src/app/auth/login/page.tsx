@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   console.log("LoginPage rendered");
 
   const {
@@ -177,7 +177,7 @@ export default function LoginPage() {
       
       {/* Pied de page avec copyright */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
-        <span>&copy; {new Date().getFullYear()} by </span>
+        <span>&copy; 2025 by </span>
         <Image
           src="/assets/media/logo d'odillon corrigé.png"
           alt="ODILLON Logo"

@@ -75,6 +75,8 @@ import type { Project } from "@/types/project.types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSession } from "@/lib/auth-client";
 import { ProjectHealthIndicator } from "@/components/features/project-health-indicator";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
+import { StatusTabs } from "@/components/ui/status-menubar";
 
 type ViewMode = "grid" | "list";
 type SortField = "name" | "code" | "createdAt" | "budgetHours" | "progress";
@@ -846,24 +848,46 @@ export default function ProjectsPage() {
         </Card>
       </div>
 
-      {/* Filters and View Controls */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 items-center gap-2">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t("searchPlaceholder")}
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+      {/* Nouveaux composants de filtre */}
+      <div className="space-y-4">
+        {/* Filtres de recherche et période */}
+        <FilterButtonGroup
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          filterOptions={[
+            { id: 'department', label: 'Département', value: 'department' },
+            { id: 'status', label: 'Statut', value: 'status' },
+            { id: 'date', label: 'Date', value: 'date' },
+          ]}
+          selectedFilter={filterDepartment}
+          onFilterChange={setFilterDepartment}
+          startDate={filterStartDate}
+          endDate={filterEndDate}
+          onDateChange={(start, end) => {
+            setFilterStartDate(start);
+            setFilterEndDate(end);
+          }}
+          placeholder="Rechercher un projet..."
+        />
 
+        {/* Onglets de statut */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <StatusTabs
+            options={[
+              { id: 'active', label: 'Actifs', value: 'active', count: stats.activeProjects },
+              { id: 'inactive', label: 'Archivés', value: 'inactive', count: stats.totalProjects - stats.activeProjects },
+              { id: 'all', label: 'Tous', value: 'all', count: stats.totalProjects },
+            ]}
+            selectedValue={filterStatus}
+            onValueChange={setFilterStatus}
+          />
+
+          {/* Filtres de département */}
+          <div className="flex flex-col sm:flex-row gap-2">
             <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder={t("department")} />
+                <SelectValue placeholder="Département" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les départements</SelectItem>
@@ -874,51 +898,22 @@ export default function ProjectsPage() {
                 ))}
               </SelectContent>
             </Select>
-
-            <div className="flex rounded-lg border p-1">
-              <button
-                onClick={() => setFilterStatus("active")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                  filterStatus === "active"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Actifs
-              </button>
-              <button
-                onClick={() => setFilterStatus("inactive")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                  filterStatus === "inactive"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Archivés
-              </button>
-              <button
-                onClick={() => setFilterStatus("all")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                  filterStatus === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Tous
-              </button>
-            </div>
           </div>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              disabled={processedProjects.length === 0}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Exporter CSV
-            </Button>
+      {/* Actions et contrôles de vue */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={processedProjects.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Exporter CSV
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -946,69 +941,26 @@ export default function ProjectsPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <div className="flex items-center border rounded-md">
-            <Button
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-          </div>
         </div>
 
-        {/* Date Range Filters */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Label htmlFor="filter-start-date" className="text-sm text-muted-foreground">
-              Date de début:
-            </Label>
-            <Input
-              id="filter-start-date"
-              type="date"
-              value={filterStartDate}
-              onChange={(e) => setFilterStartDate(e.target.value)}
-              className="w-[160px]"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Label htmlFor="filter-end-date" className="text-sm text-muted-foreground">
-              Date de fin:
-            </Label>
-            <Input
-              id="filter-end-date"
-              type="date"
-              value={filterEndDate}
-              onChange={(e) => setFilterEndDate(e.target.value)}
-              className="w-[160px]"
-            />
-          </div>
-          {(filterStartDate || filterEndDate) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setFilterStartDate("");
-                setFilterEndDate("");
-              }}
-            >
-              <XCircle className="mr-2 h-4 w-4" />
-              Réinitialiser dates
-            </Button>
-          )}
+        <div className="flex items-center border rounded-md">
+          <Button
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+          >
+            <Grid3x3 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === "list" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+          >
+            <List className="h-4 w-4" />
+          </Button>
         </div>
       </div>
+
 
       {/* Projects Display */}
       {processedProjects.length === 0 ? (

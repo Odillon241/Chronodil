@@ -2,9 +2,10 @@
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
+import { CacheTags } from "@/lib/cache";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -64,7 +65,9 @@ export const createProject = authActionClient
       )
     );
 
+    // Invalider le cache des projets
     revalidatePath("/dashboard/projects");
+    revalidateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -209,6 +212,7 @@ export const updateProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
+    revalidateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -243,6 +247,7 @@ export const archiveProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
+    revalidateTag(CacheTags.PROJECTS);
     return project;
   });
 
