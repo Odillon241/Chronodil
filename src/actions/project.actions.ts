@@ -67,7 +67,7 @@ export const createProject = authActionClient
 
     // Invalider le cache des projets
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS);
+    revalidateTag(CacheTags.PROJECTS, 'max');
     return project;
   });
 
@@ -212,7 +212,7 @@ export const updateProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS);
+    revalidateTag(CacheTags.PROJECTS, 'max');
     return project;
   });
 
@@ -247,7 +247,7 @@ export const archiveProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS);
+    revalidateTag(CacheTags.PROJECTS, 'max');
     return project;
   });
 

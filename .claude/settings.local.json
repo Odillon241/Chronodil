@@ -26,7 +26,8 @@
       "Bash(dir:*)",
       "Bash(del:*)",
       "Bash(cat:*)",
-      "Bash(pnpm dev)"
+      "Bash(pnpm dev)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

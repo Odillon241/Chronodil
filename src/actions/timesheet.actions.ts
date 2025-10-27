@@ -89,7 +89,7 @@ export const createTimesheetEntry = authActionClient
     });
 
     revalidatePath("/dashboard/timesheet");
-    revalidateTag(CacheTags.TIMESHEETS);
+    revalidateTag(CacheTags.TIMESHEETS, 'max');
     return {
       ...entry,
       warnings: validation.warnings,
@@ -219,7 +219,7 @@ export const updateTimesheetEntry = authActionClient
     });
 
     revalidatePath("/dashboard/timesheet");
-    revalidateTag(CacheTags.TIMESHEETS);
+    revalidateTag(CacheTags.TIMESHEETS, 'max');
     return {
       ...entry,
       warnings: validation.warnings,
@@ -251,7 +251,7 @@ export const deleteTimesheetEntry = authActionClient
     });
 
     revalidatePath("/dashboard/timesheet");
-    revalidateTag(CacheTags.TIMESHEETS);
+    revalidateTag(CacheTags.TIMESHEETS, 'max');
     return { success: true };
   });
 
