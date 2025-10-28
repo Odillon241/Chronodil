@@ -55,7 +55,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = React.useState<string[]>([]);
+  const [mounted, setMounted] = React.useState(false);
   const t = useTranslations();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Navigation items - créés dynamiquement pour avoir accès aux traductions
   const navMain = [
@@ -172,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
                 })
                 .map((item) => {
-                const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
+                const isActive = mounted && (pathname === item.url || pathname.startsWith(item.url + "/"));
                 const hasItems = (item as any).items && (item as any).items.length > 0;
                 const isOpen = openMenus.includes(item.title);
 
@@ -199,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                               <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                   asChild
-                                  isActive={pathname === subItem.url}
+                                  isActive={mounted && pathname === subItem.url}
                                 >
                                   <Link href={subItem.url}>
                                     <span>{subItem.title}</span>
@@ -243,7 +248,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
                 })
                 .map((item) => {
-                  const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
+                  const isActive = mounted && (pathname === item.url || pathname.startsWith(item.url + "/"));
 
                   return (
                     <SidebarMenuItem key={item.title}>

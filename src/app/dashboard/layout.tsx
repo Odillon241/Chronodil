@@ -19,7 +19,7 @@ export default function DashboardLayout({
         <Suspense fallback={<div>Loading...</div>}>
           <AppSidebar />
         </Suspense>
-        <SidebarInset>
+        <SidebarInset className="flex flex-col h-screen overflow-hidden">
           <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
@@ -35,7 +35,7 @@ export default function DashboardLayout({
               </Suspense>
             </div>
           </header>
-          <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
+          <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
             {children}
           </main>
         </SidebarInset>

@@ -894,14 +894,14 @@ export default function HRTimesheetPage() {
           );
         }
         return (
-          <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-6">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 isolate">
               {currentTimesheets.map((timesheet) => (
                 <TimesheetCard key={timesheet.id} timesheet={timesheet} isPending={dataView === "pending"} />
               ))}
             </div>
             {dataView === "my" && currentTimesheets.length > 0 && (
-              <div className="mt-6">
+              <div className="isolate">
                 <HRTimesheetStatsChart
                   draft={currentTimesheets.filter((t) => t.status === "DRAFT").length}
                   pending={currentTimesheets.filter((t) => ["PENDING", "MANAGER_APPROVED"].includes(t.status)).length}
@@ -910,7 +910,7 @@ export default function HRTimesheetPage() {
                 />
               </div>
             )}
-          </>
+          </div>
         );
       case 'gantt':
         return timesheetsAsFeatures.length > 0 ? <GanttView /> : commonEmptyState;
