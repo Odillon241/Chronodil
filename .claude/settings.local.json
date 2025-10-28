@@ -27,7 +27,9 @@
       "Bash(del:*)",
       "Bash(cat:*)",
       "Bash(pnpm dev)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(timeout /t 30)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
