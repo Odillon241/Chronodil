@@ -368,17 +368,20 @@ export const CalendarBody: FC<CalendarBodyProps> = ({
 export type CalendarItemProps = {
   feature: CalendarFeature;
   className?: string;
+  onClick?: () => void;
 };
 
 export const CalendarItem: FC<CalendarItemProps> = ({
   feature,
   className,
+  onClick,
 }) => (
   <div
     className={cn(
       'cursor-pointer truncate rounded px-2 py-1 text-xs hover:opacity-80',
       className
     )}
+    onClick={onClick}
     style={{
       backgroundColor: feature.status.color,
     }}

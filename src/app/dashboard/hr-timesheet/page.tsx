@@ -27,7 +27,11 @@ import {
   getHRTimesheetsForApproval,
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Menubar,
+  MenubarMenu,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
 import { HRTimesheetStatsChart } from "@/components/features/hr-timesheet-stats-chart";
 import {
   CalendarBody,
@@ -46,6 +50,7 @@ import {
   GanttFeatureList,
   GanttFeatureListGroup,
   GanttHeader,
+  GanttMarker,
   GanttProvider,
   GanttSidebar,
   GanttSidebarGroup,
@@ -81,6 +86,7 @@ import {
 } from '@/components/ui/shadcn-io/table';
 import groupBy from 'lodash.groupby';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 interface HRTimesheet {
   id: string;
@@ -128,7 +134,7 @@ export default function HRTimesheetPage() {
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [currentTab, setCurrentTab] = useState<string>("cards");
+  const [currentView, setCurrentView] = useState<string>("cards");
   const [dataView, setDataView] = useState<"my" | "pending">("my");
 
   const [filters, setFilters] = useState({
@@ -463,7 +469,8 @@ export default function HRTimesheetPage() {
 
   // Vues roadmap
   const GanttView = () => {
-    const groupedFeatures = groupBy(timesheetsAsFeatures, 'group.name');
+    const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const groupedFeatures = groupBy(features, 'group.name');
     const sortedGroupedFeatures = Object.fromEntries(
       Object.entries(groupedFeatures).sort(([nameA], [nameB]) =>
         nameA.localeCompare(nameB)
@@ -474,11 +481,50 @@ export default function HRTimesheetPage() {
       router.push(`/dashboard/hr-timesheet/${id}`);
     };
 
+    const handleMoveFeature = (id: string, startAt: Date, endAt: Date | null) => {
+      if (!endAt) return;
+
+      setFeatures((prev) =>
+        prev.map((feature) =>
+          feature.id === id ? { ...feature, startAt, endAt } : feature
+        )
+      );
+
+      toast.info("Déplacement visuel uniquement", {
+        description: "Les dates ne sont pas sauvegardées en base de données",
+      });
+    };
+
+    // Markers d'exemple (milestones)
+    const exampleMarkers = useMemo(() => [
+      {
+        id: 'marker-1',
+        date: new Date(),
+        label: 'Aujourd\'hui',
+        className: 'bg-blue-100 text-blue-900',
+      },
+    ], []);
+
+    const handleRemoveMarker = (id: string) => {
+      console.log('Remove marker:', id);
+    };
+
+    const handleCreateMarker = (date: Date) => {
+      toast.info("Création de marqueur", {
+        description: `Marqueur créé pour le ${format(date, "dd/MM/yyyy", { locale: fr })}`,
+      });
+    };
+
     return (
       <GanttProvider
         className="rounded-none border-none"
         range="monthly"
         zoom={100}
+        onAddItem={(date) => {
+          toast.info("Ajout d'item", {
+            description: `Item ajouté pour le ${format(date, "dd/MM/yyyy", { locale: fr })}`,
+          });
+        }}
       >
         <GanttSidebar>
           {Object.entries(sortedGroupedFeatures).map(([group, features]) => (
@@ -505,7 +551,10 @@ export default function HRTimesheetPage() {
                       type="button"
                       className="w-full"
                     >
-                      <GanttFeatureItem {...feature}>
+                      <GanttFeatureItem
+                        {...feature}
+                        onMove={handleMoveFeature}
+                      >
                         <p className="flex-1 truncate text-xs">
                           {feature.name}
                         </p>
@@ -525,7 +574,15 @@ export default function HRTimesheetPage() {
               </GanttFeatureListGroup>
             ))}
           </GanttFeatureList>
+          {exampleMarkers.map((marker) => (
+            <GanttMarker
+              key={marker.id}
+              {...marker}
+              onRemove={handleRemoveMarker}
+            />
+          ))}
           <GanttToday />
+          <GanttCreateMarkerTrigger onCreateMarker={handleCreateMarker} />
         </GanttTimeline>
       </GanttProvider>
     );
@@ -547,6 +604,7 @@ export default function HRTimesheetPage() {
             feature={feature}
             key={feature.id}
             className="cursor-pointer"
+            onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}`)}
           />
         )}
       </CalendarBody>
@@ -571,6 +629,10 @@ export default function HRTimesheetPage() {
           return feature;
         })
       );
+
+      toast.info("Changement de statut visuel", {
+        description: "Le statut n'est pas sauvegardé en base de données",
+      });
     };
 
     return (
@@ -634,6 +696,10 @@ export default function HRTimesheetPage() {
           return feature;
         })
       );
+
+      toast.info("Changement de statut visuel", {
+        description: "Le statut n'est pas sauvegardé en base de données",
+      });
     };
 
     return (
@@ -794,6 +860,73 @@ export default function HRTimesheetPage() {
     { id: 'table', label: 'Tableau', icon: TableIcon },
   ];
 
+  const renderCurrentView = () => {
+    const commonEmptyState = (
+      <div className="flex h-full items-center justify-center text-muted-foreground">
+        Aucune donnée à afficher
+      </div>
+    );
+
+    const commonLoadingState = (
+      <div className="flex h-full items-center justify-center text-muted-foreground">
+        Chargement...
+      </div>
+    );
+
+    switch (currentView) {
+      case 'cards':
+        if (isLoading) return commonLoadingState;
+        if (currentTimesheets.length === 0) {
+          return (
+            <div className="text-center py-12 border rounded-lg bg-muted/30">
+              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground">Aucun timesheet trouvé</p>
+              {dataView === "my" && (
+                <Button
+                  onClick={() => router.push("/dashboard/hr-timesheet/new")}
+                  className="mt-4 bg-primary hover:bg-primary"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Créer mon premier timesheet
+                </Button>
+              )}
+            </div>
+          );
+        }
+        return (
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {currentTimesheets.map((timesheet) => (
+                <TimesheetCard key={timesheet.id} timesheet={timesheet} isPending={dataView === "pending"} />
+              ))}
+            </div>
+            {dataView === "my" && currentTimesheets.length > 0 && (
+              <div className="mt-6">
+                <HRTimesheetStatsChart
+                  draft={currentTimesheets.filter((t) => t.status === "DRAFT").length}
+                  pending={currentTimesheets.filter((t) => ["PENDING", "MANAGER_APPROVED"].includes(t.status)).length}
+                  approved={currentTimesheets.filter((t) => t.status === "APPROVED").length}
+                  rejected={currentTimesheets.filter((t) => t.status === "REJECTED").length}
+                />
+              </div>
+            )}
+          </>
+        );
+      case 'gantt':
+        return timesheetsAsFeatures.length > 0 ? <GanttView /> : commonEmptyState;
+      case 'calendar':
+        return timesheetsAsFeatures.length > 0 ? <CalendarViewContent /> : commonEmptyState;
+      case 'list':
+        return timesheetsAsFeatures.length > 0 ? <ListViewContent /> : commonEmptyState;
+      case 'kanban':
+        return timesheetsAsFeatures.length > 0 ? <KanbanViewContent /> : commonEmptyState;
+      case 'table':
+        return timesheetsAsFeatures.length > 0 ? <TableViewContent /> : commonEmptyState;
+      default:
+        return commonEmptyState;
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-4 sm:gap-6 overflow-hidden">
       {/* En-tête */}
@@ -814,7 +947,7 @@ export default function HRTimesheetPage() {
           </Button>
         </div>
 
-        {/* Sélecteur de données et vues */}
+        {/* Sélecteur de données */}
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
           <div className="flex gap-2">
             <Button
@@ -928,118 +1061,33 @@ export default function HRTimesheetPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Menubar pour sélection de vues */}
+        <div className="flex items-center justify-center">
+          <Menubar className="w-auto">
+            {views.map((view) => (
+              <MenubarMenu key={view.id}>
+                <MenubarTrigger
+                  className={cn(
+                    "flex items-center gap-2 cursor-pointer",
+                    currentView === view.id && "bg-accent"
+                  )}
+                  onClick={() => setCurrentView(view.id)}
+                >
+                  <view.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{view.label}</span>
+                </MenubarTrigger>
+              </MenubarMenu>
+            ))}
+          </Menubar>
+        </div>
       </div>
 
-      {/* Contenu avec vues multiples */}
+      {/* Contenu des vues */}
       <div className="flex-1 overflow-hidden px-4 sm:px-0">
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="flex h-full flex-col">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6">
-            {views.map((view) => (
-              <TabsTrigger key={view.id} value={view.id} className="gap-2">
-                <view.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{view.label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {/* Vue Cartes (par défaut) */}
-          <TabsContent value="cards" className="flex-1 overflow-auto mt-4">
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Chargement...
-              </div>
-            ) : currentTimesheets.length === 0 ? (
-              <div className="text-center py-12 border rounded-lg bg-muted/30">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Aucun timesheet trouvé</p>
-                {dataView === "my" && (
-                  <Button
-                    onClick={() => router.push("/dashboard/hr-timesheet/new")}
-                    className="mt-4 bg-primary hover:bg-primary"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Créer mon premier timesheet
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {currentTimesheets.map((timesheet) => (
-                    <TimesheetCard key={timesheet.id} timesheet={timesheet} isPending={dataView === "pending"} />
-                  ))}
-                </div>
-
-                {/* Graphique des statistiques */}
-                {dataView === "my" && currentTimesheets.length > 0 && (
-                  <div className="mt-6">
-                    <HRTimesheetStatsChart
-                      draft={currentTimesheets.filter((t) => t.status === "DRAFT").length}
-                      pending={currentTimesheets.filter((t) => ["PENDING", "MANAGER_APPROVED"].includes(t.status)).length}
-                      approved={currentTimesheets.filter((t) => t.status === "APPROVED").length}
-                      rejected={currentTimesheets.filter((t) => t.status === "REJECTED").length}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </TabsContent>
-
-          {/* Vue Gantt */}
-          <TabsContent value="gantt" className="flex-1 overflow-hidden mt-4">
-            {timesheetsAsFeatures.length > 0 ? (
-              <GanttView />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                Aucune donnée à afficher
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Vue Calendar */}
-          <TabsContent value="calendar" className="flex-1 overflow-hidden mt-4">
-            {timesheetsAsFeatures.length > 0 ? (
-              <CalendarViewContent />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                Aucune donnée à afficher
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Vue List */}
-          <TabsContent value="list" className="flex-1 overflow-hidden mt-4">
-            {timesheetsAsFeatures.length > 0 ? (
-              <ListViewContent />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                Aucune donnée à afficher
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Vue Kanban */}
-          <TabsContent value="kanban" className="flex-1 overflow-hidden mt-4">
-            {timesheetsAsFeatures.length > 0 ? (
-              <KanbanViewContent />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                Aucune donnée à afficher
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Vue Table */}
-          <TabsContent value="table" className="flex-1 overflow-hidden mt-4">
-            {timesheetsAsFeatures.length > 0 ? (
-              <TableViewContent />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                Aucune donnée à afficher
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+        <div className="h-full overflow-auto">
+          {renderCurrentView()}
+        </div>
       </div>
 
       <ConfirmationDialog />
