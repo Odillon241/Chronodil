@@ -139,8 +139,8 @@ export default function HRTimesheetPage() {
 
   const [filters, setFilters] = useState({
     status: "all",
-    startDate: startOfMonth(new Date()),
-    endDate: endOfMonth(new Date()),
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
   });
 
   const loadMyTimesheets = useCallback(async () => {
@@ -148,8 +148,8 @@ export default function HRTimesheetPage() {
       setIsLoading(true);
       const result = await getMyHRTimesheets({
         ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
-        weekStartDate: filters.startDate,
-        weekEndDate: filters.endDate,
+        ...(filters.startDate && { weekStartDate: filters.startDate }),
+        ...(filters.endDate && { weekEndDate: filters.endDate }),
       });
 
       if (result?.data) {
@@ -261,8 +261,8 @@ export default function HRTimesheetPage() {
   const resetFilters = () => {
     setFilters({
       status: "all",
-      startDate: startOfMonth(new Date()),
-      endDate: endOfMonth(new Date()),
+      startDate: undefined,
+      endDate: undefined,
     });
   };
 
@@ -1015,14 +1015,14 @@ export default function HRTimesheetPage() {
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="w-full justify-start">
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {format(filters.startDate, "dd/MM/yyyy", { locale: fr })}
+                          {filters.startDate ? format(filters.startDate, "dd/MM/yyyy", { locale: fr }) : "Sélectionner..."}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent>
                         <Calendar
                           mode="single"
                           selected={filters.startDate}
-                          onSelect={(d) => d && setFilters({ ...filters, startDate: d })}
+                          onSelect={(d) => setFilters({ ...filters, startDate: d })}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1034,14 +1034,14 @@ export default function HRTimesheetPage() {
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="w-full justify-start">
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {format(filters.endDate, "dd/MM/yyyy", { locale: fr })}
+                          {filters.endDate ? format(filters.endDate, "dd/MM/yyyy", { locale: fr }) : "Sélectionner..."}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent>
                         <Calendar
                           mode="single"
                           selected={filters.endDate}
-                          onSelect={(d) => d && setFilters({ ...filters, endDate: d })}
+                          onSelect={(d) => setFilters({ ...filters, endDate: d })}
                         />
                       </PopoverContent>
                     </Popover>
