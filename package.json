@@ -94,6 +94,7 @@
     "@tiptap/react": "^3.7.2",
     "@tiptap/starter-kit": "^3.7.2",
     "@types/bcrypt": "^6.0.0",
+    "@types/lodash.groupby": "^4.6.9",
     "@types/node": "^22.18.12",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
@@ -145,7 +146,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@types/lodash.groupby": "^4.6.9",
     "@types/lodash.throttle": "^4.1.9",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv": "^17.2.3",

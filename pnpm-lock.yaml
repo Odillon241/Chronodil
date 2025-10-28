@@ -221,6 +221,9 @@ importers:
       '@types/bcrypt':
         specifier: ^6.0.0
         version: 6.0.0
+      '@types/lodash.groupby':
+        specifier: ^4.6.9
+        version: 4.6.9
       '@types/node':
         specifier: ^22.18.12
         version: 22.18.12
@@ -369,9 +372,6 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(@types/react@19.2.2)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
     devDependencies:
-      '@types/lodash.groupby':
-        specifier: ^4.6.9
-        version: 4.6.9
       '@types/lodash.throttle':
         specifier: ^4.1.9
         version: 4.1.9
