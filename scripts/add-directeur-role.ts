@@ -15,7 +15,7 @@ async function addDirecteurRole() {
       );
     `;
 
-    const result = await prisma.$queryRawUnsafe<[{ exists: boolean }]>(checkQuery);
+    const result = await prisma.$queryRawUnsafe(checkQuery) as [{ exists: boolean }];
 
     if (result[0]?.exists) {
       console.log("✅ Le rôle DIRECTEUR existe déjà dans l'enum Role");

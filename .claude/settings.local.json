@@ -29,7 +29,9 @@
       "Bash(pnpm dev)",
       "Bash(pnpm build:*)",
       "Bash(timeout /t 30)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(vercel:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
