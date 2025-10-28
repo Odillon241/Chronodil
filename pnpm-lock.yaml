@@ -326,6 +326,9 @@ importers:
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
+      prisma:
+        specifier: ^6.18.0
+        version: 6.18.0(typescript@5.9.3)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -381,9 +384,6 @@ importers:
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
-      prisma:
-        specifier: ^6.18.0
-        version: 6.18.0(typescript@5.9.3)
       shadcn:
         specifier: ^3.4.0
         version: 3.4.2(@types/node@22.18.12)(typescript@5.9.3)
