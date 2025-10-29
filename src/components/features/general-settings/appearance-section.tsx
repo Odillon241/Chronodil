@@ -106,7 +106,7 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
                     : "border-border"
                 }`}
               >
-                <div className={`h-8 w-8 rounded-full ${color.class} shadow-sm`} />
+                <div className={`h-8 w-8 rounded-full ${color.class}`} />
                 <p className="text-xs font-medium text-center">{color.label}</p>
               </button>
             ))}

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, LayoutGridIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, LayoutGridIcon, Trash2, Send } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,6 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -25,6 +31,7 @@ import {
   submitHRTimesheet,
   cancelHRTimesheetSubmission,
   getHRTimesheetsForApproval,
+  updateHRTimesheetStatus,
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
 import {
@@ -342,8 +349,10 @@ export default function HRTimesheetPage() {
   );
 
   const TimesheetCard = ({ timesheet, isPending = false }: { timesheet: HRTimesheet, isPending?: boolean }) => (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <Card className="hover:shadow-md transition-shadow cursor-context-menu">
+        <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg">
@@ -465,17 +474,108 @@ export default function HRTimesheetPage() {
         </div>
       </CardContent>
     </Card>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheet.id}`)} className="flex items-center gap-2">
+          <Eye className="h-4 w-4" />
+          Voir détails
+        </ContextMenuItem>
+        {timesheet.status === 'DRAFT' && (
+          <>
+            <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheet.id}/edit`)} className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Modifier
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => handleSubmit(timesheet.id)} className="flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              Soumettre
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => handleDelete(timesheet.id)} className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </ContextMenuItem>
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
   );
 
   // Vues roadmap
   const GanttView = () => {
+    const ganttRef = useRef<HTMLDivElement>(null);
     const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const [ganttZoom, setGanttZoom] = useState(100);
+    const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('monthly');
+    const [markers, setMarkers] = useState<Array<{ id: string; date: Date; label: string; className?: string }>>([
+      {
+        id: 'marker-today',
+        date: new Date(),
+        label: 'Aujourd\'hui',
+        className: 'bg-blue-100 text-blue-900',
+      },
+    ]);
     const groupedFeatures = groupBy(features, 'group.name');
     const sortedGroupedFeatures = Object.fromEntries(
       Object.entries(groupedFeatures).sort(([nameA], [nameB]) =>
         nameA.localeCompare(nameB)
       )
     );
+
+    // Scroller vers la dernière feuille de temps enregistrée
+    const lastTimesheet = useMemo(() => {
+      if (currentTimesheets.length === 0) return null;
+      return currentTimesheets.reduce((latest, current) =>
+        new Date(current.weekStartDate) > new Date(latest.weekStartDate) ? current : latest
+      );
+    }, [currentTimesheets]);
+
+    const lastFeature = useMemo(() => {
+      if (!lastTimesheet) return null;
+      return features.find(f => f.id === lastTimesheet.id);
+    }, [lastTimesheet, features]);
+
+    // Scroller le Gantt vers la dernière feuille
+    useEffect(() => {
+      if (lastFeature && ganttRef.current) {
+        // Attendre que le Gantt soit rendu
+        setTimeout(() => {
+          const ganttContainer = ganttRef.current?.querySelector('[style*="--gantt-zoom"]') as HTMLElement;
+          if (ganttContainer) {
+            // Calculer la position de la dernière feuille
+            // Le Gantt a une largeur de colonne qui dépend du range et du zoom
+            // On va chercher l'élément dans le DOM et le scroller en vue
+            const featureElement = ganttRef.current?.querySelector(`[data-feature-id="${lastFeature.id}"]`) as HTMLElement;
+            if (featureElement) {
+              ganttContainer.scrollLeft = featureElement.offsetLeft - 100;
+            }
+          }
+        }, 100);
+      }
+    }, [lastFeature]);
+
+    // Raccourcis clavier pour le zoom
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        // Ctrl + "+" ou Ctrl + "=" pour zoomer
+        if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
+          e.preventDefault();
+          setGanttZoom((prev) => Math.min(200, prev + 25));
+        }
+        // Ctrl + "-" pour dézoomer
+        else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+          e.preventDefault();
+          setGanttZoom((prev) => Math.max(50, prev - 25));
+        }
+        // Ctrl + "0" pour réinitialiser
+        else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+          e.preventDefault();
+          setGanttZoom(100);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const handleViewFeature = (id: string) => {
       router.push(`/dashboard/hr-timesheet/${id}`);
@@ -495,37 +595,99 @@ export default function HRTimesheetPage() {
       });
     };
 
-    // Markers d'exemple (milestones)
-    const exampleMarkers = useMemo(() => [
-      {
-        id: 'marker-1',
-        date: new Date(),
-        label: 'Aujourd\'hui',
-        className: 'bg-blue-100 text-blue-900',
-      },
-    ], []);
-
     const handleRemoveMarker = (id: string) => {
-      console.log('Remove marker:', id);
+      setMarkers((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Marqueur supprimé");
     };
 
     const handleCreateMarker = (date: Date) => {
-      toast.info("Création de marqueur", {
-        description: `Marqueur créé pour le ${format(date, "dd/MM/yyyy", { locale: fr })}`,
+      const newMarkerId = `marker-${Date.now()}`;
+      setMarkers((prev) => [
+        ...prev,
+        {
+          id: newMarkerId,
+          date,
+          label: `Marqueur ${format(date, "dd MMM", { locale: fr })}`,
+          className: 'bg-yellow-100 text-yellow-900',
+        },
+      ]);
+      toast.success("Marqueur créé", {
+        description: `Marqueur ajouté pour le ${format(date, "dd/MM/yyyy", { locale: fr })}`,
       });
     };
 
     return (
-      <GanttProvider
-        className="rounded-none border-none"
-        range="monthly"
-        zoom={100}
-        onAddItem={(date) => {
-          toast.info("Ajout d'item", {
-            description: `Item ajouté pour le ${format(date, "dd/MM/yyyy", { locale: fr })}`,
-          });
-        }}
-      >
+      <div ref={ganttRef} className="flex flex-col h-full">
+        {/* Contrôles Gantt */}
+        <div className="flex items-center justify-between p-4 border-b bg-muted/30 gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            {/* Sélecteur de plage */}
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium">Plage:</Label>
+              <Select value={ganttRange} onValueChange={(value: any) => setGanttRange(value)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Quotidien</SelectItem>
+                  <SelectItem value="monthly">Mensuel</SelectItem>
+                  <SelectItem value="quarterly">Trimestriel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Contrôles de zoom */}
+            <div className="flex items-center gap-4 pl-4 border-l">
+              <Label className="text-sm font-medium">Zoom:</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGanttZoom(Math.max(50, ganttZoom - 25))}
+                  disabled={ganttZoom <= 50}
+                  title="Ctrl + -"
+                >
+                  -
+                </Button>
+                <span className="text-sm font-medium w-16 text-center">{ganttZoom}%</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGanttZoom(Math.min(200, ganttZoom + 25))}
+                  disabled={ganttZoom >= 200}
+                  title="Ctrl + +"
+                >
+                  +
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setGanttZoom(100)}
+                title="Ctrl + 0"
+              >
+                Réinitialiser
+              </Button>
+            </div>
+          </div>
+
+          <div className="text-xs text-muted-foreground hidden sm:block">
+            Raccourcis: <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl +</kbd> / <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl -</kbd> / <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl 0</kbd>
+          </div>
+        </div>
+
+        <GanttProvider
+          className="rounded-none border-none flex-1"
+          range={ganttRange}
+          zoom={ganttZoom}
+          onAddItem={(date) => {
+            toast.info("Redirection vers la création", {
+              description: `Nouvelle feuille de temps créée pour le ${format(date, "dd/MM/yyyy", { locale: fr })}`,
+            });
+            // Rediriger vers la création avec la date pré-remplie
+            router.push(`/dashboard/hr-timesheet/new?startDate=${date.toISOString()}`);
+          }}
+        >
         <GanttSidebar>
           {Object.entries(sortedGroupedFeatures).map(([group, features]) => (
             <GanttSidebarGroup key={group} name={group}>
@@ -544,37 +706,66 @@ export default function HRTimesheetPage() {
           <GanttFeatureList>
             {Object.entries(sortedGroupedFeatures).map(([group, features]) => (
               <GanttFeatureListGroup key={group}>
-                {features.map((feature) => (
-                  <div className="flex" key={feature.id}>
-                    <button
-                      onClick={() => handleViewFeature(feature.id)}
-                      type="button"
-                      className="w-full"
-                    >
-                      <GanttFeatureItem
-                        {...feature}
-                        onMove={handleMoveFeature}
-                      >
-                        <p className="flex-1 truncate text-xs">
-                          {feature.name}
-                        </p>
-                        <Avatar className="h-4 w-4">
-                          <AvatarImage src={feature.owner.image} />
-                          <AvatarFallback>
-                            {feature.owner.name?.slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="ml-2 text-xs font-medium">
-                          {feature.totalHours.toFixed(1)}h
-                        </span>
-                      </GanttFeatureItem>
-                    </button>
-                  </div>
-                ))}
+                {features.map((feature) => {
+                  const timesheet = currentTimesheets.find(t => t.id === feature.id);
+                  return (
+                  <ContextMenu key={feature.id}>
+                    <ContextMenuTrigger asChild>
+                      <div className="flex w-full" data-feature-id={feature.id}>
+                        <button
+                          onClick={() => handleViewFeature(feature.id)}
+                          type="button"
+                          className="w-full"
+                        >
+                          <GanttFeatureItem
+                            {...feature}
+                            onMove={handleMoveFeature}
+                          >
+                            <p className="flex-1 truncate text-xs">
+                              {feature.name}
+                            </p>
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage src={feature.owner.image} />
+                              <AvatarFallback>
+                                {feature.owner.name?.slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="ml-2 text-xs font-medium">
+                              {feature.totalHours.toFixed(1)}h
+                            </span>
+                          </GanttFeatureItem>
+                        </button>
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem onClick={() => handleViewFeature(feature.id)} className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Voir détails
+                      </ContextMenuItem>
+                      {timesheet?.status === 'DRAFT' && (
+                        <>
+                          <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}/edit`)} className="flex items-center gap-2">
+                            <Edit className="h-4 w-4" />
+                            Modifier
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => handleSubmit(feature.id)} className="flex items-center gap-2">
+                            <Send className="h-4 w-4" />
+                            Soumettre
+                          </ContextMenuItem>
+                          <ContextMenuItem onClick={() => handleDelete(feature.id)} className="flex items-center gap-2 text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            Supprimer
+                          </ContextMenuItem>
+                        </>
+                      )}
+                    </ContextMenuContent>
+                  </ContextMenu>
+                  );
+                })}
               </GanttFeatureListGroup>
             ))}
           </GanttFeatureList>
-          {exampleMarkers.map((marker) => (
+          {markers.map((marker) => (
             <GanttMarker
               key={marker.id}
               {...marker}
@@ -585,42 +776,71 @@ export default function HRTimesheetPage() {
           <GanttCreateMarkerTrigger onCreateMarker={handleCreateMarker} />
         </GanttTimeline>
       </GanttProvider>
+      </div>
     );
   };
 
   const CalendarViewContent = () => (
-    <CalendarProvider>
-      <CalendarDate>
-        <CalendarDatePicker>
-          <CalendarMonthPicker />
-          <CalendarYearPicker end={latestYear} start={earliestYear} />
-        </CalendarDatePicker>
-        <CalendarDatePagination />
-      </CalendarDate>
-      <CalendarHeader />
-      <CalendarBody features={timesheetsAsFeatures}>
-        {({ feature }) => (
-          <CalendarItem
-            feature={feature}
-            key={feature.id}
-            className="cursor-pointer"
-            onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}`)}
-          />
-        )}
-      </CalendarBody>
-    </CalendarProvider>
+    <div className="flex flex-col gap-4 h-full">
+      {/* Légende des événements */}
+      <div className="flex flex-wrap items-center gap-3 text-xs border rounded-lg p-3 bg-muted/30">
+        <span className="font-medium text-muted-foreground">Légende:</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-red-200 dark:bg-red-900 border border-red-400 dark:border-red-700"></div>
+          <span>Jours fériés 🇬🇦</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-purple-200 dark:bg-purple-900 border border-purple-400 dark:border-purple-700"></div>
+          <span>Fêtes religieuses ✝️</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-pink-200 dark:bg-pink-900 border border-pink-400 dark:border-pink-700"></div>
+          <span>Célébrations 💝</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-amber-200 dark:bg-amber-900 border border-amber-400 dark:border-amber-700"></div>
+          <span>Événements culturels 🌍</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-900 border-2 border-primary"></div>
+          <span>Aujourd'hui</span>
+        </div>
+      </div>
+
+      <CalendarProvider>
+        <CalendarDate>
+          <CalendarDatePicker>
+            <CalendarMonthPicker />
+            <CalendarYearPicker end={latestYear} start={earliestYear} />
+          </CalendarDatePicker>
+          <CalendarDatePagination />
+        </CalendarDate>
+        <CalendarHeader />
+        <CalendarBody features={timesheetsAsFeatures}>
+          {({ feature }) => (
+            <CalendarItem
+              feature={feature}
+              key={feature.id}
+              className="cursor-pointer"
+              onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}`)}
+            />
+          )}
+        </CalendarBody>
+      </CalendarProvider>
+    </div>
   );
 
   const ListViewContent = () => {
     const [features, setFeatures] = useState(timesheetsAsFeatures);
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over) return;
 
       const status = statusColumns.find((s) => s.name === over.id);
       if (!status) return;
 
+      // Mettre à jour l'état local immédiatement
       setFeatures(
         features.map((feature) => {
           if (feature.id === active.id) {
@@ -630,9 +850,33 @@ export default function HRTimesheetPage() {
         })
       );
 
-      toast.info("Changement de statut visuel", {
-        description: "Le statut n'est pas sauvegardé en base de données",
-      });
+      // Sauvegarder en base de données
+      try {
+        const result = await updateHRTimesheetStatus({
+          timesheetId: active.id as string,
+          status: status.id as any,
+        });
+
+        if (result?.data) {
+          toast.success("Statut mis à jour", {
+            description: `Le timesheet a été déplacé vers "${status.name}"`,
+          });
+          // Recharger les données
+          if (dataView === "my") {
+            loadMyTimesheets();
+          } else {
+            loadPendingTimesheets();
+          }
+        } else {
+          toast.error(result?.serverError || "Erreur lors de la mise à jour du statut");
+          // Restaurer l'état précédent en cas d'erreur
+          setFeatures(timesheetsAsFeatures);
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Erreur lors de la mise à jour du statut");
+        // Restaurer l'état précédent en cas d'erreur
+        setFeatures(timesheetsAsFeatures);
+      }
     };
 
     return (
@@ -681,13 +925,14 @@ export default function HRTimesheetPage() {
   const KanbanViewContent = () => {
     const [features, setFeatures] = useState(timesheetsAsFeatures);
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over) return;
 
       const status = statusColumns.find(({ id }) => id === over.id);
       if (!status) return;
 
+      // Mettre à jour l'état local immédiatement
       setFeatures(
         features.map((feature) => {
           if (feature.id === active.id) {
@@ -697,9 +942,33 @@ export default function HRTimesheetPage() {
         })
       );
 
-      toast.info("Changement de statut visuel", {
-        description: "Le statut n'est pas sauvegardé en base de données",
-      });
+      // Sauvegarder en base de données
+      try {
+        const result = await updateHRTimesheetStatus({
+          timesheetId: active.id as string,
+          status: status.id as any,
+        });
+
+        if (result?.data) {
+          toast.success("Statut mis à jour", {
+            description: `Le timesheet a été déplacé vers "${status.name}"`,
+          });
+          // Recharger les données
+          if (dataView === "my") {
+            loadMyTimesheets();
+          } else {
+            loadPendingTimesheets();
+          }
+        } else {
+          toast.error(result?.serverError || "Erreur lors de la mise à jour du statut");
+          // Restaurer l'état précédent en cas d'erreur
+          setFeatures(timesheetsAsFeatures);
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Erreur lors de la mise à jour du statut");
+        // Restaurer l'état précédent en cas d'erreur
+        setFeatures(timesheetsAsFeatures);
+      }
     };
 
     return (
@@ -1063,7 +1332,7 @@ export default function HRTimesheetPage() {
         )}
 
         {/* Menubar pour sélection de vues */}
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-end">
           <Menubar className="w-auto">
             {views.map((view) => (
               <MenubarMenu key={view.id}>

@@ -62,8 +62,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setMounted(true);
   }, []);
 
-  // Navigation items - créés dynamiquement pour avoir accès aux traductions
-  const navMain = [
+  // Navigation items - créés de manière statique pour éviter les différences d'hydratation
+  const navMain = React.useMemo(() => [
     {
       title: t("navigation.dashboard"),
       url: "/dashboard",
@@ -111,9 +111,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/dashboard/reports",
       icon: BarChart3,
     },
-  ];
+  ], [t]);
 
-  const navSettings = [
+  const navSettings = React.useMemo(() => [
     {
       title: t("navigation.settings"),
       url: "/dashboard/settings",
@@ -125,7 +125,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Shield,
       roles: ["ADMIN", "HR"],
     },
-  ];
+  ], [t]);
 
   const toggleMenu = (title: string) => {
     setOpenMenus((prev) =>
@@ -137,6 +137,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     await signOut();
     window.location.href = "/auth/login";
   };
+  // Filtrer les items de navigation après le montage pour éviter les erreurs d'hydratation
+  const filteredNavMain = React.useMemo(() => {
+    if (!mounted) return [];
+    return navMain.filter((item: any) => {
+      if (!item.roles) return true;
+      return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
+    });
+  }, [navMain, mounted, session]);
+
+  const filteredNavSettings = React.useMemo(() => {
+    if (!mounted) return [];
+    return navSettings.filter((item: any) => {
+      if (!item.roles) return true;
+      return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
+    });
+  }, [navSettings, mounted, session]);
+
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -171,13 +188,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>{t("navigation.dashboard")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navMain
-                .filter((item: any) => {
-                  if (!item.roles) return true;
-                  return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
-                })
-                .map((item) => {
-                const isActive = mounted && (pathname === item.url || pathname.startsWith(item.url + "/"));
+              {filteredNavMain.map((item) => {
+                // Utiliser une logique d'activation plus stable pour éviter les différences d'hydratation
+                const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url + "/"));
                 const hasItems = (item as any).items && (item as any).items.length > 0;
                 const isOpen = openMenus.includes(item.title);
 
@@ -204,7 +217,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                               <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                   asChild
-                                  isActive={mounted && pathname === subItem.url}
+                                  isActive={pathname === subItem.url}
                                 >
                                   <Link href={subItem.url}>
                                     <span>{subItem.title}</span>
@@ -242,13 +255,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
-              {navSettings
-                .filter((item: any) => {
-                  if (!item.roles) return true;
-                  return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
-                })
-                .map((item) => {
-                  const isActive = mounted && (pathname === item.url || pathname.startsWith(item.url + "/"));
+              {filteredNavSettings.map((item) => {
+                  const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
 
                   return (
                     <SidebarMenuItem key={item.title}>
@@ -285,17 +293,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="size-8">
-                    <AvatarImage 
+                    <AvatarImage
                       src={
-                        (session?.user as any)?.avatar?.startsWith('/uploads') || 
-                        (session?.user as any)?.avatar?.startsWith('http') 
-                          ? (session?.user as any)?.avatar 
+                        mounted && (session?.user as any)?.avatar?.startsWith('/uploads') ||
+                        mounted && (session?.user as any)?.avatar?.startsWith('http')
+                          ? (session?.user as any)?.avatar
                           : undefined
-                      } 
-                      alt={(session?.user as any)?.name || "User"} 
+                      }
+                      alt={(session?.user as any)?.name || "User"}
                     />
-                    <AvatarFallback className="bg-primary text-white text-xs">
-                      {(session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U'}
+                    <AvatarFallback className="bg-primary text-white text-xs" suppressHydrationWarning>
+                      {mounted ? ((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U') : 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -318,17 +326,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="size-8">
-                      <AvatarImage 
+                      <AvatarImage
                         src={
-                          (session?.user as any)?.avatar?.startsWith('/uploads') || 
-                          (session?.user as any)?.avatar?.startsWith('http') 
-                            ? (session?.user as any)?.avatar 
+                          mounted && (session?.user as any)?.avatar?.startsWith('/uploads') ||
+                          mounted && (session?.user as any)?.avatar?.startsWith('http')
+                            ? (session?.user as any)?.avatar
                             : undefined
-                        } 
-                        alt={(session?.user as any)?.name || "User"} 
+                        }
+                        alt={(session?.user as any)?.name || "User"}
                       />
-                      <AvatarFallback className="bg-primary text-white text-xs">
-                        {(session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U'}
+                      <AvatarFallback className="bg-primary text-white text-xs" suppressHydrationWarning>
+                        {mounted ? ((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U') : 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">

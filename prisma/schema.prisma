@@ -231,26 +231,26 @@ model Notification {
 }
 
 model Project {
-  id             String           @id
-  name           String
-  code           String           @unique
-  description    String?
-  color          String           @default("#3b82f6")
-  departmentId   String?
-  budgetHours    Float?
-  hourlyRate     Float?
-  isActive       Boolean          @default(true)
-  startDate      DateTime?
-  endDate        DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime
-  createdBy      String?
-  Conversation   Conversation[]
-  User           User?            @relation(fields: [createdBy], references: [id])
-  Department     Department?      @relation(fields: [departmentId], references: [id])
-  ProjectMember  ProjectMember[]
-  Task           Task[]
-  TimesheetEntry TimesheetEntry[]
+  id              String           @id
+  name            String
+  code            String           @unique
+  description     String?
+  color           String           @default("#3b82f6")
+  departmentId    String?
+  budgetHours     Float?
+  hourlyRate      Float?
+  isActive        Boolean          @default(true)
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime
+  createdBy       String?
+  Conversation    Conversation[]
+  User            User?            @relation(fields: [createdBy], references: [id])
+  Department      Department?      @relation(fields: [departmentId], references: [id])
+  ProjectMember   ProjectMember[]
+  Task            Task[]
+  TimesheetEntry  TimesheetEntry[]
 
   @@index([code])
   @@index([createdBy])
@@ -646,3 +646,4 @@ enum UnderstandingLevel {
   COMPREHENSIVE
   EXPERT
 }
+

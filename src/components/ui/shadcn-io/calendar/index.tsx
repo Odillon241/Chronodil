@@ -9,11 +9,13 @@ import {
   isSameDay,
   startOfMonth,
   subMonths,
+  isToday,
 } from 'date-fns';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import type { FC, ReactNode } from 'react';
 import { createContext, useContext, useId, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -22,6 +24,85 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+
+// Événements et jours fériés du Gabon
+interface GabonEvent {
+  date: string;
+  name: string;
+  type: 'holiday' | 'celebration' | 'cultural' | 'religious';
+  emoji: string;
+}
+
+const GABON_EVENTS: GabonEvent[] = [
+  // Jours fériés officiels
+  { date: '01-01', name: 'Nouvel An', type: 'holiday', emoji: '🎉' },
+  { date: '03-12', name: 'Fête de la Rénovation', type: 'holiday', emoji: '🇬🇦' },
+  { date: '04-17', name: 'Journée des Femmes Gabonaises', type: 'holiday', emoji: '👩' },
+  { date: '05-01', name: 'Fête du Travail', type: 'holiday', emoji: '⚒️' },
+  { date: '08-15', name: 'Assomption', type: 'religious', emoji: '✝️' },
+  { date: '08-16', name: 'Indépendance du Gabon (Jour 1)', type: 'holiday', emoji: '🇬🇦' },
+  { date: '08-17', name: 'Indépendance du Gabon (Jour 2)', type: 'holiday', emoji: '🇬🇦' },
+  { date: '11-01', name: 'Toussaint', type: 'religious', emoji: '🕯️' },
+  { date: '12-25', name: 'Noël', type: 'religious', emoji: '🎄' },
+
+  // Événements culturels et célébrations
+  { date: '02-14', name: 'Saint-Valentin', type: 'celebration', emoji: '💝' },
+  { date: '03-08', name: 'Journée Internationale des Femmes', type: 'celebration', emoji: '👩‍🦰' },
+  { date: '03-21', name: 'Journée Internationale des Forêts', type: 'cultural', emoji: '🌳' },
+  { date: '04-22', name: 'Jour de la Terre', type: 'cultural', emoji: '🌍' },
+  { date: '05-25', name: 'Journée de l\'Afrique', type: 'cultural', emoji: '🌍' },
+  { date: '06-01', name: 'Journée Internationale de l\'Enfance', type: 'celebration', emoji: '👶' },
+  { date: '06-05', name: 'Journée Mondiale de l\'Environnement', type: 'cultural', emoji: '♻️' },
+  { date: '06-21', name: 'Fête de la Musique', type: 'celebration', emoji: '🎵' },
+  { date: '07-14', name: 'Fête Nationale Française', type: 'celebration', emoji: '🇫🇷' },
+  { date: '09-01', name: 'Rentrée Scolaire', type: 'cultural', emoji: '🎒' },
+  { date: '10-24', name: 'Journée des Nations Unies', type: 'cultural', emoji: '🌐' },
+  { date: '10-31', name: 'Halloween', type: 'celebration', emoji: '🎃' },
+  { date: '11-11', name: 'Armistice 1918', type: 'cultural', emoji: '🕊️' },
+  { date: '12-10', name: 'Journée des Droits de l\'Homme', type: 'cultural', emoji: '⚖️' },
+  { date: '12-24', name: 'Veille de Noël', type: 'celebration', emoji: '🎅' },
+  { date: '12-31', name: 'Saint-Sylvestre', type: 'celebration', emoji: '🎊' },
+];
+
+const getEvent = (date: Date): GabonEvent | null => {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const dateStr = `${month}-${day}`;
+
+  return GABON_EVENTS.find(e => e.date === dateStr) || null;
+};
+
+const getEventBgColor = (event: GabonEvent | null): string => {
+  if (!event) return "";
+  switch (event.type) {
+    case 'holiday':
+      return "bg-red-50 dark:bg-red-950/20";
+    case 'religious':
+      return "bg-purple-50 dark:bg-purple-950/20";
+    case 'celebration':
+      return "bg-pink-50 dark:bg-pink-950/20";
+    case 'cultural':
+      return "bg-amber-50 dark:bg-amber-950/20";
+    default:
+      return "";
+  }
+};
+
+const getEventBadgeVariant = (event: GabonEvent | null): "default" | "destructive" | "outline" | "secondary" => {
+  if (!event) return "default";
+  switch (event.type) {
+    case 'holiday':
+      return "destructive";
+    case 'religious':
+      return "secondary";
+    case 'celebration':
+      return "outline";
+    case 'cultural':
+      return "secondary";
+    default:
+      return "default";
+  }
+};
 
 export type CalendarFeature = {
   id: string;
@@ -305,11 +386,20 @@ export const CalendarBody: FC<CalendarBodyProps> = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const dayFeatures = features.filter((feature) => {
-        const featureStart = startOfMonth(feature.startAt);
-        const featureEnd = endOfMonth(feature.endAt);
-        const currentMonth = startOfMonth(currentDate);
+        // Vérifier si la date actuelle est dans la période du feature
+        // Utilise le début et la fin du jour pour la comparaison
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
 
-        return featureStart <= currentMonth && featureEnd >= currentMonth;
+        const featureStart = new Date(feature.startAt);
+        featureStart.setHours(0, 0, 0, 0);
+        const featureEnd = new Date(feature.endAt);
+        featureEnd.setHours(23, 59, 59, 999);
+
+        // Le feature est visible si le jour chevauche la période du feature
+        return dayStart <= featureEnd && dayEnd >= featureStart;
       });
 
       days.push({
@@ -338,29 +428,63 @@ export const CalendarBody: FC<CalendarBodyProps> = ({
 
   return (
     <div className={cn('grid flex-1 grid-cols-7', className)}>
-      {calendarDays.map((day, index) => (
-        <div
-          className={cn(
-            'min-h-[120px] border-border/50 border-b border-r p-2',
-            !day.isCurrentMonth && 'bg-muted/20'
-          )}
-          key={`${id}-${index}`}
-        >
+      {calendarDays.map((day, index) => {
+        const event = getEvent(day.date);
+        const isTodayDate = isToday(day.date);
+        const MAX_VISIBLE_FEATURES = event ? 2 : 3;
+        const visibleFeatures = day.features.slice(0, MAX_VISIBLE_FEATURES);
+        const remainingCount = Math.max(0, day.features.length - MAX_VISIBLE_FEATURES);
+
+        return (
           <div
             className={cn(
-              'mb-2 text-right text-sm',
-              !day.isCurrentMonth && 'text-muted-foreground'
+              'min-h-[120px] border-border/50 border-b border-r p-2',
+              !day.isCurrentMonth && 'bg-muted/20',
+              getEventBgColor(event),
+              isTodayDate && 'ring-2 ring-inset ring-primary'
             )}
+            key={`${id}-${index}`}
           >
-            {format(day.date, 'd')}
+            <div className="flex items-center justify-between mb-1">
+              <div
+                className={cn(
+                  'text-sm',
+                  !day.isCurrentMonth && 'text-muted-foreground',
+                  isTodayDate && 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold'
+                )}
+              >
+                {format(day.date, 'd')}
+              </div>
+              {event && (
+                <span className="text-sm" title={event.name}>
+                  {event.emoji}
+                </span>
+              )}
+            </div>
+
+            {event && (
+              <Badge
+                variant={getEventBadgeVariant(event)}
+                className="text-[9px] mb-1 w-full justify-center px-1 py-0 h-auto leading-tight truncate"
+                title={`${event.name} - ${event.type}`}
+              >
+                {event.name}
+              </Badge>
+            )}
+
+            <div className="space-y-1">
+              {visibleFeatures.map((feature) => (
+                <div key={feature.id}>{children({ feature })}</div>
+              ))}
+              {remainingCount > 0 && (
+                <div className="text-[10px] text-center text-muted-foreground py-1 hover:bg-muted/50 rounded cursor-pointer">
+                  +{remainingCount} autre{remainingCount > 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="space-y-1">
-            {day.features.map((feature) => (
-              <div key={feature.id}>{children({ feature })}</div>
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

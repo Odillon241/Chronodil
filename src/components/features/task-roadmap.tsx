@@ -3,28 +3,17 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { CalendarIcon, KanbanSquareIcon, ListIcon, GanttChartSquareIcon } from "lucide-react";
+import { CalendarIcon, KanbanSquareIcon, ListIcon, GanttChartSquareIcon, TableIcon } from "lucide-react";
 import { TaskCalendar } from "./task-calendar";
 import { TaskKanban } from "./task-kanban";
 import { TaskList } from "./task-list";
 import { TaskGantt } from "./task-gantt";
+import { TaskTable } from "./task-table";
+import { Task } from "./task-types";
 
-interface Task {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string | Date;
-  estimatedHours?: number;
-  status: string;
-  priority: string;
-  isShared?: boolean;
-  isActive?: boolean;
-  reminderDate?: string | Date;
-  Project?: {
-    name: string;
-    color: string;
-  };
-}
+// Ré-exporter les types pour la compatibilité
+export type { Task, TaskOwner } from "./task-types";
+export { STATUS_COLORS } from "./task-types";
 
 interface TaskRoadmapProps {
   tasks: Task[];
@@ -71,6 +60,10 @@ export function TaskRoadmap({
               <ListIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Liste</span>
             </TabsTrigger>
+            <TabsTrigger value="table" className="gap-2">
+              <TableIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Table</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -108,6 +101,15 @@ export function TaskRoadmap({
 
         <TabsContent value="list" className="mt-0">
           <TaskList
+            tasks={tasks}
+            onEventClick={onEventClick}
+            onEventDelete={onEventDelete}
+            onEventToggle={onEventToggle}
+          />
+        </TabsContent>
+
+        <TabsContent value="table" className="mt-0">
+          <TaskTable
             tasks={tasks}
             onEventClick={onEventClick}
             onEventDelete={onEventDelete}

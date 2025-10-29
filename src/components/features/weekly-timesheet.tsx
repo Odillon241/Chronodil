@@ -185,7 +185,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                         key={entry.id}
                         onClick={() => onDateSelect(day)}
                         className={cn(
-                          "p-2 rounded border cursor-pointer hover:shadow-sm transition-shadow",
+                          "p-2 rounded border cursor-pointer",
                           getStatusColor(entry.status)
                         )}
                         title={`${entry.project?.name || "Projet non assigné"} - ${entry.duration}h\n${entry.description || ""}`}

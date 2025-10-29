@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   GanttProvider,
   GanttTimeline,
@@ -12,8 +12,11 @@ import {
   GanttFeatureListGroup,
   GanttFeatureRow,
   GanttToday,
+  GanttMarker,
+  GanttCreateMarkerTrigger,
   type GanttFeature,
   type GanttStatus,
+  type GanttMarkerProps,
 } from "@/components/ui/shadcn-io/gantt";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,25 +26,9 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Edit, Trash2, Circle, CheckCircle, Clock } from "lucide-react";
+import { Edit, Trash2, Circle, CheckCircle, Clock, Eye, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Task {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string | Date;
-  estimatedHours?: number;
-  status: string;
-  priority: string;
-  isShared?: boolean;
-  isActive?: boolean;
-  reminderDate?: string | Date;
-  Project?: {
-    name: string;
-    color: string;
-  };
-}
+import { Task, STATUS_COLORS } from "./task-types";
 
 interface TaskGanttProps {
   tasks: Task[];
@@ -53,10 +40,10 @@ interface TaskGanttProps {
 }
 
 const TASK_STATUSES: Record<string, GanttStatus> = {
-  TODO: { id: "TODO", name: "À faire", color: "#6B7280" },
-  IN_PROGRESS: { id: "IN_PROGRESS", name: "En cours", color: "#F59E0B" },
+  TODO: { id: "TODO", name: "À faire", color: STATUS_COLORS.TODO },
+  IN_PROGRESS: { id: "IN_PROGRESS", name: "En cours", color: STATUS_COLORS.IN_PROGRESS },
   REVIEW: { id: "REVIEW", name: "En revue", color: "#8B5CF6" },
-  DONE: { id: "DONE", name: "Terminé", color: "#10B981" },
+  DONE: { id: "DONE", name: "Terminé", color: STATUS_COLORS.DONE },
   BLOCKED: { id: "BLOCKED", name: "Bloqué", color: "#EF4444" },
 };
 

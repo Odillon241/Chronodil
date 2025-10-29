@@ -1,32 +1,23 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, startOfWeek, endOfWeek } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, startOfWeek, endOfWeek, addYears, subYears, setMonth, setYear } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Bell, Users, Edit, Trash2, Circle, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Bell, Users, Edit, Trash2, Circle, CheckCircle, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable } from "@dnd-kit/core";
-
-interface Task {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string | Date;
-  estimatedHours?: number;
-  status: string;
-  priority: string;
-  isShared?: boolean;
-  isActive?: boolean;
-  reminderDate?: string | Date;
-  Project?: {
-    name: string;
-    color: string;
-  };
-}
+import { Task } from "./task-types";
 
 interface TaskCalendarProps {
   tasks: Task[];
@@ -37,29 +28,60 @@ interface TaskCalendarProps {
   onEventToggle?: (task: Task) => Promise<void>;
 }
 
-// Jours fériés du Gabon
-const GABON_HOLIDAYS = [
-  { date: '01-01', name: 'Nouvel An' },
-  { date: '03-12', name: 'Fête de la Rénovation' },
-  { date: '04-17', name: 'Fête des Femmes' },
-  { date: '05-01', name: 'Fête du Travail' },
-  { date: '05-25', name: 'Pentecôte' },
-  { date: '08-15', name: 'Assomption' },
-  { date: '08-16', name: 'Fête de l\'Indépendance (jour 1)' },
-  { date: '08-17', name: 'Fête de l\'Indépendance (jour 2)' },
-  { date: '11-01', name: 'Toussaint' },
-  { date: '12-25', name: 'Noël' },
+// Événements et jours fériés du Gabon
+interface GabonEvent {
+  date: string;
+  name: string;
+  type: 'holiday' | 'celebration' | 'cultural' | 'religious';
+  emoji: string;
+}
+
+const GABON_EVENTS: GabonEvent[] = [
+  // Jours fériés officiels
+  { date: '01-01', name: 'Nouvel An', type: 'holiday', emoji: '🎉' },
+  { date: '03-12', name: 'Fête de la Rénovation', type: 'holiday', emoji: '🇬🇦' },
+  { date: '04-17', name: 'Journée des Femmes Gabonaises', type: 'holiday', emoji: '👩' },
+  { date: '05-01', name: 'Fête du Travail', type: 'holiday', emoji: '⚒️' },
+  { date: '08-15', name: 'Assomption', type: 'religious', emoji: '✝️' },
+  { date: '08-16', name: 'Indépendance du Gabon (Jour 1)', type: 'holiday', emoji: '🇬🇦' },
+  { date: '08-17', name: 'Indépendance du Gabon (Jour 2)', type: 'holiday', emoji: '🇬🇦' },
+  { date: '11-01', name: 'Toussaint', type: 'religious', emoji: '🕯️' },
+  { date: '12-25', name: 'Noël', type: 'religious', emoji: '🎄' },
+
+  // Événements culturels et célébrations
+  { date: '02-14', name: 'Saint-Valentin', type: 'celebration', emoji: '💝' },
+  { date: '03-08', name: 'Journée Internationale des Femmes', type: 'celebration', emoji: '👩‍🦰' },
+  { date: '03-21', name: 'Journée Internationale des Forêts', type: 'cultural', emoji: '🌳' },
+  { date: '04-22', name: 'Jour de la Terre', type: 'cultural', emoji: '🌍' },
+  { date: '05-25', name: 'Journée de l\'Afrique', type: 'cultural', emoji: '🌍' },
+  { date: '06-01', name: 'Journée Internationale de l\'Enfance', type: 'celebration', emoji: '👶' },
+  { date: '06-05', name: 'Journée Mondiale de l\'Environnement', type: 'cultural', emoji: '♻️' },
+  { date: '06-21', name: 'Fête de la Musique', type: 'celebration', emoji: '🎵' },
+  { date: '07-14', name: 'Fête Nationale Française', type: 'celebration', emoji: '🇫🇷' },
+  { date: '09-01', name: 'Rentrée Scolaire', type: 'cultural', emoji: '🎒' },
+  { date: '10-24', name: 'Journée des Nations Unies', type: 'cultural', emoji: '🌐' },
+  { date: '10-31', name: 'Halloween', type: 'celebration', emoji: '🎃' },
+  { date: '11-11', name: 'Armistice 1918', type: 'cultural', emoji: '🕊️' },
+  { date: '12-10', name: 'Journée des Droits de l\'Homme', type: 'cultural', emoji: '⚖️' },
+  { date: '12-24', name: 'Veille de Noël', type: 'celebration', emoji: '🎅' },
+  { date: '12-31', name: 'Saint-Sylvestre', type: 'celebration', emoji: '🎊' },
 ];
 
-const isHoliday = (date: Date): { isHoliday: boolean; name?: string } => {
+const getEvent = (date: Date): GabonEvent | null => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const dateStr = `${month}-${day}`;
 
-  const holiday = GABON_HOLIDAYS.find(h => h.date === dateStr);
+  return GABON_EVENTS.find(e => e.date === dateStr) || null;
+};
+
+const isHoliday = (date: Date): { isHoliday: boolean; name?: string; type?: string; emoji?: string } => {
+  const event = getEvent(date);
   return {
-    isHoliday: !!holiday,
-    name: holiday?.name
+    isHoliday: event?.type === 'holiday',
+    name: event?.name,
+    type: event?.type,
+    emoji: event?.emoji,
   };
 };
 
@@ -101,7 +123,7 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle }: {
           {...listeners}
           {...attributes}
           className={cn(
-            "group relative px-2 py-1 mb-1 rounded border-l-4 text-xs cursor-pointer transition-all hover:shadow-sm",
+            "group relative px-2 py-1 mb-1 rounded border-l-4 text-xs cursor-pointer transition-all",
             priorityColor,
             isCompleted && "opacity-60 line-through",
             isDragging && "opacity-50"
@@ -167,8 +189,47 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
     data: { date },
   });
 
-  const holiday = isHoliday(date);
+  const eventInfo = isHoliday(date);
   const isTodayDate = isToday(date);
+  const event = getEvent(date);
+
+  // Limiter l'affichage à 3 tâches maximum (comme shadcn roadmap)
+  const MAX_VISIBLE_TASKS = event ? 2 : 3; // Moins d'espace si événement
+  const visibleTasks = tasks.slice(0, MAX_VISIBLE_TASKS);
+  const remainingCount = Math.max(0, tasks.length - MAX_VISIBLE_TASKS);
+
+  // Couleurs selon le type d'événement
+  const getEventBgColor = () => {
+    if (!event) return "";
+    switch (event.type) {
+      case 'holiday':
+        return "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900";
+      case 'religious':
+        return "bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900";
+      case 'celebration':
+        return "bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-900";
+      case 'cultural':
+        return "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900";
+      default:
+        return "";
+    }
+  };
+
+  const getEventBadgeVariant = (): "default" | "destructive" | "outline" | "secondary" => {
+    if (!event) return "default";
+    switch (event.type) {
+      case 'holiday':
+        return "destructive";
+      case 'religious':
+        return "secondary";
+      case 'celebration':
+        return "outline";
+      case 'cultural':
+        return "secondary";
+      default:
+        return "default";
+    }
+  };
 
   return (
     <div
@@ -178,33 +239,37 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
         "min-h-[100px] sm:min-h-[120px] border-r border-b p-1 sm:p-2 transition-colors",
         !isCurrentMonth && "bg-muted/30",
         isOver && "bg-primary/10 border-primary",
-        holiday.isHoliday && "bg-red-50 dark:bg-red-950/20",
-        isTodayDate && "bg-blue-50 dark:bg-blue-950/30"
+        getEventBgColor(),
+        isTodayDate && "ring-2 ring-primary ring-inset"
       )}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1">
         <span className={cn(
           "text-sm font-medium",
           !isCurrentMonth && "text-muted-foreground",
-          isTodayDate && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs"
+          isTodayDate && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
         )}>
           {format(date, 'd', { locale: fr })}
         </span>
-        {holiday.isHoliday && (
-          <span className="text-[10px] text-red-600 dark:text-red-400 font-bold">
-            🇬🇦
+        {event && (
+          <span className="text-base" title={event.name}>
+            {event.emoji}
           </span>
         )}
       </div>
 
-      {holiday.isHoliday && (
-        <Badge variant="destructive" className="text-[10px] mb-1 w-full justify-center">
-          {holiday.name}
+      {event && (
+        <Badge
+          variant={getEventBadgeVariant()}
+          className="text-[9px] sm:text-[10px] mb-1 w-full justify-center px-1 py-0 h-auto leading-tight"
+          title={`${event.name} - ${event.type}`}
+        >
+          <span className="truncate">{event.name}</span>
         </Badge>
       )}
 
       <div className="space-y-1">
-        {tasks.map((task) => (
+        {visibleTasks.map((task) => (
           <DraggableTask
             key={task.id}
             task={task}
@@ -213,6 +278,20 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
             onEventToggle={onEventToggle}
           />
         ))}
+
+        {remainingCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full h-auto py-1 px-2 text-[10px] hover:bg-primary/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDayDoubleClick(date);
+            }}
+          >
+            +{remainingCount} autre{remainingCount > 1 ? 's' : ''}
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -280,15 +359,75 @@ export function TaskCalendar({
 
   const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
+  // Générer les années (5 ans avant et après l'année courante)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
+
+  // Mois en français
+  const months = [
+    { value: 0, label: 'Janvier' },
+    { value: 1, label: 'Février' },
+    { value: 2, label: 'Mars' },
+    { value: 3, label: 'Avril' },
+    { value: 4, label: 'Mai' },
+    { value: 5, label: 'Juin' },
+    { value: 6, label: 'Juillet' },
+    { value: 7, label: 'Août' },
+    { value: 8, label: 'Septembre' },
+    { value: 9, label: 'Octobre' },
+    { value: 10, label: 'Novembre' },
+    { value: 11, label: 'Décembre' },
+  ];
+
+  const handleMonthChange = (monthValue: string) => {
+    const newMonth = parseInt(monthValue);
+    setCurrentMonth(prev => setMonth(prev, newMonth));
+  };
+
+  const handleYearChange = (yearValue: string) => {
+    const newYear = parseInt(yearValue);
+    setCurrentMonth(prev => setYear(prev, newYear));
+  };
+
   return (
     <div className="space-y-4">
-      {/* En-tête avec navigation */}
+      {/* En-tête avec navigation améliorée */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <CalendarIcon className="h-5 w-5" />
-          <h2 className="text-xl sm:text-2xl font-bold">
-            {format(currentMonth, 'MMMM yyyy', { locale: fr })}
-          </h2>
+          <div className="flex items-center gap-2">
+            <Select
+              value={currentMonth.getMonth().toString()}
+              onValueChange={handleMonthChange}
+            >
+              <SelectTrigger className="w-[130px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map(month => (
+                  <SelectItem key={month.value} value={month.value.toString()}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={currentMonth.getFullYear().toString()}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -298,20 +437,69 @@ export function TaskCalendar({
           >
             Aujourd'hui
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentMonth(prev => subYears(prev, 1))}
+              title="Année précédente"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
+              title="Mois précédent"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
+              title="Mois suivant"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentMonth(prev => addYears(prev, 1))}
+              title="Année suivante"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Légende des événements */}
+      <div className="flex flex-wrap items-center gap-3 text-xs border rounded-lg p-3 bg-muted/30">
+        <span className="font-medium text-muted-foreground">Légende:</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-red-200 dark:bg-red-900 border border-red-400 dark:border-red-700"></div>
+          <span>Jours fériés 🇬🇦</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-purple-200 dark:bg-purple-900 border border-purple-400 dark:border-purple-700"></div>
+          <span>Fêtes religieuses ✝️</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-pink-200 dark:bg-pink-900 border border-pink-400 dark:border-pink-700"></div>
+          <span>Célébrations 💝</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-amber-200 dark:bg-amber-900 border border-amber-400 dark:border-amber-700"></div>
+          <span>Événements culturels 🌍</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-900 border-2 border-primary"></div>
+          <span>Aujourd'hui</span>
         </div>
       </div>
 

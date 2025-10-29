@@ -10,23 +10,7 @@ import { Edit, Trash2, Circle, CheckCircle, Bell, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-
-interface Task {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string | Date;
-  estimatedHours?: number;
-  status: string;
-  priority: string;
-  isShared?: boolean;
-  isActive?: boolean;
-  reminderDate?: string | Date;
-  Project?: {
-    name: string;
-    color: string;
-  };
-}
+import { Task, STATUS_COLORS } from "./task-types";
 
 interface TaskKanbanProps {
   tasks: Task[];
@@ -37,10 +21,10 @@ interface TaskKanbanProps {
 }
 
 const TASK_STATUSES = [
-  { id: "TODO", name: "À faire", color: "#6B7280" },
-  { id: "IN_PROGRESS", name: "En cours", color: "#F59E0B" },
+  { id: "TODO", name: "À faire", color: STATUS_COLORS.TODO },
+  { id: "IN_PROGRESS", name: "En cours", color: STATUS_COLORS.IN_PROGRESS },
   { id: "REVIEW", name: "En revue", color: "#8B5CF6" },
-  { id: "DONE", name: "Terminé", color: "#10B981" },
+  { id: "DONE", name: "Terminé", color: STATUS_COLORS.DONE },
   { id: "BLOCKED", name: "Bloqué", color: "#EF4444" },
 ] as const;
 
@@ -78,7 +62,7 @@ function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle }:
           {...listeners}
           {...attributes}
           className={cn(
-            "p-3 cursor-pointer hover:shadow-md transition-all",
+            "p-3 cursor-pointer transition-all",
             isDragging && "opacity-50"
           )}
           onClick={() => onEventClick(task)}
@@ -282,7 +266,7 @@ export function TaskKanban({
 
           <DragOverlay>
             {activeTask && (
-              <Card className="p-3 shadow-lg opacity-90">
+              <Card className="p-3 opacity-90">
                 <h4 className="font-medium text-sm">{activeTask.name}</h4>
               </Card>
             )}
@@ -323,7 +307,7 @@ export function TaskKanban({
 
         <DragOverlay>
           {activeTask && (
-            <Card className="p-3 shadow-lg opacity-90">
+            <Card className="p-3 opacity-90">
               <h4 className="font-medium text-sm">{activeTask.name}</h4>
             </Card>
           )}

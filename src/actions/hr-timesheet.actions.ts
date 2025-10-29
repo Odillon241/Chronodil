@@ -924,6 +924,77 @@ export const getHRTimesheetStats = authActionClient
 // ============================================
 
 /**
+ * Mettre à jour le statut d'un timesheet RH (pour drag & drop)
+ */
+export const updateHRTimesheetStatus = authActionClient
+  .schema(
+    z.object({
+      timesheetId: z.string(),
+      status: z.enum(["DRAFT", "PENDING", "MANAGER_APPROVED", "APPROVED", "REJECTED"]),
+    })
+  )
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId, userRole } = ctx;
+    const { timesheetId, status } = parsedInput;
+
+    // Récupérer le timesheet
+    const timesheet = await prisma.hRTimesheet.findUnique({
+      where: { id: timesheetId },
+      include: {
+        User: true,
+      },
+    });
+
+    if (!timesheet) {
+      throw new Error("Timesheet non trouvé");
+    }
+
+    // Vérifier les permissions selon le statut cible
+    // L'utilisateur propriétaire peut uniquement mettre en DRAFT ou PENDING
+    if (timesheet.userId === userId) {
+      if (status !== "DRAFT" && status !== "PENDING") {
+        throw new Error("Vous ne pouvez pas changer le statut vers cet état");
+      }
+    } else {
+      // Les managers peuvent changer vers MANAGER_APPROVED ou REJECTED
+      const isManager = timesheet.User.managerId === userId;
+      const isAdmin = userRole === "ADMIN" || userRole === "HR";
+
+      if (!isManager && !isAdmin) {
+        throw new Error("Vous n'avez pas la permission de modifier ce timesheet");
+      }
+
+      // Les managers peuvent mettre en MANAGER_APPROVED ou REJECTED
+      // Les admins peuvent mettre en APPROVED ou REJECTED
+      if (isManager && status !== "MANAGER_APPROVED" && status !== "REJECTED" && status !== "PENDING") {
+        throw new Error("Statut non autorisé pour un manager");
+      }
+
+      if (isAdmin && status === "MANAGER_APPROVED") {
+        // Les admins ne peuvent pas mettre en MANAGER_APPROVED
+        throw new Error("Statut non autorisé pour un administrateur");
+      }
+    }
+
+    // Mettre à jour le statut
+    const updatedTimesheet = await prisma.hRTimesheet.update({
+      where: { id: timesheetId },
+      data: {
+        status,
+        updatedAt: new Date(),
+      },
+      include: {
+        activities: true,
+        User: true,
+      },
+    });
+
+    revalidatePath("/dashboard/hr-timesheet");
+    revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+    return updatedTimesheet;
+  });
+
+/**
  * Mettre à jour le total des heures d'un timesheet
  */
 async function updateTimesheetTotalHours(timesheetId: string) {

@@ -990,7 +990,7 @@ export default function ProjectsPage() {
                   : "bg-green-500";
 
             return (
-              <Card key={project.id} className="hover:shadow-lg transition-shadow">
+              <Card key={project.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
@@ -1210,7 +1210,7 @@ export default function ProjectsPage() {
               : 0;
 
             return (
-              <Card key={project.id} className="hover:shadow-md transition-shadow">
+              <Card key={project.id}>
                 <CardContent className="py-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 flex-1 min-w-0">

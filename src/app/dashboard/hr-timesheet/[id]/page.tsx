@@ -252,7 +252,7 @@ export default function HRTimesheetDetailPage() {
       </div>
 
       {/* Informations générales */}
-      <Card>
+      <Card className="shadow-none border-0">
         <CardHeader>
           <CardTitle>Informations générales</CardTitle>
         </CardHeader>
@@ -292,7 +292,7 @@ export default function HRTimesheetDetailPage() {
       </Card>
 
       {/* Signatures et validation */}
-      <Card>
+      <Card className="shadow-none border-0">
         <CardHeader>
           <CardTitle>Workflow de validation</CardTitle>
         </CardHeader>
@@ -329,7 +329,7 @@ export default function HRTimesheetDetailPage() {
                       {timesheet.ManagerSigner && ` par ${timesheet.ManagerSigner.name}`}
                     </p>
                     {timesheet.managerComments && (
-                      <p className="text-sm text-muted-foreground mt-2 p-2 bg-muted rounded">
+                      <p className="text-sm text-muted-foreground mt-2">
                         Commentaires: {timesheet.managerComments}
                       </p>
                     )}
@@ -354,7 +354,7 @@ export default function HRTimesheetDetailPage() {
                       {timesheet.OdillonSigner && ` par ${timesheet.OdillonSigner.name}`}
                     </p>
                     {timesheet.odillonComments && (
-                      <p className="text-sm text-muted-foreground mt-2 p-2 bg-muted rounded">
+                      <p className="text-sm text-muted-foreground mt-2">
                         Commentaires: {timesheet.odillonComments}
                       </p>
                     )}
@@ -387,7 +387,7 @@ export default function HRTimesheetDetailPage() {
           )}
 
           {timesheet.status === "REJECTED" && (
-            <div className="mt-6 p-4 bg-destructive/10 border border-destructive rounded-lg">
+            <div className="mt-6">
               <div className="flex items-start gap-2">
                 <XCircle className="h-5 w-5 text-destructive mt-0.5" />
                 <div>
@@ -405,7 +405,7 @@ export default function HRTimesheetDetailPage() {
       </Card>
 
       {/* Liste des activités */}
-      <Card>
+      <Card className="shadow-none border-0">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -428,7 +428,7 @@ export default function HRTimesheetDetailPage() {
         </CardHeader>
         <CardContent>
           {timesheet.activities.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg bg-muted/30">
+            <div className="text-center py-12">
               <p className="text-muted-foreground">Aucune activité enregistrée</p>
             </div>
           ) : (
@@ -436,12 +436,12 @@ export default function HRTimesheetDetailPage() {
               {Object.entries(groupedActivities).map(([category, activities]) => (
                 <div key={category}>
                   <h3 className="font-semibold mb-3 text-primary">{category}</h3>
-                  <div className="space-y-3">
-                    {activities.map((activity) => (
-                      <div key={activity.id} className="p-4 border rounded-lg">
-                        <div className="flex items-start justify-between">
+                  <div className="space-y-0">
+                    {activities.map((activity, index) => (
+                      <div key={activity.id} className="">
+                        <div className="flex items-start justify-between py-3">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-1">
                               {getActivityTypeBadge(activity.activityType)}
                               <Badge variant="outline">
                                 {getPeriodicityLabel(activity.periodicity)}
@@ -481,23 +481,20 @@ export default function HRTimesheetDetailPage() {
                             </Button>
                           )}
                         </div>
+                        {index < activities.length - 1 && <Separator className="my-2" />}
                       </div>
                     ))}
                   </div>
                 </div>
               ))}
 
-              {/* Total */}
-              <Card className="bg-primary/10 border-primary">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold text-lg">Total heures</p>
-                    <p className="text-3xl font-bold text-primary">
-                      {timesheet.totalHours.toFixed(1)}h
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Total simplifié */}
+              <div className="flex items-center justify-between pt-2">
+                <p className="font-medium">Total heures</p>
+                <p className="text-2xl font-bold text-primary">
+                  {timesheet.totalHours.toFixed(1)}h
+                </p>
+              </div>
             </div>
           )}
         </CardContent>

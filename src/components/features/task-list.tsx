@@ -8,23 +8,7 @@ import { Edit, Trash2, Circle, CheckCircle, Bell, Users, Calendar as CalendarIco
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-
-interface Task {
-  id: string;
-  name: string;
-  description?: string;
-  dueDate?: string | Date;
-  estimatedHours?: number;
-  status: string;
-  priority: string;
-  isShared?: boolean;
-  isActive?: boolean;
-  reminderDate?: string | Date;
-  Project?: {
-    name: string;
-    color: string;
-  };
-}
+import { Task, STATUS_COLORS } from "./task-types";
 
 interface TaskListProps {
   tasks: Task[];
@@ -34,10 +18,10 @@ interface TaskListProps {
 }
 
 const TASK_STATUSES = [
-  { id: "TODO", name: "À faire", color: "#6B7280" },
-  { id: "IN_PROGRESS", name: "En cours", color: "#F59E0B" },
+  { id: "TODO", name: "À faire", color: STATUS_COLORS.TODO },
+  { id: "IN_PROGRESS", name: "En cours", color: STATUS_COLORS.IN_PROGRESS },
   { id: "REVIEW", name: "En revue", color: "#8B5CF6" },
-  { id: "DONE", name: "Terminé", color: "#10B981" },
+  { id: "DONE", name: "Terminé", color: STATUS_COLORS.DONE },
   { id: "BLOCKED", name: "Bloqué", color: "#EF4444" },
 ];
 
