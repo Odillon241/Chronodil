@@ -37,7 +37,7 @@ export function TimesheetEntryCard({
   const statusConfig = STATUS_CONFIG[entry.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.DRAFT;
 
   return (
-    <div className="p-3 border rounded-lg space-y-1">
+    <div className="p-3 border rounded-lg bg-card space-y-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {entry.project?.color && (

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Library, Edit2 } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -30,14 +30,6 @@ import {
   getActivityCatalog,
 } from "@/actions/hr-timesheet.actions";
 import { useRouter, useParams } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface Activity {
   id: string;
@@ -88,8 +80,6 @@ export default function EditHRTimesheetPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
-  const [showCatalog, setShowCatalog] = useState(false);
-  const [catalogFilter, setCatalogFilter] = useState({ category: "all", type: "all" });
 
   const {
     register,
@@ -200,17 +190,6 @@ export default function EditHRTimesheetPage() {
     }
   };
 
-  const handleAddFromCatalog = (item: CatalogItem) => {
-    setValue("activityType", item.type as any);
-    setValue("activityName", item.name);
-    setValue("catalogId", item.id);
-    if (item.defaultPeriodicity) {
-      setValue("periodicity", item.defaultPeriodicity as any);
-    }
-    setShowCatalog(false);
-    setShowActivityForm(true);
-  };
-
   const calculateActivityDuration = (start: Date, end: Date): number => {
     const days = differenceInDays(end, start);
     return days * 24;
@@ -247,20 +226,8 @@ export default function EditHRTimesheetPage() {
     return null;
   }
 
-  const categories = Array.from(new Set(catalog.map(item => item.category))).sort();
-  const filteredCatalog = catalog.filter(item => {
-    if (catalogFilter.category && catalogFilter.category !== 'all' && item.category !== catalogFilter.category) return false;
-    if (catalogFilter.type && catalogFilter.type !== 'all' && item.type !== catalogFilter.type) return false;
-    return true;
-  });
-
-  const groupedCatalog = filteredCatalog.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {} as Record<string, CatalogItem[]>);
+  // Filtrer les activités opérationnelles du catalogue
+  const operationalActivities = catalog.filter(item => item.type === "OPERATIONAL");
 
   const groupedActivities = timesheet.activities.reduce((acc, activity) => {
     const category = activity.ActivityCatalog?.category || "Autres";
@@ -326,87 +293,6 @@ export default function EditHRTimesheetPage() {
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Dialog open={showCatalog} onOpenChange={setShowCatalog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Library className="h-4 w-4 mr-2" />
-                    Catalogue
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Catalogue d'activités RH</DialogTitle>
-                    <DialogDescription>
-                      Sélectionnez une activité prédéfinie du catalogue
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Filtres catalogue */}
-                  <div className="grid gap-4 md:grid-cols-2 mb-4">
-                    <div className="space-y-2">
-                      <Label>Catégorie</Label>
-                      <Select
-                        value={catalogFilter.category}
-                        onValueChange={(value) => setCatalogFilter({ ...catalogFilter, category: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Toutes" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toutes</SelectItem>
-                          {categories.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Type</Label>
-                      <Select
-                        value={catalogFilter.type}
-                        onValueChange={(value) => setCatalogFilter({ ...catalogFilter, type: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Tous" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tous</SelectItem>
-                          <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
-                          <SelectItem value="REPORTING">Reporting</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Liste des activités par catégorie */}
-                  <div className="space-y-6">
-                    {Object.entries(groupedCatalog).map(([category, items]) => (
-                      <div key={category}>
-                        <h3 className="font-semibold mb-2 text-primary">{category}</h3>
-                        <div className="grid gap-2">
-                          {items.map(item => (
-                            <Button
-                              key={item.id}
-                              variant="outline"
-                              className="justify-start h-auto py-2"
-                              onClick={() => handleAddFromCatalog(item)}
-                            >
-                              <div className="flex items-center gap-2 w-full">
-                                <Badge variant={item.type === "OPERATIONAL" ? "default" : "secondary"}>
-                                  {item.type === "OPERATIONAL" ? "OP" : "RP"}
-                                </Badge>
-                                <span className="flex-1 text-left">{item.name}</span>
-                              </div>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
-
               <Button
                 onClick={() => setShowActivityForm(!showActivityForm)}
                 className="bg-primary hover:bg-primary"
@@ -441,11 +327,41 @@ export default function EditHRTimesheetPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="activityName">Nom de l'activité *</Label>
-                    <Input
-                      id="activityName"
-                      placeholder="Description de l'activité"
-                      {...register("activityName")}
-                    />
+                    {watch("activityType") === "OPERATIONAL" && operationalActivities.length > 0 ? (
+                      <Select
+                        value={watch("activityName") || ""}
+                        onValueChange={(value) => {
+                          const selectedActivity = operationalActivities.find(act => act.name === value);
+                          if (selectedActivity) {
+                            setValue("activityName", selectedActivity.name);
+                            setValue("catalogId", selectedActivity.id);
+                            if (selectedActivity.defaultPeriodicity) {
+                              setValue("periodicity", selectedActivity.defaultPeriodicity as any);
+                            }
+                            if (selectedActivity.description) {
+                              setValue("description", selectedActivity.description);
+                            }
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner une activité du catalogue" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px] overflow-y-auto">
+                          {operationalActivities.map((activity) => (
+                            <SelectItem key={activity.id} value={activity.name}>
+                              {activity.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id="activityName"
+                        placeholder="Description de l'activité"
+                        {...register("activityName")}
+                      />
+                    )}
                     {errors.activityName && (
                       <p className="text-sm text-destructive">{errors.activityName.message}</p>
                     )}
@@ -574,7 +490,7 @@ export default function EditHRTimesheetPage() {
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <p className="text-muted-foreground">Aucune activité ajoutée</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Cliquez sur "Nouvelle activité" ou "Catalogue" pour commencer
+                Cliquez sur "Nouvelle activité" pour commencer
               </p>
             </div>
           ) : (

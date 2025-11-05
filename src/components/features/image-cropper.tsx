@@ -74,7 +74,7 @@ export function ImageCropper({ src, onCropComplete, onCancel }: ImageCropperProp
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative h-96 border rounded-lg overflow-hidden">
+        <div className="relative h-96 border rounded-lg overflow-hidden bg-muted">
           <Cropper
             ref={cropperRef}
             src={src}

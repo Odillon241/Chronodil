@@ -4,10 +4,21 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, LayoutGridIcon, Trash2, Send } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send } from "lucide-react";
+import { Filters } from "@/components/ui/shadcn-io/navbar-15/Filters";
+import type { FilterGroup, FilterOption } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -32,6 +43,7 @@ import {
   cancelHRTimesheetSubmission,
   getHRTimesheetsForApproval,
   updateHRTimesheetStatus,
+  getHRTimesheet,
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
 import {
@@ -39,7 +51,6 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { HRTimesheetStatsChart } from "@/components/features/hr-timesheet-stats-chart";
 import {
   CalendarBody,
   CalendarDate,
@@ -140,15 +151,111 @@ export default function HRTimesheetPage() {
   const [myTimesheets, setMyTimesheets] = useState<HRTimesheet[]>([]);
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [currentView, setCurrentView] = useState<string>("cards");
+  const [currentView, setCurrentView] = useState<string>("table");
   const [dataView, setDataView] = useState<"my" | "pending">("my");
+  const [selectedTimesheet, setSelectedTimesheet] = useState<HRTimesheet | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewTimesheet, setPreviewTimesheet] = useState<any>(null);
 
   const [filters, setFilters] = useState({
     status: "all",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
   });
+
+  // Initialisation des groupes de filtres
+  const [filterGroups, setFilterGroups] = useState<FilterGroup[]>([
+    {
+      id: "status",
+      label: "Statut",
+      options: [
+        { id: "all", label: "Tous", checked: true },
+        { id: "DRAFT", label: "Brouillon", checked: false },
+        { id: "PENDING", label: "En attente", checked: false },
+        { id: "MANAGER_APPROVED", label: "Validé Manager", checked: false },
+        { id: "APPROVED", label: "Approuvé", checked: false },
+        { id: "REJECTED", label: "Rejeté", checked: false },
+      ],
+    },
+  ]);
+
+  const handleFilterOptionChange = (groupId: string, optionId: string, checked: boolean) => {
+    setFilterGroups((prev) =>
+      prev.map((group) => {
+        if (group.id === groupId) {
+          const updatedOptions = group.options.map((option) => {
+            if (option.id === optionId) {
+              return { ...option, checked };
+            }
+            // Si on coche "Tous", cocher tous les autres
+            if (optionId === "all" && checked) {
+              return { ...option, checked: true };
+            }
+            // Si on décoche "Tous", décocher tous les autres
+            if (optionId === "all" && !checked) {
+              return { ...option, checked: false };
+            }
+            // Si on coche un autre que "Tous", décocher "Tous"
+            if (optionId !== "all" && checked && option.id === "all") {
+              return { ...option, checked: false };
+            }
+            return option;
+          });
+          return { ...group, options: updatedOptions };
+        }
+        return group;
+      })
+    );
+    
+    // Appliquer les filtres automatiquement lors du changement
+    setTimeout(() => {
+      applyFiltersFromGroups();
+    }, 0);
+  };
+
+  const applyFiltersFromGroups = () => {
+    const statusGroup = filterGroups.find((g) => g.id === "status");
+    const allChecked = statusGroup?.options.find((opt) => opt.id === "all")?.checked;
+    
+    // Si "Tous" est coché, on ne filtre pas par statut
+    if (allChecked) {
+      setFilters({
+        ...filters,
+        status: "all",
+      });
+    } else {
+      // Sinon, on prend le premier statut coché
+      const selectedStatus = statusGroup?.options.find((opt) => opt.checked && opt.id !== "all");
+      setFilters({
+        ...filters,
+        status: selectedStatus?.id || "all",
+      });
+    }
+    loadMyTimesheets();
+  };
+
+  const resetFilters = () => {
+    setFilterGroups([
+      {
+        id: "status",
+        label: "Statut",
+        options: [
+          { id: "all", label: "Tous", checked: true },
+          { id: "DRAFT", label: "Brouillon", checked: false },
+          { id: "PENDING", label: "En attente", checked: false },
+          { id: "MANAGER_APPROVED", label: "Validé Manager", checked: false },
+          { id: "APPROVED", label: "Approuvé", checked: false },
+          { id: "REJECTED", label: "Rejeté", checked: false },
+        ],
+      },
+    ]);
+    setFilters({
+      status: "all",
+      startDate: undefined,
+      endDate: undefined,
+    });
+    loadMyTimesheets();
+  };
 
   const loadMyTimesheets = useCallback(async () => {
     try {
@@ -262,15 +369,7 @@ export default function HRTimesheetPage() {
   };
 
   const applyFilters = () => {
-    loadMyTimesheets();
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      status: "all",
-      startDate: undefined,
-      endDate: undefined,
-    });
+    applyFiltersFromGroups();
   };
 
   const getStatusBadge = (status: string) => {
@@ -521,37 +620,64 @@ export default function HRTimesheetPage() {
       )
     );
 
-    // Scroller vers la dernière feuille de temps enregistrée
-    const lastTimesheet = useMemo(() => {
-      if (currentTimesheets.length === 0) return null;
-      return currentTimesheets.reduce((latest, current) =>
-        new Date(current.weekStartDate) > new Date(latest.weekStartDate) ? current : latest
-      );
-    }, [currentTimesheets]);
-
-    const lastFeature = useMemo(() => {
-      if (!lastTimesheet) return null;
-      return features.find(f => f.id === lastTimesheet.id);
-    }, [lastTimesheet, features]);
-
-    // Scroller le Gantt vers la dernière feuille
+    // Scroller le Gantt vers la date du jour (Today) au chargement
     useEffect(() => {
-      if (lastFeature && ganttRef.current) {
-        // Attendre que le Gantt soit rendu
-        setTimeout(() => {
-          const ganttContainer = ganttRef.current?.querySelector('[style*="--gantt-zoom"]') as HTMLElement;
-          if (ganttContainer) {
-            // Calculer la position de la dernière feuille
-            // Le Gantt a une largeur de colonne qui dépend du range et du zoom
-            // On va chercher l'élément dans le DOM et le scroller en vue
-            const featureElement = ganttRef.current?.querySelector(`[data-feature-id="${lastFeature.id}"]`) as HTMLElement;
-            if (featureElement) {
-              ganttContainer.scrollLeft = featureElement.offsetLeft - 100;
+      if (ganttRef.current) {
+        // Attendre que le Gantt soit complètement rendu
+        const timeoutId = setTimeout(() => {
+          // Le conteneur scrollable a la classe "gantt" (voir GanttProvider)
+          const ganttContainer = ganttRef.current?.querySelector('.gantt') as HTMLElement;
+          if (!ganttContainer) return;
+
+          // Chercher l'élément "Today" dans le DOM
+          // Le composant GanttToday crée un div avec le texte "Today"
+          if (!ganttRef.current) return;
+          const allElements = ganttRef.current.querySelectorAll('*');
+          let todayContainerElement: HTMLElement | null = null;
+          
+          for (const el of allElements) {
+            // Chercher l'élément qui contient exactement le texte "Today"
+            if (el.textContent?.trim() === 'Today' || el.textContent?.includes('Today')) {
+              // Trouver l'élément parent qui a le transform (c'est le conteneur positionné)
+              let parent = el.parentElement;
+              while (parent && parent !== ganttRef.current) {
+                const style = window.getComputedStyle(parent);
+                // Le conteneur de Today a un transform avec translateX et position absolute
+                if (style.transform && style.transform !== 'none' && style.position === 'absolute') {
+                  todayContainerElement = parent as HTMLElement;
+                  break;
+                }
+                parent = parent.parentElement;
+              }
+              if (todayContainerElement) break;
             }
           }
-        }, 100);
+          
+          if (todayContainerElement) {
+            // Extraire la position translateX depuis le transform CSS
+            const computedStyle = window.getComputedStyle(todayContainerElement);
+            const transform = computedStyle.transform;
+            
+            if (transform && transform !== 'none') {
+              try {
+                const matrix = new DOMMatrix(transform);
+                const translateX = matrix.m41; // m41 correspond à translateX
+                
+                // Centrer la vue sur "Today" en soustrayant la moitié de la largeur du conteneur
+                const containerWidth = ganttContainer.clientWidth;
+                const scrollPosition = Math.max(0, translateX - containerWidth / 2);
+                ganttContainer.scrollLeft = scrollPosition;
+              } catch (error) {
+                // Fallback si DOMMatrix n'est pas supporté
+                console.warn('Impossible de calculer la position de Today:', error);
+              }
+            }
+          }
+        }, 300); // Délai pour s'assurer que le Gantt est complètement rendu
+
+        return () => clearTimeout(timeoutId);
       }
-    }, [lastFeature]);
+    }, [ganttRange, ganttZoom]);
 
     // Raccourcis clavier pour le zoom
     useEffect(() => {
@@ -832,6 +958,11 @@ export default function HRTimesheetPage() {
 
   const ListViewContent = () => {
     const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const clickStatesRef = useRef<Map<string, { startTime: number; isDragging: boolean }>>(new Map());
+    
+    const handleItemClick = (id: string) => {
+      router.push(`/dashboard/hr-timesheet/${id}`);
+    };
 
     const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
@@ -887,34 +1018,75 @@ export default function HRTimesheetPage() {
             <ListItems>
               {features
                 .filter((feature) => feature.status.id === status.id)
-                .map((feature, index) => (
-                  <ListItem
-                    id={feature.id}
-                    index={index}
-                    key={feature.id}
-                    name={feature.name}
-                    parent={feature.status.name}
-                  >
-                    <div
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: feature.status.color }}
-                    />
-                    <div className="flex-1">
-                      <p className="m-0 font-medium text-sm">
-                        {feature.name}
-                      </p>
-                      <p className="m-0 text-muted-foreground text-xs">
-                        {feature.totalHours.toFixed(1)}h
-                      </p>
-                    </div>
-                    <Avatar className="h-4 w-4 shrink-0">
-                      <AvatarImage src={feature.owner.image} />
-                      <AvatarFallback>
-                        {feature.owner.name?.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </ListItem>
-                ))}
+                .map((feature, index) => {
+                  if (!clickStatesRef.current.has(feature.id)) {
+                    clickStatesRef.current.set(feature.id, { startTime: 0, isDragging: false });
+                  }
+                  const clickState = clickStatesRef.current.get(feature.id)!;
+                  
+                  const handleMouseDown = () => {
+                    clickState.startTime = Date.now();
+                    clickState.isDragging = false;
+                  };
+                  
+                  const handleMouseMove = () => {
+                    if (clickState.startTime > 0) {
+                      clickState.isDragging = true;
+                    }
+                  };
+                  
+                  const handleClick = (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    const timeDiff = Date.now() - clickState.startTime;
+                    if (!clickState.isDragging && timeDiff < 200 && timeDiff > 0) {
+                      handleItemClick(feature.id);
+                    }
+                    clickState.startTime = 0;
+                    clickState.isDragging = false;
+                  };
+                  
+                  return (
+                    <ListItem
+                      id={feature.id}
+                      index={index}
+                      key={feature.id}
+                      name={feature.name}
+                      parent={feature.status.name}
+                    >
+                      <div
+                        className="h-2 w-2 shrink-0 rounded-full cursor-pointer"
+                        style={{ backgroundColor: feature.status.color }}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onClick={handleClick}
+                      />
+                      <div 
+                        className="flex-1 cursor-pointer"
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onClick={handleClick}
+                      >
+                        <p className="m-0 font-medium text-sm">
+                          {feature.name}
+                        </p>
+                        <p className="m-0 text-muted-foreground text-xs">
+                          {feature.totalHours.toFixed(1)}h
+                        </p>
+                      </div>
+                      <Avatar 
+                        className="h-4 w-4 shrink-0 cursor-pointer"
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onClick={handleClick}
+                      >
+                        <AvatarImage src={feature.owner.image} />
+                        <AvatarFallback>
+                          {feature.owner.name?.slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </ListItem>
+                  );
+                })}
             </ListItems>
           </ListGroup>
         ))}
@@ -924,6 +1096,11 @@ export default function HRTimesheetPage() {
 
   const KanbanViewContent = () => {
     const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const clickStatesRef = useRef<Map<string, { startTime: number; isDragging: boolean }>>(new Map());
+    
+    const handleCardClick = (id: string) => {
+      router.push(`/dashboard/hr-timesheet/${id}`);
+    };
 
     const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
@@ -982,37 +1159,70 @@ export default function HRTimesheetPage() {
           <KanbanBoard id={column.id} key={column.id}>
             <KanbanHeader>{column.name}</KanbanHeader>
             <KanbanCards id={column.id}>
-              {(feature: typeof features[number]) => (
-                <KanbanCard
-                  column={column.id}
-                  id={feature.id}
-                  key={feature.id}
-                  name={feature.name}
-                >
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="m-0 font-medium text-sm">
-                          {feature.name}
-                        </p>
-                        <p className="m-0 text-muted-foreground text-xs">
-                          {feature.product.name}
-                        </p>
+              {(feature: typeof features[number]) => {
+                if (!clickStatesRef.current.has(feature.id)) {
+                  clickStatesRef.current.set(feature.id, { startTime: 0, isDragging: false });
+                }
+                const clickState = clickStatesRef.current.get(feature.id)!;
+                
+                const handleMouseDown = () => {
+                  clickState.startTime = Date.now();
+                  clickState.isDragging = false;
+                };
+                
+                const handleMouseMove = () => {
+                  if (clickState.startTime > 0) {
+                    clickState.isDragging = true;
+                  }
+                };
+                
+                const handleClick = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  const timeDiff = Date.now() - clickState.startTime;
+                  if (!clickState.isDragging && timeDiff < 200 && timeDiff > 0) {
+                    handleCardClick(feature.id);
+                  }
+                  clickState.startTime = 0;
+                  clickState.isDragging = false;
+                };
+                
+                return (
+                  <KanbanCard
+                    column={column.id}
+                    id={feature.id}
+                    key={feature.id}
+                    name={feature.name}
+                  >
+                    <div 
+                      className="flex flex-col gap-2 cursor-pointer"
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onClick={handleClick}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="m-0 font-medium text-sm">
+                            {feature.name}
+                          </p>
+                          <p className="m-0 text-muted-foreground text-xs">
+                            {feature.product.name}
+                          </p>
+                        </div>
+                        <Avatar className="h-6 w-6 shrink-0">
+                          <AvatarImage src={feature.owner.image} />
+                          <AvatarFallback>
+                            {feature.owner.name?.slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
-                      <Avatar className="h-6 w-6 shrink-0">
-                        <AvatarImage src={feature.owner.image} />
-                        <AvatarFallback>
-                          {feature.owner.name?.slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{format(feature.startAt, "dd/MM", { locale: fr })} - {format(feature.endAt, "dd/MM", { locale: fr })}</span>
+                        <span className="font-bold text-primary">{feature.totalHours.toFixed(1)}h</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{format(feature.startAt, "dd/MM", { locale: fr })} - {format(feature.endAt, "dd/MM", { locale: fr })}</span>
-                      <span className="font-bold text-primary">{feature.totalHours.toFixed(1)}h</span>
-                    </div>
-                  </div>
-                </KanbanCard>
-              )}
+                  </KanbanCard>
+                );
+              }}
             </KanbanCards>
           </KanbanBoard>
         )}
@@ -1021,6 +1231,10 @@ export default function HRTimesheetPage() {
   };
 
   const TableViewContent = () => {
+    const handleRowClick = (id: string) => {
+      router.push(`/dashboard/hr-timesheet/${id}`);
+    };
+
     const columns: ColumnDef<typeof timesheetsAsFeatures[number]>[] = [
       {
         accessorKey: 'name',
@@ -1099,34 +1313,91 @@ export default function HRTimesheetPage() {
     ];
 
     return (
-      <div className="size-full overflow-auto">
-        <TableProvider columns={columns} data={timesheetsAsFeatures}>
-          <TableHeader>
-            {({ headerGroup }) => (
-              <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
-                {({ header }) => <TableHead header={header} key={header.id} />}
-              </TableHeaderGroup>
-            )}
-          </TableHeader>
-          <TableBody>
-            {({ row }) => (
-              <TableRow key={row.id} row={row}>
-                {({ cell }) => <TableCell cell={cell} key={cell.id} />}
-              </TableRow>
-            )}
-          </TableBody>
-        </TableProvider>
+      <div className="flex flex-col h-full gap-4">
+        {/* Groupe de boutons d'action */}
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          <Button
+            onClick={() => router.push("/dashboard/hr-timesheet/new")}
+            className="bg-primary hover:bg-primary"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau timesheet
+          </Button>
+          {dataView === "my" && (
+            <Filters
+              filterGroups={filterGroups}
+              onFilterChange={handleFilterOptionChange}
+              onClearFilters={resetFilters}
+              startDate={filters.startDate}
+              endDate={filters.endDate}
+              onDateChange={(start, end) => {
+                setFilters({ ...filters, startDate: start, endDate: end });
+                loadMyTimesheets();
+              }}
+            />
+          )}
+          {dataView === "pending" && currentTimesheets.length > 0 && (
+            <Badge variant="secondary" className="ml-auto">
+              {currentTimesheets.length} timesheet(s) à valider
+            </Badge>
+          )}
+        </div>
+
+        {/* Tableau */}
+        <div className="flex-1 overflow-auto border rounded-lg">
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              Chargement...
+            </div>
+          ) : timesheetsAsFeatures.length === 0 ? (
+            <div className="text-center py-12 border rounded-lg bg-muted/30">
+              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground">Aucun timesheet trouvé</p>
+              {dataView === "my" && (
+                <Button
+                  onClick={() => router.push("/dashboard/hr-timesheet/new")}
+                  className="mt-4 bg-primary hover:bg-primary"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Créer mon premier timesheet
+                </Button>
+              )}
+            </div>
+          ) : (
+            <TableProvider columns={columns} data={timesheetsAsFeatures}>
+              <TableHeader>
+                {({ headerGroup }) => (
+                  <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
+                    {({ header }) => <TableHead header={header} key={header.id} />}
+                  </TableHeaderGroup>
+                )}
+              </TableHeader>
+              <TableBody>
+                {({ row }) => (
+                  <TableRow
+                    key={row.id}
+                    row={row}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick((row.original as { id: string }).id)}
+                  >
+                    {({ cell }) => <TableCell cell={cell} key={cell.id} />}
+                  </TableRow>
+                )}
+              </TableBody>
+            </TableProvider>
+          )}
+        </div>
       </div>
     );
   };
 
   const views = [
-    { id: 'cards', label: 'Cartes', icon: LayoutGridIcon },
+    { id: 'table', label: 'Tableau', icon: TableIcon },
     { id: 'gantt', label: 'Gantt', icon: GanttChartSquareIcon },
     { id: 'calendar', label: 'Calendrier', icon: CalendarIcon },
     { id: 'list', label: 'Liste', icon: ListIcon },
     { id: 'kanban', label: 'Kanban', icon: KanbanSquareIcon },
-    { id: 'table', label: 'Tableau', icon: TableIcon },
   ];
 
   const renderCurrentView = () => {
@@ -1143,44 +1414,6 @@ export default function HRTimesheetPage() {
     );
 
     switch (currentView) {
-      case 'cards':
-        if (isLoading) return commonLoadingState;
-        if (currentTimesheets.length === 0) {
-          return (
-            <div className="text-center py-12 border rounded-lg bg-muted/30">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Aucun timesheet trouvé</p>
-              {dataView === "my" && (
-                <Button
-                  onClick={() => router.push("/dashboard/hr-timesheet/new")}
-                  className="mt-4 bg-primary hover:bg-primary"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Créer mon premier timesheet
-                </Button>
-              )}
-            </div>
-          );
-        }
-        return (
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 isolate">
-              {currentTimesheets.map((timesheet) => (
-                <TimesheetCard key={timesheet.id} timesheet={timesheet} isPending={dataView === "pending"} />
-              ))}
-            </div>
-            {dataView === "my" && currentTimesheets.length > 0 && (
-              <div className="isolate">
-                <HRTimesheetStatsChart
-                  draft={currentTimesheets.filter((t) => t.status === "DRAFT").length}
-                  pending={currentTimesheets.filter((t) => ["PENDING", "MANAGER_APPROVED"].includes(t.status)).length}
-                  approved={currentTimesheets.filter((t) => t.status === "APPROVED").length}
-                  rejected={currentTimesheets.filter((t) => t.status === "REJECTED").length}
-                />
-              </div>
-            )}
-          </div>
-        );
       case 'gantt':
         return timesheetsAsFeatures.length > 0 ? <GanttView /> : commonEmptyState;
       case 'calendar':
@@ -1190,7 +1423,7 @@ export default function HRTimesheetPage() {
       case 'kanban':
         return timesheetsAsFeatures.length > 0 ? <KanbanViewContent /> : commonEmptyState;
       case 'table':
-        return timesheetsAsFeatures.length > 0 ? <TableViewContent /> : commonEmptyState;
+        return <TableViewContent />;
       default:
         return commonEmptyState;
     }
@@ -1200,139 +1433,39 @@ export default function HRTimesheetPage() {
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-4 sm:gap-6 overflow-hidden">
       {/* En-tête */}
       <div className="flex flex-col gap-3 px-4 sm:px-0">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Feuilles de temps RH</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Gestion des timesheets hebdomadaires des activités RH
-            </p>
-          </div>
-          <Button
-            onClick={() => router.push("/dashboard/hr-timesheet/new")}
-            className="bg-primary hover:bg-primary w-full sm:w-auto"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau timesheet
-          </Button>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Feuilles de temps RH</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Gestion des timesheets hebdomadaires des activités RH
+          </p>
         </div>
 
         {/* Sélecteur de données */}
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
-          <div className="flex gap-2">
-            <Button
-              variant={dataView === "my" ? "default" : "outline"}
-              onClick={() => setDataView("my")}
-              size="sm"
-            >
-              Mes timesheets
-            </Button>
-            <Button
-              variant={dataView === "pending" ? "default" : "outline"}
-              onClick={() => setDataView("pending")}
-              size="sm"
-            >
-              À valider
-              {pendingTimesheets.length > 0 && (
-                <Badge variant="destructive" className="ml-2">
-                  {pendingTimesheets.length}
-                </Badge>
-              )}
-            </Button>
-          </div>
-
-          {dataView === "my" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Filtres
-            </Button>
-          )}
+        <div className="flex gap-2">
+          <Button
+            variant={dataView === "my" ? "default" : "outline"}
+            onClick={() => setDataView("my")}
+            size="sm"
+          >
+            Mes timesheets
+          </Button>
+          <Button
+            variant={dataView === "pending" ? "default" : "outline"}
+            onClick={() => setDataView("pending")}
+            size="sm"
+          >
+            À valider
+            {pendingTimesheets.length > 0 && (
+              <Badge variant="destructive" className="ml-2">
+                {pendingTimesheets.length}
+              </Badge>
+            )}
+          </Button>
         </div>
 
-        {/* Filtres */}
-        {showFilters && dataView === "my" && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label>Statut</Label>
-                    <Select
-                      value={filters.status}
-                      onValueChange={(value) => setFilters({ ...filters, status: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Tous" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous</SelectItem>
-                        <SelectItem value="DRAFT">Brouillon</SelectItem>
-                        <SelectItem value="PENDING">En attente</SelectItem>
-                        <SelectItem value="MANAGER_APPROVED">Validé Manager</SelectItem>
-                        <SelectItem value="APPROVED">Approuvé</SelectItem>
-                        <SelectItem value="REJECTED">Rejeté</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Date début</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {filters.startDate ? format(filters.startDate, "dd/MM/yyyy", { locale: fr }) : "Sélectionner..."}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <Calendar
-                          mode="single"
-                          selected={filters.startDate}
-                          onSelect={(d) => setFilters({ ...filters, startDate: d })}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Date fin</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {filters.endDate ? format(filters.endDate, "dd/MM/yyyy", { locale: fr }) : "Sélectionner..."}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <Calendar
-                          mode="single"
-                          selected={filters.endDate}
-                          onSelect={(d) => setFilters({ ...filters, endDate: d })}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button onClick={applyFilters} className="bg-primary hover:bg-primary">
-                    Appliquer
-                  </Button>
-                  <Button variant="outline" onClick={resetFilters}>
-                    <X className="h-4 w-4 mr-2" />
-                    Réinitialiser
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Menubar pour sélection de vues */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-start">
           <Menubar className="w-auto">
             {views.map((view) => (
               <MenubarMenu key={view.id}>
@@ -1360,6 +1493,178 @@ export default function HRTimesheetPage() {
       </div>
 
       <ConfirmationDialog />
+
+      {/* Dialog d'aperçu */}
+      <Dialog open={!!selectedTimesheet} onOpenChange={(open) => !open && setSelectedTimesheet(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu de la feuille de temps</DialogTitle>
+            <DialogDescription>
+              Semaine du {selectedTimesheet && format(new Date(selectedTimesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })} au {selectedTimesheet && format(new Date(selectedTimesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingPreview ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Chargement...</p>
+            </div>
+          ) : previewTimesheet ? (
+            <div className="space-y-4">
+              {/* Informations générales */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Informations générales</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Employé</p>
+                      <p className="font-medium">{previewTimesheet.employeeName}</p>
+                      {previewTimesheet.User && (
+                        <p className="text-sm text-muted-foreground">{previewTimesheet.User.email}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Poste</p>
+                      <p className="font-medium">{previewTimesheet.position}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Site</p>
+                      <p className="font-medium">{previewTimesheet.site}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total heures</p>
+                      <p className="text-2xl font-bold text-primary">{previewTimesheet.totalHours.toFixed(1)}h</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">Statut</p>
+                    {getStatusBadge(previewTimesheet.status)}
+                  </div>
+
+                  {previewTimesheet.employeeObservations && (
+                    <>
+                      <Separator className="my-4" />
+                      <div>
+                        <p className="text-sm font-medium mb-2">Observations de l'employé</p>
+                        <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
+                          {previewTimesheet.employeeObservations}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Activités */}
+              {previewTimesheet.activities && previewTimesheet.activities.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      Activités ({previewTimesheet.activities.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {previewTimesheet.activities.map((activity: any) => (
+                        <div key={activity.id} className="p-3 border rounded-lg">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant={activity.activityType === "OPERATIONAL" ? "default" : "secondary"}>
+                                  {activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+                                </Badge>
+                                <Badge variant="outline">{activity.periodicity}</Badge>
+                                <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
+                                  {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
+                                </Badge>
+                              </div>
+                              <h4 className="font-semibold">{activity.activityName}</h4>
+                              {activity.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                              )}
+                              <div className="flex items-center gap-4 mt-2 text-sm">
+                                <span className="text-muted-foreground">
+                                  {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })} → {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
+                                </span>
+                                <span className="font-bold text-primary">{activity.totalHours.toFixed(1)}h</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Signatures */}
+              {(previewTimesheet.employeeSignedAt || previewTimesheet.managerSignedAt || previewTimesheet.odillonSignedAt) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Signatures</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      {previewTimesheet.employeeSignedAt && (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>Signé employé le {format(new Date(previewTimesheet.employeeSignedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}</span>
+                        </div>
+                      )}
+                      {previewTimesheet.managerSignedAt && (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>
+                            Validé manager le {format(new Date(previewTimesheet.managerSignedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                            {previewTimesheet.ManagerSigner && ` par ${previewTimesheet.ManagerSigner.name}`}
+                          </span>
+                        </div>
+                      )}
+                      {previewTimesheet.odillonSignedAt && (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span>
+                            Approuvé final le {format(new Date(previewTimesheet.odillonSignedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                            {previewTimesheet.OdillonSigner && ` par ${previewTimesheet.OdillonSigner.name}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2 justify-end pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedTimesheet(null);
+                    router.push(`/dashboard/hr-timesheet/${previewTimesheet.id}`);
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Voir les détails complets
+                </Button>
+                {previewTimesheet.status === "DRAFT" && dataView === "my" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedTimesheet(null);
+                      router.push(`/dashboard/hr-timesheet/${previewTimesheet.id}/edit`);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Modifier
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

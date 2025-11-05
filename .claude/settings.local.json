@@ -37,7 +37,18 @@
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" status)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff --stat)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" log -3 --oneline)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .)"
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfeat: Major UI improvements and hydration fixes\n\nCRITICAL FIX - Avatar Hydration Mismatch:\n- Fix React hydration error in AppSidebar avatar component\n- Add suppressHydrationWarning to AvatarFallback\n- Use mounted state to prevent server/client mismatch\n- Avatar now shows ''U'' during SSR, then updates to user initials client-side\n\nUI Component Enhancements:\n- Enhanced task calendar with improved date handling and event display\n- Improved task views (Gantt, Kanban, List, Roadmap) with better UX\n- Updated shadcn UI components for better consistency\n- Added new task table component with TypeScript types\n\nHR Timesheet Improvements:\n- Enhanced HR timesheet page with better layout and functionality\n- Improved timesheet detail and validation pages\n- Added new actions for HR timesheet management\n\nDatabase & Schema Updates:\n- Updated Prisma schema with new fields and relations\n- Optimized database queries and indexes\n\nOther Improvements:\n- Updated global styles for better theming\n- Improved notification dropdown\n- Enhanced appearance settings section\n- Better mobile responsiveness across components\n\nFiles changed: 30 modified, 2 new files\nStats: +979 additions, -360 deletions\n\nBuild verified: ✅ 28 pages compiled successfully\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" push origin main)",
+      "Bash(nul)",
+      "Bash(test:*)",
+      "Bash(for file in src/app/dashboard/*/page.tsx src/app/dashboard/*/*/page.tsx)",
+      "Bash(do [ -f \"$file\" ])",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(taskkill:*)",
+      "Bash(if exist \".next\" rd /s /q \".next\")",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

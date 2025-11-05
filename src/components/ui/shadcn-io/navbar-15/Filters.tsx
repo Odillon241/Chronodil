@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { FilterIcon, XIcon } from 'lucide-react';
+import { Filter, X, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,10 @@ import {
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export interface FilterOption {
   id: string;
@@ -31,6 +35,9 @@ export interface FiltersProps {
   onFilterChange?: (groupId: string, optionId: string, checked: boolean) => void;
   onClearFilters?: () => void;
   className?: string;
+  startDate?: Date;
+  endDate?: Date;
+  onDateChange?: (startDate?: Date, endDate?: Date) => void;
 }
 
 const defaultFilterGroups: FilterGroup[] = [
@@ -57,45 +64,23 @@ const defaultFilterGroups: FilterGroup[] = [
 export const Filters = React.forwardRef<
   HTMLButtonElement,
   FiltersProps
->(({ filterGroups = defaultFilterGroups, onFilterChange, onClearFilters, className }, ref) => {
-  const [filters, setFilters] = React.useState(filterGroups);
-
+>(({ filterGroups = defaultFilterGroups, onFilterChange, onClearFilters, className, startDate, endDate, onDateChange }, ref) => {
   const handleFilterChange = (groupId: string, optionId: string, checked: boolean) => {
-    setFilters(prevFilters =>
-      prevFilters.map(group =>
-        group.id === groupId
-          ? {
-              ...group,
-              options: group.options.map(option =>
-                option.id === optionId ? { ...option, checked } : option
-              ),
-            }
-          : group
-      )
-    );
-
     if (onFilterChange) {
       onFilterChange(groupId, optionId, checked);
     }
   };
 
   const handleClearFilters = () => {
-    setFilters(prevFilters =>
-      prevFilters.map(group => ({
-        ...group,
-        options: group.options.map(option => ({ ...option, checked: false })),
-      }))
-    );
-
     if (onClearFilters) {
       onClearFilters();
     }
   };
 
-  const activeFiltersCount = filters.reduce(
+  const activeFiltersCount = filterGroups.reduce(
     (count, group) => count + group.options.filter(option => option.checked).length,
     0
-  );
+  ) + (startDate ? 1 : 0) + (endDate ? 1 : 0);
 
   return (
     <DropdownMenu>
@@ -106,8 +91,8 @@ export const Filters = React.forwardRef<
           size="sm"
           className={className}
         >
-          <FilterIcon className="mr-2 h-4 w-4" />
-          Filters
+          <Filter className="mr-2 h-4 w-4" />
+          Filtres
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
               {activeFiltersCount}
@@ -115,9 +100,9 @@ export const Filters = React.forwardRef<
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between px-2 py-1.5">
-          <DropdownMenuLabel className="p-0">Filters</DropdownMenuLabel>
+          <DropdownMenuLabel className="p-0">Filtres</DropdownMenuLabel>
           {activeFiltersCount > 0 && (
             <Button
               variant="ghost"
@@ -125,13 +110,13 @@ export const Filters = React.forwardRef<
               className="h-auto p-1 text-xs"
               onClick={handleClearFilters}
             >
-              <XIcon className="h-3 w-3 mr-1" />
-              Clear
+              <X className="h-3 w-3 mr-1" />
+              Effacer
             </Button>
           )}
         </div>
         <DropdownMenuSeparator />
-        {filters.map((group, groupIndex) => (
+        {filterGroups.map((group, groupIndex) => (
           <div key={group.id}>
             <DropdownMenuLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 py-1.5">
               {group.label}
@@ -147,9 +132,51 @@ export const Filters = React.forwardRef<
                 {option.label}
               </DropdownMenuCheckboxItem>
             ))}
-            {groupIndex < filters.length - 1 && <DropdownMenuSeparator />}
+            {groupIndex < filterGroups.length - 1 && <DropdownMenuSeparator />}
           </div>
         ))}
+        {onDateChange && (
+          <>
+            <DropdownMenuSeparator />
+            <div className="px-2 py-2 space-y-3">
+              <DropdownMenuLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-0 py-1.5">
+                Période
+              </DropdownMenuLabel>
+              <div className="grid grid-cols-2 gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="justify-start text-xs h-8">
+                      <CalendarIcon className="mr-2 h-3 w-3" />
+                      {startDate ? format(startDate, "dd/MM/yyyy", { locale: fr }) : "Début"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={(d) => onDateChange(d, endDate)}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="justify-start text-xs h-8">
+                      <CalendarIcon className="mr-2 h-3 w-3" />
+                      {endDate ? format(endDate, "dd/MM/yyyy", { locale: fr }) : "Fin"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={(d) => onDateChange(startDate, d)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

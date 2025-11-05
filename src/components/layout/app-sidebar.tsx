@@ -307,11 +307,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {session?.user?.name || t("common.name")}
+                    <span className="truncate font-semibold" suppressHydrationWarning>
+                      {mounted ? (session?.user?.name || t("common.name")) : t("common.name")}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {session?.user?.email}
+                    <span className="truncate text-xs text-muted-foreground" suppressHydrationWarning>
+                      {mounted ? session?.user?.email : ""}
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />

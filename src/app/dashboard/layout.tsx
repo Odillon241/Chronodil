@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { NotificationDropdown } from "@/components/features/notification-dropdown";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
+import { SearchButtonWrapper } from "@/components/features/search-button-wrapper";
 import { CommandPalette } from "@/components/features/command-palette";
 import { SettingsProvider } from "@/components/providers/settings-provider";
 
@@ -28,7 +29,10 @@ export default function DashboardLayout({
                 <DynamicBreadcrumb />
               </Suspense>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-2">
+              <Suspense fallback={null}>
+                <SearchButtonWrapper />
+              </Suspense>
               <ModeToggle />
               <Suspense fallback={<div>Loading...</div>}>
                 <NotificationDropdown />

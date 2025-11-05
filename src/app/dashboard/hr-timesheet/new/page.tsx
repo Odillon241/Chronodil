@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Library } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -29,14 +29,6 @@ import {
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface Activity {
   activityType: "OPERATIONAL" | "REPORTING";
@@ -64,8 +56,6 @@ export default function NewHRTimesheetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
-  const [showCatalog, setShowCatalog] = useState(false);
-  const [catalogFilter, setCatalogFilter] = useState({ category: "all", type: "all" });
 
   const {
     register: registerTimesheet,
@@ -178,16 +168,6 @@ export default function NewHRTimesheetPage() {
     }
   };
 
-  const handleAddFromCatalog = (item: CatalogItem) => {
-    setActivityValue("activityType", item.type as any);
-    setActivityValue("activityName", item.name);
-    setActivityValue("catalogId", item.id);
-    if (item.defaultPeriodicity) {
-      setActivityValue("periodicity", item.defaultPeriodicity as any);
-    }
-    setShowCatalog(false);
-  };
-
   const calculateActivityDuration = (start: Date, end: Date): number => {
     const days = differenceInDays(end, start);
     return days * 24;
@@ -197,20 +177,8 @@ export default function NewHRTimesheetPage() {
     return sum + calculateActivityDuration(activity.startDate, activity.endDate);
   }, 0);
 
-  const categories = Array.from(new Set(catalog.map(item => item.category))).sort();
-  const filteredCatalog = catalog.filter(item => {
-    if (catalogFilter.category && catalogFilter.category !== "all" && item.category !== catalogFilter.category) return false;
-    if (catalogFilter.type && catalogFilter.type !== "all" && item.type !== catalogFilter.type) return false;
-    return true;
-  });
-
-  const groupedCatalog = filteredCatalog.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {} as Record<string, CatalogItem[]>);
+  // Filtrer les activités opérationnelles du catalogue
+  const operationalActivities = catalog.filter(item => item.type === "OPERATIONAL");
 
   return (
     <div className="flex flex-col gap-6">
@@ -354,88 +322,6 @@ export default function NewHRTimesheetPage() {
                 Ajoutez les activités réalisées durant cette semaine
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              <Dialog open={showCatalog} onOpenChange={setShowCatalog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Library className="h-4 w-4 mr-2" />
-                    Catalogue
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Catalogue d'activités RH</DialogTitle>
-                    <DialogDescription>
-                      Sélectionnez une activité prédéfinie du catalogue
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Filtres catalogue */}
-                  <div className="grid gap-4 md:grid-cols-2 mb-4">
-                    <div className="space-y-2">
-                      <Label>Catégorie</Label>
-                      <Select
-                        value={catalogFilter.category}
-                        onValueChange={(value) => setCatalogFilter({ ...catalogFilter, category: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Toutes" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toutes</SelectItem>
-                          {categories.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Type</Label>
-                      <Select
-                        value={catalogFilter.type}
-                        onValueChange={(value) => setCatalogFilter({ ...catalogFilter, type: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Tous" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tous</SelectItem>
-                          <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
-                          <SelectItem value="REPORTING">Reporting</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Liste des activités par catégorie */}
-                  <div className="space-y-6">
-                    {Object.entries(groupedCatalog).map(([category, items]) => (
-                      <div key={category}>
-                        <h3 className="font-semibold mb-2 text-primary">{category}</h3>
-                        <div className="grid gap-2">
-                          {items.map(item => (
-                            <Button
-                              key={item.id}
-                              variant="outline"
-                              className="justify-start h-auto py-2"
-                              onClick={() => handleAddFromCatalog(item)}
-                            >
-                              <div className="flex items-center gap-2 w-full">
-                                <Badge variant={item.type === "OPERATIONAL" ? "default" : "secondary"}>
-                                  {item.type === "OPERATIONAL" ? "OP" : "RP"}
-                                </Badge>
-                                <span className="flex-1 text-left">{item.name}</span>
-                              </div>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -461,11 +347,41 @@ export default function NewHRTimesheetPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="activityName">Nom de l'activité *</Label>
-                  <Input
-                    id="activityName"
-                    placeholder="Description de l'activité"
-                    {...registerActivity("activityName")}
-                  />
+                  {watchActivity("activityType") === "OPERATIONAL" && operationalActivities.length > 0 ? (
+                    <Select
+                      value={watchActivity("activityName") || ""}
+                      onValueChange={(value) => {
+                        const selectedActivity = operationalActivities.find(act => act.name === value);
+                        if (selectedActivity) {
+                          setActivityValue("activityName", selectedActivity.name);
+                          setActivityValue("catalogId", selectedActivity.id);
+                          if (selectedActivity.defaultPeriodicity) {
+                            setActivityValue("periodicity", selectedActivity.defaultPeriodicity as any);
+                          }
+                          if (selectedActivity.description) {
+                            setActivityValue("description", selectedActivity.description);
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une activité du catalogue" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px] overflow-y-auto">
+                        {operationalActivities.map((activity) => (
+                          <SelectItem key={activity.id} value={activity.name}>
+                            {activity.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="activityName"
+                      placeholder="Description de l'activité"
+                      {...registerActivity("activityName")}
+                    />
+                  )}
                   {activityErrors.activityName && (
                     <p className="text-sm text-destructive">{activityErrors.activityName.message}</p>
                   )}

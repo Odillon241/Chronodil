@@ -96,7 +96,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
             <Button variant="outline" size="sm" onClick={handleToday}>
               Aujourd'hui
             </Button>
-            <div className="flex items-center gap-1 border rounded-md">
+            <div className="flex items-center gap-1 border rounded-md bg-background">
               <Button variant="ghost" size="icon" onClick={handlePreviousWeek}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -124,7 +124,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
               <div
                 key={day.toString()}
                 className={cn(
-                  "border rounded-lg p-3 min-h-[200px] flex flex-col transition-colors",
+                  "border rounded-lg p-3 min-h-[200px] flex flex-col transition-colors bg-card",
                   isToday && "border-primary border-2",
                   isSelected && !isToday && "border-primary",
                   isWeekendDay && "bg-gray-50"
@@ -185,7 +185,7 @@ export function WeeklyTimesheet({ entries, onDateSelect, onAddEntry, onSubmitWee
                         key={entry.id}
                         onClick={() => onDateSelect(day)}
                         className={cn(
-                          "p-2 rounded border cursor-pointer",
+                          "p-2 rounded border cursor-pointer bg-background",
                           getStatusColor(entry.status)
                         )}
                         title={`${entry.project?.name || "Projet non assigné"} - ${entry.duration}h\n${entry.description || ""}`}

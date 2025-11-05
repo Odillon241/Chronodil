@@ -207,7 +207,7 @@ export function ChatNewConversationDialog({
               />
             </div>
 
-            <ScrollArea className="h-[300px] border rounded-lg">
+            <ScrollArea className="h-[300px] border rounded-lg bg-background">
               <div className="divide-y">
                 {filteredUsers.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">
@@ -284,7 +284,7 @@ export function ChatNewConversationDialog({
               />
             </div>
 
-            <ScrollArea className="h-[200px] border rounded-lg">
+            <ScrollArea className="h-[200px] border rounded-lg bg-background">
               <div className="divide-y">
                 {filteredUsers.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">
@@ -342,7 +342,7 @@ export function ChatNewConversationDialog({
               />
             </div>
 
-            <ScrollArea className="h-[300px] border rounded-lg">
+            <ScrollArea className="h-[300px] border rounded-lg bg-background">
               <div className="divide-y">
                 {filteredProjects.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">

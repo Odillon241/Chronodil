@@ -11,6 +11,11 @@ import { StatCardWithComparison } from "@/components/features/stat-card-with-com
 import { WeeklyGoalSettings } from "@/components/features/weekly-goal-settings";
 import { getTranslations } from "@/lib/i18n";
 
+export const metadata = {
+  title: 'Tableau de bord | Chronodil',
+  description: 'Vue d\'ensemble de vos activités, projets et statistiques de temps',
+};
+
 async function getDashboardData(userId: string) {
   try {
     const now = new Date();

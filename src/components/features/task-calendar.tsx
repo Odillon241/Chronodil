@@ -505,7 +505,7 @@ export function TaskCalendar({
 
       {/* Calendrier */}
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="border rounded-lg overflow-x-auto">
+        <div className="border rounded-lg overflow-x-auto bg-card">
           <div className="min-w-[640px]">
             {/* En-tête des jours de la semaine */}
             <div className="grid grid-cols-7 bg-muted/50">

@@ -183,9 +183,10 @@ export type TableRowProps<TData> = {
   row: Row<TData>;
   children: (props: { cell: Cell<TData, unknown> }) => ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLTableRowElement>;
 };
 
-export function TableRow<TData>({ row, children, className }: TableRowProps<TData>) {
+export function TableRow<TData>({ row, children, className, onClick }: TableRowProps<TData>) {
   return (
     <tr
       className={cn(
@@ -193,6 +194,7 @@ export function TableRow<TData>({ row, children, className }: TableRowProps<TDat
         className
       )}
       key={row.id}
+      onClick={onClick}
     >
       {row.getVisibleCells().map((cell) => children({ cell }))}
     </tr>
