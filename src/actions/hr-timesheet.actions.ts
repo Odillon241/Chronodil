@@ -273,22 +273,39 @@ export const updateHRTimesheet = authActionClient
 export const deleteHRTimesheet = authActionClient
   .schema(z.object({ timesheetId: z.string() }))
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
+    const { userId, userRole } = ctx;
     const { timesheetId: id } = parsedInput;
 
-    // Vérifier que le timesheet appartient à l'utilisateur et est en DRAFT
-    const existingTimesheet = await prisma.hRTimesheet.findFirst({
-      where: {
-        id,
-        userId,
-        status: "DRAFT",
+    // Récupérer le timesheet
+    const existingTimesheet = await prisma.hRTimesheet.findUnique({
+      where: { id },
+      include: {
+        User: true,
       },
     });
 
     if (!existingTimesheet) {
+      throw new Error("Timesheet non trouvé");
+    }
+
+    // Vérifier les permissions de suppression
+    const isOwner = existingTimesheet.userId === userId;
+    const isAdmin = userRole === "ADMIN";
+    const isDraft = existingTimesheet.status === "DRAFT";
+
+    // Seul le propriétaire peut supprimer un DRAFT, ou un ADMIN peut supprimer n'importe quel timesheet
+    if (!isAdmin && (!isOwner || !isDraft)) {
       throw new Error("Timesheet non trouvé ou non supprimable");
     }
 
+    // Supprimer les activités associées d'abord
+    await prisma.hRActivity.deleteMany({
+      where: {
+        hrTimesheetId: id,
+      },
+    });
+
+    // Supprimer le timesheet
     await prisma.hRTimesheet.delete({
       where: { id },
     });

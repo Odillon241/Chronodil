@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTheme } from "next-themes";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { InteractiveGridPattern } from "@/components/ui/shadcn-io/interactive-grid-pattern";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,19 @@ import { cn } from "@/lib/utils";
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Éviter le mismatch d'hydratation en utilisant mounted
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Utiliser le logo clair par défaut pour éviter le mismatch d'hydratation
+  // Une fois monté, on peut utiliser le thème résolu
+  const logoSrc = mounted && resolvedTheme === "dark" 
+    ? "/assets/media/logo-dark.svg" 
+    : "/assets/media/logo.svg";
 
   console.log("LoginPage rendered");
 
@@ -109,7 +122,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <Image
-              src="/assets/media/logo.svg"
+              src={logoSrc}
               alt="Chronodil Logo"
               width={180}
               height={60}

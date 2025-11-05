@@ -14,7 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart } from "lucide-react";
 import { Filters } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import type { FilterGroup, FilterOption } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
@@ -45,12 +46,15 @@ import {
   updateHRTimesheetStatus,
   getHRTimesheet,
 } from "@/actions/hr-timesheet.actions";
+import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
 import {
   Menubar,
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar";
+import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
 import {
   CalendarBody,
   CalendarDate,
@@ -91,7 +95,7 @@ import {
   ListItems,
   ListProvider,
 } from '@/components/ui/shadcn-io/list';
-import type { ColumnDef } from '@/components/ui/shadcn-io/table';
+import type { ColumnDef, Cell } from '@/components/ui/shadcn-io/table';
 import {
   TableBody,
   TableCell,
@@ -147,6 +151,9 @@ const STATUS_CONFIG = {
 
 export default function HRTimesheetPage() {
   const router = useRouter();
+  const { data: session } = useSession() as any;
+  const userRole = session?.user?.role;
+  const isAdmin = userRole === "ADMIN";
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [myTimesheets, setMyTimesheets] = useState<HRTimesheet[]>([]);
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
@@ -549,14 +556,16 @@ export default function HRTimesheetPage() {
                 <FileText className="h-4 w-4 mr-1" />
                 Soumettre
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDelete(timesheet.id)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </>
+          )}
+          {(isAdmin || (!isPending && timesheet.status === "DRAFT")) && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => handleDelete(timesheet.id)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           )}
 
           {isPending && (timesheet.status === "PENDING" || timesheet.status === "MANAGER_APPROVED") && (
@@ -589,11 +598,13 @@ export default function HRTimesheetPage() {
               <Send className="h-4 w-4" />
               Soumettre
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => handleDelete(timesheet.id)} className="flex items-center gap-2 text-destructive">
-              <Trash2 className="h-4 w-4" />
-              Supprimer
-            </ContextMenuItem>
           </>
+        )}
+        {(isAdmin || timesheet.status === 'DRAFT') && (
+          <ContextMenuItem onClick={() => handleDelete(timesheet.id)} className="flex items-center gap-2 text-destructive">
+            <Trash2 className="h-4 w-4" />
+            Supprimer
+          </ContextMenuItem>
         )}
       </ContextMenuContent>
     </ContextMenu>
@@ -878,11 +889,13 @@ export default function HRTimesheetPage() {
                             <Send className="h-4 w-4" />
                             Soumettre
                           </ContextMenuItem>
-                          <ContextMenuItem onClick={() => handleDelete(feature.id)} className="flex items-center gap-2 text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                            Supprimer
-                          </ContextMenuItem>
                         </>
+                      )}
+                      {(isAdmin || timesheet?.status === 'DRAFT') && (
+                        <ContextMenuItem onClick={() => handleDelete(feature.id)} className="flex items-center gap-2 text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          Supprimer
+                        </ContextMenuItem>
                       )}
                     </ContextMenuContent>
                   </ContextMenu>
@@ -1231,11 +1244,122 @@ export default function HRTimesheetPage() {
   };
 
   const TableViewContent = () => {
-    const handleRowClick = (id: string) => {
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const selectAllCheckboxRef = useRef<HTMLButtonElement>(null);
+
+    const handleRowClick = (id: string, event?: React.MouseEvent) => {
+      // Ne pas naviguer si on a cliqué sur la checkbox
+      if (event?.target instanceof HTMLElement && event.target.closest('[role="checkbox"]')) {
+        return;
+      }
       router.push(`/dashboard/hr-timesheet/${id}`);
     };
 
+    const handleSelectAll = (checked: boolean) => {
+      if (checked) {
+        setSelectedRows(new Set(timesheetsAsFeatures.map((ts) => ts.id)));
+      } else {
+        setSelectedRows(new Set());
+      }
+    };
+
+    const handleSelectRow = (id: string, checked: boolean) => {
+      setSelectedRows((prev) => {
+        const newSet = new Set(prev);
+        if (checked) {
+          newSet.add(id);
+        } else {
+          newSet.delete(id);
+        }
+        return newSet;
+      });
+    };
+
+    const handleExport = async (id: string) => {
+      try {
+        const result = await exportHRTimesheetToExcel({ timesheetId: id });
+        if (result && 'data' in result && result.data && 'fileData' in result.data) {
+          // Type assertion pour les données
+          const data = result.data as unknown as {
+            fileData: string;
+            fileName: string;
+            mimeType: string;
+          };
+
+          // Convertir base64 en blob
+          const binaryString = atob(data.fileData);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: data.mimeType });
+
+          // Créer un lien de téléchargement
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = data.fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          toast.success("Timesheet exporté avec succès");
+        } else {
+          toast.error(result?.serverError || "Erreur lors de l'export");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Erreur lors de l'export");
+      }
+    };
+
+    const handleCopyId = (id: string) => {
+      navigator.clipboard.writeText(id);
+      toast.success("ID copié dans le presse-papiers");
+    };
+
+    const isAllSelected = timesheetsAsFeatures.length > 0 && selectedRows.size === timesheetsAsFeatures.length;
+    const isIndeterminate = selectedRows.size > 0 && selectedRows.size < timesheetsAsFeatures.length;
+
+    // Gérer l'état indeterminate pour la checkbox "Tout sélectionner"
+    useEffect(() => {
+      if (selectAllCheckboxRef.current) {
+        const element = selectAllCheckboxRef.current as unknown as HTMLInputElement;
+        if (element) {
+          element.indeterminate = isIndeterminate;
+        }
+      }
+    }, [isIndeterminate]);
+
     const columns: ColumnDef<typeof timesheetsAsFeatures[number]>[] = [
+      {
+        id: 'select',
+        header: () => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              ref={selectAllCheckboxRef}
+              checked={isAllSelected && !isIndeterminate}
+              onCheckedChange={handleSelectAll}
+              aria-label="Sélectionner tout"
+              className={isIndeterminate ? "data-[state=checked]:bg-primary/50" : ""}
+            />
+          </div>
+        ),
+        cell: ({ row }) => {
+          const isSelected = selectedRows.has(row.original.id);
+          return (
+            <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => handleSelectRow(row.original.id, checked as boolean)}
+                aria-label={`Sélectionner ${row.original.owner.name}`}
+              />
+            </div>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+      },
       {
         accessorKey: 'name',
         header: ({ column }) => (
@@ -1374,16 +1498,79 @@ export default function HRTimesheetPage() {
                 )}
               </TableHeader>
               <TableBody>
-                {({ row }) => (
-                  <TableRow
-                    key={row.id}
-                    row={row}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleRowClick((row.original as { id: string }).id)}
-                  >
-                    {({ cell }) => <TableCell cell={cell} key={cell.id} />}
-                  </TableRow>
-                )}
+                {({ row }) => {
+                  const timesheetId = (row.original as { id: string }).id;
+                  const timesheet = currentTimesheets.find(t => t.id === timesheetId);
+                  const isDraft = timesheet?.status === 'DRAFT';
+                  
+                  return (
+                    <ContextMenu key={row.id}>
+                      <ContextMenuTrigger asChild>
+                        <TableRow
+                          row={row}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={(e) => {
+                            // Ne pas naviguer si c'est un clic droit
+                            if (e.button === 2) return;
+                            handleRowClick(timesheetId, e);
+                          }}
+                        >
+                          {({ cell }: { cell: Cell<unknown, unknown> }) => (
+                            <TableCell cell={cell} />
+                          )}
+                        </TableRow>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-48">
+                        <ContextMenuItem onClick={() => handleRowClick(timesheetId)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Voir détails
+                        </ContextMenuItem>
+                        {isDraft && dataView === "my" && (
+                          <>
+                            <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Modifier
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={() => handleSubmit(timesheetId)}>
+                              <Send className="mr-2 h-4 w-4" />
+                              Soumettre
+                            </ContextMenuItem>
+                          </>
+                        )}
+                        {dataView === "pending" && (timesheet?.status === "PENDING" || timesheet?.status === "MANAGER_APPROVED") && (
+                          <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/validate`)}>
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Valider
+                          </ContextMenuItem>
+                        )}
+                        <ContextMenuSeparator />
+                        <ContextMenuItem onClick={() => handleExport(timesheetId)}>
+                          <Download className="mr-2 h-4 w-4" />
+                          Exporter
+                        </ContextMenuItem>
+                        <ContextMenuItem onClick={() => handleCopyId(timesheetId)}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          Copier l'ID
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem 
+                          className="text-destructive"
+                          onClick={() => {
+                            if ((isDraft && dataView === "my") || isAdmin) {
+                              handleDelete(timesheetId);
+                            } else {
+                              toast.error("Seuls les brouillons peuvent être supprimés");
+                            }
+                          }}
+                          disabled={!isDraft && !isAdmin && dataView !== "my"}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Supprimer
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  );
+                }}
               </TableBody>
             </TableProvider>
           )}
@@ -1441,27 +1628,31 @@ export default function HRTimesheetPage() {
         </div>
 
         {/* Sélecteur de données */}
-        <div className="flex gap-2">
-          <Button
-            variant={dataView === "my" ? "default" : "outline"}
-            onClick={() => setDataView("my")}
-            size="sm"
-          >
-            Mes timesheets
-          </Button>
-          <Button
-            variant={dataView === "pending" ? "default" : "outline"}
-            onClick={() => setDataView("pending")}
-            size="sm"
-          >
-            À valider
-            {pendingTimesheets.length > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {pendingTimesheets.length}
-              </Badge>
-            )}
-          </Button>
-        </div>
+        <Navbar18
+          navigationLinks={[
+            {
+              href: "#my",
+              label: "Mes timesheets",
+              active: dataView === "my",
+            },
+            {
+              href: "#pending",
+              label: "À valider",
+              active: dataView === "pending",
+              badge: pendingTimesheets.length > 0 ? pendingTimesheets.length : undefined,
+              badgeVariant: "destructive",
+            },
+          ] as Navbar18NavItem[]}
+          onNavItemClick={(href) => {
+            if (href === "#my") {
+              setDataView("my");
+            } else if (href === "#pending") {
+              setDataView("pending");
+            }
+          }}
+          statusIndicators={[]}
+          className="border-0 px-0 h-auto"
+        />
 
 
         {/* Menubar pour sélection de vues */}

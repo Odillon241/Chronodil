@@ -1,5 +1,11 @@
 # Guide d'Utilisation - Application Chronodil
 
+> **Version** : 1.0  
+> **Date** : Janvier 2025  
+> **Application** : Chronodil - Gestion de Temps et Projets
+
+---
+
 ## Table des Matières
 
 1. [Introduction](#introduction)
@@ -34,6 +40,10 @@
 
 ## 2. Connexion et Premier Accès {#connexion}
 
+![Page de connexion](images/01-page-connexion.png)
+
+<figcaption>Figure 1 : Page de connexion à l'application Chronodil</figcaption>
+
 ### Première Connexion
 
 1. **Accédez à l'application** via l'URL fournie par votre entreprise
@@ -53,6 +63,10 @@
 ---
 
 ## 3. Interface Générale {#interface}
+
+![Tableau de bord](images/02-dashboard.png)
+
+<figcaption>Figure 2 : Vue d'ensemble du tableau de bord</figcaption>
 
 ### Navigation Principale
 
@@ -110,6 +124,10 @@ Vous y trouverez :
 
 **Chemin** : Dashboard > Feuille de temps
 
+![Feuille de temps](images/03-feuilles-de-temps.png)
+
+<figcaption>Figure 3 : Interface de gestion des feuilles de temps</figcaption>
+
 #### Saisir une Entrée
 
 1. Cliquez sur **"Nouvelle entrée"**
@@ -145,6 +163,10 @@ Vous y trouverez :
 ### ✅ Gestion des Tâches
 
 **Chemin** : Dashboard > Tâches
+
+![Gestion des tâches](images/05-taches.png)
+
+<figcaption>Figure 4 : Interface de gestion des tâches</figcaption>
 
 #### Consulter vos Tâches
 
@@ -227,6 +249,10 @@ Types de notifications :
 
 **Chemin** : Dashboard > Paramètres
 
+![Paramètres](images/08-parametres.png)
+
+<figcaption>Figure 7 : Page de paramètres utilisateur</figcaption>
+
 #### Profil
 
 - **Photo de profil** : Téléchargez votre avatar
@@ -290,6 +316,10 @@ Toutes les fonctionnalités **EMPLOYEE** sont également disponibles.
 
 **Chemin** : Dashboard > Validation
 
+![Validation des feuilles](images/06-validation.png)
+
+<figcaption>Figure 5 : Interface de validation des feuilles de temps (Manager)</figcaption>
+
 #### Liste des Feuilles à Valider
 
 Vous verrez :
@@ -339,6 +369,10 @@ En plus du tableau de bord employé, vous avez :
 ### 📁 Gestion des Projets
 
 **Chemin** : Dashboard > Projets
+
+![Gestion des projets](images/04-projets.png)
+
+<figcaption>Figure 6 : Interface de gestion des projets</figcaption>
 
 #### Créer un Projet
 
@@ -545,6 +579,10 @@ Un email d'activation est envoyé automatiquement à l'utilisateur.
 
 **Chemin** : Dashboard > Rapports
 
+![Rapports](images/07-rapports.png)
+
+<figcaption>Figure 8 : Interface de génération de rapports</figcaption>
+
 #### Générer un Rapport d'Entreprise
 
 1. Cliquez sur **"Nouveau rapport"**
@@ -685,6 +723,10 @@ En tant que Directeur (Odillon), vous effectuez la **signature finale** des feui
 ### 🔍 Audit et Traçabilité
 
 **Chemin** : Dashboard > Audit
+
+![Audit](images/09-audit.png)
+
+<figcaption>Figure 9 : Interface d'audit et de traçabilité (Directeur/Admin)</figcaption>
 
 #### Consulter les Logs d'Audit
 

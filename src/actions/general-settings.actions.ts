@@ -9,7 +9,6 @@ import { z } from "zod";
 // Schéma de validation pour les paramètres généraux Phase 1
 const generalSettingsSchema = z.object({
   // Apparence
-  darkModeEnabled: z.boolean().optional(),
   accentColor: z.enum(["rusty-red", "ou-crimson", "powder-blue", "forest-green", "golden-orange"]).optional(),
   viewDensity: z.enum(["compact", "normal", "comfortable"]).optional(),
   fontSize: z.number().int().min(12).max(24).optional(),
@@ -45,7 +44,6 @@ export const getGeneralSettings = actionClient
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
-        darkModeEnabled: true,
         accentColor: true,
         viewDensity: true,
         fontSize: true,
@@ -84,7 +82,6 @@ export const updateGeneralSettings = actionClient
       where: { id: session.user.id },
       data: parsedInput,
       select: {
-        darkModeEnabled: true,
         accentColor: true,
         viewDensity: true,
         fontSize: true,
@@ -120,7 +117,6 @@ export const resetGeneralSettings = actionClient
       where: { id: session.user.id },
       data: {
         // Apparence
-        darkModeEnabled: true,
         accentColor: "rusty-red",
         viewDensity: "normal",
         fontSize: 16,
@@ -137,7 +133,6 @@ export const resetGeneralSettings = actionClient
         reduceMotion: false,
       },
       select: {
-        darkModeEnabled: true,
         accentColor: true,
         viewDensity: true,
         fontSize: true,

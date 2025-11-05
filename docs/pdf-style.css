@@ -16,6 +16,7 @@ body {
   max-width: 100%;
   padding: 0;
   background: white;
+  font-style: normal;
 }
 
 /* Typography */
@@ -70,6 +71,23 @@ h5, h6 {
 p {
   margin-bottom: 12px;
   text-align: justify;
+  font-style: normal !important;
+}
+
+/* Assurer que le texte normal n'est pas en italique */
+body,
+body * {
+  font-style: normal !important;
+}
+
+/* Sauf pour les éléments spécifiques */
+blockquote {
+  font-style: italic;
+}
+
+img + em,
+figcaption {
+  font-style: italic !important;
 }
 
 /* Lists */
@@ -191,9 +209,24 @@ strong {
   color: #1a1a1a;
 }
 
+/* Italique uniquement pour les légendes et citations */
 em {
+  font-style: normal;
+  color: #1a1a1a;
+}
+
+/* Légendes d'images en italique */
+img + em,
+figure + em,
+figcaption {
   font-style: italic;
-  color: #555;
+  color: #666;
+  font-size: 9pt;
+}
+
+/* Blockquotes en italique */
+blockquote em {
+  font-style: italic;
 }
 
 /* Page breaks */
@@ -281,6 +314,28 @@ nav ul li a {
   padding: 10px 15px;
   margin: 15px 0;
   border-radius: 3px;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 20px auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  page-break-inside: avoid;
+}
+
+img + em {
+  display: block;
+  text-align: center;
+  font-size: 9pt;
+  color: #666;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  font-style: italic;
 }
 
 /* Print optimization */

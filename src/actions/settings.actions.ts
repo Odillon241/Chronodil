@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { nanoid } from "nanoid";
+import { Prisma } from "@prisma/client";
 
 // Jours fériés
 const holidaySchema = z.object({
@@ -33,17 +34,19 @@ export const getHolidays = actionClient
       throw new Error("Non authentifié");
     }
 
-    const year = parsedInput.year || new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31, 23, 59, 59);
+    // Si aucune année n'est spécifiée, charger TOUS les jours fériés
+    // Sinon, filtrer par année
+    const whereClause = parsedInput.year
+      ? {
+          date: {
+            gte: new Date(parsedInput.year, 0, 1),
+            lte: new Date(parsedInput.year, 11, 31, 23, 59, 59),
+          },
+        }
+      : {};
 
     const holidays = await prisma.holiday.findMany({
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
+      where: whereClause,
       orderBy: {
         date: "asc",
       },
@@ -62,16 +65,26 @@ export const createHoliday = actionClient
       throw new Error("Accès non autorisé");
     }
 
-    const holiday = await prisma.holiday.create({
-      data: {
-        id: nanoid(),
-        ...parsedInput,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      const holiday = await prisma.holiday.create({
+        data: {
+          id: nanoid(),
+          ...parsedInput,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
 
-    return holiday;
+      return holiday;
+    } catch (error) {
+      // Gérer les erreurs de contrainte unique (jour férié déjà existant)
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          throw new Error("Ce jour férié existe déjà pour cette date");
+        }
+      }
+      throw error;
+    }
   });
 
 export const updateHoliday = actionClient

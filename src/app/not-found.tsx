@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Home, ArrowLeft, Search } from 'lucide-react';
+import { Home, Search } from 'lucide-react';
+import { BackButton } from '@/components/features/back-button';
 
 export const metadata = {
   title: 'Page introuvable | Chronodil',
@@ -35,10 +36,7 @@ export default function NotFound() {
               Retour au tableau de bord
             </Button>
           </Link>
-          <Button variant="outline" onClick={() => window.history.back()} className="w-full sm:w-auto">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Page précédente
-          </Button>
+          <BackButton />
         </div>
 
         {/* Help text */}

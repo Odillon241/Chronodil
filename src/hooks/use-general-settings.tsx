@@ -6,7 +6,6 @@ import { getGeneralSettings } from "@/actions/general-settings.actions";
 
 export interface GeneralSettings {
   // Apparence
-  darkModeEnabled: boolean;
   accentColor: string;
   viewDensity: string;
   fontSize: number;
@@ -50,13 +49,6 @@ export function useGeneralSettings() {
   };
 
   const applySettings = (settings: GeneralSettings) => {
-    // Appliquer le mode sombre
-    if (settings.darkModeEnabled) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-
     // Appliquer la taille de police
     document.documentElement.style.fontSize = `${settings.fontSize}px`;
 

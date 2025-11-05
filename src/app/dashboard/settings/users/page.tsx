@@ -77,6 +77,7 @@ export default function UsersManagementPage() {
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [isClient, setIsClient] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -87,9 +88,14 @@ export default function UsersManagementPage() {
     managerId: "",
   });
 
+  // Détecter si on est côté client pour éviter les erreurs d'hydratation
   useEffect(() => {
-    // Attendre que la session soit chargée
-    if (!session) return;
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    // Attendre que la session soit chargée et qu'on soit côté client
+    if (!isClient || !session) return;
 
     const user = session?.user as any;
     console.log("Session user:", user); // Debug
@@ -109,7 +115,7 @@ export default function UsersManagementPage() {
       loadData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, [session, isClient]);
 
   useEffect(() => {
     const filtered = users.filter(
@@ -345,7 +351,8 @@ export default function UsersManagementPage() {
     setIsResetPasswordDialogOpen(true);
   };
 
-  if (!session) {
+  // Afficher un loader uniquement côté client si la session n'est pas encore chargée
+  if (isClient && !session) {
     return (
       <div className="flex items-center justify-center h-screen">
         <SpinnerCustom />
@@ -353,6 +360,7 @@ export default function UsersManagementPage() {
     );
   }
 
+  // Pendant l'hydratation, rendre la structure principale pour éviter les erreurs d'hydratation
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">

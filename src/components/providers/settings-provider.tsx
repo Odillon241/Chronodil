@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { useSession } from "@/lib/auth-client";
 import { getGeneralSettings } from "@/actions/general-settings.actions";
 
@@ -11,7 +10,6 @@ import { getGeneralSettings } from "@/actions/general-settings.actions";
  */
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
-  const { setTheme } = useTheme();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -32,14 +30,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
 
     loadAndApplySettings();
-  }, [session?.user, isInitialized, setTheme]);
+  }, [session?.user, isInitialized]);
 
   const applySettings = (settings: any) => {
     if (!settings) return;
-
-    // Appliquer le thème via next-themes (ne JAMAIS manipuler directement classList)
-    const theme = settings.darkModeEnabled ? "dark" : "light";
-    setTheme(theme);
 
     // Appliquer la taille de police
     if (settings.fontSize) {

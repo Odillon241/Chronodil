@@ -1,0 +1,28 @@
+
+> chronodil-app@0.1.0 build C:\Users\nexon\chronodil_app_clone\CHRONODIL_app
+> next build
+
+ ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+   ▲ Next.js 16.0.0 (Turbopack, Cache Components)
+   - Environments: .env.production, .env
+   - Experiments (use with caution):
+     · serverActions
+     ✓ turbopackFileSystemCacheForDev
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 41s
+   Running TypeScript ...
+Failed to compile.
+
+./src/app/dashboard/hr-timesheet/page.tsx:1280:27
+Type error: Property 'fileData' does not exist on type '{ success: boolean; data: { fileData: string; fileName: string; mimeType: string; }; }'.
+
+[0m [90m 1278 |[39m       [36mtry[39m {
+ [90m 1279 |[39m         [36mconst[39m result [33m=[39m [36mawait[39m exportHRTimesheetToExcel({ timesheetId[33m:[39m id })[33m;[39m
+[31m[1m>[22m[39m[90m 1280 |[39m         [36mif[39m (result[33m?[39m[33m.[39mdata[33m?[39m[33m.[39mfileData) {
+ [90m      |[39m                           [31m[1m^[22m[39m
+ [90m 1281 |[39m           [90m// Convertir base64 en blob[39m
+ [90m 1282 |[39m           [36mconst[39m binaryString [33m=[39m atob(result[33m.[39mdata[33m.[39mfileData)[33m;[39m
+ [90m 1283 |[39m           [36mconst[39m bytes [33m=[39m [36mnew[39m [33mUint8Array[39m(binaryString[33m.[39mlength)[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

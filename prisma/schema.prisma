@@ -231,26 +231,26 @@ model Notification {
 }
 
 model Project {
-  id              String           @id
-  name            String
-  code            String           @unique
-  description     String?
-  color           String           @default("#3b82f6")
-  departmentId    String?
-  budgetHours     Float?
-  hourlyRate      Float?
-  isActive        Boolean          @default(true)
-  startDate       DateTime?
-  endDate         DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime
-  createdBy       String?
-  Conversation    Conversation[]
-  User            User?            @relation(fields: [createdBy], references: [id])
-  Department      Department?      @relation(fields: [departmentId], references: [id])
-  ProjectMember   ProjectMember[]
-  Task            Task[]
-  TimesheetEntry  TimesheetEntry[]
+  id             String           @id
+  name           String
+  code           String           @unique
+  description    String?
+  color          String           @default("#3b82f6")
+  departmentId   String?
+  budgetHours    Float?
+  hourlyRate     Float?
+  isActive       Boolean          @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  createdBy      String?
+  Conversation   Conversation[]
+  User           User?            @relation(fields: [createdBy], references: [id])
+  Department     Department?      @relation(fields: [departmentId], references: [id])
+  ProjectMember  ProjectMember[]
+  Task           Task[]
+  TimesheetEntry TimesheetEntry[]
 
   @@index([code])
   @@index([createdBy])
@@ -335,41 +335,41 @@ model Session {
 }
 
 model Task {
-  id             String               @id
-  name           String
-  description    String?
-  projectId      String?
-  parentId       String?
-  estimatedHours Float?
-  isActive       Boolean              @default(true)
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime
-  createdBy      String?
-  dueDate        DateTime?
-  isShared       Boolean              @default(false)
-  reminderDate   DateTime?
-  reminderTime   String?
-  soundEnabled   Boolean              @default(true)
-  completedAt    DateTime?
-  priority       String               @default("MEDIUM")
-  status         String               @default("TODO")
-  complexity     TaskComplexity       @default(MOYEN)
-  recurrence     String?
-  trainingLevel  TrainingLevel?
-  masteryLevel   MasteryLevel?
+  id                 String              @id
+  name               String
+  description        String?
+  projectId          String?
+  parentId           String?
+  estimatedHours     Float?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime
+  createdBy          String?
+  dueDate            DateTime?
+  isShared           Boolean             @default(false)
+  reminderDate       DateTime?
+  reminderTime       String?
+  soundEnabled       Boolean             @default(true)
+  completedAt        DateTime?
+  priority           String              @default("MEDIUM")
+  status             String              @default("TODO")
+  complexity         TaskComplexity      @default(MOYEN)
+  recurrence         String?
+  trainingLevel      TrainingLevel?
+  masteryLevel       MasteryLevel?
   understandingLevel UnderstandingLevel?
-  evaluatedBy    String?
-  evaluationNotes String?
-  evaluatedAt    DateTime?
-  Creator        User?                @relation(fields: [createdBy], references: [id])
-  Evaluator      User?                @relation("TaskEvaluation", fields: [evaluatedBy], references: [id])
-  Task           Task?                @relation("TaskToTask", fields: [parentId], references: [id])
-  other_Task     Task[]               @relation("TaskToTask")
-  Project        Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  TaskActivity   TaskActivity[]
-  TaskComment    TaskComment[]
-  TaskMember     TaskMember[]
-  TimesheetEntry TimesheetEntry[]
+  evaluatedBy        String?
+  evaluationNotes    String?
+  evaluatedAt        DateTime?
+  Creator            User?               @relation(fields: [createdBy], references: [id])
+  Evaluator          User?               @relation("TaskEvaluation", fields: [evaluatedBy], references: [id])
+  Task               Task?               @relation("TaskToTask", fields: [parentId], references: [id])
+  other_Task         Task[]              @relation("TaskToTask")
+  Project            Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  TaskActivity       TaskActivity[]
+  TaskComment        TaskComment[]
+  TaskMember         TaskMember[]
+  TimesheetEntry     TimesheetEntry[]
 
   @@index([isActive])
   @@index([parentId])
@@ -507,7 +507,7 @@ model User {
   darkModeEnabled             Boolean               @default(true)
   accentColor                 String                @default("rusty-red")
   viewDensity                 String                @default("normal")
-  fontSize                    Int                   @default(16)
+  fontSize                    Int                   @default(12)
   language                    String                @default("fr")
   dateFormat                  String                @default("DD/MM/YYYY")
   hourFormat                  String                @default("24")
@@ -646,4 +646,3 @@ enum UnderstandingLevel {
   COMPREHENSIVE
   EXPERT
 }
-

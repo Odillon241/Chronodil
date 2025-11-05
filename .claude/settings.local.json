@@ -48,7 +48,12 @@
       "Bash(done)",
       "Bash(taskkill:*)",
       "Bash(if exist \".next\" rd /s /q \".next\")",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(timeout /t 15)",
+      "Bash(cmd /c \"taskkill /F /PID 11008\")",
+      "Bash(if exist \".next\\dev\\lock\" del /f \".next\\dev\\lock\")",
+      "Bash(powershell.exe:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

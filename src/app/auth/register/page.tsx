@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTheme } from "next-themes";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { signUp } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,18 @@ import { toast } from "sonner";
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Éviter le mismatch d'hydratation
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Utiliser le logo clair par défaut pour éviter le mismatch d'hydratation
+  const logoSrc = mounted && resolvedTheme === "dark" 
+    ? "/assets/media/logo-dark.svg" 
+    : "/assets/media/logo.svg";
 
   const {
     register,
@@ -57,11 +70,12 @@ export default function RegisterPage() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <Image
-              src="/assets/media/logo.svg"
+              src={logoSrc}
               alt="Chronodil Logo"
               width={180}
               height={60}
               className="h-16 w-auto"
+              priority
             />
           </div>
           <CardDescription className="text-center font-heading">

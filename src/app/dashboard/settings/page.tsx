@@ -41,7 +41,6 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useSession } from "@/lib/auth-client";
-import { useTheme } from "next-themes";
 import {
   getGeneralSettings,
   updateGeneralSettings,
@@ -86,16 +85,10 @@ export default function SettingsPage() {
   const [generalSettings, setGeneralSettings] = useState<any>(null);
   const [isSavingGeneralSettings, setIsSavingGeneralSettings] = useState(false);
 
-  // Import pour gérer le thème via next-themes
-  const { setTheme } = useTheme();
 
   // Fonction pour appliquer les paramètres visuellement
   const applySettingsToUI = (settings: any) => {
     if (!settings) return;
-
-    // Appliquer le mode sombre via next-themes (JAMAIS manipuler directement le DOM)
-    const theme = settings.darkModeEnabled ? "dark" : "light";
-    setTheme(theme);
 
     // Appliquer la taille de police
     document.documentElement.style.fontSize = `${settings.fontSize}px`;
@@ -405,34 +398,68 @@ export default function SettingsPage() {
         setIsInitializingHolidays(true);
         try {
           let added = 0;
+          let skipped = 0;
           
           // Ajouter les jours fériés fixes
           for (const holiday of gabonHolidaysTemplate) {
-            const result = await createHoliday({
-              name: holiday.name,
-              date: new Date(year, holiday.month - 1, holiday.day),
-              description: holiday.description,
-            });
-            if (result?.data) {
-              added++;
+            try {
+              const result = await createHoliday({
+                name: holiday.name,
+                date: new Date(year, holiday.month - 1, holiday.day),
+                description: holiday.description,
+              });
+              if (result?.data) {
+                added++;
+              }
+            } catch (error: any) {
+              // Si le jour férié existe déjà (contrainte unique), on le passe
+              const errorMessage = error?.message || error?.serverError || "";
+              if (
+                errorMessage.includes("Unique constraint") ||
+                errorMessage.includes("déjà") ||
+                errorMessage.includes("existe déjà")
+              ) {
+                skipped++;
+              } else {
+                console.error("Erreur lors de l'ajout du jour férié:", error);
+              }
             }
           }
           
           // Ajouter les jours fériés variables si disponibles
           for (const holiday of variableHolidays) {
-            const result = await createHoliday({
-              name: holiday.name,
-              date: new Date(year, holiday.month - 1, holiday.day),
-              description: holiday.description,
-            });
-            if (result?.data) {
-              added++;
+            try {
+              const result = await createHoliday({
+                name: holiday.name,
+                date: new Date(year, holiday.month - 1, holiday.day),
+                description: holiday.description,
+              });
+              if (result?.data) {
+                added++;
+              }
+            } catch (error: any) {
+              // Si le jour férié existe déjà (contrainte unique), on le passe
+              const errorMessage = error?.message || error?.serverError || "";
+              if (
+                errorMessage.includes("Unique constraint") ||
+                errorMessage.includes("déjà") ||
+                errorMessage.includes("existe déjà")
+              ) {
+                skipped++;
+              } else {
+                console.error("Erreur lors de l'ajout du jour férié:", error);
+              }
             }
           }
           
-          toast.success(`${added} jours fériés du Gabon ajoutés pour ${year} !`);
+          if (added > 0) {
+            toast.success(`${added} jour${added > 1 ? 's' : ''} férié${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''} pour ${year}${skipped > 0 ? ` (${skipped} déjà existant${skipped > 1 ? 's' : ''})` : ''} !`);
+          } else if (skipped > 0) {
+            toast.info(`Tous les jours fériés pour ${year} existent déjà.`);
+          }
           loadData();
         } catch (error) {
+          console.error("Erreur lors de l'ajout des jours fériés:", error);
           toast.error("Erreur lors de l'ajout des jours fériés");
         } finally {
           setIsInitializingHolidays(false);

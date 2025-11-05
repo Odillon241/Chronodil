@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useTheme } from "next-themes";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import {
   Select,
@@ -16,7 +13,6 @@ import { useTranslations } from "next-intl";
 
 interface AppearanceSectionProps {
   settings: {
-    darkModeEnabled: boolean;
     accentColor: string;
     viewDensity: string;
     fontSize: number;
@@ -34,7 +30,6 @@ const accentColors = [
 ];
 
 export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSectionProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const t = useTranslations("settings.appearance");
 
   const viewDensityOptions = [
@@ -42,22 +37,6 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
     { value: "normal", label: t("density.normal") },
     { value: "comfortable", label: t("density.comfortable") },
   ];
-
-  useEffect(() => {
-    if (settings.darkModeEnabled !== undefined && resolvedTheme) {
-      const expectedTheme = settings.darkModeEnabled ? "dark" : "light";
-      if (resolvedTheme !== expectedTheme) {
-        console.log("🎨 Initialisation thème:", { darkModeEnabled: settings.darkModeEnabled, expectedTheme, resolvedTheme });
-        setTheme(expectedTheme);
-      }
-    }
-  }, [settings.darkModeEnabled, resolvedTheme, setTheme]);
-
-  const handleDarkModeToggle = (checked: boolean) => {
-    console.log("🌓 Toggle mode sombre:", checked);
-    setTheme(checked ? "dark" : "light");
-    onUpdate("darkModeEnabled", checked);
-  };
 
   const handleAccentColorChange = (colorName: string) => {
     console.log("🎨 Changement couleur d'accentuation:", colorName);
@@ -73,24 +52,6 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
       </div>
 
       <div className="space-y-6">
-        {/* Dark Mode */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="dark-mode">{t("darkMode")}</Label>
-              <p className="text-sm text-muted-foreground">
-                {t("darkModeDesc")}
-              </p>
-            </div>
-            <Switch
-              id="dark-mode"
-              checked={settings.darkModeEnabled}
-              onCheckedChange={handleDarkModeToggle}
-              disabled={isSaving}
-            />
-          </div>
-        </div>
-
         {/* Accent Color */}
         <div className="space-y-3 border-t pt-6">
           <Label>{t("accentColor")}</Label>
