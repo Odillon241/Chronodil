@@ -68,7 +68,18 @@
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/app/global-error.tsx\")",
       "Bash(timeout 180 pnpm build:*)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" status:*)",
-      "Bash(timeout 30 pnpm dev:*)"
+      "Bash(timeout 30 pnpm dev:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nrefactor: Remove timesheet feature and fix hydration error\n\nMAJOR CLEANUP - Complete removal of timesheet functionality:\n\n**Timesheet Feature Removal:**\n- Deleted /dashboard/timesheet page and all related routes\n- Deleted /dashboard/validation and /dashboard/validations pages  \n- Deleted /dashboard/reports page and all report components\n- Removed TimesheetEntry and TimesheetValidation models from Prisma schema\n- Created SQL cleanup script: sql-scripts/cleanup/DELETE_TIMESHEET_TABLES.sql\n- Removed all timesheet-related actions, components, and utilities (31 files deleted)\n\n**Code Cleanup:**\n- Removed TimesheetEntry references from:\n  - src/actions/project.actions.ts\n  - src/actions/task.actions.ts  \n  - src/actions/user.actions.ts\n  - src/types/project.types.ts\n  - src/app/dashboard/tasks/page.tsx (removed \"Saisies\" column)\n  - src/app/dashboard/audit/page.tsx (removed from filter options)\n- Removed timesheet notification functions from Inngest (helpers.ts, functions.ts)\n- Removed TIMESHEETS cache tag\n\n**Dashboard Redesign:**\n- Replaced timesheet statistics with task-based statistics\n- New stats: Todo count, In Progress count, Done count\n- Displays active projects and recent tasks instead of time tracking\n\n**Sidebar Updates:**\n- Removed navigation links: Feuilles de temps, Validation, Validations Manager, Rapports\n- Kept HR Timesheet link (different feature)\n\n**CRITICAL FIX - AppSidebar Hydration Error:**\n- Fixed hydration mismatch in src/components/layout/app-sidebar.tsx\n- Removed `mounted` check from `filteredNavMain` and `filteredNavSettings`\n- Navigation items now render consistently on server and client\n- Kept `suppressHydrationWarning` only on dynamic user content (avatar, name, email)\n- Resolves: \"Hydration failed because the server rendered HTML didn 't match the client\"\n\n**Files Changed:**\n- 31 files deleted (timesheet feature)\n- 14 files modified (cleanup + hydration fix)\n- 2 files created (SQL script + docs)\n- 1 file renamed (global-error.tsx.bak)\n\nAll TypeScript references to TimesheetEntry removed. Application now compiles without timesheet dependencies.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(pnpm prisma format:*)",
+      "Bash(timeout /t 5)",
+      "Bash(timeout 120 pnpm prisma db push:*)",
+      "Bash(tasklist:*)",
+      "Bash(rd /s /q \".next\")",
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm info:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(pnpm install:*)"
     ],
     "deny": [],
     "ask": []

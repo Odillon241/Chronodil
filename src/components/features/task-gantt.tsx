@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   GanttProvider,
   GanttTimeline,
@@ -29,6 +29,15 @@ import {
 import { Edit, Trash2, Circle, CheckCircle, Clock, Eye, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task, STATUS_COLORS } from "./task-types";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TaskGanttProps {
   tasks: Task[];
@@ -85,6 +94,10 @@ export function TaskGantt({
   onEventToggle,
   onAddItem,
 }: TaskGanttProps) {
+  const ganttRef = useRef<HTMLDivElement>(null);
+  const [ganttZoom, setGanttZoom] = useState(100);
+  const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('monthly');
+
   // Créer une Map des tâches pour accès rapide
   const tasksMap = useMemo(() => {
     const map = new Map<string, Task>();
@@ -158,122 +171,281 @@ export function TaskGantt({
     }
   };
 
-  if (ganttFeatures.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        Aucune tâche avec date d'échéance pour afficher le Gantt
-      </div>
-    );
-  }
+  // Scroller le Gantt vers la date du jour (Today) au chargement
+  useEffect(() => {
+    if (ganttRef.current) {
+      // Attendre que le Gantt soit complètement rendu
+      const timeoutId = setTimeout(() => {
+        // Le conteneur scrollable a la classe "gantt" (voir GanttProvider)
+        const ganttContainer = ganttRef.current?.querySelector('.gantt') as HTMLElement;
+        if (!ganttContainer) return;
+
+        // Chercher l'élément "Today" dans le DOM
+        // Le composant GanttToday crée un div avec le texte "Today"
+        if (!ganttRef.current) return;
+        const allElements = ganttRef.current.querySelectorAll('*');
+        let todayContainerElement: HTMLElement | null = null;
+        
+        for (const el of allElements) {
+          // Chercher l'élément qui contient exactement le texte "Today"
+          if (el.textContent?.trim() === 'Today' || el.textContent?.includes('Today')) {
+            // Trouver l'élément parent qui a le transform (c'est le conteneur positionné)
+            let parent = el.parentElement;
+            while (parent && parent !== ganttRef.current) {
+              const style = window.getComputedStyle(parent);
+              // Le conteneur de Today a un transform avec translateX et position absolute
+              if (style.transform && style.transform !== 'none' && style.position === 'absolute') {
+                todayContainerElement = parent as HTMLElement;
+                break;
+              }
+              parent = parent.parentElement;
+            }
+            if (todayContainerElement) break;
+          }
+        }
+        
+        if (todayContainerElement) {
+          // Extraire la position translateX depuis le transform CSS
+          const computedStyle = window.getComputedStyle(todayContainerElement);
+          const transform = computedStyle.transform;
+          
+          if (transform && transform !== 'none') {
+            try {
+              const matrix = new DOMMatrix(transform);
+              const translateX = matrix.m41; // m41 correspond à translateX
+              
+              // Aligner la vue sur "Today" en tenant compte de la largeur de la sidebar
+              const sidebarWidth = 200; // Largeur approximative de la sidebar
+              const scrollPosition = Math.max(0, translateX - sidebarWidth);
+              
+              ganttContainer.scrollTo({
+                left: scrollPosition,
+                behavior: 'smooth',
+              });
+            } catch (error) {
+              // Fallback si DOMMatrix n'est pas supporté
+              console.warn('Impossible de calculer la position de Today:', error);
+            }
+          }
+        }
+      }, 300); // Attendre 300ms pour que le Gantt soit rendu
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [ganttRange, ganttZoom, ganttFeatures.length]); // Re-scroll si les features changent ou le zoom/range change
+
+  // Raccourcis clavier pour le zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl + "+" ou Ctrl + "=" pour zoomer
+      if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
+        e.preventDefault();
+        setGanttZoom((prev) => Math.min(200, prev + 25));
+      }
+      // Ctrl + "-" pour dézoomer
+      else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        setGanttZoom((prev) => Math.max(50, prev - 25));
+      }
+      // Ctrl + "0" pour réinitialiser
+      else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        setGanttZoom(100);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
-    <div className="h-[600px] w-full">
-      <GanttProvider range="monthly" zoom={100} onAddItem={onAddItem}>
+    <div ref={ganttRef} className="flex flex-col h-[600px] w-full">
+      {/* Contrôles Gantt */}
+      <div className="flex items-center justify-between p-4 border-b bg-muted/30 gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          {/* Sélecteur de plage */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">Plage:</Label>
+            <Select value={ganttRange} onValueChange={(value: 'daily' | 'monthly' | 'quarterly') => setGanttRange(value)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Quotidien</SelectItem>
+                <SelectItem value="monthly">Mensuel</SelectItem>
+                <SelectItem value="quarterly">Trimestriel</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Contrôles de zoom */}
+          <div className="flex items-center gap-4 pl-4 border-l">
+            <Label className="text-sm font-medium">Zoom:</Label>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGanttZoom(Math.max(50, ganttZoom - 25))}
+                disabled={ganttZoom <= 50}
+                title="Ctrl + -"
+              >
+                -
+              </Button>
+              <span className="text-sm font-medium w-16 text-center">{ganttZoom}%</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGanttZoom(Math.min(200, ganttZoom + 25))}
+                disabled={ganttZoom >= 200}
+                title="Ctrl + +"
+              >
+                +
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setGanttZoom(100)}
+              title="Ctrl + 0"
+            >
+              Réinitialiser
+            </Button>
+          </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground hidden sm:block">
+          Raccourcis: <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl +</kbd> / <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl -</kbd> / <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl 0</kbd>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <GanttProvider range={ganttRange} zoom={ganttZoom} onAddItem={onAddItem}>
         <GanttSidebar>
-          {Array.from(featuresByLane.entries()).map(([lane, features]) => (
-            <GanttSidebarGroup key={lane} name={lane}>
-              {features.map((feature) => (
-                <GanttSidebarItem
-                  key={feature.id}
-                  feature={feature}
-                  onSelectItem={handleSelectItem}
-                />
-              ))}
+          {ganttFeatures.length === 0 ? (
+            <GanttSidebarGroup name="Aucune tâche">
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                Aucune tâche avec date d'échéance
+              </div>
             </GanttSidebarGroup>
-          ))}
+          ) : (
+            Array.from(featuresByLane.entries()).map(([lane, features]) => (
+              <GanttSidebarGroup key={lane} name={lane}>
+                {features.map((feature) => (
+                  <GanttSidebarItem
+                    key={feature.id}
+                    feature={feature}
+                    onSelectItem={handleSelectItem}
+                  />
+                ))}
+              </GanttSidebarGroup>
+            ))
+          )}
         </GanttSidebar>
 
         <GanttTimeline>
           <GanttHeader />
           <GanttFeatureList>
-            {Array.from(featuresByLane.entries()).map(([lane, features]) => (
-              <GanttFeatureListGroup key={lane}>
-                <GanttFeatureRow
-                  features={features}
-                  onMove={handleMove}
-                >
-                  {(feature) => {
-                    const task = tasksMap.get(feature.id);
-                    if (!task) return null;
+            {ganttFeatures.length === 0 ? (
+              <GanttFeatureListGroup>
+                <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                  Aucune tâche à afficher
+                </div>
+              </GanttFeatureListGroup>
+            ) : (
+              Array.from(featuresByLane.entries()).map(([lane, features]) => (
+                <GanttFeatureListGroup key={lane}>
+                  <GanttFeatureRow
+                    features={features}
+                    onMove={handleMove}
+                  >
+                    {(feature) => {
+                      const task = tasksMap.get(feature.id);
+                      if (!task) return null;
 
-                    return (
-                      <ContextMenu>
-                        <ContextMenuTrigger className="flex-1 w-full">
-                          <div className="flex items-center gap-2 w-full">
-                            <div
-                              className="h-2 w-2 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: feature.status.color }}
-                            />
-                            <p className="flex-1 truncate font-medium">
-                              {feature.name}
-                            </p>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-[10px] px-1 py-0",
-                                  getPriorityColor(task.priority)
-                                )}
-                              >
-                                {getPriorityLabel(task.priority)}
-                              </Badge>
-                              {task.estimatedHours && (
+                      return (
+                        <ContextMenu>
+                          <ContextMenuTrigger className="flex-1 w-full">
+                            <div className="flex items-center gap-2 w-full">
+                              <div
+                                className="h-2 w-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: feature.status.color }}
+                              />
+                              <p className="flex-1 truncate font-medium">
+                                {feature.name}
+                              </p>
+                              <div className="flex items-center gap-1 flex-shrink-0">
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px] px-1 py-0 flex items-center gap-0.5"
+                                  className={cn(
+                                    "text-[10px] px-1 py-0",
+                                    getPriorityColor(task.priority)
+                                  )}
                                 >
-                                  <Clock className="h-2.5 w-2.5" />
-                                  {task.estimatedHours}h
+                                  {getPriorityLabel(task.priority)}
                                 </Badge>
-                              )}
+                                {task.estimatedHours && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] px-1 py-0 flex items-center gap-0.5"
+                                  >
+                                    <Clock className="h-2.5 w-2.5" />
+                                    {task.estimatedHours}h
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </ContextMenuTrigger>
-                        <ContextMenuContent>
-                          <ContextMenuItem
-                            onClick={() => handleSelectItem(feature.id)}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Modifier
-                          </ContextMenuItem>
-                          {onEventToggle && (
+                          </ContextMenuTrigger>
+                          <ContextMenuContent>
                             <ContextMenuItem
-                              onClick={() => handleToggle(feature.id)}
+                              onClick={() => handleSelectItem(feature.id)}
                             >
-                              {task.isActive ? (
-                                <>
-                                  <Circle className="h-4 w-4 mr-2" />
-                                  Désactiver
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="h-4 w-4 mr-2" />
-                                  Activer
-                                </>
-                              )}
+                              <Edit className="h-4 w-4 mr-2" />
+                              Modifier
                             </ContextMenuItem>
-                          )}
-                          <ContextMenuSeparator />
-                          {onEventDelete && (
-                            <ContextMenuItem
-                              onClick={() => handleDelete(feature.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Supprimer
-                            </ContextMenuItem>
-                          )}
-                        </ContextMenuContent>
-                      </ContextMenu>
-                    );
-                  }}
-                </GanttFeatureRow>
-              </GanttFeatureListGroup>
-            ))}
+                            {onEventToggle && (
+                              <ContextMenuItem
+                                onClick={() => handleToggle(feature.id)}
+                              >
+                                {task.isActive ? (
+                                  <>
+                                    <Circle className="h-4 w-4 mr-2" />
+                                    Désactiver
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Activer
+                                  </>
+                                )}
+                              </ContextMenuItem>
+                            )}
+                            <ContextMenuSeparator />
+                            {onEventDelete && (
+                              <ContextMenuItem
+                                onClick={() => handleDelete(feature.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Supprimer
+                              </ContextMenuItem>
+                            )}
+                          </ContextMenuContent>
+                        </ContextMenu>
+                      );
+                    }}
+                  </GanttFeatureRow>
+                </GanttFeatureListGroup>
+              ))
+            )}
           </GanttFeatureList>
           <GanttToday />
         </GanttTimeline>
       </GanttProvider>
+      </div>
     </div>
   );
 }

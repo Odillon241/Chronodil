@@ -431,6 +431,92 @@ export default function HRTimesheetPage() {
     [currentTimesheets]
   );
 
+  // Extraction et conversion des tâches liées aux timesheets en features
+  const tasksAsFeatures = useMemo(() => {
+    const tasks: any[] = [];
+    
+    currentTimesheets.forEach((ts: any) => {
+      // Tâches liées aux activités
+      if (ts.activities && Array.isArray(ts.activities)) {
+        ts.activities.forEach((activity: any) => {
+          if (activity?.Task && activity.Task.id) {
+            const task = activity.Task;
+            const taskStatus = task.status || "TODO";
+            const statusColor = 
+              taskStatus === "DONE" ? "#10B981" :
+              taskStatus === "IN_PROGRESS" ? "#3B82F6" :
+              taskStatus === "REVIEW" ? "#F59E0B" :
+              taskStatus === "BLOCKED" ? "#EF4444" :
+              "#94A3B8";
+            
+            // Vérifier que les dates sont valides
+            const startDate = task.dueDate 
+              ? (task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate))
+              : (ts.weekStartDate instanceof Date ? ts.weekStartDate : new Date(ts.weekStartDate));
+            const endDate = task.dueDate 
+              ? (task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate))
+              : (ts.weekEndDate instanceof Date ? ts.weekEndDate : new Date(ts.weekEndDate));
+            
+            // Vérifier que les dates sont valides
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+              console.warn("Date invalide pour la tâche:", task.id);
+              return; // Ignorer cette tâche si les dates sont invalides
+            }
+            
+            tasks.push({
+              id: `task-${task.id}`,
+              name: task.name || "Tâche sans nom",
+              startAt: startDate,
+              endAt: endDate,
+              status: {
+                id: taskStatus,
+                name: taskStatus === "DONE" ? "Terminé" :
+                      taskStatus === "IN_PROGRESS" ? "En cours" :
+                      taskStatus === "REVIEW" ? "Revue" :
+                      taskStatus === "BLOCKED" ? "Bloqué" :
+                      "À faire",
+                color: statusColor,
+              },
+              owner: task.Creator && task.Creator.email ? {
+                id: task.Creator.email,
+                name: task.Creator.name || "Utilisateur inconnu",
+                image: task.Creator.avatar || task.Creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(task.Creator.name || "U")}`,
+              } : {
+                id: ts.User?.email || ts.employeeName || "unknown",
+                name: ts.User?.name || ts.employeeName || "Utilisateur inconnu",
+                image: `https://ui-avatars.com/api/?name=${encodeURIComponent(ts.User?.name || ts.employeeName || "U")}`,
+              },
+              group: { id: ts.site || "default", name: ts.site || "Par défaut" },
+              product: { 
+                id: task.Project?.name || "Sans projet", 
+                name: task.Project?.name || "Sans projet" 
+              },
+              totalHours: task.estimatedHours || 0,
+              column: taskStatus,
+              originalData: {
+                id: task.id,
+                name: task.name,
+                status: taskStatus,
+                priority: task.priority,
+                dueDate: task.dueDate,
+                estimatedHours: task.estimatedHours,
+              },
+              isTask: true,
+            });
+          }
+        });
+      }
+    });
+    
+    return tasks;
+  }, [currentTimesheets]);
+
+  // Combiner timesheets et tâches pour les vues
+  const allFeatures = useMemo(() => [
+    ...timesheetsAsFeatures,
+    ...tasksAsFeatures,
+  ], [timesheetsAsFeatures, tasksAsFeatures]);
+
   const statusColumns = useMemo(() =>
     Object.entries(STATUS_CONFIG).map(([key, value]) => ({
       id: key,
@@ -441,17 +527,17 @@ export default function HRTimesheetPage() {
   );
 
   const earliestYear = useMemo(() =>
-    timesheetsAsFeatures.length > 0
-      ? Math.min(...timesheetsAsFeatures.map(f => f.startAt.getFullYear()))
+    allFeatures.length > 0
+      ? Math.min(...allFeatures.map(f => f.startAt.getFullYear()))
       : new Date().getFullYear() - 1,
-    [timesheetsAsFeatures]
+    [allFeatures]
   );
 
   const latestYear = useMemo(() =>
-    timesheetsAsFeatures.length > 0
-      ? Math.max(...timesheetsAsFeatures.map(f => f.endAt.getFullYear()))
+    allFeatures.length > 0
+      ? Math.max(...allFeatures.map(f => f.endAt.getFullYear()))
       : new Date().getFullYear() + 1,
-    [timesheetsAsFeatures]
+    [allFeatures]
   );
 
   const TimesheetCard = ({ timesheet, isPending = false }: { timesheet: HRTimesheet, isPending?: boolean }) => (
@@ -613,7 +699,12 @@ export default function HRTimesheetPage() {
   // Vues roadmap
   const GanttView = () => {
     const ganttRef = useRef<HTMLDivElement>(null);
-    const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const [features, setFeatures] = useState(allFeatures);
+    
+    // Mettre à jour les features quand allFeatures change
+    useEffect(() => {
+      setFeatures(allFeatures);
+    }, [allFeatures]);
     const [ganttZoom, setGanttZoom] = useState(100);
     const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('monthly');
     const [markers, setMarkers] = useState<Array<{ id: string; date: Date; label: string; className?: string }>>([
@@ -674,10 +765,14 @@ export default function HRTimesheetPage() {
                 const matrix = new DOMMatrix(transform);
                 const translateX = matrix.m41; // m41 correspond à translateX
                 
-                // Centrer la vue sur "Today" en soustrayant la moitié de la largeur du conteneur
-                const containerWidth = ganttContainer.clientWidth;
-                const scrollPosition = Math.max(0, translateX - containerWidth / 2);
-                ganttContainer.scrollLeft = scrollPosition;
+                // Aligner la vue sur "Today" en tenant compte de la largeur de la sidebar
+                const sidebarWidth = 200; // Largeur approximative de la sidebar
+                const scrollPosition = Math.max(0, translateX - sidebarWidth);
+                
+                ganttContainer.scrollTo({
+                  left: scrollPosition,
+                  behavior: 'smooth',
+                });
               } catch (error) {
                 // Fallback si DOMMatrix n'est pas supporté
                 console.warn('Impossible de calculer la position de Today:', error);
@@ -688,7 +783,7 @@ export default function HRTimesheetPage() {
 
         return () => clearTimeout(timeoutId);
       }
-    }, [ganttRange, ganttZoom]);
+    }, [ganttRange, ganttZoom, features.length]);
 
     // Raccourcis clavier pour le zoom
     useEffect(() => {
@@ -715,11 +810,23 @@ export default function HRTimesheetPage() {
     }, []);
 
     const handleViewFeature = (id: string) => {
-      router.push(`/dashboard/hr-timesheet/${id}`);
+      const feature = allFeatures.find(f => f.id === id);
+      if (feature?.isTask && feature.originalData?.id) {
+        router.push(`/dashboard/tasks`);
+      } else {
+        router.push(`/dashboard/hr-timesheet/${id}`);
+      }
     };
 
     const handleMoveFeature = (id: string, startAt: Date, endAt: Date | null) => {
       if (!endAt) return;
+
+      // Ne pas permettre le déplacement des tâches
+      const feature = allFeatures.find(f => f.id === id);
+      if (feature?.isTask) {
+        toast.info("Les tâches ne peuvent pas être déplacées depuis cette vue");
+        return;
+      }
 
       setFeatures((prev) =>
         prev.map((feature) =>
@@ -826,83 +933,99 @@ export default function HRTimesheetPage() {
           }}
         >
         <GanttSidebar>
-          {Object.entries(sortedGroupedFeatures).map(([group, features]) => (
-            <GanttSidebarGroup key={group} name={group}>
-              {features.map((feature) => (
-                <GanttSidebarItem
-                  feature={feature}
-                  key={feature.id}
-                  onSelectItem={handleViewFeature}
-                />
-              ))}
+          {Object.keys(sortedGroupedFeatures).length === 0 ? (
+            <GanttSidebarGroup name="Aucune feuille de temps">
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                Aucune feuille de temps à afficher
+              </div>
             </GanttSidebarGroup>
-          ))}
+          ) : (
+            Object.entries(sortedGroupedFeatures).map(([group, features]) => (
+              <GanttSidebarGroup key={group} name={group}>
+                {features.map((feature) => (
+                  <GanttSidebarItem
+                    feature={feature}
+                    key={feature.id}
+                    onSelectItem={handleViewFeature}
+                  />
+                ))}
+              </GanttSidebarGroup>
+            ))
+          )}
         </GanttSidebar>
         <GanttTimeline>
           <GanttHeader />
           <GanttFeatureList>
-            {Object.entries(sortedGroupedFeatures).map(([group, features]) => (
-              <GanttFeatureListGroup key={group}>
-                {features.map((feature) => {
-                  const timesheet = currentTimesheets.find(t => t.id === feature.id);
-                  return (
-                  <ContextMenu key={feature.id}>
-                    <ContextMenuTrigger asChild>
-                      <div className="flex w-full" data-feature-id={feature.id}>
-                        <button
-                          onClick={() => handleViewFeature(feature.id)}
-                          type="button"
-                          className="w-full"
-                        >
-                          <GanttFeatureItem
-                            {...feature}
-                            onMove={handleMoveFeature}
-                          >
-                            <p className="flex-1 truncate text-xs">
-                              {feature.name}
-                            </p>
-                            <Avatar className="h-4 w-4">
-                              <AvatarImage src={feature.owner.image} />
-                              <AvatarFallback>
-                                {feature.owner.name?.slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="ml-2 text-xs font-medium">
-                              {feature.totalHours.toFixed(1)}h
-                            </span>
-                          </GanttFeatureItem>
-                        </button>
-                      </div>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent>
-                      <ContextMenuItem onClick={() => handleViewFeature(feature.id)} className="flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
-                        Voir détails
-                      </ContextMenuItem>
-                      {timesheet?.status === 'DRAFT' && (
-                        <>
-                          <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}/edit`)} className="flex items-center gap-2">
-                            <Edit className="h-4 w-4" />
-                            Modifier
-                          </ContextMenuItem>
-                          <ContextMenuItem onClick={() => handleSubmit(feature.id)} className="flex items-center gap-2">
-                            <Send className="h-4 w-4" />
-                            Soumettre
-                          </ContextMenuItem>
-                        </>
-                      )}
-                      {(isAdmin || timesheet?.status === 'DRAFT') && (
-                        <ContextMenuItem onClick={() => handleDelete(feature.id)} className="flex items-center gap-2 text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                          Supprimer
-                        </ContextMenuItem>
-                      )}
-                    </ContextMenuContent>
-                  </ContextMenu>
-                  );
-                })}
+            {Object.keys(sortedGroupedFeatures).length === 0 ? (
+              <GanttFeatureListGroup>
+                <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                  Aucune feuille de temps à afficher
+                </div>
               </GanttFeatureListGroup>
-            ))}
+            ) : (
+              Object.entries(sortedGroupedFeatures).map(([group, features]) => (
+                <GanttFeatureListGroup key={group}>
+                  {features.map((feature) => {
+                    const timesheet = currentTimesheets.find(t => t.id === feature.id);
+                    return (
+                    <ContextMenu key={feature.id}>
+                      <ContextMenuTrigger asChild>
+                        <div className="flex w-full" data-feature-id={feature.id}>
+                          <button
+                            onClick={() => handleViewFeature(feature.id)}
+                            type="button"
+                            className="w-full"
+                          >
+                            <GanttFeatureItem
+                              {...feature}
+                              onMove={handleMoveFeature}
+                            >
+                              <p className="flex-1 truncate text-xs">
+                                {feature.name}
+                              </p>
+                              <Avatar className="h-4 w-4">
+                                <AvatarImage src={feature.owner.image} />
+                                <AvatarFallback>
+                                  {feature.owner.name?.slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="ml-2 text-xs font-medium">
+                                {feature.totalHours.toFixed(1)}h
+                              </span>
+                            </GanttFeatureItem>
+                          </button>
+                        </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem onClick={() => handleViewFeature(feature.id)} className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          Voir détails
+                        </ContextMenuItem>
+                        {timesheet?.status === 'DRAFT' && (
+                          <>
+                            <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}/edit`)} className="flex items-center gap-2">
+                              <Edit className="h-4 w-4" />
+                              Modifier
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={() => handleSubmit(feature.id)} className="flex items-center gap-2">
+                              <Send className="h-4 w-4" />
+                              Soumettre
+                            </ContextMenuItem>
+                          </>
+                        )}
+                        {(isAdmin || timesheet?.status === 'DRAFT') && (
+                          <ContextMenuItem onClick={() => handleDelete(feature.id)} className="flex items-center gap-2 text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            Supprimer
+                          </ContextMenuItem>
+                        )}
+                      </ContextMenuContent>
+                    </ContextMenu>
+                    );
+                  })}
+                </GanttFeatureListGroup>
+              ))
+            )}
           </GanttFeatureList>
           {markers.map((marker) => (
             <GanttMarker
@@ -955,13 +1078,21 @@ export default function HRTimesheetPage() {
           <CalendarDatePagination />
         </CalendarDate>
         <CalendarHeader />
-        <CalendarBody features={timesheetsAsFeatures}>
+        <CalendarBody features={allFeatures}>
           {({ feature }) => (
             <CalendarItem
               feature={feature}
               key={feature.id}
               className="cursor-pointer"
-              onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}`)}
+              onClick={() => {
+                if (('isTask' in feature) && (feature as any).isTask && ('originalData' in feature) && (feature as any).originalData?.id) {
+                  // Rediriger vers la page des tâches
+                  router.push(`/dashboard/tasks`);
+                } else {
+                  // Rediriger vers la page du timesheet
+                  router.push(`/dashboard/hr-timesheet/${feature.id}`);
+                }
+              }}
             />
           )}
         </CalendarBody>
@@ -970,16 +1101,28 @@ export default function HRTimesheetPage() {
   );
 
   const ListViewContent = () => {
-    const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const [features, setFeatures] = useState(allFeatures);
     const clickStatesRef = useRef<Map<string, { startTime: number; isDragging: boolean }>>(new Map());
     
     const handleItemClick = (id: string) => {
-      router.push(`/dashboard/hr-timesheet/${id}`);
+      const feature = allFeatures.find(f => f.id === id);
+      if (feature?.isTask && feature.originalData?.id) {
+        router.push(`/dashboard/tasks`);
+      } else {
+        router.push(`/dashboard/hr-timesheet/${id}`);
+      }
     };
 
     const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over) return;
+
+      // Ne pas permettre le drag & drop des tâches (seulement les timesheets)
+      const activeFeature = allFeatures.find(f => f.id === active.id);
+      if (activeFeature?.isTask) {
+        toast.info("Les tâches ne peuvent pas être déplacées depuis cette vue");
+        return;
+      }
 
       const status = statusColumns.find((s) => s.name === over.id);
       if (!status) return;
@@ -1014,12 +1157,12 @@ export default function HRTimesheetPage() {
         } else {
           toast.error(result?.serverError || "Erreur lors de la mise à jour du statut");
           // Restaurer l'état précédent en cas d'erreur
-          setFeatures(timesheetsAsFeatures);
+          setFeatures(allFeatures);
         }
       } catch (error: any) {
         toast.error(error.message || "Erreur lors de la mise à jour du statut");
         // Restaurer l'état précédent en cas d'erreur
-        setFeatures(timesheetsAsFeatures);
+        setFeatures(allFeatures);
       }
     };
 
@@ -1108,16 +1251,28 @@ export default function HRTimesheetPage() {
   };
 
   const KanbanViewContent = () => {
-    const [features, setFeatures] = useState(timesheetsAsFeatures);
+    const [features, setFeatures] = useState(allFeatures);
     const clickStatesRef = useRef<Map<string, { startTime: number; isDragging: boolean }>>(new Map());
     
     const handleCardClick = (id: string) => {
-      router.push(`/dashboard/hr-timesheet/${id}`);
+      const feature = allFeatures.find(f => f.id === id);
+      if (feature?.isTask && feature.originalData?.id) {
+        router.push(`/dashboard/tasks`);
+      } else {
+        router.push(`/dashboard/hr-timesheet/${id}`);
+      }
     };
 
     const handleDragEnd = async (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over) return;
+
+      // Ne pas permettre le drag & drop des tâches (seulement les timesheets)
+      const activeFeature = allFeatures.find(f => f.id === active.id);
+      if (activeFeature?.isTask) {
+        toast.info("Les tâches ne peuvent pas être déplacées depuis cette vue");
+        return;
+      }
 
       const status = statusColumns.find(({ id }) => id === over.id);
       if (!status) return;
@@ -1152,12 +1307,12 @@ export default function HRTimesheetPage() {
         } else {
           toast.error(result?.serverError || "Erreur lors de la mise à jour du statut");
           // Restaurer l'état précédent en cas d'erreur
-          setFeatures(timesheetsAsFeatures);
+          setFeatures(allFeatures);
         }
       } catch (error: any) {
         toast.error(error.message || "Erreur lors de la mise à jour du statut");
         // Restaurer l'état précédent en cas d'erreur
-        setFeatures(timesheetsAsFeatures);
+        setFeatures(allFeatures);
       }
     };
 
@@ -1257,7 +1412,7 @@ export default function HRTimesheetPage() {
 
     const handleSelectAll = (checked: boolean) => {
       if (checked) {
-        setSelectedRows(new Set(timesheetsAsFeatures.map((ts) => ts.id)));
+        setSelectedRows(new Set(allFeatures.map((ts) => ts.id)));
       } else {
         setSelectedRows(new Set());
       }
@@ -1318,8 +1473,8 @@ export default function HRTimesheetPage() {
       toast.success("ID copié dans le presse-papiers");
     };
 
-    const isAllSelected = timesheetsAsFeatures.length > 0 && selectedRows.size === timesheetsAsFeatures.length;
-    const isIndeterminate = selectedRows.size > 0 && selectedRows.size < timesheetsAsFeatures.length;
+    const isAllSelected = allFeatures.length > 0 && selectedRows.size === allFeatures.length;
+    const isIndeterminate = selectedRows.size > 0 && selectedRows.size < allFeatures.length;
 
     // Gérer l'état indeterminate pour la checkbox "Tout sélectionner"
     useEffect(() => {
@@ -1602,13 +1757,13 @@ export default function HRTimesheetPage() {
 
     switch (currentView) {
       case 'gantt':
-        return timesheetsAsFeatures.length > 0 ? <GanttView /> : commonEmptyState;
+        return <GanttView />;
       case 'calendar':
-        return timesheetsAsFeatures.length > 0 ? <CalendarViewContent /> : commonEmptyState;
+        return <CalendarViewContent />;
       case 'list':
-        return timesheetsAsFeatures.length > 0 ? <ListViewContent /> : commonEmptyState;
+        return <ListViewContent />;
       case 'kanban':
-        return timesheetsAsFeatures.length > 0 ? <KanbanViewContent /> : commonEmptyState;
+        return <KanbanViewContent />;
       case 'table':
         return <TableViewContent />;
       default:

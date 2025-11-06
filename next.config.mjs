@@ -1,29 +1,18 @@
-// ⚡ Plugin next-intl restauré avec configuration STATIQUE compatible Cache Components
-// Le fichier src/i18n.ts charge la locale 'fr' de manière statique (pas de cookies/headers)
-
-import createNextIntlPlugin from 'next-intl/plugin';
-
-const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
+// Plugin next-intl désactivé - Conflit avec React 19 + Next.js 16 prerendering
+// On utilise uniquement NextIntlClientProvider manuellement dans layout.tsx
+// import createNextIntlPlugin from 'next-intl/plugin';
+// const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 
-  // ⚡ React Compiler - Mémoïsation automatique des composants (Next.js 16)
-  reactCompiler: true,
-
-  // 🎯 Cache Components - Rendu hybride statique/dynamique (Next.js 16)
-  // ✅ ACTIVÉ - Migration vers système i18n custom compatible
-  // next-intl utilisé uniquement pour NextIntlClientProvider (client-side)
-  // Chargement des messages géré par src/lib/i18n.ts (compatible Cache Components)
-  cacheComponents: true,
+  // Note: reactCompiler et cacheComponents peuvent être activés si nécessaire
 
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    // 🚀 Turbopack filesystem caching - Améliore la vitesse de compilation entre les redémarrages
-    turbopackFileSystemCacheForDev: true,
   },
 
   images: {
@@ -50,4 +39,4 @@ const nextConfig = {
   },
 }
 
-export default withNextIntl(nextConfig);
+export default nextConfig;

@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { createTask, updateTask, deleteTask, getMyTasks, getAvailableUsersForSharing, updateTaskStatus, updateTaskPriority } from "@/actions/task.actions";
 import { getMyProjects } from "@/actions/project.actions";
+import { getAvailableHRTimesheetsForTask } from "@/actions/hr-timesheet.actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -58,26 +59,41 @@ import { useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 import { TaskKanban } from "@/components/features/task-kanban";
 import { TaskGantt } from "@/components/features/task-gantt";
 import { TaskCalendar } from "@/components/features/task-calendar";
+import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
+import { useTasks, type ViewMode } from "@/contexts/tasks-context";
 
 export default function TasksPage() {
   const { data: session } = useSession();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
+  
+  // Utiliser le contexte pour les tâches
+  const {
+    tasks,
+    filteredTasks,
+    isLoading,
+    searchQuery,
+    statusFilter,
+    priorityFilter,
+    selectedProject,
+    viewMode,
+    setSearchQuery,
+    setStatusFilter,
+    setPriorityFilter,
+    setSelectedProject,
+    setViewMode,
+    refreshTasks,
+  } = useTasks();
+  
   const [projects, setProjects] = useState<any[]>([]);
   const [availableUsers, setAvailableUsers] = useState<any[]>([]);
-  const [selectedProject, setSelectedProject] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [availableTimesheets, setAvailableTimesheets] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(true);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"calendar" | "kanban" | "gantt" | "list">("calendar");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Activer les rappels de tâches
   useTaskReminders({ tasks });
@@ -86,7 +102,7 @@ export default function TasksPage() {
   useRealtimeTasks({
     onTaskChange: () => {
       console.log('🔄 Mise à jour en temps réel - Rechargement des tâches...');
-      loadTasks();
+      refreshTasks();
     }
   });
 
@@ -106,43 +122,13 @@ export default function TasksPage() {
     trainingLevel: undefined,
     masteryLevel: undefined,
     understandingLevel: undefined,
+    hrTimesheetId: "none",
   });
 
   useEffect(() => {
     loadProjects();
+    loadAvailableTimesheets();
   }, []);
-
-  useEffect(() => {
-    loadTasks();
-  }, [selectedProject]);
-
-  useEffect(() => {
-    // Filtrer les tâches en temps réel basé sur la recherche, statut et priorité
-    let filtered = tasks;
-
-    // Filtre par recherche
-    if (searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (task) =>
-          task.name.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query) ||
-          task.Project?.name.toLowerCase().includes(query)
-      );
-    }
-
-    // Filtre par statut
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((task) => task.status === statusFilter);
-    }
-
-    // Filtre par priorité
-    if (priorityFilter !== "all") {
-      filtered = filtered.filter((task) => task.priority === priorityFilter);
-    }
-
-    setFilteredTasks(filtered);
-  }, [searchQuery, tasks, statusFilter, priorityFilter]);
 
   const loadProjects = async () => {
     try {
@@ -155,20 +141,17 @@ export default function TasksPage() {
     }
   };
 
-  const loadTasks = async () => {
+  const loadAvailableTimesheets = async () => {
     try {
-      const result = await getMyTasks({
-        projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
-      });
+      const result = await getAvailableHRTimesheetsForTask();
       if (result?.data) {
-        setTasks(result.data);
-        setFilteredTasks(result.data);
+        setAvailableTimesheets(result.data);
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des tâches:", error);
-      toast.error("Erreur lors du chargement");
+      console.error("Erreur lors du chargement des timesheets:", error);
     }
   };
+
 
   const loadAvailableUsers = async (projectId?: string) => {
     try {
@@ -185,7 +168,7 @@ export default function TasksPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       if (editingTask) {
@@ -223,6 +206,7 @@ export default function TasksPage() {
           trainingLevel: formData.trainingLevel,
           masteryLevel: formData.masteryLevel,
           understandingLevel: formData.understandingLevel,
+          hrTimesheetId: formData.hrTimesheetId === "none" ? undefined : formData.hrTimesheetId || undefined,
         });
 
         if (result?.data) {
@@ -237,11 +221,11 @@ export default function TasksPage() {
 
       setIsDialogOpen(false);
       resetForm();
-      loadTasks();
+      refreshTasks();
     } catch (error) {
       toast.error("Erreur lors de l'enregistrement");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -263,6 +247,7 @@ export default function TasksPage() {
       trainingLevel: task.trainingLevel || undefined,
       masteryLevel: task.masteryLevel || undefined,
       understandingLevel: task.understandingLevel || undefined,
+      hrTimesheetId: task.hrTimesheetId || "none",
     });
     setIsDialogOpen(true);
   };
@@ -279,7 +264,7 @@ export default function TasksPage() {
           const result = await deleteTask({ id });
           if (result?.data) {
             toast.success("Tâche supprimée");
-            loadTasks();
+            refreshTasks();
           }
         } catch (error) {
           toast.error("Erreur lors de la suppression");
@@ -301,7 +286,7 @@ export default function TasksPage() {
           const result = await deleteTask({ id });
           if (result?.data) {
             toast.success("Tâche supprimée");
-            loadTasks();
+            refreshTasks();
           }
         } catch (error) {
           toast.error("Erreur lors de la suppression");
@@ -319,7 +304,7 @@ export default function TasksPage() {
 
       if (result?.data) {
         toast.success(task.isActive ? "Tâche désactivée" : "Tâche activée");
-        loadTasks();
+        refreshTasks();
       }
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
@@ -343,6 +328,7 @@ export default function TasksPage() {
       trainingLevel: undefined,
       masteryLevel: undefined,
       understandingLevel: undefined,
+      hrTimesheetId: "none",
     });
     setSelectedUsers([]);
     setEditingTask(null);
@@ -381,7 +367,7 @@ export default function TasksPage() {
           await Promise.all(deletePromises);
           toast.success(`${selectedTasks.size} tâche(s) supprimée(s)`);
           setSelectedTasks(new Set());
-          loadTasks();
+          refreshTasks();
         } catch (error) {
           toast.error("Erreur lors de la suppression");
         }
@@ -410,7 +396,7 @@ export default function TasksPage() {
 
     if (result?.data) {
       toast.success("Date d'échéance mise à jour !");
-      loadTasks();
+      refreshTasks();
     } else {
       toast.error("Erreur lors de la mise à jour");
       throw new Error("Update failed");
@@ -435,7 +421,7 @@ export default function TasksPage() {
 
     if (result?.data) {
       toast.success("Statut mis à jour !");
-      loadTasks();
+      refreshTasks();
     } else {
       toast.error("Erreur lors de la mise à jour");
     }
@@ -461,15 +447,6 @@ export default function TasksPage() {
           </p>
         </div>
         <div className="flex gap-2 relative z-20">
-          <Button
-            variant="outline"
-            onClick={() => setShowCalendar(!showCalendar)}
-            className="flex items-center gap-2 flex-1 sm:flex-initial text-xs sm:text-sm"
-          >
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{showCalendar ? "Masquer" : "Afficher"} le calendrier</span>
-            <span className="sm:hidden">{showCalendar ? "Masquer" : "Calendrier"}</span>
-          </Button>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
@@ -506,28 +483,61 @@ export default function TasksPage() {
               <TabsContent value="details" className="mt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {!editingTask && (
-                <div className="space-y-2">
-                  <Label htmlFor="project">Projet</Label>
-                  <Select
-                    value={formData.projectId}
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="project">Projet</Label>
+                    <Select
+                      value={formData.projectId}
+                        onValueChange={(value) => {
+                          setFormData({ ...formData, projectId: value });
+                          loadAvailableUsers(value);
+                        }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Aucun projet</SelectItem>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="hrTimesheet">Feuille de temps RH (optionnel)</Label>
+                    <Select
+                      value={formData.hrTimesheetId}
                       onValueChange={(value) => {
-                        setFormData({ ...formData, projectId: value });
-                        loadAvailableUsers(value);
+                        setFormData({ ...formData, hrTimesheetId: value });
                       }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Aucun projet</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Lier à une feuille de temps..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Aucune feuille de temps</SelectItem>
+                        {availableTimesheets.length > 0 ? (
+                          availableTimesheets.map((timesheet) => (
+                            <SelectItem key={timesheet.id} value={timesheet.id}>
+                              📅 Semaine du {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                              {" au "}{new Date(timesheet.weekEndDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              {" "}({timesheet.status === "DRAFT" ? "Brouillon" : "En attente"})
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>Aucune feuille de temps disponible</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      💡 Liez cette tâche à une feuille de temps RH pour suivre votre activité
+                    </p>
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">
@@ -631,40 +641,38 @@ export default function TasksPage() {
                   />
                 </div>
 
-                {formData.reminderDate && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="reminderTime" className="text-xs sm:text-sm">Heure du rappel</Label>
-                      <Input
-                        id="reminderTime"
-                        type="time"
-                        value={formData.reminderTime}
-                        onChange={(e) => setFormData({ ...formData, reminderTime: e.target.value })}
-                        required={!!formData.reminderDate}
-                        className="text-sm"
-                      />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="reminderTime" className="text-xs sm:text-sm">Heure du rappel</Label>
+                    <Input
+                      id="reminderTime"
+                      type="time"
+                      value={formData.reminderTime}
+                      onChange={(e) => setFormData({ ...formData, reminderTime: e.target.value })}
+                      required={!!formData.reminderDate}
+                      className="text-sm"
+                    />
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="soundEnabled" className="flex items-center gap-2 text-xs sm:text-sm">
-                        {formData.soundEnabled ? <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />}
-                        Notification sonore
-                      </Label>
-                      <div className="flex items-center h-10 px-3 border rounded-md">
-                        <Checkbox
-                          id="soundEnabled"
-                          checked={formData.soundEnabled}
-                          onCheckedChange={(checked) =>
-                            setFormData({ ...formData, soundEnabled: checked as boolean })
-                          }
-                        />
-                        <label htmlFor="soundEnabled" className="ml-2 text-xs sm:text-sm cursor-pointer">
-                          {formData.soundEnabled ? "Activé" : "Désactivé"}
-                        </label>
-                      </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="soundEnabled" className="flex items-center gap-2 text-xs sm:text-sm">
+                      {formData.soundEnabled ? <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />}
+                      Notification sonore
+                    </Label>
+                    <div className="flex items-center h-10 px-3 border rounded-md">
+                      <Checkbox
+                        id="soundEnabled"
+                        checked={formData.soundEnabled}
+                        onCheckedChange={(checked) =>
+                          setFormData({ ...formData, soundEnabled: checked as boolean })
+                        }
+                      />
+                      <label htmlFor="soundEnabled" className="ml-2 text-xs sm:text-sm cursor-pointer">
+                        {formData.soundEnabled ? "Activé" : "Désactivé"}
+                      </label>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {formData.reminderDate && formData.reminderTime && (
                   <p className="text-xs text-muted-foreground">
@@ -706,48 +714,46 @@ export default function TasksPage() {
                       </Label>
                     </div>
 
-                    {formData.isShared && (
-                      <div className="space-y-2">
-                        <Label>Partager avec :</Label>
-                        <div className="border rounded-md p-4 max-h-[200px] overflow-y-auto space-y-2">
-                          {availableUsers.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                              Aucun utilisateur disponible pour le partage
-                            </p>
-                          ) : (
-                            availableUsers.map((user) => (
-                              <div
-                                key={user.id}
-                                className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-accent ${
-                                  selectedUsers.includes(user.id) ? "bg-accent" : ""
-                                }`}
-                              >
-                                <Checkbox
-                                  checked={selectedUsers.includes(user.id)}
-                                  onCheckedChange={() => toggleUserSelection(user.id)}
-                                />
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={user.avatar || undefined} />
-                                  <AvatarFallback>
-                                    {user.name.split(" ").map((n: string) => n[0]).join("")}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{user.name}</p>
-                                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                                </div>
-                                <Badge variant="outline">{user.role}</Badge>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                        {selectedUsers.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Partager avec :</Label>
+                      <div className="border rounded-md p-4 max-h-[200px] overflow-y-auto space-y-2">
+                        {availableUsers.length === 0 ? (
                           <p className="text-sm text-muted-foreground">
-                            {selectedUsers.length} utilisateur(s) sélectionné(s)
+                            Aucun utilisateur disponible pour le partage
                           </p>
+                        ) : (
+                          availableUsers.map((user) => (
+                            <div
+                              key={user.id}
+                              className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-accent ${
+                                selectedUsers.includes(user.id) ? "bg-accent" : ""
+                              }`}
+                            >
+                              <Checkbox
+                                checked={selectedUsers.includes(user.id)}
+                                onCheckedChange={() => toggleUserSelection(user.id)}
+                              />
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.avatar || undefined} />
+                                <AvatarFallback>
+                                  {user.name.split(" ").map((n: string) => n[0]).join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{user.name}</p>
+                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                              </div>
+                              <Badge variant="outline">{user.role}</Badge>
+                            </div>
+                          ))
                         )}
                       </div>
-                    )}
+                      {selectedUsers.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          {selectedUsers.length} utilisateur(s) sélectionné(s)
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -797,18 +803,24 @@ export default function TasksPage() {
       {/* Vues des tâches */}
       {showCalendar && (
         <Card className="space-y-4 overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle>Gestion des tâches</CardTitle>
-            <CardDescription>Visualisez et gérez vos tâches avec différentes vues</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-6">
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full min-w-0">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
-                <TabsTrigger value="calendar" className="text-xs sm:text-sm px-2 sm:px-3">Calendrier</TabsTrigger>
-                <TabsTrigger value="kanban" className="text-xs sm:text-sm px-2 sm:px-3">Kanban</TabsTrigger>
-                <TabsTrigger value="gantt" className="text-xs sm:text-sm px-2 sm:px-3 hidden sm:inline-flex">Gantt</TabsTrigger>
-                <TabsTrigger value="list" className="text-xs sm:text-sm px-2 sm:px-3">Liste</TabsTrigger>
-              </TabsList>
+              <div className="mb-4 -mx-6 px-6">
+                <Navbar18
+                  navigationLinks={[
+                    { href: "#table", label: "Tableau", active: viewMode === "table" },
+                    { href: "#list", label: "Liste", active: viewMode === "list" },
+                    { href: "#calendar", label: "Calendrier", active: viewMode === "calendar" },
+                    { href: "#kanban", label: "Kanban", active: viewMode === "kanban" },
+                    { href: "#gantt", label: "Gantt", active: viewMode === "gantt" },
+                  ] as Navbar18NavItem[]}
+                  onNavItemClick={(href) => {
+                    const mode = href.replace("#", "") as ViewMode;
+                    setViewMode(mode);
+                  }}
+                  className="border-b border-border/40 px-0 h-auto"
+                />
+              </div>
 
               {/* Vue Calendrier */}
               <TabsContent value="calendar" className="mt-4 min-w-0">
@@ -821,6 +833,44 @@ export default function TasksPage() {
                     onEventDelete={handleDirectDelete}
                     onEventToggle={handleToggleActive}
                   />
+                </div>
+                {/* Légende - uniquement pour la vue calendrier */}
+                <div className="border-t mt-4 pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3">Légende</p>
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-red-600 flex-shrink-0 border-2 border-red-800" />
+                      <span className="font-semibold">🇬🇦 Jour férié (Gabon)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-red-500 flex-shrink-0" />
+                      <span>Urgent</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-orange-500 flex-shrink-0" />
+                      <span>Priorité haute</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-yellow-500 flex-shrink-0" />
+                      <span>Priorité moyenne</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-green-500 flex-shrink-0" />
+                      <span>Priorité basse</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-gray-400 flex-shrink-0" />
+                      <span>Terminé</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-3 w-3 flex-shrink-0" />
+                      <span>Tâche partagée</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-3 w-3 flex-shrink-0" />
+                      <span>Rappel activé</span>
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
 
@@ -848,6 +898,302 @@ export default function TasksPage() {
                     onEventToggle={handleToggleActive}
                     onAddItem={handleCalendarSlotDoubleClick}
                   />
+                </div>
+              </TabsContent>
+
+              {/* Vue Tableau */}
+              <TabsContent value="table" className="mt-4">
+                <div className="space-y-4">
+                  {filteredTasks.length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <FolderOpen className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+                        <p className="text-sm sm:text-base text-muted-foreground text-center">
+                          {searchQuery ? "Aucune tâche trouvée pour votre recherche" : "Aucune tâche trouvée"}
+                        </p>
+                        <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
+                          {searchQuery ? "Essayez avec d'autres mots-clés" : "Créez votre première tâche pour commencer"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="hidden lg:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-12">
+                              <Checkbox
+                                checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
+                                onCheckedChange={handleSelectAll}
+                              />
+                            </TableHead>
+                            <TableHead>Actif</TableHead>
+                            <TableHead>Nom</TableHead>
+                            <TableHead>Statut</TableHead>
+                            <TableHead>Priorité</TableHead>
+                            <TableHead>Projet</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Échéance</TableHead>
+                            <TableHead>Estimation</TableHead>
+                            <TableHead>Membres</TableHead>
+                            <TableHead className="w-20">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sortedTasks.map((task: any) => (
+                            <ContextMenu key={task.id}>
+                              <ContextMenuTrigger asChild>
+                                <TableRow className={selectedTasks.has(task.id) ? "bg-muted/50" : ""}>
+                                  <TableCell>
+                                    <Checkbox
+                                      checked={selectedTasks.has(task.id)}
+                                      onCheckedChange={() => handleSelectTask(task.id)}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => handleToggleActive(task)}
+                                    >
+                                      {task.isActive ? (
+                                        <CheckCircle className="h-5 w-5 text-green-600" />
+                                      ) : (
+                                        <Circle className="h-5 w-5 text-muted-foreground" />
+                                      )}
+                                    </Button>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`font-medium ${!task.isActive && "line-through text-muted-foreground"}`}>
+                                        {task.name}
+                                      </span>
+                                      {!task.isActive && (
+                                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                                          Inactive
+                                        </span>
+                                      )}
+                                      {task.isShared && (
+                                        <Users className="h-4 w-4 text-blue-600" aria-label="Tâche partagée" />
+                                      )}
+                                      {task.reminderDate && (
+                                        <Bell className="h-4 w-4 text-amber-600" aria-label="Rappel activé" />
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                                          <TaskStatusBadge status={task.status} />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="start">
+                                        <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskStatus({ id: task.id, status: "TODO" });
+                                          if (result?.data) {
+                                            toast.success("Statut mis à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          À faire
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
+                                          if (result?.data) {
+                                            toast.success("Statut mis à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          En cours
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
+                                          if (result?.data) {
+                                            toast.success("Statut mis à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Revue
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskStatus({ id: task.id, status: "DONE" });
+                                          if (result?.data) {
+                                            toast.success("Tâche terminée !");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Terminé
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
+                                          if (result?.data) {
+                                            toast.success("Statut mis à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Bloqué
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                  <TableCell>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                                          <TaskPriorityBadge priority={task.priority} />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="start">
+                                        <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
+                                          if (result?.data) {
+                                            toast.success("Priorité mise à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Basse
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
+                                          if (result?.data) {
+                                            toast.success("Priorité mise à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Moyenne
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
+                                          if (result?.data) {
+                                            toast.success("Priorité mise à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Haute
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={async () => {
+                                          const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
+                                          if (result?.data) {
+                                            toast.success("Priorité mise à jour");
+                                            refreshTasks();
+                                          }
+                                        }}>
+                                          Urgent
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <div
+                                        className="w-3 h-3 rounded-full"
+                                        style={{
+                                          backgroundColor: task.Project?.color || '#6b7280'
+                                        }}
+                                      />
+                                      <span>{task.Project?.name || "Sans projet"}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="text-sm text-muted-foreground truncate block">
+                                      {task.description || "-"}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    {task.dueDate ? (
+                                      <span className="text-sm">
+                                        {new Date(task.dueDate).toLocaleDateString("fr-FR")}
+                                      </span>
+                                    ) : (
+                                      "-"
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="text-sm">
+                                      {task.estimatedHours ? `${task.estimatedHours}h` : "-"}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    {task.TaskMember && task.TaskMember.length > 0 ? (
+                                      <div className="flex -space-x-2">
+                                        {task.TaskMember.slice(0, 3).map((member: any) => (
+                                          <Avatar key={member.User.id} className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-background">
+                                            <AvatarImage src={member.User.avatar || undefined} />
+                                            <AvatarFallback className="text-xs">
+                                              {member.User.name.split(" ").map((n: string) => n[0]).join("")}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                        ))}
+                                        {task.TaskMember.length > 3 && (
+                                          <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                                            <span className="text-xs text-muted-foreground">
+                                              +{task.TaskMember.length - 3}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      "-"
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleEdit(task)}
+                                        className="h-8 w-8 p-0"
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDelete(task.id)}
+                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              </ContextMenuTrigger>
+                              <ContextMenuContent>
+                                <ContextMenuItem onClick={() => handleEdit(task)}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Modifier
+                                </ContextMenuItem>
+                                <ContextMenuItem onClick={() => handleToggleActive(task)}>
+                                  {task.isActive ? (
+                                    <>
+                                      <Circle className="h-4 w-4 mr-2" />
+                                      Désactiver
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle className="h-4 w-4 mr-2" />
+                                      Activer
+                                    </>
+                                  )}
+                                </ContextMenuItem>
+                                <ContextMenuSeparator />
+                                <ContextMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Supprimer
+                                </ContextMenuItem>
+                              </ContextMenuContent>
+                            </ContextMenu>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -948,7 +1294,7 @@ export default function TasksPage() {
                                             const result = await updateTaskStatus({ id: task.id, status: "TODO" });
                                             if (result?.data) {
                                               toast.success("Statut mis à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             À faire
@@ -957,7 +1303,7 @@ export default function TasksPage() {
                                             const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
                                             if (result?.data) {
                                               toast.success("Statut mis à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             En cours
@@ -966,7 +1312,7 @@ export default function TasksPage() {
                                             const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
                                             if (result?.data) {
                                               toast.success("Statut mis à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Revue
@@ -975,7 +1321,7 @@ export default function TasksPage() {
                                             const result = await updateTaskStatus({ id: task.id, status: "DONE" });
                                             if (result?.data) {
                                               toast.success("Tâche terminée !");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Terminé
@@ -984,7 +1330,7 @@ export default function TasksPage() {
                                             const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
                                             if (result?.data) {
                                               toast.success("Statut mis à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Bloqué
@@ -1006,7 +1352,7 @@ export default function TasksPage() {
                                             const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
                                             if (result?.data) {
                                               toast.success("Priorité mise à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Basse
@@ -1015,7 +1361,7 @@ export default function TasksPage() {
                                             const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
                                             if (result?.data) {
                                               toast.success("Priorité mise à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Moyenne
@@ -1024,7 +1370,7 @@ export default function TasksPage() {
                                             const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
                                             if (result?.data) {
                                               toast.success("Priorité mise à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Haute
@@ -1033,7 +1379,7 @@ export default function TasksPage() {
                                             const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
                                             if (result?.data) {
                                               toast.success("Priorité mise à jour");
-                                              loadTasks();
+                                              refreshTasks();
                                             }
                                           }}>
                                             Urgent
@@ -1212,23 +1558,23 @@ export default function TasksPage() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskStatus({ id: task.id, status: "TODO" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
                                     }}>À faire</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
                                     }}>En cours</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
                                     }}>Revue</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskStatus({ id: task.id, status: "DONE" });
-                                      if (result?.data) { toast.success("Tâche terminée !"); loadTasks(); }
+                                      if (result?.data) { toast.success("Tâche terminée !"); refreshTasks(); }
                                     }}>Terminé</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
                                     }}>Bloqué</DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -1244,19 +1590,19 @@ export default function TasksPage() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
                                     }}>Basse</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
                                     }}>Moyenne</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
                                     }}>Haute</DropdownMenuItem>
                                     <DropdownMenuItem onClick={async () => {
                                       const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); loadTasks(); }
+                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
                                     }}>Urgent</DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -1318,45 +1664,6 @@ export default function TasksPage() {
                 </div>
               </TabsContent>
             </Tabs>
-
-            {/* Légende */}
-            <div className="border-t mt-4 pt-4">
-              <p className="text-xs font-semibold text-muted-foreground mb-3">Légende</p>
-              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-red-600 flex-shrink-0 border-2 border-red-800" />
-                  <span className="font-semibold">🇬🇦 Jour férié (Gabon)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-red-500 flex-shrink-0" />
-                  <span>Urgent</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-orange-500 flex-shrink-0" />
-                  <span>Priorité haute</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-yellow-500 flex-shrink-0" />
-                  <span>Priorité moyenne</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-green-500 flex-shrink-0" />
-                  <span>Priorité basse</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-gray-400 flex-shrink-0" />
-                  <span>Terminé</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-3 w-3 flex-shrink-0" />
-                  <span>Tâche partagée</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Bell className="h-3 w-3 flex-shrink-0" />
-                  <span>Rappel activé</span>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}

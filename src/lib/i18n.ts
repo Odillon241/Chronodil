@@ -18,11 +18,9 @@ const messages = {
 
 /**
  * Récupère la locale depuis le cookie (configuré par proxy.ts)
- * Compatible avec Cache Components grâce à "use cache: private"
- * Cette directive permet l'utilisation de cookies() tout en restant performant
+ * Note: "use cache: private" temporairement retiré car cacheComponents est désactivé
  */
 export async function getLocale(): Promise<Locale> {
-  "use cache: private";
   const cookieStore = await cookies();
   const locale = cookieStore.get(LOCALE_COOKIE)?.value as Locale | undefined;
   return locale || DEFAULT_LOCALE;

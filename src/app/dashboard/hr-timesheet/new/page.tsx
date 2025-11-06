@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays, ChevronDown, ChevronUp, Bell, Target } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -26,6 +28,7 @@ import {
   createHRTimesheet,
   addHRActivity,
   getActivityCatalog,
+  getActivityCategories,
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +44,15 @@ interface Activity {
   endDate: Date;
   status: "IN_PROGRESS" | "COMPLETED";
   catalogId?: string;
+  // Nouveaux champs Task-related
+  priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ";
+  estimatedHours?: number;
+  dueDate?: Date;
+  reminderDate?: Date;
+  reminderTime?: string;
+  soundEnabled?: boolean;
+  createLinkedTask?: boolean;
 }
 
 interface CatalogItem {
@@ -57,6 +69,8 @@ export default function NewHRTimesheetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   const {
     register: registerTimesheet,
@@ -76,6 +90,8 @@ export default function NewHRTimesheetPage() {
     },
   });
 
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
   const {
     register: registerActivity,
     handleSubmit: handleSubmitActivity,
@@ -93,16 +109,27 @@ export default function NewHRTimesheetPage() {
       startDate: new Date(),
       endDate: new Date(),
       status: "IN_PROGRESS",
+      // Nouveaux champs par défaut
+      priority: "MEDIUM",
+      complexity: "MOYEN",
+      soundEnabled: true,
+      createLinkedTask: false,
     },
   });
 
-  // Charger le catalogue d'activités
+  // Charger le catalogue d'activités et les catégories
   useEffect(() => {
     const loadCatalog = async () => {
       try {
-        const result = await getActivityCatalog({});
-        if (result?.data) {
-          setCatalog(result.data);
+        const [catalogResult, categoriesResult] = await Promise.all([
+          getActivityCatalog({}),
+          getActivityCategories(),
+        ]);
+        if (catalogResult?.data) {
+          setCatalog(catalogResult.data);
+        }
+        if (categoriesResult?.data) {
+          setCategories(categoriesResult.data);
         }
       } catch (error) {
         console.error("Erreur chargement catalogue:", error);
@@ -113,8 +140,17 @@ export default function NewHRTimesheetPage() {
 
   // Ajout d'activité en local (sans appel API)
   const onSubmitActivity = (data: HRActivityInput) => {
-    setActivities([...activities, data]);
+    // Convertir la catégorie en type avant l'ajout
+    const activityType = getTypeFromCategory(selectedCategory);
+    
+    const activityData: Activity = {
+      ...data,
+      activityType,
+    };
+    
+    setActivities([...activities, activityData]);
     resetActivity();
+    setSelectedCategory("");
     toast.success("Activité ajoutée à la liste !");
   };
 
@@ -178,8 +214,16 @@ export default function NewHRTimesheetPage() {
     return sum + calculateActivityDuration(activity.startDate, activity.endDate);
   }, 0);
 
-  // Filtrer les activités opérationnelles du catalogue
-  const operationalActivities = catalog.filter(item => item.type === "OPERATIONAL");
+  // Fonction pour déterminer le type à partir de la catégorie
+  const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
+    // La catégorie "Reporting" correspond au type REPORTING, toutes les autres sont OPERATIONAL
+    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
+  };
+
+  // Filtrer les activités du catalogue en fonction de la catégorie sélectionnée
+  const filteredActivities = selectedCategory
+    ? catalog.filter(item => item.category === selectedCategory)
+    : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -333,29 +377,42 @@ export default function NewHRTimesheetPage() {
                 <div className="space-y-2">
                   <Label htmlFor="activityType">Type d'activité *</Label>
                   <Select
-                    value={watchActivity("activityType")}
-                    onValueChange={(value: any) => setActivityValue("activityType", value)}
+                    value={selectedCategory}
+                    onValueChange={(value: string) => {
+                      setSelectedCategory(value);
+                      // Déterminer automatiquement le type OPERATIONAL/REPORTING
+                      const activityType = getTypeFromCategory(value);
+                      setActivityValue("activityType", activityType);
+                      // Réinitialiser les champs dépendants
+                      setActivityValue("activityName", "");
+                      setActivityValue("catalogId", undefined);
+                    }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="OPERATIONAL">Opérationnelle</SelectItem>
-                      <SelectItem value="REPORTING">Reporting</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="activityName">Nom de l'activité *</Label>
-                  {watchActivity("activityType") === "OPERATIONAL" && operationalActivities.length > 0 ? (
+                  {selectedCategory && filteredActivities.length > 0 ? (
                     <Select
                       value={watchActivity("activityName") || ""}
                       onValueChange={(value) => {
-                        const selectedActivity = operationalActivities.find(act => act.name === value);
+                        const selectedActivity = filteredActivities.find(act => act.name === value);
                         if (selectedActivity) {
                           setActivityValue("activityName", selectedActivity.name);
                           setActivityValue("catalogId", selectedActivity.id);
+                          // Déterminer le type à partir de la catégorie
+                          const activityType = getTypeFromCategory(selectedActivity.category);
                           if (selectedActivity.defaultPeriodicity) {
                             setActivityValue("periodicity", selectedActivity.defaultPeriodicity as any);
                           }
@@ -369,7 +426,7 @@ export default function NewHRTimesheetPage() {
                         <SelectValue placeholder="Sélectionner une activité du catalogue" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px] overflow-y-auto">
-                        {operationalActivities.map((activity) => (
+                        {filteredActivities.map((activity) => (
                           <SelectItem key={activity.id} value={activity.name}>
                             {activity.name}
                           </SelectItem>
@@ -481,6 +538,181 @@ export default function NewHRTimesheetPage() {
                   )}
                 </div>
               </div>
+
+              {/* Options avancées (Tâche) */}
+              <Collapsible
+                open={showAdvancedOptions}
+                onOpenChange={setShowAdvancedOptions}
+                className="border rounded-lg p-4 bg-background"
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full flex items-center justify-between mb-2 hover:bg-muted"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      <span className="font-semibold">Options avancées (Créer une tâche liée)</span>
+                    </div>
+                    {showAdvancedOptions ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 pt-2">
+                  {/* Checkbox pour créer une tâche liée */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="createLinkedTask"
+                      checked={watchActivity("createLinkedTask") || false}
+                      onCheckedChange={(checked) =>
+                        setActivityValue("createLinkedTask", checked as boolean)
+                      }
+                    />
+                    <Label htmlFor="createLinkedTask" className="text-sm font-medium cursor-pointer">
+                      Créer automatiquement une tâche liée à cette activité
+                    </Label>
+                  </div>
+
+                  {watchActivity("createLinkedTask") && (
+                    <>
+                      <Separator />
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="priority">Priorité</Label>
+                          <Select
+                            value={watchActivity("priority") || "MEDIUM"}
+                            onValueChange={(value: any) => setActivityValue("priority", value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="LOW">Basse</SelectItem>
+                              <SelectItem value="MEDIUM">Moyenne</SelectItem>
+                              <SelectItem value="HIGH">Haute</SelectItem>
+                              <SelectItem value="URGENT">Urgente</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="complexity">Complexité</Label>
+                          <Select
+                            value={watchActivity("complexity") || "MOYEN"}
+                            onValueChange={(value: any) => setActivityValue("complexity", value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="FAIBLE">Faible</SelectItem>
+                              <SelectItem value="MOYEN">Moyen</SelectItem>
+                              <SelectItem value="ÉLEVÉ">Élevé</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="estimatedHours">Heures estimées</Label>
+                          <Input
+                            id="estimatedHours"
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            placeholder="Ex: 8"
+                            value={watchActivity("estimatedHours") || ""}
+                            onChange={(e) =>
+                              setActivityValue(
+                                "estimatedHours",
+                                e.target.value ? parseFloat(e.target.value) : undefined
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="dueDate">Date d'échéance</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-start">
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {watchActivity("dueDate")
+                                  ? format(watchActivity("dueDate")!, "dd/MM/yyyy", { locale: fr })
+                                  : "Sélectionner..."}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <Calendar
+                                mode="single"
+                                selected={watchActivity("dueDate") || undefined}
+                                onSelect={(d) => setActivityValue("dueDate", d)}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="reminderDate">
+                            <div className="flex items-center gap-2">
+                              <Bell className="h-4 w-4" />
+                              Date de rappel
+                            </div>
+                          </Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-start">
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {watchActivity("reminderDate")
+                                  ? format(watchActivity("reminderDate")!, "dd/MM/yyyy", { locale: fr })
+                                  : "Sélectionner..."}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <Calendar
+                                mode="single"
+                                selected={watchActivity("reminderDate") || undefined}
+                                onSelect={(d) => setActivityValue("reminderDate", d)}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="reminderTime">Heure de rappel</Label>
+                          <Input
+                            id="reminderTime"
+                            type="time"
+                            value={watchActivity("reminderTime") || ""}
+                            onChange={(e) => setActivityValue("reminderTime", e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="soundEnabled"
+                          checked={watchActivity("soundEnabled") ?? true}
+                          onCheckedChange={(checked) =>
+                            setActivityValue("soundEnabled", checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="soundEnabled" className="text-sm cursor-pointer">
+                          Activer le son pour les rappels
+                        </Label>
+                      </div>
+                    </>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
 
               <div className="flex gap-2">
                 <Button

@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { TasksProviderWrapper } from '@/components/providers/tasks-provider-wrapper';
 
 export const metadata = {
   title: 'Tâches | Chronodil',
@@ -6,5 +7,5 @@ export const metadata = {
 };
 
 export default function TasksLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return <TasksProviderWrapper>{children}</TasksProviderWrapper>;
 }

@@ -85,35 +85,71 @@ export const createHRTimesheet = authActionClient
 export const getMyHRTimesheets = authActionClient
   .schema(hrTimesheetFilterSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
-    const { status, weekStartDate, weekEndDate } = parsedInput;
+    try {
+      const { userId } = ctx;
+      const { status, weekStartDate, weekEndDate } = parsedInput;
 
-    const timesheets = await prisma.hRTimesheet.findMany({
-      where: {
-        userId,
-        ...(status && { status }),
-        ...(weekStartDate && { weekStartDate: { gte: weekStartDate } }),
-        ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
-      },
-      include: {
-        activities: {
-          include: {
-            ActivityCatalog: true,
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
+      const timesheets = await prisma.hRTimesheet.findMany({
+        where: {
+          userId,
+          ...(status && { status }),
+          ...(weekStartDate && { weekStartDate: { gte: weekStartDate } }),
+          ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
         },
-        User: true,
-        ManagerSigner: true,
-        OdillonSigner: true,
-      },
-      orderBy: {
-        weekStartDate: "desc",
-      },
-    });
+        include: {
+          activities: {
+            include: {
+              ActivityCatalog: true,
+              Task: {
+                include: {
+                  Project: {
+                    select: {
+                      name: true,
+                      color: true,
+                    },
+                  },
+                  Creator: {
+                    select: {
+                      name: true,
+                      email: true,
+                      avatar: true,
+                      image: true,
+                    },
+                  },
+                  TaskMember: {
+                    include: {
+                      User: {
+                        select: {
+                          id: true,
+                          name: true,
+                          email: true,
+                          avatar: true,
+                          image: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+          User: true,
+          ManagerSigner: true,
+          OdillonSigner: true,
+        },
+        orderBy: {
+          weekStartDate: "desc",
+        },
+      });
 
-    return timesheets;
+      return timesheets;
+    } catch (error) {
+      console.error("Erreur dans getMyHRTimesheets:", error);
+      throw new Error(`Erreur lors de la récupération des timesheets: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+    }
   });
 
 /**
@@ -146,32 +182,68 @@ export const getHRTimesheetsForApproval = authActionClient
       whereConditions.status = { in: ["MANAGER_APPROVED"] };
     }
 
-    const timesheets = await prisma.hRTimesheet.findMany({
-      where: whereConditions,
-      include: {
-        activities: {
-          include: {
-            ActivityCatalog: true,
+    try {
+      const timesheets = await prisma.hRTimesheet.findMany({
+        where: whereConditions,
+        include: {
+          activities: {
+            include: {
+              ActivityCatalog: true,
+              Task: {
+                include: {
+                  Project: {
+                    select: {
+                      name: true,
+                      color: true,
+                    },
+                  },
+                  Creator: {
+                    select: {
+                      name: true,
+                      email: true,
+                      avatar: true,
+                      image: true,
+                    },
+                  },
+                  TaskMember: {
+                    include: {
+                      User: {
+                        select: {
+                          id: true,
+                          name: true,
+                          email: true,
+                          avatar: true,
+                          image: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
           },
-          orderBy: {
-            createdAt: "asc",
+          User: true,
+          ManagerSigner: true,
+          OdillonSigner: true,
+          _count: {
+            select: {
+              activities: true,
+            },
           },
         },
-        User: true,
-        ManagerSigner: true,
-        OdillonSigner: true,
-        _count: {
-          select: {
-            activities: true,
-          },
+        orderBy: {
+          weekStartDate: "desc",
         },
-      },
-      orderBy: {
-        weekStartDate: "desc",
-      },
-    });
+      });
 
-    return timesheets;
+      return timesheets;
+    } catch (error) {
+      console.error("Erreur dans getHRTimesheetsForApproval:", error);
+      throw new Error(`Erreur lors de la récupération des timesheets: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+    }
   });
 
 /**
@@ -349,6 +421,47 @@ export const addHRActivity = authActionClient
     const days = differenceInDays(activity.endDate, activity.startDate);
     const totalHours = days * 24;
 
+    // Si on demande de créer une tâche liée, la créer d'abord
+    let linkedTaskId: string | undefined = activity.taskId;
+
+    if (activity.createLinkedTask) {
+      // Convertir le statut HRActivity en statut Task
+      const taskStatus = activity.status === "COMPLETED" ? "DONE" : "IN_PROGRESS";
+
+      const linkedTask = await prisma.task.create({
+        data: {
+          id: nanoid(),
+          name: activity.activityName,
+          description: activity.description,
+          createdBy: userId,
+          hrTimesheetId: timesheetId,
+          status: taskStatus,
+          priority: activity.priority || "MEDIUM",
+          complexity: activity.complexity || "MOYEN",
+          estimatedHours: activity.estimatedHours,
+          dueDate: activity.dueDate,
+          reminderDate: activity.reminderDate,
+          reminderTime: activity.reminderTime,
+          soundEnabled: activity.soundEnabled ?? true,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      // Ajouter le créateur comme membre de la tâche
+      await prisma.taskMember.create({
+        data: {
+          id: nanoid(),
+          taskId: linkedTask.id,
+          userId: userId,
+          role: "creator",
+        },
+      });
+
+      linkedTaskId = linkedTask.id;
+    }
+
     const newActivity = await prisma.hRActivity.create({
       data: {
         id: nanoid(),
@@ -363,11 +476,21 @@ export const addHRActivity = authActionClient
         totalHours,
         status: activity.status,
         catalogId: activity.catalogId,
+        // Nouveaux champs Task-related
+        taskId: linkedTaskId,
+        priority: activity.priority,
+        complexity: activity.complexity,
+        estimatedHours: activity.estimatedHours,
+        dueDate: activity.dueDate,
+        reminderDate: activity.reminderDate,
+        reminderTime: activity.reminderTime,
+        soundEnabled: activity.soundEnabled ?? true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       include: {
         ActivityCatalog: true,
+        Task: true,
       },
     });
 
@@ -376,6 +499,7 @@ export const addHRActivity = authActionClient
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+    revalidatePath("/dashboard/tasks");
     return newActivity;
   });
 
@@ -857,6 +981,38 @@ export const getActivityCategories = authActionClient.action(async () => {
 
   return activities.map((a) => a.category);
 });
+
+/**
+ * Récupérer les timesheets RH disponibles pour créer une tâche liée
+ * (Timesheets en DRAFT ou PENDING de l'utilisateur)
+ */
+export const getAvailableHRTimesheetsForTask = authActionClient.action(
+  async ({ ctx }) => {
+    const { userId } = ctx;
+
+    const timesheets = await prisma.hRTimesheet.findMany({
+      where: {
+        userId,
+        status: {
+          in: ["DRAFT", "PENDING"],
+        },
+      },
+      select: {
+        id: true,
+        weekStartDate: true,
+        weekEndDate: true,
+        status: true,
+        employeeName: true,
+      },
+      orderBy: {
+        weekStartDate: "desc",
+      },
+      take: 10, // Limiter aux 10 derniers
+    });
+
+    return timesheets;
+  }
+);
 
 // ============================================
 // STATISTIQUES
