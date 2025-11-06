@@ -250,7 +250,6 @@ model Project {
   Department     Department?      @relation(fields: [departmentId], references: [id])
   ProjectMember  ProjectMember[]
   Task           Task[]
-  TimesheetEntry TimesheetEntry[]
 
   @@index([code])
   @@index([createdBy])
@@ -369,7 +368,6 @@ model Task {
   TaskActivity       TaskActivity[]
   TaskComment        TaskComment[]
   TaskMember         TaskMember[]
-  TimesheetEntry     TimesheetEntry[]
 
   @@index([isActive])
   @@index([parentId])
@@ -437,52 +435,6 @@ model TaskActivity {
   @@index([action])
 }
 
-model TimesheetEntry {
-  id                  String               @id
-  userId              String
-  projectId           String?
-  taskId              String?
-  date                DateTime
-  startTime           DateTime?
-  endTime             DateTime?
-  duration            Float
-  type                TimeType             @default(NORMAL)
-  status              TimesheetStatus      @default(DRAFT)
-  description         String?
-  isLocked            Boolean              @default(false)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime
-  Project             Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  Task                Task?                @relation(fields: [taskId], references: [id])
-  User                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  TimesheetValidation TimesheetValidation?
-
-  @@unique([userId, date, startTime])
-  @@index([date])
-  @@index([projectId])
-  @@index([status])
-  @@index([taskId])
-  @@index([userId])
-  // ⚡ Index composites pour optimiser les requêtes du dashboard
-  @@index([userId, date])
-  @@index([projectId, status])
-  @@index([userId, status])
-}
-
-model TimesheetValidation {
-  id               String          @id
-  timesheetEntryId String          @unique
-  validatorId      String
-  status           TimesheetStatus
-  comment          String?
-  validatedAt      DateTime        @default(now())
-  TimesheetEntry   TimesheetEntry  @relation(fields: [timesheetEntryId], references: [id], onDelete: Cascade)
-  User             User            @relation(fields: [validatorId], references: [id])
-
-  @@index([status])
-  @@index([validatorId])
-}
-
 model User {
   id                          String                @id
   email                       String                @unique
@@ -534,8 +486,6 @@ model User {
   TaskActivity                TaskActivity[]
   TaskComment                 TaskComment[]
   TaskMember                  TaskMember[]
-  TimesheetEntry              TimesheetEntry[]
-  TimesheetValidation         TimesheetValidation[]
   Department                  Department?           @relation(fields: [departmentId], references: [id])
   User                        User?                 @relation("UserToUser", fields: [managerId], references: [id])
   other_User                  User[]                @relation("UserToUser")
@@ -607,14 +557,6 @@ enum TimeType {
   OVERTIME
   NIGHT
   WEEKEND
-}
-
-enum TimesheetStatus {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-  LOCKED
 }
 
 enum TaskComplexity {

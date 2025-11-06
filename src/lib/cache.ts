@@ -13,7 +13,6 @@ export const CacheTags = {
   PROJECTS: "projects",
   USERS: "users",
   TASKS: "tasks",
-  TIMESHEETS: "timesheets",
   REPORTS: "reports",
   VALIDATIONS: "validations",
   DEPARTMENTS: "departments",

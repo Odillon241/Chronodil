@@ -1,13 +1,13 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, AlertCircle, TrendingUp as TrendingUpIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, AlertCircle, TrendingUp as TrendingUpIcon, ListTodo, Loader } from "lucide-react";
 
 interface StatCardWithComparisonProps {
   title: string;
   value: string;
   description: string;
-  iconName: "clock" | "check-circle" | "alert-circle" | "trending-up";
+  iconName: "clock" | "check-circle" | "alert-circle" | "trending-up" | "list-todo" | "loader";
   color: string;
   bgColor: string;
   previousValue?: number;
@@ -20,6 +20,8 @@ const iconMap = {
   "check-circle": CheckCircle2,
   "alert-circle": AlertCircle,
   "trending-up": TrendingUpIcon,
+  "list-todo": ListTodo,
+  "loader": Loader,
 };
 
 export function StatCardWithComparison({

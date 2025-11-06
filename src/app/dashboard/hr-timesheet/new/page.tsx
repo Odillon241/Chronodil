@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -29,6 +29,7 @@ import {
 } from "@/actions/hr-timesheet.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface Activity {
   activityType: "OPERATIONAL" | "REPORTING";
@@ -510,51 +511,83 @@ export default function NewHRTimesheetPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {activities.map((activity, index) => (
-                <div key={index} className="p-4 border rounded-lg flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant={activity.activityType === "OPERATIONAL" ? "default" : "secondary"}>
-                        {activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
-                      </Badge>
-                      <Badge variant="outline">{activity.periodicity}</Badge>
-                      <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
-                        {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
-                      </Badge>
+                <Card key={index} className="relative">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        {/* Badges */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant={activity.activityType === "OPERATIONAL" ? "default" : "secondary"}>
+                            {activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+                          </Badge>
+                          <Badge variant="outline" className="capitalize">
+                            {activity.periodicity === "DAILY" ? "Quotidien" :
+                             activity.periodicity === "WEEKLY" ? "Hebdomadaire" :
+                             activity.periodicity === "MONTHLY" ? "Mensuel" :
+                             activity.periodicity === "PUNCTUAL" ? "Ponctuel" :
+                             activity.periodicity === "WEEKLY_MONTHLY" ? "Hebdo/Mensuel" :
+                             activity.periodicity}
+                          </Badge>
+                          <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
+                            {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
+                          </Badge>
+                        </div>
+
+                        {/* Nom de l'activité */}
+                        <div>
+                          <h4 className="font-semibold text-base">{activity.activityName}</h4>
+                          {activity.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                          )}
+                        </div>
+
+                        {/* Informations de période et durée */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2 border-t">
+                          <div className="flex items-center gap-2 text-sm">
+                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">Période:</span>
+                            <span className="font-medium">
+                              {format(activity.startDate, "dd/MM/yyyy", { locale: fr })}
+                              {" → "}
+                              {format(activity.endDate, "dd/MM/yyyy", { locale: fr })}
+                            </span>
+                          </div>
+                          <Separator orientation="vertical" className="hidden sm:block h-4" />
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="h-4 w-4 text-primary" />
+                            <span className="text-muted-foreground">Durée:</span>
+                            <span className="font-semibold text-primary text-base">
+                              {calculateActivityDuration(activity.startDate, activity.endDate)}h
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bouton de suppression */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveActivity(index)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <h4 className="font-semibold">{activity.activityName}</h4>
-                    {activity.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
-                    )}
-                    <div className="text-sm mt-2">
-                      <span className="text-muted-foreground">Période: </span>
-                      <span>
-                        {format(activity.startDate, "dd/MM/yyyy", { locale: fr })}
-                        {" → "}
-                        {format(activity.endDate, "dd/MM/yyyy", { locale: fr })}
-                      </span>
-                      <span className="ml-4 font-semibold text-primary">
-                        {calculateActivityDuration(activity.startDate, activity.endDate)}h
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveActivity(index)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
 
-              <Card className="bg-primary/10 border-primary">
+              {/* Total des heures */}
+              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold">Total heures des activités</p>
-                    <p className="text-2xl font-bold text-primary">{totalActivitiesHours}h</p>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <p className="font-semibold text-base">Total heures des activités</p>
+                    </div>
+                    <p className="text-3xl font-bold text-primary">{totalActivitiesHours}h</p>
                   </div>
                 </CardContent>
               </Card>

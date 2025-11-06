@@ -1,0 +1,188 @@
+================================================================================
+                    GUIDE D'INSCRIPTION - PLATEFORME CHRONODIL
+================================================================================
+
+Bienvenue sur Chronodil, la plateforme de gestion des temps de travail !
+
+URL de la plateforme : https://chronodil-app.vercel.app/
+
+Ce guide vous accompagne étape par étape pour créer votre compte et commencer
+à utiliser l'application.
+
+================================================================================
+                        PRÉREQUIS POUR L'INSCRIPTION
+================================================================================
+
+Avant de commencer, assurez-vous d'avoir :
+  ✓ Une adresse email valide et accessible
+  ✓ Un navigateur web à jour (Chrome, Firefox, Safari, Edge)
+  ✓ Une connexion Internet stable
+
+================================================================================
+                        ÉTAPES D'INSCRIPTION
+================================================================================
+
+ÉTAPE 1 : Accéder à la page d'inscription
+------------------------------------------
+1. Ouvrez votre navigateur web
+2. Accédez à l'URL de la plateforme Chronodil :
+   https://chronodil-app.vercel.app/
+3. Cliquez sur le lien "S'inscrire" ou "Inscription" 
+   (ou accédez directement à : https://chronodil-app.vercel.app/auth/register)
+
+ÉTAPE 2 : Remplir le formulaire d'inscription
+-----------------------------------------------
+Le formulaire d'inscription comprend 4 champs obligatoires :
+
+  a) NOM COMPLET
+     - Saisissez votre nom complet (exemple : Jean Dupont)
+     - Minimum : 2 caractères
+     - Format accepté : lettres, espaces, tirets, apostrophes
+
+  b) ADRESSE EMAIL
+     - Saisissez votre adresse email professionnelle ou personnelle
+     - Format : nom@domaine.com
+     - Exemple : jean.dupont@entreprise.com
+     - L'email doit être valide et unique (non utilisé par un autre compte)
+
+  c) MOT DE PASSE
+     - Créez un mot de passe sécurisé
+     - Minimum : 6 caractères
+     - Recommandation : Utilisez au moins 8 caractères avec :
+       * Des lettres majuscules (A-Z)
+       * Des lettres minuscules (a-z)
+       * Des chiffres (0-9)
+       * Des caractères spéciaux (!@#$%^&*)
+     - Exemple : MonMotDePasse123!
+     - ⚠️ IMPORTANT : Ne partagez jamais votre mot de passe
+
+  d) CONFIRMER LE MOT DE PASSE
+     - Ressaisissez exactement le même mot de passe
+     - Cette vérification permet d'éviter les erreurs de saisie
+     - Les deux mots de passe doivent correspondre exactement
+
+ÉTAPE 3 : Valider votre inscription
+------------------------------------
+1. Vérifiez que toutes les informations sont correctes
+2. Cliquez sur le bouton "S'inscrire"
+3. Attendez la confirmation (message "Inscription réussie ! Redirection...")
+4. Vous serez automatiquement redirigé vers votre tableau de bord
+
+================================================================================
+                        MESSAGES D'ERREUR POSSIBLES
+================================================================================
+
+Si vous rencontrez une erreur, voici les messages possibles et leurs solutions :
+
+  ❌ "Le nom doit contenir au moins 2 caractères"
+     → Vérifiez que votre nom contient au moins 2 caractères
+
+  ❌ "Email invalide"
+     → Vérifiez le format de votre email (doit contenir @ et un domaine valide)
+     → Exemple correct : nom@exemple.com
+
+  ❌ "Le mot de passe doit contenir au moins 6 caractères"
+     → Votre mot de passe est trop court, utilisez au moins 6 caractères
+
+  ❌ "Les mots de passe ne correspondent pas"
+     → Les deux champs de mot de passe doivent être identiques
+     → Vérifiez que vous n'avez pas fait de faute de frappe
+
+  ❌ "Cet email est déjà utilisé"
+     → Cette adresse email est déjà associée à un compte
+     → Si c'est votre compte, utilisez "Se connecter" au lieu de "S'inscrire"
+     → Si vous avez oublié votre mot de passe, utilisez "Mot de passe oublié"
+
+  ❌ "Échec de l'inscription" ou "Une erreur s'est produite"
+     → Vérifiez votre connexion Internet
+     → Réessayez dans quelques instants
+     → Si le problème persiste, contactez le support
+
+================================================================================
+                        APRÈS L'INSCRIPTION
+================================================================================
+
+Une fois votre compte créé avec succès :
+
+  ✓ Vous êtes automatiquement connecté
+  ✓ Vous êtes redirigé vers votre tableau de bord (/dashboard)
+  ✓ Vous pouvez commencer à utiliser la plateforme immédiatement
+
+Fonctionnalités disponibles dès votre première connexion :
+  • Saisie de temps de travail
+  • Consultation de vos projets
+  • Visualisation de vos statistiques
+  • Gestion de votre profil
+
+================================================================================
+                        CONSEILS DE SÉCURITÉ
+================================================================================
+
+Pour protéger votre compte :
+
+  🔒 Choisissez un mot de passe fort et unique
+     → Ne réutilisez pas un mot de passe d'un autre service
+     → Changez régulièrement votre mot de passe
+
+  🔒 Ne partagez jamais vos identifiants
+     → Votre mot de passe est personnel et confidentiel
+     → Ne le communiquez à personne, même au support
+
+  🔒 Déconnectez-vous après utilisation
+     → Si vous utilisez un ordinateur partagé
+     → Cliquez sur "Déconnexion" en fin de session
+
+  🔒 Vérifiez l'URL de la plateforme
+     → Assurez-vous d'être sur le bon site web
+     → URL officielle : https://chronodil-app.vercel.app/
+     → Vérifiez que l'URL commence par https://
+
+================================================================================
+                        BESOIN D'AIDE ?
+================================================================================
+
+Si vous avez des difficultés lors de l'inscription :
+
+  1. Vérifiez que vous respectez tous les critères de validation
+  2. Assurez-vous que votre connexion Internet fonctionne
+  3. Essayez avec un autre navigateur web
+  4. Videz le cache de votre navigateur et réessayez
+  5. Contactez le support technique de votre organisation
+
+================================================================================
+                        DÉJÀ UN COMPTE ?
+================================================================================
+
+Si vous possédez déjà un compte Chronodil :
+
+  → Accédez à https://chronodil-app.vercel.app/auth/login
+  → Cliquez sur "Se connecter" au lieu de "S'inscrire"
+  → Utilisez votre email et votre mot de passe existants
+  → En cas d'oubli de mot de passe, utilisez "Mot de passe oublié"
+
+================================================================================
+                        RÉSUMÉ RAPIDE
+================================================================================
+
+1. Accédez à https://chronodil-app.vercel.app/auth/register
+2. Remplissez : Nom complet, Email, Mot de passe (2x)
+3. Cliquez sur "S'inscrire"
+4. Vous êtes redirigé vers le tableau de bord
+
+Critères de validation :
+  • Nom : minimum 2 caractères
+  • Email : format valide et unique
+  • Mot de passe : minimum 6 caractères
+  • Confirmation : doit correspondre au mot de passe
+
+================================================================================
+
+Nous vous souhaitons une excellente expérience sur Chronodil !
+
+Pour toute question ou assistance, n'hésitez pas à contacter le support.
+
+================================================================================
+                        Date de création : 2025
+                        Version : 1.0
+================================================================================
+

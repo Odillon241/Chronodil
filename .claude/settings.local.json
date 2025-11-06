@@ -53,7 +53,22 @@
       "Bash(cmd /c \"taskkill /F /PID 11008\")",
       "Bash(if exist \".next\\dev\\lock\" del /f \".next\\dev\\lock\")",
       "Bash(powershell.exe:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm -r:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/actions/timesheet.actions.ts\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/lib/validations/timesheet.ts\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/lib/utils/timesheet.utils.ts\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/components/features/timesheet-entry-card.tsx\" \"src/components/features/weekly-timesheet.tsx\" \"src/components/features/timesheet-area-chart.tsx\" \"src/components/features/timesheet-radar-chart.tsx\" \"src/components/features/timesheet-quick-entry.tsx\" \"src/components/features/timesheet-form.tsx\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/actions/validation.actions.ts\" \"src/components/features/validation-dialog.tsx\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"scripts/utilities/migrate-users.ts\" \"scripts/utilities/delete-admin-direct.ts\" \"scripts/testing/test-validation.ts\" \"scripts/setup/setup-admin.ts\" \"scripts/setup/create-admin-direct.ts\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/actions/report.actions.ts\" \"src/actions/export.actions.ts\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/components/features/bulk-validation-toolbar.tsx\" \"src/components/features/chart-area-interactive.tsx\")",
+      "Bash(timeout 120 npm run build:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" rm \"src/app/global-error.tsx\")",
+      "Bash(timeout 180 pnpm build:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" status:*)",
+      "Bash(timeout 30 pnpm dev:*)"
     ],
     "deny": [],
     "ask": []

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2 } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -547,11 +547,14 @@ export default function EditHRTimesheetPage() {
                 </div>
               ))}
 
-              {/* Total */}
-              <Card className="bg-primary/10 border-primary">
+              {/* Total des heures */}
+              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-6">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold text-lg">Total heures des activités</p>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <p className="font-semibold text-base">Total heures des activités</p>
+                    </div>
                     <p className="text-3xl font-bold text-primary">
                       {timesheet.totalHours.toFixed(1)}h
                     </p>

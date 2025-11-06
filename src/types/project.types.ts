@@ -43,7 +43,6 @@ export interface Project {
   usedHours?: number;
   _count?: {
     Task: number;
-    TimesheetEntry: number;
   };
 }
 

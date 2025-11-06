@@ -243,7 +243,6 @@ export default function AuditPage() {
                   <SelectItem value="all">Toutes</SelectItem>
                   <SelectItem value="User">Utilisateur</SelectItem>
                   <SelectItem value="Project">Projet</SelectItem>
-                  <SelectItem value="TimesheetEntry">Saisie temps</SelectItem>
                   <SelectItem value="Task">Tâche</SelectItem>
                   <SelectItem value="HRTimesheet">Timesheet RH</SelectItem>
                   <SelectItem value="Message">Message</SelectItem>

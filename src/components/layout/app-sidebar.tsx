@@ -10,7 +10,6 @@ import {
   Clock,
   FolderKanban,
   CheckSquare,
-  BarChart3,
   Calendar,
   Users,
   Settings,
@@ -70,11 +69,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: LayoutDashboard,
     },
     {
-      title: t("navigation.timesheets"),
-      url: "/dashboard/timesheet",
-      icon: Clock,
-    },
-    {
       title: t("navigation.hrTimesheets"),
       url: "/dashboard/hr-timesheet",
       icon: FileText,
@@ -93,23 +87,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: t("navigation.chat"),
       url: "/dashboard/chat",
       icon: MessageSquare,
-    },
-    {
-      title: "Validation",
-      url: "/dashboard/validation",
-      icon: CheckSquare,
-      roles: ["MANAGER", "HR", "ADMIN"],
-    },
-    {
-      title: "Validations Manager",
-      url: "/dashboard/validations",
-      icon: CheckSquare,
-      roles: ["MANAGER", "ADMIN"],
-    },
-    {
-      title: t("navigation.reports"),
-      url: "/dashboard/reports",
-      icon: BarChart3,
     },
   ], [t]);
 
@@ -137,22 +114,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     await signOut();
     window.location.href = "/auth/login";
   };
-  // Filtrer les items de navigation après le montage pour éviter les erreurs d'hydratation
+  // Filtrer les items de navigation de manière cohérente côté serveur et client
   const filteredNavMain = React.useMemo(() => {
-    if (!mounted) return [];
     return navMain.filter((item: any) => {
       if (!item.roles) return true;
       return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
     });
-  }, [navMain, mounted, session]);
+  }, [navMain, session]);
 
   const filteredNavSettings = React.useMemo(() => {
-    if (!mounted) return [];
     return navSettings.filter((item: any) => {
       if (!item.roles) return true;
       return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
     });
-  }, [navSettings, mounted, session]);
+  }, [navSettings, session]);
 
 
   return (

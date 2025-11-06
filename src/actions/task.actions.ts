@@ -269,7 +269,7 @@ export const getProjectTasks = actionClient
         },
         _count: {
           select: {
-            TimesheetEntry: true,
+            TaskComment: true,
           },
         },
       },
@@ -386,7 +386,6 @@ export const getMyTasks = actionClient
         },
         _count: {
           select: {
-            TimesheetEntry: true,
             TaskComment: true,
           },
         },

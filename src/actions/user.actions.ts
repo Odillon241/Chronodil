@@ -112,7 +112,6 @@ export const getUsers = authActionClient
         },
         _count: {
           select: {
-            TimesheetEntry: true,
             other_User: true,
           },
         },
@@ -334,7 +333,7 @@ export const getMyTeam = authActionClient
         Department: true,
         _count: {
           select: {
-            TimesheetEntry: true,
+            Task: true,
           },
         },
       },

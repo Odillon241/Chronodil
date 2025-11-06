@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -410,11 +410,14 @@ export default function ValidateHRTimesheetPage() {
                 </div>
               ))}
 
-              {/* Total */}
-              <Card className="bg-primary/10 border-primary">
+              {/* Total des heures */}
+              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-6">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold text-lg">Total heures déclarées</p>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <p className="font-semibold text-base">Total heures déclarées</p>
+                    </div>
                     <p className="text-3xl font-bold text-primary">
                       {timesheet.totalHours.toFixed(1)}h
                     </p>

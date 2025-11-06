@@ -102,7 +102,6 @@ export const getProjects = authActionClient
         _count: {
           select: {
             Task: true,
-            TimesheetEntry: true,
           },
         },
       },
@@ -111,22 +110,11 @@ export const getProjects = authActionClient
       },
     });
 
-    // Calculer les heures utilisées pour chaque projet
-    const projectsWithHours = await Promise.all(
-      projects.map(async (project) => {
-        const entries = await prisma.timesheetEntry.findMany({
-          where: { projectId: project.id },
-          select: { duration: true },
-        });
-
-        const usedHours = entries.reduce((sum, entry) => sum + entry.duration, 0);
-
-        return {
-          ...project,
-          usedHours,
-        };
-      })
-    );
+    // Retourner les projets (timesheet supprimé - usedHours toujours 0)
+    const projectsWithHours = projects.map((project) => ({
+      ...project,
+      usedHours: 0,
+    }));
 
     return projectsWithHours;
   });
@@ -162,17 +150,10 @@ export const getProjectById = authActionClient
       throw new Error("Projet non trouvé");
     }
 
-    // Calculer les heures utilisées
-    const entries = await prisma.timesheetEntry.findMany({
-      where: { projectId: project.id },
-      select: { duration: true },
-    });
-
-    const usedHours = entries.reduce((sum, entry) => sum + entry.duration, 0);
-
+    // Retourner le projet (timesheet supprimé - usedHours toujours 0)
     return {
       ...project,
-      usedHours,
+      usedHours: 0,
     };
   });
 

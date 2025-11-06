@@ -7,8 +7,6 @@ async function main() {
 
   // Supprimer tous les utilisateurs et leurs données associées
   // L'ordre est important à cause des relations
-  await prisma.timesheetValidation.deleteMany();
-  await prisma.timesheetEntry.deleteMany();
   await prisma.hRActivity.deleteMany();
   await prisma.hRTimesheet.deleteMany();
   await prisma.projectMember.deleteMany();

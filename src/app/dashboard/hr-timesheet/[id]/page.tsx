@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, XCircle, Edit, FileText, Trash2, Download } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Edit, FileText, Trash2, Download, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -488,13 +488,20 @@ export default function HRTimesheetDetailPage() {
                 </div>
               ))}
 
-              {/* Total simplifié */}
-              <div className="flex items-center justify-between pt-2">
-                <p className="font-medium">Total heures</p>
-                <p className="text-2xl font-bold text-primary">
-                  {timesheet.totalHours.toFixed(1)}h
-                </p>
-              </div>
+              {/* Total des heures */}
+              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-6">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <p className="font-semibold text-base">Total heures des activités</p>
+                    </div>
+                    <p className="text-3xl font-bold text-primary">
+                      {timesheet.totalHours.toFixed(1)}h
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </CardContent>

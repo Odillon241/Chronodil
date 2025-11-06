@@ -888,7 +888,6 @@ export default function TasksPage() {
                               <TableHead>Échéance</TableHead>
                               <TableHead>Estimation</TableHead>
                               <TableHead>Membres</TableHead>
-                              <TableHead>Saisies</TableHead>
                               <TableHead className="w-20">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -1096,11 +1095,6 @@ export default function TasksPage() {
                                       )}
                                     </TableCell>
                                     <TableCell>
-                                      <span className="text-sm text-muted-foreground">
-                                        {task._count.TimesheetEntry}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
                                       <div className="flex gap-1">
                                         <Button
                                           variant="ghost"
@@ -1294,12 +1288,6 @@ export default function TasksPage() {
                                   <div>
                                     <span className="text-muted-foreground">Estimation: </span>
                                     <span>{task.estimatedHours}h</span>
-                                  </div>
-                                )}
-                                {task._count.TimesheetEntry > 0 && (
-                                  <div>
-                                    <span className="text-muted-foreground">Saisies: </span>
-                                    <span>{task._count.TimesheetEntry}</span>
                                   </div>
                                 )}
                                 {task.TaskMember && task.TaskMember.length > 0 && (
