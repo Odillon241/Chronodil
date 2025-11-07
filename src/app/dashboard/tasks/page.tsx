@@ -50,6 +50,7 @@ import { TaskStatusBadge } from "@/components/features/task-status-badge";
 import { TaskPriorityBadge } from "@/components/features/task-priority-badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskComments } from "@/components/features/task-comments";
 import { TaskActivityTimeline } from "@/components/features/task-activity-timeline";
@@ -520,17 +521,13 @@ export default function TasksPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Aucune feuille de temps</SelectItem>
-                        {availableTimesheets.length > 0 ? (
-                          availableTimesheets.map((timesheet) => (
-                            <SelectItem key={timesheet.id} value={timesheet.id}>
-                              📅 Semaine du {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                              {" au "}{new Date(timesheet.weekEndDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                              {" "}({timesheet.status === "DRAFT" ? "Brouillon" : "En attente"})
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="none" disabled>Aucune feuille de temps disponible</SelectItem>
-                        )}
+                        {availableTimesheets.map((timesheet) => (
+                          <SelectItem key={timesheet.id} value={timesheet.id}>
+                            📅 Semaine du {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                            {" au "}{new Date(timesheet.weekEndDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            {" "}({timesheet.status === "DRAFT" ? "Brouillon" : "En attente"})
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
@@ -800,16 +797,15 @@ export default function TasksPage() {
       </div>
       </div>
 
+      <Separator />
+
       {/* Vues des tâches */}
       {showCalendar && (
-        <Card className="space-y-4 overflow-hidden">
-          <CardContent className="pt-6">
-            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full min-w-0">
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full min-w-0">
               <div className="mb-4 -mx-6 px-6">
                 <Navbar18
                   navigationLinks={[
                     { href: "#table", label: "Tableau", active: viewMode === "table" },
-                    { href: "#list", label: "Liste", active: viewMode === "list" },
                     { href: "#calendar", label: "Calendrier", active: viewMode === "calendar" },
                     { href: "#kanban", label: "Kanban", active: viewMode === "kanban" },
                     { href: "#gantt", label: "Gantt", active: viewMode === "gantt" },
@@ -818,6 +814,7 @@ export default function TasksPage() {
                     const mode = href.replace("#", "") as ViewMode;
                     setViewMode(mode);
                   }}
+                  statusIndicators={[]}
                   className="border-b border-border/40 px-0 h-auto"
                 />
               </div>
@@ -927,7 +924,6 @@ export default function TasksPage() {
                                 onCheckedChange={handleSelectAll}
                               />
                             </TableHead>
-                            <TableHead>Actif</TableHead>
                             <TableHead>Nom</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead>Priorité</TableHead>
@@ -949,20 +945,6 @@ export default function TasksPage() {
                                       checked={selectedTasks.has(task.id)}
                                       onCheckedChange={() => handleSelectTask(task.id)}
                                     />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => handleToggleActive(task)}
-                                    >
-                                      {task.isActive ? (
-                                        <CheckCircle className="h-5 w-5 text-green-600" />
-                                      ) : (
-                                        <Circle className="h-5 w-5 text-muted-foreground" />
-                                      )}
-                                    </Button>
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-2">
@@ -1196,476 +1178,7 @@ export default function TasksPage() {
                   )}
                 </div>
               </TabsContent>
-
-              {/* Vue Liste */}
-              <TabsContent value="list" className="mt-4">
-                <div className="space-y-4">
-                  {filteredTasks.length === 0 ? (
-                    <Card>
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <FolderOpen className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
-                        <p className="text-sm sm:text-base text-muted-foreground text-center">
-                          {searchQuery ? "Aucune tâche trouvée pour votre recherche" : "Aucune tâche trouvée"}
-                        </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
-                          {searchQuery ? "Essayez avec d'autres mots-clés" : "Créez votre première tâche pour commencer"}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <>
-                      {/* Desktop Table View */}
-                      <div className="hidden lg:block">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-12">
-                                <Checkbox
-                                  checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
-                                  onCheckedChange={handleSelectAll}
-                                />
-                              </TableHead>
-                              <TableHead>Actif</TableHead>
-                              <TableHead>Nom</TableHead>
-                              <TableHead>Statut</TableHead>
-                              <TableHead>Priorité</TableHead>
-                              <TableHead>Projet</TableHead>
-                              <TableHead>Description</TableHead>
-                              <TableHead>Échéance</TableHead>
-                              <TableHead>Estimation</TableHead>
-                              <TableHead>Membres</TableHead>
-                              <TableHead className="w-20">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {sortedTasks.map((task: any) => (
-                              <ContextMenu key={task.id}>
-                                <ContextMenuTrigger asChild>
-                                  <TableRow className={selectedTasks.has(task.id) ? "bg-muted/50" : ""}>
-                                    <TableCell>
-                                      <Checkbox
-                                        checked={selectedTasks.has(task.id)}
-                                        onCheckedChange={() => handleSelectTask(task.id)}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={() => handleToggleActive(task)}
-                                      >
-                                        {task.isActive ? (
-                                          <CheckCircle className="h-5 w-5 text-green-600" />
-                                        ) : (
-                                          <Circle className="h-5 w-5 text-muted-foreground" />
-                                        )}
-                                      </Button>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex items-center gap-2">
-                                        <span className={`font-medium ${!task.isActive && "line-through text-muted-foreground"}`}>
-                                          {task.name}
-                                        </span>
-                                        {!task.isActive && (
-                                          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                                            Inactive
-                                          </span>
-                                        )}
-                                        {task.isShared && (
-                                          <Users className="h-4 w-4 text-blue-600" aria-label="Tâche partagée" />
-                                        )}
-                                        {task.reminderDate && (
-                                          <Bell className="h-4 w-4 text-amber-600" aria-label="Rappel activé" />
-                                        )}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                                            <TaskStatusBadge status={task.status} />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start">
-                                          <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskStatus({ id: task.id, status: "TODO" });
-                                            if (result?.data) {
-                                              toast.success("Statut mis à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            À faire
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
-                                            if (result?.data) {
-                                              toast.success("Statut mis à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            En cours
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
-                                            if (result?.data) {
-                                              toast.success("Statut mis à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Revue
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskStatus({ id: task.id, status: "DONE" });
-                                            if (result?.data) {
-                                              toast.success("Tâche terminée !");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Terminé
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
-                                            if (result?.data) {
-                                              toast.success("Statut mis à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Bloqué
-                                          </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    </TableCell>
-                                    <TableCell>
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                                            <TaskPriorityBadge priority={task.priority} />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start">
-                                          <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
-                                            if (result?.data) {
-                                              toast.success("Priorité mise à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Basse
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
-                                            if (result?.data) {
-                                              toast.success("Priorité mise à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Moyenne
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
-                                            if (result?.data) {
-                                              toast.success("Priorité mise à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Haute
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={async () => {
-                                            const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
-                                            if (result?.data) {
-                                              toast.success("Priorité mise à jour");
-                                              refreshTasks();
-                                            }
-                                          }}>
-                                            Urgent
-                                          </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex items-center gap-2">
-                                        <div
-                                          className="w-3 h-3 rounded-full"
-                                          style={{
-                                            backgroundColor: task.Project?.color || '#6b7280'
-                                          }}
-                                        />
-                                        <span>{task.Project?.name || "Sans projet"}</span>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <span className="text-sm text-muted-foreground truncate block">
-                                        {task.description || "-"}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
-                                      {task.dueDate ? (
-                                        <span className="text-sm">
-                                          {new Date(task.dueDate).toLocaleDateString("fr-FR")}
-                                        </span>
-                                      ) : (
-                                        "-"
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      <span className="text-sm">
-                                        {task.estimatedHours ? `${task.estimatedHours}h` : "-"}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
-                                      {task.TaskMember && task.TaskMember.length > 0 ? (
-                                        <div className="flex -space-x-2">
-                                          {task.TaskMember.slice(0, 3).map((member: any) => (
-                                            <Avatar key={member.User.id} className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-background">
-                                              <AvatarImage src={member.User.avatar || undefined} />
-                                              <AvatarFallback className="text-xs">
-                                                {member.User.name.split(" ").map((n: string) => n[0]).join("")}
-                                              </AvatarFallback>
-                                            </Avatar>
-                                          ))}
-                                          {task.TaskMember.length > 3 && (
-                                            <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                                              <span className="text-xs text-muted-foreground">
-                                                +{task.TaskMember.length - 3}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      ) : (
-                                        "-"
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex gap-1">
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleEdit(task)}
-                                          className="h-8 w-8 p-0"
-                                        >
-                                          <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleDelete(task.id)}
-                                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                </ContextMenuTrigger>
-                                <ContextMenuContent>
-                                  <ContextMenuItem onClick={() => handleEdit(task)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Modifier
-                                  </ContextMenuItem>
-                                  <ContextMenuItem onClick={() => handleToggleActive(task)}>
-                                    {task.isActive ? (
-                                      <>
-                                        <Circle className="h-4 w-4 mr-2" />
-                                        Désactiver
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                        Activer
-                                      </>
-                                    )}
-                                  </ContextMenuItem>
-                                  <ContextMenuSeparator />
-                                  <ContextMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Supprimer
-                                  </ContextMenuItem>
-                                </ContextMenuContent>
-                              </ContextMenu>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      {/* Mobile Card View */}
-                      <div className="lg:hidden space-y-3">
-                        {sortedTasks.map((task: any) => (
-                          <Card key={task.id} className="p-3 sm:p-4">
-                            <div className="space-y-3">
-                              {/* Header: Name + Badges */}
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Checkbox
-                                      checked={selectedTasks.has(task.id)}
-                                      onCheckedChange={() => handleSelectTask(task.id)}
-                                    />
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0"
-                                      onClick={() => handleToggleActive(task)}
-                                    >
-                                      {task.isActive ? (
-                                        <CheckCircle className="h-4 w-4 text-green-600" />
-                                      ) : (
-                                        <Circle className="h-4 w-4 text-muted-foreground" />
-                                      )}
-                                    </Button>
-                                  </div>
-                                  <h3 className={`font-medium text-sm ${!task.isActive && "line-through text-muted-foreground"}`}>
-                                    {task.name}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    {task.isShared && <Users className="h-3 w-3 text-blue-600" />}
-                                    {task.reminderDate && <Bell className="h-3 w-3 text-amber-600" />}
-                                  </div>
-                                </div>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEdit(task)}>
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Modifier
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Supprimer
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-
-                              {/* Status & Priority */}
-                              <div className="flex items-center gap-2">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                                      <TaskStatusBadge status={task.status} />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="start">
-                                    <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskStatus({ id: task.id, status: "TODO" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
-                                    }}>À faire</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
-                                    }}>En cours</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
-                                    }}>Revue</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskStatus({ id: task.id, status: "DONE" });
-                                      if (result?.data) { toast.success("Tâche terminée !"); refreshTasks(); }
-                                    }}>Terminé</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
-                                      if (result?.data) { toast.success("Statut mis à jour"); refreshTasks(); }
-                                    }}>Bloqué</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                                      <TaskPriorityBadge priority={task.priority} />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="start">
-                                    <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
-                                    }}>Basse</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
-                                    }}>Moyenne</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
-                                    }}>Haute</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={async () => {
-                                      const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
-                                      if (result?.data) { toast.success("Priorité mise à jour"); refreshTasks(); }
-                                    }}>Urgent</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-
-                              {/* Project */}
-                              <div className="flex items-center gap-2 text-xs">
-                                <div
-                                  className="w-2 h-2 rounded-full shrink-0"
-                                  style={{ backgroundColor: task.Project?.color || '#6b7280' }}
-                                />
-                                <span className="truncate">{task.Project?.name || "Sans projet"}</span>
-                              </div>
-
-                              {/* Description */}
-                              {task.description && (
-                                <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
-                              )}
-
-                              {/* Info row */}
-                              <div className="grid grid-cols-2 gap-2 pt-2 border-t text-xs">
-                                {task.dueDate && (
-                                  <div>
-                                    <span className="text-muted-foreground">Échéance: </span>
-                                    <span>{new Date(task.dueDate).toLocaleDateString("fr-FR", { day: '2-digit', month: 'short' })}</span>
-                                  </div>
-                                )}
-                                {task.estimatedHours && (
-                                  <div>
-                                    <span className="text-muted-foreground">Estimation: </span>
-                                    <span>{task.estimatedHours}h</span>
-                                  </div>
-                                )}
-                                {task.TaskMember && task.TaskMember.length > 0 && (
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-muted-foreground">Membres: </span>
-                                    <div className="flex -space-x-1">
-                                      {task.TaskMember.slice(0, 2).map((member: any) => (
-                                        <Avatar key={member.User.id} className="h-5 w-5 sm:h-6 sm:w-6 border border-background">
-                                          <AvatarImage src={member.User.avatar || undefined} />
-                                          <AvatarFallback className="text-[8px]">
-                                            {member.User.name.split(" ").map((n: string) => n[0]).join("")}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                      ))}
-                                      {task.TaskMember.length > 2 && (
-                                        <span className="text-[10px]">+{task.TaskMember.length - 2}</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
       )}
       <ConfirmationDialog />
     </div>
