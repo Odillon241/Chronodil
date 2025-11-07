@@ -26,6 +26,8 @@ import { fr } from "date-fns/locale";
 import {
   createHRTimesheet,
   addHRActivity,
+  getActivityCatalog,
+  getActivityCategories,
 } from "@/actions/hr-timesheet.actions";
 import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
 import { useRouter } from "next/navigation";
@@ -39,14 +41,25 @@ interface Activity {
   description?: string;
   periodicity: "DAILY" | "WEEKLY" | "MONTHLY" | "PUNCTUAL" | "WEEKLY_MONTHLY";
   weeklyQuantity?: number;
+  totalHours?: number;
   startDate: Date;
   endDate: Date;
   status: "IN_PROGRESS" | "COMPLETED";
+  catalogId?: string;
   priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ";
   estimatedHours?: number;
   projectName?: string;
   projectColor?: string;
+}
+
+interface CatalogItem {
+  id: string;
+  name: string;
+  category: string;
+  type: string;
+  defaultPeriodicity?: string | null;
+  description?: string | null;
 }
 
 interface Task {
@@ -71,8 +84,12 @@ export default function NewHRTimesheetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [inputMode, setInputMode] = useState<"task" | "manual">("task");
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>("");
 
   const {
     register: registerTimesheet,
@@ -111,20 +128,31 @@ export default function NewHRTimesheetPage() {
     },
   });
 
-  // Charger les tâches disponibles
+  // Charger les tâches et le catalogue
   useEffect(() => {
-    const loadTasks = async () => {
+    const loadData = async () => {
       try {
-        const tasksResult = await getUserTasksForHRTimesheet({});
+        const [tasksResult, catalogResult, categoriesResult] = await Promise.all([
+          getUserTasksForHRTimesheet({}),
+          getActivityCatalog({}),
+          getActivityCategories(),
+        ]);
+
         if (tasksResult?.data) {
           setAvailableTasks(tasksResult.data as Task[]);
         }
+        if (catalogResult?.data) {
+          setCatalog(catalogResult.data);
+        }
+        if (categoriesResult?.data) {
+          setCategories(categoriesResult.data);
+        }
       } catch (error) {
-        console.error("Erreur chargement des tâches:", error);
-        toast.error("Erreur lors du chargement des tâches");
+        console.error("Erreur chargement des données:", error);
+        toast.error("Erreur lors du chargement des données");
       }
     };
-    loadTasks();
+    loadData();
   }, []);
 
   // Pré-remplir les dates avec celles du timesheet
@@ -143,6 +171,34 @@ export default function NewHRTimesheetPage() {
       setActivityValue("activityName", task.name);
       setActivityValue("description", task.description || "");
       setActivityValue("activityType", "OPERATIONAL");
+    }
+  };
+
+  // Déterminer le type à partir de la catégorie
+  const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
+    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
+  };
+
+  // Filtrer les activités du catalogue selon la catégorie
+  const filteredCatalogActivities = selectedCategory
+    ? catalog.filter(item => item.category === selectedCategory)
+    : [];
+
+  // Gérer la sélection d'activité du catalogue
+  const handleCatalogItemSelect = (catalogId: string) => {
+    setSelectedCatalogId(catalogId);
+    const catalogItem = catalog.find(c => c.id === catalogId);
+    if (catalogItem) {
+      // Auto-remplir les champs
+      setActivityValue("activityName", catalogItem.name);
+      setActivityValue("activityType", getTypeFromCategory(catalogItem.category));
+      setActivityValue("catalogId", catalogItem.id);
+      if (catalogItem.description) {
+        setActivityValue("description", catalogItem.description);
+      }
+      if (catalogItem.defaultPeriodicity) {
+        setActivityValue("periodicity", catalogItem.defaultPeriodicity as any);
+      }
     }
   };
 
@@ -174,9 +230,12 @@ export default function NewHRTimesheetPage() {
       activityName: activityData.activityName,
       description: activityData.description,
       periodicity: activityData.periodicity,
+      weeklyQuantity: activityData.weeklyQuantity,
+      totalHours: activityData.totalHours,
       startDate: activityData.startDate,
       endDate: activityData.endDate,
       status: activityData.status,
+      catalogId: activityData.catalogId,
       priority: selectedTask?.priority,
       complexity: selectedTask?.complexity || undefined,
       estimatedHours: selectedTask?.estimatedHours || undefined,
@@ -187,6 +246,8 @@ export default function NewHRTimesheetPage() {
     setActivities([...activities, activity]);
     resetActivity();
     setSelectedTaskId("");
+    setSelectedCategory("");
+    setSelectedCatalogId("");
     setActivityValue("startDate", watchTimesheet("weekStartDate"));
     setActivityValue("endDate", watchTimesheet("weekEndDate"));
     toast.success("Activité ajoutée à la liste !");
@@ -482,33 +543,66 @@ export default function NewHRTimesheetPage() {
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Type d'activité *</Label>
+                  <Label>Catégorie *</Label>
                   <Select
-                    value={watchActivity("activityType")}
-                    onValueChange={(value: "OPERATIONAL" | "REPORTING") => setActivityValue("activityType", value)}
+                    value={selectedCategory}
+                    onValueChange={(value) => {
+                      setSelectedCategory(value);
+                      setSelectedCatalogId("");
+                      setActivityValue("activityName", "");
+                    }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
-                      <SelectItem value="REPORTING">Reporting</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="activityName">Nom de l'activité *</Label>
-                  <Input
-                    id="activityName"
-                    placeholder="Ex: Réunion d'équipe"
-                    {...registerActivity("activityName")}
-                  />
+                  <Label>Nom de l'activité *</Label>
+                  <Select
+                    value={selectedCatalogId}
+                    onValueChange={handleCatalogItemSelect}
+                    disabled={!selectedCategory}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={selectedCategory ? "Sélectionner une activité" : "Sélectionnez d'abord une catégorie"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {filteredCatalogActivities.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {activityErrors.activityName && (
                     <p className="text-sm text-destructive">{activityErrors.activityName.message}</p>
                   )}
                 </div>
               </div>
+
+              {/* Afficher le type auto-sélectionné */}
+              {selectedCatalogId && (
+                <div className="space-y-2">
+                  <Label>Type d'activité (auto)</Label>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={watchActivity("activityType") === "OPERATIONAL" ? "default" : "secondary"}>
+                      {watchActivity("activityType") === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      Basé sur la catégorie sélectionnée
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description (optionnel)</Label>
@@ -558,6 +652,38 @@ export default function NewHRTimesheetPage() {
                   <SelectItem value="COMPLETED">Terminé</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="weeklyQuantity">Quantité hebdomadaire</Label>
+              <Input
+                id="weeklyQuantity"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Ex: 5"
+                {...registerActivity("weeklyQuantity", { valueAsNumber: true })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Nombre de fois que l'activité est effectuée par semaine
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="totalHours">Durée totale (heures)</Label>
+              <Input
+                id="totalHours"
+                type="number"
+                min="0"
+                step="0.5"
+                placeholder="Ex: 8.5"
+                {...registerActivity("totalHours", { valueAsNumber: true })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Nombre total d'heures consacrées à cette activité
+              </p>
             </div>
           </div>
 
@@ -616,6 +742,8 @@ export default function NewHRTimesheetPage() {
               onClick={() => {
                 resetActivity();
                 setSelectedTaskId("");
+                setSelectedCategory("");
+                setSelectedCatalogId("");
               }}
             >
               Réinitialiser
@@ -688,23 +816,36 @@ export default function NewHRTimesheetPage() {
                           </div>
 
                           {/* Période et durée */}
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2 border-t">
-                            <div className="flex items-center gap-2 text-sm">
-                              <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-muted-foreground">Période:</span>
-                              <span className="font-medium">
-                                {format(activity.startDate, "dd/MM/yyyy", { locale: fr })}
-                                {" → "}
-                                {format(activity.endDate, "dd/MM/yyyy", { locale: fr })}
-                              </span>
+                          <div className="flex flex-col gap-2 pt-2 border-t">
+                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">Période:</span>
+                                <span className="font-medium">
+                                  {format(activity.startDate, "dd/MM/yyyy", { locale: fr })}
+                                  {" → "}
+                                  {format(activity.endDate, "dd/MM/yyyy", { locale: fr })}
+                                </span>
+                              </div>
                             </div>
-                            <Separator orientation="vertical" className="hidden sm:block h-4" />
-                            <div className="flex items-center gap-2 text-sm">
-                              <Clock className="h-4 w-4 text-primary" />
-                              <span className="text-muted-foreground">Durée:</span>
-                              <span className="font-semibold text-primary">
-                                {calculateActivityDuration(activity.startDate, activity.endDate)}h
-                              </span>
+                            <div className="flex flex-wrap items-center gap-4 text-sm">
+                              {activity.totalHours && (
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-primary" />
+                                  <span className="text-muted-foreground">Durée totale:</span>
+                                  <span className="font-semibold text-primary">
+                                    {activity.totalHours}h
+                                  </span>
+                                </div>
+                              )}
+                              {activity.weeklyQuantity && (
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="gap-1">
+                                    <span className="text-muted-foreground">Quantité/sem:</span>
+                                    <span className="font-semibold">{activity.weeklyQuantity}x</span>
+                                  </Badge>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
