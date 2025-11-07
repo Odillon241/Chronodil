@@ -92,7 +92,7 @@ export const Navbar18 = React.forwardRef<HTMLElement, Navbar18Props>(
     {
       className,
       navigationLinks = defaultNavigationLinks,
-      statusIndicators = defaultStatusIndicators,
+      statusIndicators,
       powerState: controlledPowerState,
       onNavItemClick,
       onPowerToggle,
@@ -100,6 +100,8 @@ export const Navbar18 = React.forwardRef<HTMLElement, Navbar18Props>(
     },
     ref
   ) => {
+    // Use default only if statusIndicators is undefined, not if it's an empty array
+    const effectiveStatusIndicators = statusIndicators ?? defaultStatusIndicators;
     const id = useId();
     const [internalPowerState, setInternalPowerState] = useState<boolean>(true);
     
@@ -156,7 +158,7 @@ export const Navbar18 = React.forwardRef<HTMLElement, Navbar18Props>(
       >
         <div className={cn(
           "flex justify-between gap-4",
-          (statusIndicators.length > 0 || onPowerToggle !== undefined) ? "h-16" : "h-auto"
+          (statusIndicators && statusIndicators.length > 0 || onPowerToggle !== undefined) ? "h-16" : "h-auto"
         )}>
           {/* Left side */}
           <div className="flex gap-2">
@@ -256,11 +258,11 @@ export const Navbar18 = React.forwardRef<HTMLElement, Navbar18Props>(
             </div>
           </div>
           {/* Right side */}
-          {(statusIndicators.length > 0 || onPowerToggle !== undefined) && (
+          {(effectiveStatusIndicators.length > 0 || onPowerToggle !== undefined) && (
             <div className="flex items-center gap-4">
-              {statusIndicators.length > 0 && (
+              {effectiveStatusIndicators.length > 0 && (
                 <div className="flex items-center gap-2">
-                  {statusIndicators.map(renderStatusBadge)}
+                  {effectiveStatusIndicators.map(renderStatusBadge)}
                 </div>
               )}
               {/* Switch */}

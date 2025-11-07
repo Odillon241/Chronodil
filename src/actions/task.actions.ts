@@ -716,3 +716,69 @@ export const updateTaskComplexity = actionClient
 
     return updatedTask;
   });
+
+/**
+ * Récupérer les tâches de l'utilisateur connecté pour la sélection dans HR Timesheet
+ * Filtre sur les tâches actives avec status TODO ou IN_PROGRESS
+ */
+export const getUserTasksForHRTimesheet = actionClient
+  .schema(z.object({}))
+  .action(async () => {
+    const session = await getSession(await headers());
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    try {
+      // Récupérer les tâches où l'utilisateur est créateur ou membre
+      const tasks = await prisma.task.findMany({
+        where: {
+          isActive: true,
+          status: {
+            in: ["TODO", "IN_PROGRESS"],
+          },
+          OR: [
+            { createdBy: session.user.id },
+            {
+              TaskMember: {
+                some: {
+                  userId: session.user.id,
+                },
+              },
+            },
+          ],
+        },
+        include: {
+          Project: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              color: true,
+            },
+          },
+          Creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: [
+          { priority: "desc" },
+          { dueDate: "asc" },
+        ],
+      });
+
+      return tasks;
+    } catch (error) {
+      console.error("Erreur dans getUserTasksForHRTimesheet:", error);
+      throw new Error(
+        `Erreur lors de la récupération des tâches: ${
+          error instanceof Error ? error.message : "Erreur inconnue"
+        }`
+      );
+    }
+  });

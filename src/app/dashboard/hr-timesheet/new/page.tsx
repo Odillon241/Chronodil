@@ -10,10 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays, ChevronDown, ChevronUp, Bell, Target } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -27,14 +25,14 @@ import { fr } from "date-fns/locale";
 import {
   createHRTimesheet,
   addHRActivity,
-  getActivityCatalog,
-  getActivityCategories,
 } from "@/actions/hr-timesheet.actions";
+import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 interface Activity {
+  taskId: string; // ID de la tâche liée (REQUIS)
   activityType: "OPERATIONAL" | "REPORTING";
   activityName: string;
   description?: string;
@@ -44,33 +42,37 @@ interface Activity {
   endDate: Date;
   status: "IN_PROGRESS" | "COMPLETED";
   catalogId?: string;
-  // Nouveaux champs Task-related
+  // Champs de la tâche
   priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ";
   estimatedHours?: number;
-  dueDate?: Date;
-  reminderDate?: Date;
-  reminderTime?: string;
-  soundEnabled?: boolean;
-  createLinkedTask?: boolean;
+  projectName?: string;
+  projectColor?: string;
 }
 
-interface CatalogItem {
+interface Task {
   id: string;
   name: string;
-  category: string;
-  type: string;
-  defaultPeriodicity?: string | null;
   description?: string | null;
+  status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ" | null;
+  estimatedHours?: number | null;
+  dueDate?: Date | null;
+  Project?: {
+    id: string;
+    name: string;
+    code: string;
+    color: string;
+  } | null;
 }
 
 export default function NewHRTimesheetPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
 
   const {
     register: registerTimesheet,
@@ -90,8 +92,6 @@ export default function NewHRTimesheetPage() {
     },
   });
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-
   const {
     register: registerActivity,
     handleSubmit: handleSubmitActivity,
@@ -105,53 +105,69 @@ export default function NewHRTimesheetPage() {
       activityType: "OPERATIONAL",
       activityName: "",
       description: "",
-      periodicity: "DAILY",
+      periodicity: "WEEKLY",
       startDate: new Date(),
       endDate: new Date(),
       status: "IN_PROGRESS",
-      // Nouveaux champs par défaut
-      priority: "MEDIUM",
-      complexity: "MOYEN",
-      soundEnabled: true,
-      createLinkedTask: false,
     },
   });
 
-  // Charger le catalogue d'activités et les catégories
+  // Charger les tâches disponibles de l'utilisateur
   useEffect(() => {
-    const loadCatalog = async () => {
+    const loadTasks = async () => {
       try {
-        const [catalogResult, categoriesResult] = await Promise.all([
-          getActivityCatalog({}),
-          getActivityCategories(),
-        ]);
-        if (catalogResult?.data) {
-          setCatalog(catalogResult.data);
-        }
-        if (categoriesResult?.data) {
-          setCategories(categoriesResult.data);
+        const tasksResult = await getUserTasksForHRTimesheet({});
+        if (tasksResult?.data) {
+          setAvailableTasks(tasksResult.data as Task[]);
         }
       } catch (error) {
-        console.error("Erreur chargement catalogue:", error);
+        console.error("Erreur chargement des tâches:", error);
+        toast.error("Erreur lors du chargement des tâches");
       }
     };
-    loadCatalog();
+    loadTasks();
   }, []);
 
-  // Ajout d'activité en local (sans appel API)
-  const onSubmitActivity = (data: HRActivityInput) => {
-    // Convertir la catégorie en type avant l'ajout
-    const activityType = getTypeFromCategory(selectedCategory);
-    
+  // Ajout d'une tâche comme activité
+  const handleAddTaskAsActivity = () => {
+    if (!selectedTaskId) {
+      toast.error("Veuillez sélectionner une tâche");
+      return;
+    }
+
+    const selectedTask = availableTasks.find(t => t.id === selectedTaskId);
+    if (!selectedTask) {
+      toast.error("Tâche non trouvée");
+      return;
+    }
+
+    // Vérifier si la tâche n'est pas déjà dans la liste
+    if (activities.some(a => a.taskId === selectedTaskId)) {
+      toast.error("Cette tâche est déjà ajoutée");
+      return;
+    }
+
+    // Créer l'activité depuis la tâche sélectionnée
     const activityData: Activity = {
-      ...data,
-      activityType,
+      taskId: selectedTask.id,
+      activityType: "OPERATIONAL", // Par défaut OPERATIONAL
+      activityName: selectedTask.name,
+      description: selectedTask.description || undefined,
+      periodicity: watchActivity("periodicity") || "WEEKLY",
+      startDate: watchActivity("startDate") || watchTimesheet("weekStartDate"),
+      endDate: watchActivity("endDate") || watchTimesheet("weekEndDate"),
+      status: watchActivity("status") || "IN_PROGRESS",
+      priority: selectedTask.priority,
+      complexity: selectedTask.complexity || undefined,
+      estimatedHours: selectedTask.estimatedHours || undefined,
+      projectName: selectedTask.Project?.name,
+      projectColor: selectedTask.Project?.color,
     };
-    
+
     setActivities([...activities, activityData]);
+    setSelectedTaskId("");
     resetActivity();
-    setSelectedCategory("");
-    toast.success("Activité ajoutée à la liste !");
+    toast.success(`Tâche "${selectedTask.name}" ajoutée à la semaine !`);
   };
 
   // Suppression d'activité de la liste locale
@@ -213,17 +229,6 @@ export default function NewHRTimesheetPage() {
   const totalActivitiesHours = activities.reduce((sum, activity) => {
     return sum + calculateActivityDuration(activity.startDate, activity.endDate);
   }, 0);
-
-  // Fonction pour déterminer le type à partir de la catégorie
-  const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
-    // La catégorie "Reporting" correspond au type REPORTING, toutes les autres sont OPERATIONAL
-    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
-  };
-
-  // Filtrer les activités du catalogue en fonction de la catégorie sélectionnée
-  const filteredActivities = selectedCategory
-    ? catalog.filter(item => item.category === selectedCategory)
-    : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -370,376 +375,192 @@ export default function NewHRTimesheetPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Formulaire d'ajout d'activité - Toujours visible */}
+          {/* Sélection de tâches existantes */}
           <div className="p-4 border rounded-lg bg-muted/50">
-            <form onSubmit={handleSubmitActivity(onSubmitActivity)} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="activityType">Type d'activité *</Label>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(value: string) => {
-                      setSelectedCategory(value);
-                      // Déterminer automatiquement le type OPERATIONAL/REPORTING
-                      const activityType = getTypeFromCategory(value);
-                      setActivityValue("activityType", activityType);
-                      // Réinitialiser les champs dépendants
-                      setActivityValue("activityName", "");
-                      setActivityValue("catalogId", undefined);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une catégorie" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg mb-4">Sélectionner une tâche de la semaine</h3>
 
-                <div className="space-y-2">
-                  <Label htmlFor="activityName">Nom de l'activité *</Label>
-                  {selectedCategory && filteredActivities.length > 0 ? (
-                    <Select
-                      value={watchActivity("activityName") || ""}
-                      onValueChange={(value) => {
-                        const selectedActivity = filteredActivities.find(act => act.name === value);
-                        if (selectedActivity) {
-                          setActivityValue("activityName", selectedActivity.name);
-                          setActivityValue("catalogId", selectedActivity.id);
-                          // Déterminer le type à partir de la catégorie
-                          const activityType = getTypeFromCategory(selectedActivity.category);
-                          if (selectedActivity.defaultPeriodicity) {
-                            setActivityValue("periodicity", selectedActivity.defaultPeriodicity as any);
-                          }
-                          if (selectedActivity.description) {
-                            setActivityValue("description", selectedActivity.description);
-                          }
-                        }
-                      }}
-                    >
+              {availableTasks.length === 0 ? (
+                <div className="text-center py-8 border rounded-lg bg-background">
+                  <p className="text-muted-foreground">Aucune tâche disponible</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Créez d'abord des tâches dans l'onglet "Tâches"
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="task">Tâche *</Label>
+                    <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner une activité du catalogue" />
+                        <SelectValue placeholder="Sélectionner une tâche" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-[300px] overflow-y-auto">
-                        {filteredActivities.map((activity) => (
-                          <SelectItem key={activity.id} value={activity.name}>
-                            {activity.name}
+                      <SelectContent className="max-h-[300px]">
+                        {availableTasks.map((task) => (
+                          <SelectItem key={task.id} value={task.id}>
+                            <div className="flex items-center gap-2">
+                              {task.Project && (
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: task.Project.color }}
+                                />
+                              )}
+                              <span>{task.name}</span>
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                {task.priority === "URGENT" ? "🔥 Urgent" :
+                                 task.priority === "HIGH" ? "⬆️ Haute" :
+                                 task.priority === "MEDIUM" ? "➡️ Moyenne" : "⬇️ Basse"}
+                              </Badge>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  ) : (
-                    <Input
-                      id="activityName"
-                      placeholder="Description de l'activité"
-                      {...registerActivity("activityName")}
-                    />
-                  )}
-                  {activityErrors.activityName && (
-                    <p className="text-sm text-destructive">{activityErrors.activityName.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (optionnel)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Détails supplémentaires..."
-                  rows={2}
-                  {...registerActivity("description")}
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="periodicity">Périodicité *</Label>
-                  <Select
-                    value={watchActivity("periodicity")}
-                    onValueChange={(value: any) => setActivityValue("periodicity", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DAILY">Quotidien</SelectItem>
-                      <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
-                      <SelectItem value="MONTHLY">Mensuel</SelectItem>
-                      <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
-                      <SelectItem value="WEEKLY_MONTHLY">Hebdo/Mensuel</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Statut *</Label>
-                  <Select
-                    value={watchActivity("status")}
-                    onValueChange={(value: any) => setActivityValue("status", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                      <SelectItem value="COMPLETED">Terminé</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Date début *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {format(watchActivity("startDate") ?? new Date(), "dd/MM/yyyy", { locale: fr })}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <Calendar
-                        mode="single"
-                        selected={watchActivity("startDate") ?? new Date()}
-                        onSelect={(d) => d && setActivityValue("startDate", d)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {activityErrors.startDate && (
-                    <p className="text-sm text-destructive">{activityErrors.startDate.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="endDate">Date fin *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {format(watchActivity("endDate") ?? new Date(), "dd/MM/yyyy", { locale: fr })}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <Calendar
-                        mode="single"
-                        selected={watchActivity("endDate") ?? new Date()}
-                        onSelect={(d) => d && setActivityValue("endDate", d)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {activityErrors.endDate && (
-                    <p className="text-sm text-destructive">{activityErrors.endDate.message}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Options avancées (Tâche) */}
-              <Collapsible
-                open={showAdvancedOptions}
-                onOpenChange={setShowAdvancedOptions}
-                className="border rounded-lg p-4 bg-background"
-              >
-                <CollapsibleTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="w-full flex items-center justify-between mb-2 hover:bg-muted"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      <span className="font-semibold">Options avancées (Créer une tâche liée)</span>
-                    </div>
-                    {showAdvancedOptions ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-4 pt-2">
-                  {/* Checkbox pour créer une tâche liée */}
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="createLinkedTask"
-                      checked={watchActivity("createLinkedTask") || false}
-                      onCheckedChange={(checked) =>
-                        setActivityValue("createLinkedTask", checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="createLinkedTask" className="text-sm font-medium cursor-pointer">
-                      Créer automatiquement une tâche liée à cette activité
-                    </Label>
                   </div>
 
-                  {watchActivity("createLinkedTask") && (
-                    <>
-                      <Separator />
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="priority">Priorité</Label>
-                          <Select
-                            value={watchActivity("priority") || "MEDIUM"}
-                            onValueChange={(value: any) => setActivityValue("priority", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="LOW">Basse</SelectItem>
-                              <SelectItem value="MEDIUM">Moyenne</SelectItem>
-                              <SelectItem value="HIGH">Haute</SelectItem>
-                              <SelectItem value="URGENT">Urgente</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="complexity">Complexité</Label>
-                          <Select
-                            value={watchActivity("complexity") || "MOYEN"}
-                            onValueChange={(value: any) => setActivityValue("complexity", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="FAIBLE">Faible</SelectItem>
-                              <SelectItem value="MOYEN">Moyen</SelectItem>
-                              <SelectItem value="ÉLEVÉ">Élevé</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="estimatedHours">Heures estimées</Label>
-                          <Input
-                            id="estimatedHours"
-                            type="number"
-                            step="0.5"
-                            min="0"
-                            placeholder="Ex: 8"
-                            value={watchActivity("estimatedHours") || ""}
-                            onChange={(e) =>
-                              setActivityValue(
-                                "estimatedHours",
-                                e.target.value ? parseFloat(e.target.value) : undefined
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="dueDate">Date d'échéance</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full justify-start">
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {watchActivity("dueDate")
-                                  ? format(watchActivity("dueDate")!, "dd/MM/yyyy", { locale: fr })
-                                  : "Sélectionner..."}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                              <Calendar
-                                mode="single"
-                                selected={watchActivity("dueDate") || undefined}
-                                onSelect={(d) => setActivityValue("dueDate", d)}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
-
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="reminderDate">
-                            <div className="flex items-center gap-2">
-                              <Bell className="h-4 w-4" />
-                              Date de rappel
+                  {selectedTaskId && (
+                    <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                      <CardContent className="pt-4">
+                        {(() => {
+                          const task = availableTasks.find(t => t.id === selectedTaskId);
+                          if (!task) return null;
+                          return (
+                            <div className="space-y-2 text-sm">
+                              <p><strong>Nom:</strong> {task.name}</p>
+                              {task.description && (
+                                <p><strong>Description:</strong> {task.description}</p>
+                              )}
+                              {task.Project && (
+                                <p><strong>Projet:</strong> {task.Project.name}</p>
+                              )}
+                              <div className="flex gap-2">
+                                <Badge>{task.status}</Badge>
+                                <Badge variant="outline">{task.priority}</Badge>
+                                {task.complexity && <Badge variant="secondary">{task.complexity}</Badge>}
+                              </div>
                             </div>
-                          </Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full justify-start">
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {watchActivity("reminderDate")
-                                  ? format(watchActivity("reminderDate")!, "dd/MM/yyyy", { locale: fr })
-                                  : "Sélectionner..."}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                              <Calendar
-                                mode="single"
-                                selected={watchActivity("reminderDate") || undefined}
-                                onSelect={(d) => setActivityValue("reminderDate", d)}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="reminderTime">Heure de rappel</Label>
-                          <Input
-                            id="reminderTime"
-                            type="time"
-                            value={watchActivity("reminderTime") || ""}
-                            onChange={(e) => setActivityValue("reminderTime", e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="soundEnabled"
-                          checked={watchActivity("soundEnabled") ?? true}
-                          onCheckedChange={(checked) =>
-                            setActivityValue("soundEnabled", checked as boolean)
-                          }
-                        />
-                        <Label htmlFor="soundEnabled" className="text-sm cursor-pointer">
-                          Activer le son pour les rappels
-                        </Label>
-                      </div>
-                    </>
+                          );
+                        })()}
+                      </CardContent>
+                    </Card>
                   )}
-                </CollapsibleContent>
-              </Collapsible>
 
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary"
-                  disabled={isLoading}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Ajouter à la liste
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => resetActivity()}
-                >
-                  Réinitialiser
-                </Button>
-              </div>
-            </form>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="periodicity">Périodicité</Label>
+                      <Select
+                        value={watchActivity("periodicity") || "WEEKLY"}
+                        onValueChange={(value: any) => setActivityValue("periodicity", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="DAILY">Quotidien</SelectItem>
+                          <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
+                          <SelectItem value="MONTHLY">Mensuel</SelectItem>
+                          <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Statut</Label>
+                      <Select
+                        value={watchActivity("status") || "IN_PROGRESS"}
+                        onValueChange={(value: any) => setActivityValue("status", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                          <SelectItem value="COMPLETED">Terminé</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Date début</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {format(
+                              watchActivity("startDate") || watchTimesheet("weekStartDate"),
+                              "dd/MM/yyyy",
+                              { locale: fr }
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <Calendar
+                            mode="single"
+                            selected={watchActivity("startDate") || watchTimesheet("weekStartDate")}
+                            onSelect={(d) => d && setActivityValue("startDate", d)}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Date fin</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {format(
+                              watchActivity("endDate") || watchTimesheet("weekEndDate"),
+                              "dd/MM/yyyy",
+                              { locale: fr }
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <Calendar
+                            mode="single"
+                            selected={watchActivity("endDate") || watchTimesheet("weekEndDate")}
+                            onSelect={(d) => d && setActivityValue("endDate", d)}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button
+                      type="button"
+                      onClick={handleAddTaskAsActivity}
+                      className="bg-primary hover:bg-primary"
+                      disabled={!selectedTaskId || isLoading}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Ajouter cette tâche
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTaskId("");
+                        resetActivity();
+                      }}
+                    >
+                      Réinitialiser
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Liste des activités ajoutées */}
           {activities.length === 0 ? (
             <div className="text-center py-8 border rounded-lg bg-muted/30">
-              <p className="text-muted-foreground">Aucune activité ajoutée</p>
+              <p className="text-muted-foreground">Aucune tâche ajoutée pour cette semaine</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Remplissez le formulaire ci-dessus ou utilisez le catalogue pour ajouter des activités
+                Sélectionnez une tâche ci-dessus pour l'ajouter à votre feuille de temps
               </p>
             </div>
           ) : (
@@ -749,8 +570,17 @@ export default function NewHRTimesheetPage() {
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-3">
-                        {/* Badges */}
+                        {/* En-tête avec projet */}
                         <div className="flex items-center gap-2 flex-wrap">
+                          {activity.projectName && (
+                            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: activity.projectColor || "#3b82f6" }}
+                              />
+                              <span className="text-xs font-medium">{activity.projectName}</span>
+                            </div>
+                          )}
                           <Badge variant={activity.activityType === "OPERATIONAL" ? "default" : "secondary"}>
                             {activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
                           </Badge>
@@ -765,9 +595,20 @@ export default function NewHRTimesheetPage() {
                           <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
                             {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
                           </Badge>
+                          {activity.priority && (
+                            <Badge variant={
+                              activity.priority === "URGENT" ? "destructive" :
+                              activity.priority === "HIGH" ? "default" :
+                              "outline"
+                            }>
+                              {activity.priority === "URGENT" ? "🔥 Urgent" :
+                               activity.priority === "HIGH" ? "⬆️ Haute" :
+                               activity.priority === "MEDIUM" ? "➡️ Moyenne" : "⬇️ Basse"}
+                            </Badge>
+                          )}
                         </div>
 
-                        {/* Nom de l'activité */}
+                        {/* Nom de l'activité/tâche */}
                         <div>
                           <h4 className="font-semibold text-base">{activity.activityName}</h4>
                           {activity.description && (
