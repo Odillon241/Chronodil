@@ -3,7 +3,7 @@
 import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { actionClient } from "@/lib/safe-action";
+import { actionClient, authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { logTaskActivity, logTaskChanges } from "@/lib/task-activity";
@@ -721,15 +721,9 @@ export const updateTaskComplexity = actionClient
  * Récupérer les tâches de l'utilisateur connecté pour la sélection dans HR Timesheet
  * Filtre sur les tâches actives avec status TODO ou IN_PROGRESS
  */
-export const getUserTasksForHRTimesheet = actionClient
+export const getUserTasksForHRTimesheet = authActionClient
   .schema(z.object({}))
-  .action(async () => {
-    const session = await getSession(await headers());
-
-    if (!session) {
-      throw new Error("Non authentifié");
-    }
-
+  .action(async ({ ctx }) => {
     try {
       // Récupérer les tâches où l'utilisateur est créateur ou membre
       const tasks = await prisma.task.findMany({
@@ -739,11 +733,11 @@ export const getUserTasksForHRTimesheet = actionClient
             in: ["TODO", "IN_PROGRESS"],
           },
           OR: [
-            { createdBy: session.user.id },
+            { createdBy: ctx.userId },
             {
               TaskMember: {
                 some: {
-                  userId: session.user.id,
+                  userId: ctx.userId,
                 },
               },
             },

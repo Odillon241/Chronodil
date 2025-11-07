@@ -138,9 +138,31 @@ export default function NewHRTimesheetPage() {
           getActivityCategories(),
         ]);
 
-        if (tasksResult?.data) {
-          setAvailableTasks(tasksResult.data as Task[]);
+        console.log("📊 Résultats chargement:", {
+          tasksResult,
+          tasksData: tasksResult?.data,
+          tasksLength: tasksResult?.data?.length,
+          tasksServerError: tasksResult?.serverError,
+          catalogLength: catalogResult?.data?.length,
+          categoriesLength: categoriesResult?.data?.length,
+        });
+
+        // Vérifier les erreurs d'authentification
+        if (tasksResult?.serverError) {
+          console.error("❌ Erreur serveur (tâches):", tasksResult.serverError);
+          if (tasksResult.serverError === "Unauthorized" || tasksResult.serverError.includes("authentifi")) {
+            toast.error("Session expirée. Veuillez vous reconnecter.");
+            return;
+          }
         }
+
+        if (tasksResult?.data) {
+          console.log("✅ Tâches chargées:", tasksResult.data.length, "tâches");
+          setAvailableTasks(tasksResult.data as Task[]);
+        } else if (!tasksResult?.serverError) {
+          console.warn("⚠️ Aucune tâche active (TODO/IN_PROGRESS) trouvée pour cet utilisateur");
+        }
+
         if (catalogResult?.data) {
           setCatalog(catalogResult.data);
         }
@@ -148,7 +170,7 @@ export default function NewHRTimesheetPage() {
           setCategories(categoriesResult.data);
         }
       } catch (error) {
-        console.error("Erreur chargement des données:", error);
+        console.error("❌ Erreur chargement des données:", error);
         toast.error("Erreur lors du chargement des données");
       }
     };
