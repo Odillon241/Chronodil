@@ -14,11 +14,12 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, Search } from "lucide-react";
 import { Filters } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import type { FilterGroup, FilterOption } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -169,6 +170,7 @@ export default function HRTimesheetPage() {
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Initialisation des groupes de filtres
   const [filterGroups, setFilterGroups] = useState<FilterGroup[]>([
@@ -400,7 +402,33 @@ export default function HRTimesheetPage() {
   };
 
   // Conversion des timesheets en features pour les vues roadmap
-  const currentTimesheets = dataView === "my" ? myTimesheets : pendingTimesheets;
+  const baseTimesheets = dataView === "my" ? myTimesheets : pendingTimesheets;
+  
+  // Filtrage par recherche
+  const currentTimesheets = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return baseTimesheets;
+    }
+    
+    const query = searchQuery.toLowerCase().trim();
+    return baseTimesheets.filter((ts) => {
+      const employeeName = ts.employeeName?.toLowerCase() || "";
+      const position = ts.position?.toLowerCase() || "";
+      const site = ts.site?.toLowerCase() || "";
+      const status = STATUS_CONFIG[ts.status as keyof typeof STATUS_CONFIG]?.name?.toLowerCase() || "";
+      const weekStart = format(new Date(ts.weekStartDate), "dd/MM/yyyy", { locale: fr });
+      const weekEnd = format(new Date(ts.weekEndDate), "dd/MM/yyyy", { locale: fr });
+      
+      return (
+        employeeName.includes(query) ||
+        position.includes(query) ||
+        site.includes(query) ||
+        status.includes(query) ||
+        weekStart.includes(query) ||
+        weekEnd.includes(query)
+      );
+    });
+  }, [baseTimesheets, searchQuery]);
 
   const timesheetsAsFeatures = useMemo(() =>
     currentTimesheets.map((ts) => ({
@@ -1563,12 +1591,16 @@ export default function HRTimesheetPage() {
       {
         accessorKey: 'totalHours',
         header: ({ column }) => (
-          <TableColumnHeader column={column} title="Heures" />
+          <div className="flex items-center justify-center">
+            <TableColumnHeader column={column} title="Heures" />
+          </div>
         ),
         cell: ({ row }) => (
-          <span className="font-bold text-primary">
-            {row.original.totalHours.toFixed(1)}h
-          </span>
+          <div className="flex items-center justify-center">
+            <span className="font-bold text-primary">
+              {row.original.totalHours.toFixed(1)}h
+            </span>
+          </div>
         ),
       },
       {
@@ -1593,36 +1625,6 @@ export default function HRTimesheetPage() {
 
     return (
       <div className="flex flex-col h-full gap-4">
-        {/* Groupe de boutons d'action */}
-        <div className="flex flex-wrap items-center gap-2 px-1">
-          <Button
-            onClick={() => router.push("/dashboard/hr-timesheet/new")}
-            className="bg-primary hover:bg-primary"
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau timesheet
-          </Button>
-          {dataView === "my" && (
-            <Filters
-              filterGroups={filterGroups}
-              onFilterChange={handleFilterOptionChange}
-              onClearFilters={resetFilters}
-              startDate={filters.startDate}
-              endDate={filters.endDate}
-              onDateChange={(start, end) => {
-                setFilters({ ...filters, startDate: start, endDate: end });
-                loadMyTimesheets();
-              }}
-            />
-          )}
-          {dataView === "pending" && currentTimesheets.length > 0 && (
-            <Badge variant="secondary" className="ml-auto">
-              {currentTimesheets.length} timesheet(s) à valider
-            </Badge>
-          )}
-        </div>
-
         {/* Tableau */}
         <div className="flex-1 overflow-auto border rounded-lg">
           {isLoading ? (
@@ -1775,11 +1777,22 @@ export default function HRTimesheetPage() {
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-4 sm:gap-6 overflow-hidden">
       {/* En-tête */}
       <div className="flex flex-col gap-3 px-4 sm:px-0">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Feuilles de temps RH</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Gestion des timesheets hebdomadaires des activités RH
-          </p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Feuilles de temps RH</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Gestion des timesheets hebdomadaires des activités RH
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push("/dashboard/hr-timesheet/new")}
+            className="bg-primary hover:bg-primary"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Nouveau timesheet</span>
+            <span className="sm:hidden">Nouveau</span>
+          </Button>
         </div>
 
         {/* Sélecteur de données */}
@@ -1811,7 +1824,7 @@ export default function HRTimesheetPage() {
 
 
         {/* Menubar pour sélection de vues */}
-        <div className="flex items-center justify-start">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <Menubar className="w-auto">
             {views.map((view) => (
               <MenubarMenu key={view.id}>
@@ -1828,6 +1841,33 @@ export default function HRTimesheetPage() {
               </MenubarMenu>
             ))}
           </Menubar>
+          
+          {/* Barre de recherche et filtres */}
+          <div className="flex items-center gap-2">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Rechercher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            {dataView === "my" && (
+              <Filters
+                filterGroups={filterGroups}
+                onFilterChange={handleFilterOptionChange}
+                onClearFilters={resetFilters}
+                startDate={filters.startDate}
+                endDate={filters.endDate}
+                onDateChange={(start, end) => {
+                  setFilters({ ...filters, startDate: start, endDate: end });
+                  loadMyTimesheets();
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -1862,24 +1902,36 @@ export default function HRTimesheetPage() {
                   <CardTitle className="text-lg">Informations générales</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Employé</p>
-                      <p className="font-medium">{previewTimesheet.employeeName}</p>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <User className="h-4 w-4" />
+                        Employé
+                      </div>
+                      <p className="text-base font-semibold">{previewTimesheet.employeeName}</p>
                       {previewTimesheet.User && (
                         <p className="text-sm text-muted-foreground">{previewTimesheet.User.email}</p>
                       )}
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Poste</p>
-                      <p className="font-medium">{previewTimesheet.position}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Briefcase className="h-4 w-4" />
+                        Poste
+                      </div>
+                      <p className="text-base font-semibold">{previewTimesheet.position}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Site</p>
-                      <p className="font-medium">{previewTimesheet.site}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        Site
+                      </div>
+                      <p className="text-base font-semibold">{previewTimesheet.site}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total heures</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        Total heures
+                      </div>
                       <p className="text-2xl font-bold text-primary">{previewTimesheet.totalHours.toFixed(1)}h</p>
                     </div>
                   </div>
@@ -1908,7 +1960,7 @@ export default function HRTimesheetPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
-                      Activités ({previewTimesheet.activities.length})
+                      Activités
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

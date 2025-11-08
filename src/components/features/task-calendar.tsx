@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 import { Task } from "./task-types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TaskCalendarProps {
   tasks: Task[];
@@ -26,6 +27,8 @@ interface TaskCalendarProps {
   onDayDoubleClick: (date: Date) => void;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }
 
 // Événements et jours fériés du Gabon
@@ -101,11 +104,13 @@ const getPriorityColor = (priority: string) => {
 };
 
 // Composant pour une tâche draggable
-function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle }: {
+function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, currentUserId, currentUserRole }: {
   task: Task;
   onEventClick: (task: Task) => void;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
@@ -130,10 +135,20 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle }: {
           )}
           onClick={() => onEventClick(task)}
         >
-          <div className="flex items-center gap-1 text-white">
+          <div className="flex items-center gap-1.5 text-white">
             <span className="font-medium truncate flex-1">{task.name}</span>
-            {task.isShared && <Users className="h-3 w-3 flex-shrink-0" />}
-            {task.reminderDate && <Bell className="h-3 w-3 flex-shrink-0" />}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {task.isShared && <Users className="h-3 w-3" />}
+              {task.reminderDate && <Bell className="h-3 w-3" />}
+              {task.Creator && task.Creator.id !== currentUserId && (
+                <Avatar className="h-4 w-4 border border-white/30">
+                  <AvatarImage src={task.Creator.avatar || undefined} />
+                  <AvatarFallback className="text-[8px] bg-white/20 text-white">
+                    {task.Creator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </div>
           </div>
           {task.Project && (
             <div className="text-white/90 text-[10px] truncate mt-0.5">
@@ -143,39 +158,53 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle }: {
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={() => onEventClick(task)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Modifier
-        </ContextMenuItem>
-        {onEventToggle && (
-          <ContextMenuItem onClick={() => onEventToggle(task)}>
-            {task.isActive ? (
-              <>
-                <Circle className="h-4 w-4 mr-2" />
-                Désactiver
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Activer
-              </>
-            )}
-          </ContextMenuItem>
-        )}
-        <ContextMenuSeparator />
-        {onEventDelete && (
-          <ContextMenuItem onClick={() => onEventDelete(task.id)} className="text-destructive">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Supprimer
-          </ContextMenuItem>
-        )}
+        {(() => {
+          const isCreator = task.Creator?.id === currentUserId;
+          const isAdmin = currentUserRole === "ADMIN";
+          const canModify = isCreator || isAdmin;
+          
+          return (
+            <>
+              {canModify && (
+                <ContextMenuItem onClick={() => onEventClick(task)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Modifier
+                </ContextMenuItem>
+              )}
+              {canModify && onEventToggle && (
+                <ContextMenuItem onClick={() => onEventToggle(task)}>
+                  {task.isActive ? (
+                    <>
+                      <Circle className="h-4 w-4 mr-2" />
+                      Désactiver
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Activer
+                    </>
+                  )}
+                </ContextMenuItem>
+              )}
+              {canModify && onEventDelete && (
+                <>
+                  <ContextMenuSeparator />
+                  <ContextMenuItem onClick={() => onEventDelete(task.id)} className="text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer
+                  </ContextMenuItem>
+                </>
+              )}
+            </>
+          );
+        })()}
       </ContextMenuContent>
     </ContextMenu>
   );
 }
 
 // Composant pour un jour droppable
-function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleClick, onEventDelete, onEventToggle }: {
+function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleClick, onEventDelete, onEventToggle, currentUserId, currentUserRole }: {
   date: Date;
   tasks: Task[];
   isCurrentMonth: boolean;
@@ -183,6 +212,8 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
   onDayDoubleClick: (date: Date) => void;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: date.toISOString(),
@@ -276,6 +307,8 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
             onEventClick={onEventClick}
             onEventDelete={onEventDelete}
             onEventToggle={onEventToggle}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
           />
         ))}
 
@@ -304,6 +337,8 @@ export function TaskCalendar({
   onDayDoubleClick,
   onEventDelete,
   onEventToggle,
+  currentUserId,
+  currentUserRole,
 }: TaskCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -532,6 +567,8 @@ export function TaskCalendar({
                     onDayDoubleClick={onDayDoubleClick}
                     onEventDelete={onEventDelete}
                     onEventToggle={onEventToggle}
+                    currentUserId={currentUserId}
+                    currentUserRole={currentUserRole}
                   />
                 );
               })}

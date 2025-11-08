@@ -17,6 +17,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { differenceInDays } from "date-fns";
+import { calculateWorkingHours } from "@/lib/business-hours";
 
 // ============================================
 // TIMESHEET RH - CRUD
@@ -417,16 +418,36 @@ export const addHRActivity = authActionClient
       throw new Error("Timesheet non trouvé ou non modifiable");
     }
 
-    // Calculer les heures totales: DATEDIF(start, end, "D") * 24
-    const days = differenceInDays(activity.endDate, activity.startDate);
-    const totalHours = days * 24;
+    // Calculer les heures totales: utiliser la valeur fournie ou calculer automatiquement
+    // Si totalHours est fourni par l'utilisateur, on l'utilise (priorité)
+    // Sinon, on calcule automatiquement basé sur les jours ouvrables (8h/jour, lundi-vendredi)
+    const calculatedWorkingHours = calculateWorkingHours(activity.startDate, activity.endDate);
+    const totalHours = activity.totalHours !== undefined && activity.totalHours > 0
+      ? activity.totalHours
+      : calculatedWorkingHours;
 
-    // Si on demande de créer une tâche liée, la créer d'abord
+    console.log("📊 addHRActivity - Calcul heures:", {
+      activityName: activity.activityName,
+      totalHoursFromForm: activity.totalHours,
+      startDate: activity.startDate,
+      endDate: activity.endDate,
+      calculatedWorkingHours: calculatedWorkingHours,
+      finalTotalHours: totalHours,
+      taskId: activity.taskId,
+    });
+
+    // Si aucune tâche n'est liée, créer automatiquement une tâche correspondante
     let linkedTaskId: string | undefined = activity.taskId;
 
-    if (activity.createLinkedTask) {
+    if (!linkedTaskId) {
       // Convertir le statut HRActivity en statut Task
       const taskStatus = activity.status === "COMPLETED" ? "DONE" : "IN_PROGRESS";
+
+      console.log("🔄 Création automatique d'une tâche pour l'activité RH:", {
+        activityName: activity.activityName,
+        activityType: activity.activityType,
+        periodicity: activity.periodicity,
+      });
 
       const linkedTask = await prisma.task.create({
         data: {
@@ -438,12 +459,16 @@ export const addHRActivity = authActionClient
           status: taskStatus,
           priority: activity.priority || "MEDIUM",
           complexity: activity.complexity || "MOYEN",
-          estimatedHours: activity.estimatedHours,
-          dueDate: activity.dueDate,
+          estimatedHours: activity.estimatedHours || totalHours,
+          dueDate: activity.dueDate || activity.endDate,
           reminderDate: activity.reminderDate,
           reminderTime: activity.reminderTime,
           soundEnabled: activity.soundEnabled ?? true,
           isActive: true,
+          // Nouveaux champs d'activité RH
+          activityType: activity.activityType,
+          activityName: activity.activityName,
+          periodicity: activity.periodicity,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -460,6 +485,11 @@ export const addHRActivity = authActionClient
       });
 
       linkedTaskId = linkedTask.id;
+
+      console.log("✅ Tâche créée automatiquement:", {
+        taskId: linkedTask.id,
+        taskName: linkedTask.name,
+      });
     }
 
     const newActivity = await prisma.hRActivity.create({
@@ -485,6 +515,7 @@ export const addHRActivity = authActionClient
         reminderDate: activity.reminderDate,
         reminderTime: activity.reminderTime,
         soundEnabled: activity.soundEnabled ?? true,
+        ...(activity.sharedWith && { sharedWith: activity.sharedWith }),
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -540,8 +571,8 @@ export const updateHRActivity = authActionClient
     if (data.startDate || data.endDate) {
       const startDate = data.startDate || activity.startDate;
       const endDate = data.endDate || activity.endDate;
-      const days = differenceInDays(endDate, startDate);
-      totalHours = days * 24;
+      // Calculer les heures ouvrables (8h/jour, lundi-vendredi)
+      totalHours = calculateWorkingHours(startDate, endDate);
     }
 
     const updatedActivity = await prisma.hRActivity.update({

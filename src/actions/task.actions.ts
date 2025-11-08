@@ -28,6 +28,10 @@ const createTaskSchema = z.object({
   understandingLevel: z.enum(["NONE", "SUPERFICIAL", "WORKING", "COMPREHENSIVE", "EXPERT"]).optional().nullable(),
   // Nouveau champ pour lier à un HR Timesheet
   hrTimesheetId: z.string().optional(),
+  // Nouveaux champs pour intégration avec activités RH
+  activityType: z.string().optional(),
+  activityName: z.string().optional(),
+  periodicity: z.string().optional(),
 });
 
 const updateTaskSchema = z.object({
@@ -42,6 +46,10 @@ const updateTaskSchema = z.object({
   soundEnabled: z.boolean().optional(),
   status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  // Nouveaux champs pour intégration avec activités RH
+  activityType: z.string().optional(),
+  activityName: z.string().optional(),
+  periodicity: z.string().optional(),
 });
 
 export const createTask = actionClient
@@ -188,18 +196,12 @@ export const updateTask = actionClient
       throw new Error("Tâche non trouvée");
     }
 
-    // Vérifier que l'utilisateur est membre du projet seulement si un projet est associé
-    if (task.projectId) {
-      const member = await prisma.projectMember.findFirst({
-        where: {
-          projectId: task.projectId,
-          userId: session.user.id,
-        },
-      });
+    // Vérifier que l'utilisateur est le créateur de la tâche ou un administrateur
+    const isCreator = task.createdBy === session.user.id;
+    const isAdmin = getUserRole(session) === "ADMIN";
 
-      if (!member && getUserRole(session) !== "ADMIN") {
-        throw new Error("Vous n'êtes pas membre de ce projet");
-      }
+    if (!isCreator && !isAdmin) {
+      throw new Error("Vous n'avez pas la permission de modifier cette tâche. Seul le créateur ou un administrateur peut modifier une tâche.");
     }
 
     const updatedTask = await prisma.task.update({
@@ -243,18 +245,12 @@ export const deleteTask = actionClient
       throw new Error("Tâche non trouvée");
     }
 
-    // Vérifier que l'utilisateur est membre du projet seulement si un projet est associé
-    if (task.projectId) {
-      const member = await prisma.projectMember.findFirst({
-        where: {
-          projectId: task.projectId,
-          userId: session.user.id,
-        },
-      });
+    // Vérifier que l'utilisateur est le créateur de la tâche ou un administrateur
+    const isCreator = task.createdBy === session.user.id;
+    const isAdmin = getUserRole(session) === "ADMIN";
 
-      if (!member && getUserRole(session) !== "ADMIN") {
-        throw new Error("Vous n'êtes pas membre de ce projet");
-      }
+    if (!isCreator && !isAdmin) {
+      throw new Error("Vous n'avez pas la permission de supprimer cette tâche. Seul le créateur ou un administrateur peut supprimer une tâche.");
     }
 
     await prisma.task.delete({
@@ -341,18 +337,22 @@ export const getMyTasks = actionClient
 
     // Construire les conditions :
     // - Tâches dont l'utilisateur est membre (TaskMember)
-    // - Tâches créées par l'utilisateur
+    // - Tâches créées par l'utilisateur (peu importe le projet)
     // - Tâches des projets où l'utilisateur est membre
-    // - Tâches personnelles (projectId null)
+    // Note: Les tâches personnelles (projectId null) sont déjà incluses via createdBy
     const orVisibilityConditions: any[] = [];
     if (taskIds.length > 0) {
       orVisibilityConditions.push({ id: { in: taskIds } });
     }
+    // Tâches créées par l'utilisateur (inclut les tâches personnelles projectId null)
     orVisibilityConditions.push({ createdBy: session.user.id });
+    // Tâches des projets où l'utilisateur est membre (mais pas créées par lui, déjà couvertes ci-dessus)
     if (projectIds.length > 0) {
-      orVisibilityConditions.push({ projectId: { in: projectIds } });
+      orVisibilityConditions.push({ 
+        projectId: { in: projectIds },
+        createdBy: { not: session.user.id } // Exclure celles déjà créées par l'utilisateur
+      });
     }
-    orVisibilityConditions.push({ projectId: null });
 
     const andConditions: any[] = [];
     if (parsedInput.projectId) {
@@ -374,6 +374,82 @@ export const getMyTasks = actionClient
           ...andConditions,
           { OR: orVisibilityConditions },
         ],
+      },
+      include: {
+        Project: {
+          select: {
+            name: true,
+            code: true,
+            color: true,
+          },
+        },
+        Task: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        Creator: {
+          select: {
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        TaskMember: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            TaskComment: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return tasks;
+  });
+
+export const getAllTasks = actionClient
+  .schema(z.object({ projectId: z.string().optional(), searchQuery: z.string().optional() }))
+  .action(async ({ parsedInput }) => {
+    const session = await getSession(await headers());
+    const userRole = getUserRole(session);
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    const andConditions: any[] = [];
+    if (parsedInput.projectId) {
+      andConditions.push({ projectId: parsedInput.projectId });
+    }
+    if (parsedInput.searchQuery) {
+      andConditions.push({
+        OR: [
+          { name: { contains: parsedInput.searchQuery, mode: "insensitive" } },
+          { description: { contains: parsedInput.searchQuery, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    // Récupérer toutes les tâches actives (pour calendrier et gantt)
+    const tasks = await prisma.task.findMany({
+      where: {
+        isActive: true,
+        ...(andConditions.length > 0 && { AND: andConditions }),
       },
       include: {
         Project: {
@@ -510,6 +586,14 @@ export const updateTaskStatus = actionClient
       throw new Error("Tâche non trouvée");
     }
 
+    // Vérifier que l'utilisateur est le créateur de la tâche ou un administrateur
+    const isCreator = task.createdBy === session.user.id;
+    const isAdmin = getUserRole(session) === "ADMIN";
+
+    if (!isCreator && !isAdmin) {
+      throw new Error("Vous n'avez pas la permission de modifier cette tâche. Seul le créateur ou un administrateur peut modifier une tâche.");
+    }
+
     // Mettre à jour le statut
     const updatedTask = await prisma.task.update({
       where: { id: parsedInput.id },
@@ -574,13 +658,21 @@ export const updateTaskPriority = actionClient
       throw new Error("Non authentifié");
     }
 
-    // Récupérer la tâche actuelle pour le logging
+    // Récupérer la tâche actuelle pour le logging et la vérification
     const task = await prisma.task.findUnique({
       where: { id: parsedInput.id },
     });
 
     if (!task) {
       throw new Error("Tâche non trouvée");
+    }
+
+    // Vérifier que l'utilisateur est le créateur de la tâche ou un administrateur
+    const isCreator = task.createdBy === session.user.id;
+    const isAdmin = getUserRole(session) === "ADMIN";
+
+    if (!isCreator && !isAdmin) {
+      throw new Error("Vous n'avez pas la permission de modifier cette tâche. Seul le créateur ou un administrateur peut modifier une tâche.");
     }
 
     const updatedTask = await prisma.task.update({

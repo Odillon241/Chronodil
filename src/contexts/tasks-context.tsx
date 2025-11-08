@@ -2,15 +2,16 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
-import { getMyTasks } from "@/actions/task.actions";
+import { getMyTasks, getAllTasks } from "@/actions/task.actions";
 
 export type Task = any; // Type à définir selon votre schéma Prisma
 
-export type ViewMode = "table" | "calendar" | "kanban" | "gantt" | "list";
+export type ViewMode = "table" | "calendar" | "kanban" | "gantt";
 
 export interface TasksContextType {
   // Données
-  tasks: Task[];
+  userTasks: Task[]; // Tâches de l'utilisateur connecté (pour tableau et kanban)
+  allTasks: Task[]; // Toutes les tâches (pour calendrier et gantt)
   filteredTasks: Task[];
   isLoading: boolean;
   
@@ -19,6 +20,7 @@ export interface TasksContextType {
   statusFilter: string;
   priorityFilter: string;
   selectedProject: string;
+  userFilter: "my" | "all"; // Filtre utilisateur pour tableau et kanban
   
   // Vue
   viewMode: ViewMode;
@@ -28,6 +30,7 @@ export interface TasksContextType {
   setStatusFilter: (filter: string) => void;
   setPriorityFilter: (filter: string) => void;
   setSelectedProject: (projectId: string) => void;
+  setUserFilter: (filter: "my" | "all") => void;
   setViewMode: (mode: ViewMode) => void;
   loadTasks: () => Promise<void>;
   refreshTasks: () => Promise<void>;
@@ -49,26 +52,41 @@ interface TasksProviderProps {
 }
 
 export function TasksProvider({ children, initialProjectId = "" }: TasksProviderProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [userTasks, setUserTasks] = useState<Task[]>([]); // Tâches de l'utilisateur
+  const [allTasks, setAllTasks] = useState<Task[]>([]); // Toutes les tâches
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selectedProject, setSelectedProject] = useState<string>(initialProjectId);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [userFilter, setUserFilter] = useState<"my" | "all">("my"); // Par défaut, afficher mes tâches
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   // Fonction pour charger les tâches
   const loadTasks = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await getMyTasks({
+      // Charger les tâches de l'utilisateur (pour tableau et kanban)
+      const userTasksResult = await getMyTasks({
         projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
       });
-      if (result?.data) {
-        setTasks(result.data);
+      
+      // Charger toutes les tâches (pour calendrier et gantt)
+      const allTasksResult = await getAllTasks({
+        projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
+      });
+
+      if (userTasksResult?.data) {
+        setUserTasks(userTasksResult.data);
       } else {
-        toast.error(result?.serverError || "Erreur lors du chargement des tâches");
+        toast.error(userTasksResult?.serverError || "Erreur lors du chargement des tâches utilisateur");
+      }
+
+      if (allTasksResult?.data) {
+        setAllTasks(allTasksResult.data);
+      } else {
+        toast.error(allTasksResult?.serverError || "Erreur lors du chargement de toutes les tâches");
       }
     } catch (error) {
       console.error("Erreur lors du chargement des tâches:", error);
@@ -88,9 +106,17 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
     loadTasks();
   }, [loadTasks]);
 
-  // Filtrer les tâches en temps réel
+  // Filtrer les tâches en temps réel selon la vue
   useEffect(() => {
-    let filtered = [...tasks];
+    // Pour tableau et kanban : utiliser userFilter pour choisir entre userTasks et allTasks
+    // Pour calendrier et gantt : toujours utiliser allTasks
+    let sourceTasks: Task[];
+    if (viewMode === "table" || viewMode === "kanban") {
+      sourceTasks = userFilter === "my" ? userTasks : allTasks;
+    } else {
+      sourceTasks = allTasks;
+    }
+    let filtered = [...sourceTasks];
 
     // Filtre par recherche
     if (searchQuery.trim() !== "") {
@@ -114,21 +140,24 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
     }
 
     setFilteredTasks(filtered);
-  }, [searchQuery, tasks, statusFilter, priorityFilter]);
+  }, [searchQuery, userTasks, allTasks, statusFilter, priorityFilter, viewMode, userFilter]);
 
   const value: TasksContextType = {
-    tasks,
+    userTasks,
+    allTasks,
     filteredTasks,
     isLoading,
     searchQuery,
     statusFilter,
     priorityFilter,
     selectedProject,
+    userFilter,
     viewMode,
     setSearchQuery,
     setStatusFilter,
     setPriorityFilter,
     setSelectedProject,
+    setUserFilter,
     setViewMode,
     loadTasks,
     refreshTasks,

@@ -18,6 +18,8 @@ interface TaskKanbanProps {
   onStatusChange: (taskId: string, newStatus: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED") => Promise<void>;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }
 
 const TASK_STATUSES = [
@@ -43,12 +45,17 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
-function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle }: {
+function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle, currentUserId, currentUserRole }: {
   task: Task;
   onEventClick: (task: Task) => void;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }) {
+  const isCreator = task.Creator?.id === currentUserId;
+  const isAdmin = currentUserRole === "ADMIN";
+  const canModify = isCreator || isAdmin;
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
     data: { task },
@@ -101,11 +108,13 @@ function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle }:
         </Card>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={() => onEventClick(task)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Modifier
-        </ContextMenuItem>
-        {onEventToggle && (
+        {canModify && (
+          <ContextMenuItem onClick={() => onEventClick(task)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Modifier
+          </ContextMenuItem>
+        )}
+        {canModify && onEventToggle && (
           <ContextMenuItem onClick={() => onEventToggle(task)}>
             {task.isActive ? (
               <>
@@ -120,24 +129,28 @@ function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle }:
             )}
           </ContextMenuItem>
         )}
-        <ContextMenuSeparator />
-        {onEventDelete && (
-          <ContextMenuItem onClick={() => onEventDelete(task.id)} className="text-destructive">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Supprimer
-          </ContextMenuItem>
+        {canModify && onEventDelete && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem onClick={() => onEventDelete(task.id)} className="text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer
+            </ContextMenuItem>
+          </>
         )}
       </ContextMenuContent>
     </ContextMenu>
   );
 }
 
-function DroppableColumn({ status, tasks, onEventClick, onEventDelete, onEventToggle }: {
+function DroppableColumn({ status, tasks, onEventClick, onEventDelete, onEventToggle, currentUserId, currentUserRole }: {
   status: typeof TASK_STATUSES[number];
   tasks: Task[];
   onEventClick: (task: Task) => void;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
+  currentUserId?: string;
+  currentUserRole?: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: status.id,
@@ -178,6 +191,8 @@ function DroppableColumn({ status, tasks, onEventClick, onEventDelete, onEventTo
             onEventClick={onEventClick}
             onEventDelete={onEventDelete}
             onEventToggle={onEventToggle}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
           />
         ))}
       </div>
@@ -191,6 +206,8 @@ export function TaskKanban({
   onStatusChange,
   onEventDelete,
   onEventToggle,
+  currentUserId,
+  currentUserRole,
 }: TaskKanbanProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isMobileView, setIsMobileView] = useState(false);
@@ -259,6 +276,8 @@ export function TaskKanban({
                   onEventClick={onEventClick}
                   onEventDelete={onEventDelete}
                   onEventToggle={onEventToggle}
+                  currentUserId={currentUserId}
+                  currentUserRole={currentUserRole}
                 />
               </div>
             ))}
@@ -291,6 +310,8 @@ export function TaskKanban({
                 onEventClick={onEventClick}
                 onEventDelete={onEventDelete}
                 onEventToggle={onEventToggle}
+                currentUserId={currentUserId}
+                currentUserRole={currentUserRole}
               />
             ))}
           </div>

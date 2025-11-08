@@ -1,0 +1,29 @@
+RAPPORT D'ERREURS - TEST CREATION TACHE ET AFFICHAGE DANS FORMULAIRE RH
+================================================================================
+
+ERREURS RENCONTREES:
+--------------------
+
+1. ERREUR: Creation de tache echouee
+   - Action: Creation d'une tache "Tache test pour feuille de temps RH" depuis /dashboard/tasks
+   - Resultat: Notification d'erreur affichee, la tache n'apparait pas dans la liste
+   - Impact: Impossible de verifier l'affichage dans le formulaire RH
+
+2. ERREUR: Selecteur de tache non visible dans le formulaire RH
+   - Action: Selection du mode "Tache existante" dans /dashboard/hr-timesheet/new
+   - Resultat: Le selecteur de tache ne s'affiche pas
+   - Cause probable: availableTasks.length === 0 (aucune tache chargee ou filtrage trop restrictif)
+   - Code concerne: src/app/dashboard/hr-timesheet/new/page.tsx lignes 524-560
+
+3. OBSERVATION: Filtrage des taches
+   - La fonction getUserTasksForHRTimesheet filtre sur:
+     * status: "TODO" ou "IN_PROGRESS"
+     * isActive: true
+   - Si la tache creee a un autre statut ou isActive: false, elle ne sera pas visible
+
+CONCLUSION:
+-----------
+- La creation de tache depuis l'interface echoue
+- Le selecteur de tache ne s'affiche pas dans le formulaire RH (probablement car aucune tache ne correspond aux criteres)
+- Impossible de verifier que la tache creee s'affiche dans le formulaire de creation de feuille de temps RH
+

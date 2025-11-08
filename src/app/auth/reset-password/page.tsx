@@ -128,7 +128,7 @@ function ResetPasswordContent() {
   // Si un token est présent dans l'URL, afficher le formulaire de confirmation
   if (token) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
         <Card className="w-full max-w-md relative z-10">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
@@ -199,7 +199,7 @@ function ResetPasswordContent() {
   // Si l'email a été envoyé, afficher un message de confirmation
   if (emailSent) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
         <Card className="w-full max-w-md relative z-10">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
@@ -243,7 +243,7 @@ function ResetPasswordContent() {
 
   // Formulaire de demande de réinitialisation
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
       {/* Grille interactive */}
       <div className="absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 opacity-60">
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 600">

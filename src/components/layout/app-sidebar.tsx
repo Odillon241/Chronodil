@@ -115,19 +115,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     window.location.href = "/auth/login";
   };
   // Filtrer les items de navigation de manière cohérente côté serveur et client
+  // Utiliser 'mounted' pour éviter les différences d'hydratation
   const filteredNavMain = React.useMemo(() => {
+    // Sur le serveur (mounted=false), afficher tous les items pour éviter l'hydratation mismatch
+    if (!mounted) return navMain;
+
     return navMain.filter((item: any) => {
       if (!item.roles) return true;
       return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
     });
-  }, [navMain, session]);
+  }, [navMain, session, mounted]);
 
   const filteredNavSettings = React.useMemo(() => {
+    // Sur le serveur (mounted=false), afficher tous les items pour éviter l'hydratation mismatch
+    if (!mounted) return navSettings;
+
     return navSettings.filter((item: any) => {
       if (!item.roles) return true;
       return (session?.user as any)?.role && item.roles.includes((session?.user as any)?.role);
     });
-  }, [navSettings, session]);
+  }, [navSettings, session, mounted]);
 
 
   return (
@@ -162,7 +169,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>{t("navigation.dashboard")}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu suppressHydrationWarning>
               {filteredNavMain.map((item) => {
                 // Utiliser une logique d'activation plus stable pour éviter les différences d'hydratation
                 const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url + "/"));
@@ -229,7 +236,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu suppressHydrationWarning>
               {filteredNavSettings.map((item) => {
                   const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
 

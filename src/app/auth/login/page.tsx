@@ -69,7 +69,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
       {/* Grille interactive */}
       <div className="absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 opacity-60">
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 600">

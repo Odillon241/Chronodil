@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock, User, Briefcase, MapPin } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -303,24 +303,36 @@ export default function ValidateHRTimesheetPage() {
           <CardTitle>Informations de l'employé</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Employé</p>
-              <p className="font-medium">{timesheet.employeeName}</p>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <User className="h-4 w-4" />
+                Employé
+              </div>
+              <p className="text-base font-semibold">{timesheet.employeeName}</p>
               {timesheet.User && (
                 <p className="text-sm text-muted-foreground">{timesheet.User.email}</p>
               )}
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Poste</p>
-              <p className="font-medium">{timesheet.position}</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Briefcase className="h-4 w-4" />
+                Poste
+              </div>
+              <p className="text-base font-semibold">{timesheet.position}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Site</p>
-              <p className="font-medium">{timesheet.site}</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                Site
+              </div>
+              <p className="text-base font-semibold">{timesheet.site}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total heures</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                Total heures
+              </div>
               <p className="text-2xl font-bold text-primary">{timesheet.totalHours.toFixed(1)}h</p>
             </div>
           </div>
@@ -354,7 +366,7 @@ export default function ValidateHRTimesheetPage() {
       {/* Détail des activités */}
       <Card>
         <CardHeader>
-          <CardTitle>Activités ({timesheet.activities.length})</CardTitle>
+          <CardTitle>Activités</CardTitle>
           <CardDescription>
             Vérifiez le détail des activités avant validation
           </CardDescription>

@@ -25,7 +25,7 @@ const hrActivityBaseSchema = z.object({
   reminderDate: z.date().optional(),
   reminderTime: z.string().optional(),
   soundEnabled: z.boolean().default(true),
-  createLinkedTask: z.boolean().optional(), // Pour indiquer si on veut créer une tâche liée
+  sharedWith: z.array(z.string()).optional(), // IDs des utilisateurs avec qui partager
 });
 
 // Schéma pour une activité RH avec validation

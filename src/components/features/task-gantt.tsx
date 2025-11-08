@@ -26,7 +26,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Edit, Trash2, Circle, CheckCircle, Clock, Eye, Link2 } from "lucide-react";
+import { Edit, Trash2, Circle, CheckCircle, Eye, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task, STATUS_COLORS } from "./task-types";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TaskGanttProps {
   tasks: Task[];
@@ -46,6 +47,8 @@ interface TaskGanttProps {
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
   onAddItem?: (date: Date) => void;
+  currentUserId?: string;
+  currentUserRole?: string;
 }
 
 const TASK_STATUSES: Record<string, GanttStatus> = {
@@ -93,10 +96,13 @@ export function TaskGantt({
   onEventDelete,
   onEventToggle,
   onAddItem,
+  currentUserId,
+  currentUserRole,
 }: TaskGanttProps) {
   const ganttRef = useRef<HTMLDivElement>(null);
-  const [ganttZoom, setGanttZoom] = useState(100);
-  const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('monthly');
+  // Valeurs par défaut : zoom 200% et plage quotidienne
+  const [ganttZoom, setGanttZoom] = useState(200);
+  const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('daily');
 
   // Créer une Map des tâches pour accès rapide
   const tasksMap = useMemo(() => {
@@ -171,20 +177,26 @@ export function TaskGantt({
     }
   };
 
-  // Scroller le Gantt vers la date du jour (Today) au chargement
+  // Scroller le Gantt vers la date du jour (Today) au chargement pour centrer la vue
   useEffect(() => {
     if (ganttRef.current) {
-      // Attendre que le Gantt soit complètement rendu
-      const timeoutId = setTimeout(() => {
-        // Le conteneur scrollable a la classe "gantt" (voir GanttProvider)
+      // Attendre que le Gantt soit complètement rendu avec plusieurs tentatives
+      const attemptScroll = (attempt: number = 0) => {
+        if (attempt > 5) return; // Maximum 5 tentatives
+        
         const ganttContainer = ganttRef.current?.querySelector('.gantt') as HTMLElement;
-        if (!ganttContainer) return;
+        if (!ganttContainer) {
+          setTimeout(() => attemptScroll(attempt + 1), 200);
+          return;
+        }
 
         // Chercher l'élément "Today" dans le DOM
-        // Le composant GanttToday crée un div avec le texte "Today"
-        if (!ganttRef.current) return;
-        const allElements = ganttRef.current.querySelectorAll('*');
+        const allElements = ganttRef.current?.querySelectorAll('*');
         let todayContainerElement: HTMLElement | null = null;
+
+        if (!allElements) {
+          return;
+        }
         
         for (const el of allElements) {
           // Chercher l'élément qui contient exactement le texte "Today"
@@ -214,21 +226,33 @@ export function TaskGantt({
               const matrix = new DOMMatrix(transform);
               const translateX = matrix.m41; // m41 correspond à translateX
               
-              // Aligner la vue sur "Today" en tenant compte de la largeur de la sidebar
+              // Centrer la vue sur "Today" : positionner Today au milieu de la zone visible
+              // en tenant compte de la largeur de la sidebar et de la largeur de la fenêtre
               const sidebarWidth = 200; // Largeur approximative de la sidebar
-              const scrollPosition = Math.max(0, translateX - sidebarWidth);
+              const viewportWidth = ganttContainer.clientWidth - sidebarWidth;
+              const scrollPosition = Math.max(0, translateX - sidebarWidth - (viewportWidth / 2));
               
               ganttContainer.scrollTo({
                 left: scrollPosition,
-                behavior: 'smooth',
+                behavior: attempt === 0 ? 'smooth' : 'auto', // Smooth seulement au premier essai
               });
             } catch (error) {
               // Fallback si DOMMatrix n'est pas supporté
-              console.warn('Impossible de calculer la position de Today:', error);
+              if (attempt === 0) {
+                console.warn('Impossible de calculer la position de Today:', error);
+              }
+              setTimeout(() => attemptScroll(attempt + 1), 200);
             }
+          } else {
+            setTimeout(() => attemptScroll(attempt + 1), 200);
           }
+        } else {
+          setTimeout(() => attemptScroll(attempt + 1), 200);
         }
-      }, 300); // Attendre 300ms pour que le Gantt soit rendu
+      };
+
+      // Démarrer le scroll après un court délai initial
+      const timeoutId = setTimeout(() => attemptScroll(0), 500);
 
       return () => {
         clearTimeout(timeoutId);
@@ -242,7 +266,7 @@ export function TaskGantt({
       // Ctrl + "+" ou Ctrl + "=" pour zoomer
       if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
         e.preventDefault();
-        setGanttZoom((prev) => Math.min(200, prev + 25));
+        setGanttZoom((prev) => Math.min(400, prev + 25));
       }
       // Ctrl + "-" pour dézoomer
       else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
@@ -299,8 +323,8 @@ export function TaskGantt({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setGanttZoom(Math.min(200, ganttZoom + 25))}
-                disabled={ganttZoom >= 200}
+                onClick={() => setGanttZoom(Math.min(400, ganttZoom + 25))}
+                disabled={ganttZoom >= 400}
                 title="Ctrl + +"
               >
                 +
@@ -378,6 +402,14 @@ export function TaskGantt({
                                 {feature.name}
                               </p>
                               <div className="flex items-center gap-1 flex-shrink-0">
+                                {task.Creator && task.Creator.id !== currentUserId && (
+                                  <Avatar className="h-4 w-4 border border-border">
+                                    <AvatarImage src={task.Creator.avatar || undefined} />
+                                    <AvatarFallback className="text-[8px]">
+                                      {task.Creator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                )}
                                 <Badge
                                   variant="outline"
                                   className={cn(
@@ -387,52 +419,57 @@ export function TaskGantt({
                                 >
                                   {getPriorityLabel(task.priority)}
                                 </Badge>
-                                {task.estimatedHours && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] px-1 py-0 flex items-center gap-0.5"
-                                  >
-                                    <Clock className="h-2.5 w-2.5" />
-                                    {task.estimatedHours}h
-                                  </Badge>
-                                )}
                               </div>
                             </div>
                           </ContextMenuTrigger>
                           <ContextMenuContent>
-                            <ContextMenuItem
-                              onClick={() => handleSelectItem(feature.id)}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Modifier
-                            </ContextMenuItem>
-                            {onEventToggle && (
-                              <ContextMenuItem
-                                onClick={() => handleToggle(feature.id)}
-                              >
-                                {task.isActive ? (
-                                  <>
-                                    <Circle className="h-4 w-4 mr-2" />
-                                    Désactiver
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle className="h-4 w-4 mr-2" />
-                                    Activer
-                                  </>
-                                )}
-                              </ContextMenuItem>
-                            )}
-                            <ContextMenuSeparator />
-                            {onEventDelete && (
-                              <ContextMenuItem
-                                onClick={() => handleDelete(feature.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Supprimer
-                              </ContextMenuItem>
-                            )}
+                            {(() => {
+                              const isCreator = task.Creator?.id === currentUserId;
+                              const isAdmin = currentUserRole === "ADMIN";
+                              const canModify = isCreator || isAdmin;
+                              
+                              return (
+                                <>
+                                  {canModify && (
+                                    <ContextMenuItem
+                                      onClick={() => handleSelectItem(feature.id)}
+                                    >
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Modifier
+                                    </ContextMenuItem>
+                                  )}
+                                  {canModify && onEventToggle && (
+                                    <ContextMenuItem
+                                      onClick={() => handleToggle(feature.id)}
+                                    >
+                                      {task.isActive ? (
+                                        <>
+                                          <Circle className="h-4 w-4 mr-2" />
+                                          Désactiver
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CheckCircle className="h-4 w-4 mr-2" />
+                                          Activer
+                                        </>
+                                      )}
+                                    </ContextMenuItem>
+                                  )}
+                                  {canModify && onEventDelete && (
+                                    <>
+                                      <ContextMenuSeparator />
+                                      <ContextMenuItem
+                                        onClick={() => handleDelete(feature.id)}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Supprimer
+                                      </ContextMenuItem>
+                                    </>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </ContextMenuContent>
                         </ContextMenu>
                       );

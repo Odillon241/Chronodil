@@ -137,7 +137,7 @@ model HRActivity {
   status          HRActivityStatus
   catalogId       String?
   // Nouveaux champs pour intégration avec Task
-  taskId          String?          @unique
+  taskId          String?
   priority        String? // LOW, MEDIUM, HIGH, URGENT
   complexity      TaskComplexity?
   estimatedHours  Float?
@@ -145,6 +145,7 @@ model HRActivity {
   reminderDate    DateTime?
   reminderTime    String?
   soundEnabled    Boolean          @default(true)
+  sharedWith      Json? // Array of user IDs who can access this activity
   createdAt       DateTime         @default(now())
   updatedAt       DateTime
   ActivityCatalog ActivityCatalog? @relation(fields: [catalogId], references: [id])
@@ -374,13 +375,17 @@ model Task {
   evaluatedAt        DateTime?
   // Nouveau champ pour intégration avec HRTimesheet
   hrTimesheetId      String?
+  // Champs pour intégration avec activités RH
+  activityType       String?             // OPERATIONAL ou REPORTING
+  activityName       String?
+  periodicity        String?             // DAILY, WEEKLY, MONTHLY, PUNCTUAL, WEEKLY_MONTHLY
   Creator            User?               @relation(fields: [createdBy], references: [id])
   Evaluator          User?               @relation("TaskEvaluation", fields: [evaluatedBy], references: [id])
   Task               Task?               @relation("TaskToTask", fields: [parentId], references: [id])
   other_Task         Task[]              @relation("TaskToTask")
   Project            Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   HRTimesheet        HRTimesheet?        @relation(fields: [hrTimesheetId], references: [id])
-  HRActivity         HRActivity?
+  HRActivity         HRActivity[]
   TaskActivity       TaskActivity[]
   TaskComment        TaskComment[]
   TaskMember         TaskMember[]

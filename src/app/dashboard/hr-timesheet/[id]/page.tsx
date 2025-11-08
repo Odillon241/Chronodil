@@ -4,10 +4,19 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, XCircle, Edit, FileText, Trash2, Download, Clock } from "lucide-react";
+import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
 import {
   getHRTimesheet,
   deleteHRActivity,
@@ -183,24 +192,6 @@ export default function HRTimesheetDetailPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getActivityTypeBadge = (type: string) => {
-    return (
-      <Badge variant={type === "OPERATIONAL" ? "default" : "secondary"}>
-        {type === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
-      </Badge>
-    );
-  };
-
-  const getPeriodicityLabel = (periodicity: string) => {
-    const labels: Record<string, string> = {
-      DAILY: "Quotidien",
-      WEEKLY: "Hebdomadaire",
-      MONTHLY: "Mensuel",
-      PUNCTUAL: "Ponctuel",
-      WEEKLY_MONTHLY: "Hebdo/Mensuel",
-    };
-    return labels[periodicity] || periodicity;
-  };
 
   if (isLoading) {
     return (
@@ -214,161 +205,32 @@ export default function HRTimesheetDetailPage() {
     return null;
   }
 
-  const groupedActivities = timesheet.activities.reduce((acc, activity) => {
-    const category = activity.ActivityCatalog?.category || "Autres";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(activity);
-    return acc;
-  }, {} as Record<string, Activity[]>);
-
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Feuille de temps RH - Semaine du{" "}
-            {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
-          </h1>
-          <p className="text-muted-foreground">
-            {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
-            {" - "}
-            {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
-          </p>
+      {/* Header amélioré */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Feuille de temps RH
+            </h1>
+            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>
+                Semaine du {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
+                {" - "}
+                {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
+              </span>
+            </div>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleExportExcel}
-          disabled={isExporting}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          {isExporting ? "Export en cours..." : "Exporter Excel"}
-        </Button>
-        {getStatusBadge(timesheet.status)}
-      </div>
-
-      {/* Informations générales */}
-      <Card className="shadow-none border-0">
-        <CardHeader>
-          <CardTitle>Informations générales</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Employé</p>
-              <p className="font-medium">{timesheet.employeeName}</p>
-              {timesheet.User && (
-                <p className="text-sm text-muted-foreground">{timesheet.User.email}</p>
-              )}
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Poste</p>
-              <p className="font-medium">{timesheet.position}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Site</p>
-              <p className="font-medium">{timesheet.site}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total heures</p>
-              <p className="text-2xl font-bold text-primary">{timesheet.totalHours.toFixed(1)}h</p>
-            </div>
-          </div>
-
-          {timesheet.employeeObservations && (
-            <>
-              <Separator className="my-4" />
-              <div>
-                <p className="text-sm font-medium mb-2">Observations de l'employé</p>
-                <p className="text-sm text-muted-foreground">{timesheet.employeeObservations}</p>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Signatures et validation */}
-      <Card className="shadow-none border-0">
-        <CardHeader>
-          <CardTitle>Workflow de validation</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Signature employé */}
-            <div className="flex items-start gap-4">
-              <div className={`mt-1 ${timesheet.employeeSignedAt ? 'text-green-600' : 'text-gray-400'}`}>
-                <CheckCircle className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">1. Signature employé</p>
-                {timesheet.employeeSignedAt ? (
-                  <p className="text-sm text-muted-foreground">
-                    Signé le {format(new Date(timesheet.employeeSignedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">En attente de signature</p>
-                )}
-              </div>
-            </div>
-
-            {/* Validation manager */}
-            <div className="flex items-start gap-4">
-              <div className={`mt-1 ${timesheet.managerSignedAt ? 'text-green-600' : 'text-gray-400'}`}>
-                <CheckCircle className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">2. Validation manager</p>
-                {timesheet.managerSignedAt ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Validé le {format(new Date(timesheet.managerSignedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
-                      {timesheet.ManagerSigner && ` par ${timesheet.ManagerSigner.name}`}
-                    </p>
-                    {timesheet.managerComments && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Commentaires: {timesheet.managerComments}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">En attente de validation</p>
-                )}
-              </div>
-            </div>
-
-            {/* Validation Odillon/Admin */}
-            <div className="flex items-start gap-4">
-              <div className={`mt-1 ${timesheet.odillonSignedAt ? 'text-green-600' : 'text-gray-400'}`}>
-                <CheckCircle className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium">3. Approbation finale (Odillon/Admin)</p>
-                {timesheet.odillonSignedAt ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Approuvé le {format(new Date(timesheet.odillonSignedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
-                      {timesheet.OdillonSigner && ` par ${timesheet.OdillonSigner.name}`}
-                    </p>
-                    {timesheet.odillonComments && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Commentaires: {timesheet.odillonComments}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">En attente d'approbation</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Actions selon le statut */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {getStatusBadge(timesheet.status)}
           {timesheet.status === "DRAFT" && (
-            <div className="flex gap-2 mt-6">
+            <>
               <Button
                 onClick={handleSubmit}
                 className="bg-primary hover:bg-primary"
@@ -378,38 +240,130 @@ export default function HRTimesheetDetailPage() {
               </Button>
               <Button
                 variant="outline"
+                size="icon"
                 onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}
+                title="Modifier"
               >
-                <Edit className="h-4 w-4 mr-2" />
-                Modifier
+                <Edit className="h-4 w-4" />
               </Button>
-            </div>
+            </>
           )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            title="Exporter Excel"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
-          {timesheet.status === "REJECTED" && (
-            <div className="mt-6">
-              <div className="flex items-start gap-2">
-                <XCircle className="h-5 w-5 text-destructive mt-0.5" />
-                <div>
-                  <p className="font-medium text-destructive">Timesheet rejeté</p>
-                  {(timesheet.managerComments || timesheet.odillonComments) && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Raison: {timesheet.managerComments || timesheet.odillonComments}
-                    </p>
-                  )}
-                </div>
+      {/* Informations générales */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Informations générales</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="w-[200px] font-medium">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      Employé
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="font-semibold">{timesheet.employeeName}</p>
+                      {timesheet.User && (
+                        <p className="text-sm text-muted-foreground">{timesheet.User.email}</p>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      Poste
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-semibold">{timesheet.position}</p>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      Site
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-semibold">{timesheet.site}</p>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      Nombre d'activités
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-sm">
+                        {timesheet.activities.length} {timesheet.activities.length === 1 ? "activité" : "activités"}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          {timesheet.employeeObservations && (
+            <>
+              <Separator className="my-4" />
+              <div>
+                <p className="text-sm font-medium mb-2">Observations de l'employé</p>
+                <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
+                  {timesheet.employeeObservations}
+                </p>
               </div>
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* Liste des activités */}
-      <Card className="shadow-none border-0">
+      {timesheet.status === "REJECTED" && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-2">
+              <XCircle className="h-5 w-5 text-destructive mt-0.5" />
+              <div>
+                <p className="font-medium text-destructive">Timesheet rejeté</p>
+                {(timesheet.managerComments || timesheet.odillonComments) && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Raison: {timesheet.managerComments || timesheet.odillonComments}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Liste des activités en tableau */}
+      <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Activités ({timesheet.activities.length})</CardTitle>
+              <CardTitle>Activités</CardTitle>
               <CardDescription>
                 Détail des activités réalisées durant la semaine
               </CardDescription>
@@ -427,83 +381,11 @@ export default function HRTimesheetDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {timesheet.activities.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Aucune activité enregistrée</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {Object.entries(groupedActivities).map(([category, activities]) => (
-                <div key={category}>
-                  <h3 className="font-semibold mb-3 text-primary">{category}</h3>
-                  <div className="space-y-0">
-                    {activities.map((activity, index) => (
-                      <div key={activity.id} className="">
-                        <div className="flex items-start justify-between py-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              {getActivityTypeBadge(activity.activityType)}
-                              <Badge variant="outline">
-                                {getPeriodicityLabel(activity.periodicity)}
-                              </Badge>
-                              <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
-                                {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
-                              </Badge>
-                            </div>
-                            <h4 className="font-semibold">{activity.activityName}</h4>
-                            {activity.description && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {activity.description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-4 mt-2 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Période: </span>
-                                <span>
-                                  {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
-                                  {" → "}
-                                  {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
-                                </span>
-                              </div>
-                              <div className="font-semibold text-primary">
-                                {activity.totalHours}h
-                              </div>
-                            </div>
-                          </div>
-                          {timesheet.status === "DRAFT" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteActivity(activity.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        {index < activities.length - 1 && <Separator className="my-2" />}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {/* Total des heures */}
-              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-6">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <p className="font-semibold text-base">Total heures des activités</p>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">
-                      {timesheet.totalHours.toFixed(1)}h
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          <HRTimesheetActivitiesTable
+            activities={timesheet.activities}
+            onDelete={timesheet.status === "DRAFT" ? handleDeleteActivity : undefined}
+            showActions={timesheet.status === "DRAFT"}
+          />
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { hrActivitySchema, type HRActivityInput } from "@/lib/validations/hr-timesheet";
@@ -9,10 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2, Clock, User, Briefcase, MapPin, Check, X, Activity } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -20,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -29,7 +40,9 @@ import {
   deleteHRActivity,
   getActivityCatalog,
   getActivityCategories,
+  updateHRTimesheet,
 } from "@/actions/hr-timesheet.actions";
+import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
 import { useRouter, useParams } from "next/navigation";
 
 interface Activity {
@@ -71,6 +84,136 @@ interface CatalogItem {
   description?: string | null;
 }
 
+interface Task {
+  id: string;
+  name: string;
+  description?: string | null;
+  status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ" | null;
+  estimatedHours?: number | null;
+  dueDate?: Date | null;
+  Project?: {
+    id: string;
+    name: string;
+    code: string;
+    color: string;
+  } | null;
+}
+
+// Composant pour l'édition inline des champs
+interface EditableCellProps {
+  value: string;
+  field: "employeeName" | "position" | "site";
+  timesheetId: string;
+  onUpdate: (field: string, value: string) => Promise<void>;
+}
+
+function EditableCell({ value, field, timesheetId, onUpdate }: EditableCellProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const [isSaving, setIsSaving] = useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSave = async () => {
+    if (editValue.trim() === value.trim()) {
+      setIsEditing(false);
+      return;
+    }
+
+    if (!editValue.trim()) {
+      toast.error("Le champ ne peut pas être vide");
+      setEditValue(value);
+      setIsEditing(false);
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await onUpdate(field, editValue.trim());
+      setIsEditing(false);
+      toast.success("Champ mis à jour avec succès");
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+      setEditValue(value);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2">
+        <Input
+          ref={inputRef}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          disabled={isSaving}
+          className="h-8 text-sm"
+        />
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="h-7 w-7 p-0"
+          >
+            <Check className="h-3.5 w-3.5 text-green-600" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            disabled={isSaving}
+            className="h-7 w-7 p-0"
+          >
+            <X className="h-3.5 w-3.5 text-destructive" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex items-center gap-2 group cursor-pointer"
+      onClick={() => setIsEditing(true)}
+    >
+      <span className="font-semibold">{value}</span>
+      <Edit2 className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+    </div>
+  );
+}
+
 export default function EditHRTimesheetPage() {
   const router = useRouter();
   const params = useParams();
@@ -79,10 +222,14 @@ export default function EditHRTimesheetPage() {
   const [timesheet, setTimesheet] = useState<Timesheet | null>(null);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [inputMode, setInputMode] = useState<"task" | "manual">("task");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>("");
 
   const {
     register,
@@ -139,9 +286,10 @@ export default function EditHRTimesheetPage() {
 
   const loadCatalog = async () => {
     try {
-      const [catalogResult, categoriesResult] = await Promise.all([
+      const [catalogResult, categoriesResult, tasksResult] = await Promise.all([
         getActivityCatalog({}),
         getActivityCategories(),
+        getUserTasksForHRTimesheet({}),
       ]);
       if (catalogResult?.data) {
         setCatalog(catalogResult.data);
@@ -149,8 +297,50 @@ export default function EditHRTimesheetPage() {
       if (categoriesResult?.data) {
         setCategories(categoriesResult.data);
       }
+      if (tasksResult?.data) {
+        console.log("✅ Tâches chargées pour édition:", tasksResult.data.length);
+        setAvailableTasks(tasksResult.data as Task[]);
+      }
     } catch (error) {
       console.error("Erreur chargement catalogue:", error);
+    }
+  };
+
+  // Fonction pour mettre à jour un champ du timesheet
+  const handleUpdateField = async (field: string, value: string) => {
+    if (!timesheet) return;
+
+    const result = await updateHRTimesheet({
+      id: timesheetId,
+      data: {
+        [field]: value,
+      },
+    });
+
+    if (result?.data) {
+      setTimesheet((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          [field]: value,
+        };
+      });
+    } else {
+      throw new Error(result?.serverError || "Erreur lors de la mise à jour");
+    }
+  };
+
+  // Gérer la sélection de tâche
+  const handleTaskSelect = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    const task = availableTasks.find(t => t.id === taskId);
+    if (task) {
+      setValue("activityName", task.name);
+      setValue("description", task.description || "");
+      setValue("activityType", "OPERATIONAL");
+      setValue("priority", task.priority);
+      setValue("complexity", task.complexity || undefined);
+      setValue("estimatedHours", task.estimatedHours || undefined);
     }
   };
 
@@ -163,12 +353,37 @@ export default function EditHRTimesheetPage() {
   const onSubmitActivity = async (data: HRActivityInput) => {
     if (!timesheet) return;
 
-    // Convertir la catégorie en type avant l'ajout
-    const activityType = getTypeFromCategory(selectedCategory);
-    const activityData = {
-      ...data,
-      activityType,
-    };
+    // Transformer l'objet en HRActivityInput compatible avec le backend
+    let activityData: HRActivityInput;
+
+    if (inputMode === "task") {
+      // Mode tâche existante
+      if (!selectedTaskId) {
+        toast.error("Veuillez sélectionner une tâche");
+        return;
+      }
+
+      const selectedTask = availableTasks.find(t => t.id === selectedTaskId);
+      activityData = {
+        ...data,
+        taskId: selectedTaskId, // ✅ Lier la tâche existante
+        priority: selectedTask?.priority,
+        complexity: selectedTask?.complexity || undefined,
+        estimatedHours: selectedTask?.estimatedHours || undefined,
+      };
+    } else {
+      // Mode saisie manuelle
+      const activityType = getTypeFromCategory(selectedCategory);
+      activityData = {
+        ...data,
+        activityType,
+      };
+    }
+
+    console.log("📤 Envoi activité (édition):", {
+      taskId: activityData.taskId,
+      activityName: activityData.activityName,
+    });
 
     setIsSaving(true);
     try {
@@ -177,10 +392,17 @@ export default function EditHRTimesheetPage() {
         activity: activityData,
       });
 
+      if (result?.serverError) {
+        console.error("❌ Erreur création activité:", result.serverError);
+      }
+
       if (result?.data) {
         toast.success("Activité ajoutée !");
+        console.log("✅ Activité créée avec succès, taskId:", result.data.taskId);
         reset();
         setSelectedCategory("");
+        setSelectedTaskId("");
+        setSelectedCatalogId("");
         setShowActivityForm(false);
         loadTimesheet(); // Recharger pour voir la nouvelle activité
       } else {
@@ -218,24 +440,6 @@ export default function EditHRTimesheetPage() {
     return days * 24;
   };
 
-  const getPeriodicityLabel = (periodicity: string) => {
-    const labels: Record<string, string> = {
-      DAILY: "Quotidien",
-      WEEKLY: "Hebdomadaire",
-      MONTHLY: "Mensuel",
-      PUNCTUAL: "Ponctuel",
-      WEEKLY_MONTHLY: "Hebdo/Mensuel",
-    };
-    return labels[periodicity] || periodicity;
-  };
-
-  const getActivityTypeBadge = (type: string) => {
-    return (
-      <Badge variant={type === "OPERATIONAL" ? "default" : "secondary"}>
-        {type === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
-      </Badge>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -253,15 +457,6 @@ export default function EditHRTimesheetPage() {
   const filteredActivities = selectedCategory
     ? catalog.filter(item => item.category === selectedCategory)
     : [];
-
-  const groupedActivities = timesheet.activities.reduce((acc, activity) => {
-    const category = activity.ActivityCatalog?.category || "Autres";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(activity);
-    return acc;
-  }, {} as Record<string, Activity[]>);
 
   return (
     <div className="flex flex-col gap-6">
@@ -286,23 +481,74 @@ export default function EditHRTimesheetPage() {
           <CardTitle>Informations générales</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Employé</p>
-              <p className="font-medium">{timesheet.employeeName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Poste</p>
-              <p className="font-medium">{timesheet.position}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Site</p>
-              <p className="font-medium">{timesheet.site}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total heures</p>
-              <p className="text-2xl font-bold text-primary">{timesheet.totalHours.toFixed(1)}h</p>
-            </div>
+          <div className="rounded-md border">
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="w-[200px] font-medium">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      Employé
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <EditableCell
+                      value={timesheet.employeeName}
+                      field="employeeName"
+                      timesheetId={timesheetId}
+                      onUpdate={handleUpdateField}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      Poste
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <EditableCell
+                      value={timesheet.position}
+                      field="position"
+                      timesheetId={timesheetId}
+                      onUpdate={handleUpdateField}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      Site
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <EditableCell
+                      value={timesheet.site}
+                      field="site"
+                      timesheetId={timesheetId}
+                      onUpdate={handleUpdateField}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      Nombre d'activités
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-sm">
+                        {timesheet.activities.length} {timesheet.activities.length === 1 ? "activité" : "activités"}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
@@ -312,7 +558,7 @@ export default function EditHRTimesheetPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Activités ({timesheet.activities.length})</CardTitle>
+              <CardTitle>Activités</CardTitle>
               <CardDescription>
                 Ajoutez ou supprimez des activités pour cette semaine
               </CardDescription>
@@ -333,33 +579,122 @@ export default function EditHRTimesheetPage() {
           {showActivityForm && (
             <div className="p-4 border rounded-lg bg-muted/50">
               <form onSubmit={handleSubmit(onSubmitActivity)} className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="activityType">Type d'activité *</Label>
-                    <Select
-                      value={selectedCategory}
-                      onValueChange={(value: string) => {
-                        setSelectedCategory(value);
-                        // Déterminer automatiquement le type OPERATIONAL/REPORTING
-                        const activityType = getTypeFromCategory(value);
-                        setValue("activityType", activityType);
-                        // Réinitialiser les champs dépendants
-                        setValue("activityName", "");
-                        setValue("catalogId", undefined);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner une catégorie" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Choix du mode de saisie */}
+                <div className="space-y-2">
+                  <Label>Mode de saisie</Label>
+                  <RadioGroup value={inputMode} onValueChange={(v) => setInputMode(v as "task" | "manual")}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="task" id="mode-task-edit" />
+                      <Label htmlFor="mode-task-edit" className="font-normal cursor-pointer">
+                        Tâche existante
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="manual" id="mode-manual-edit" />
+                      <Label htmlFor="mode-manual-edit" className="font-normal cursor-pointer">
+                        Saisie manuelle
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <Separator />
+
+                {/* Sélection de tâche */}
+                {inputMode === "task" && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="task">Tâche *</Label>
+                      {availableTasks.length === 0 ? (
+                        <div className="text-center py-4 border rounded-lg bg-muted">
+                          <p className="text-sm text-muted-foreground">
+                            Aucune tâche active disponible. Créez des tâches dans l'onglet "Tâches".
+                          </p>
+                        </div>
+                      ) : (
+                        <Select value={selectedTaskId} onValueChange={handleTaskSelect}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une tâche" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {availableTasks.map((task) => (
+                              <SelectItem key={task.id} value={task.id}>
+                                <div className="flex items-center gap-2">
+                                  {task.Project && (
+                                    <div
+                                      className="w-3 h-3 rounded-full"
+                                      style={{ backgroundColor: task.Project.color }}
+                                    />
+                                  )}
+                                  <span>{task.name}</span>
+                                  <Badge variant="outline" className="ml-2 text-xs">
+                                    {task.priority === "URGENT" ? "🔥" :
+                                     task.priority === "HIGH" ? "⬆️" :
+                                     task.priority === "MEDIUM" ? "➡️" : "⬇️"}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+
+                    {selectedTaskId && (
+                      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
+                        <CardContent className="pt-4">
+                          {(() => {
+                            const task = availableTasks.find(t => t.id === selectedTaskId);
+                            if (!task) return null;
+                            return (
+                              <div className="space-y-2 text-sm">
+                                <p><strong>Nom:</strong> {task.name}</p>
+                                {task.description && <p><strong>Description:</strong> {task.description}</p>}
+                                {task.Project && <p><strong>Projet:</strong> {task.Project.name}</p>}
+                                <div className="flex gap-2 flex-wrap">
+                                  <Badge>{task.status}</Badge>
+                                  <Badge variant="outline">{task.priority}</Badge>
+                                  {task.complexity && <Badge variant="secondary">{task.complexity}</Badge>}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
+                )}
+
+                {/* Saisie manuelle */}
+                {inputMode === "manual" && (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="activityType">Type d'activité *</Label>
+                        <Select
+                          value={selectedCategory}
+                          onValueChange={(value: string) => {
+                            setSelectedCategory(value);
+                            // Déterminer automatiquement le type OPERATIONAL/REPORTING
+                            const activityType = getTypeFromCategory(value);
+                            setValue("activityType", activityType);
+                            // Réinitialiser les champs dépendants
+                            setValue("activityName", "");
+                            setValue("catalogId", undefined);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une catégorie" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="activityName">Nom de l'activité *</Label>
@@ -416,8 +751,13 @@ export default function EditHRTimesheetPage() {
                     {...register("description")}
                   />
                 </div>
+              </div>
+            )}
 
-                <div className="grid gap-4 md:grid-cols-2">
+            {/* Champs communs (toujours visibles) */}
+            <Separator />
+
+            <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="periodicity">Périodicité *</Label>
                     <Select
@@ -515,6 +855,8 @@ export default function EditHRTimesheetPage() {
                     onClick={() => {
                       reset();
                       setSelectedCategory("");
+                      setSelectedTaskId("");
+                      setSelectedCatalogId("");
                       setShowActivityForm(false);
                     }}
                   >
@@ -534,74 +876,11 @@ export default function EditHRTimesheetPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {Object.entries(groupedActivities).map(([category, activities]) => (
-                <div key={category}>
-                  <h3 className="font-semibold mb-3 text-primary">{category}</h3>
-                  <div className="space-y-3">
-                    {activities.map((activity) => (
-                      <div key={activity.id} className="p-4 border rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {getActivityTypeBadge(activity.activityType)}
-                              <Badge variant="outline">
-                                {getPeriodicityLabel(activity.periodicity)}
-                              </Badge>
-                              <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
-                                {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
-                              </Badge>
-                            </div>
-                            <h4 className="font-semibold">{activity.activityName}</h4>
-                            {activity.description && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {activity.description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-4 mt-2 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Période: </span>
-                                <span>
-                                  {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
-                                  {" → "}
-                                  {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
-                                </span>
-                              </div>
-                              <div className="font-semibold text-primary text-lg">
-                                {activity.totalHours}h
-                              </div>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteActivity(activity.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {/* Total des heures */}
-              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-6">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <p className="font-semibold text-base">Total heures des activités</p>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">
-                      {timesheet.totalHours.toFixed(1)}h
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <HRTimesheetActivitiesTable
+              activities={timesheet.activities}
+              onDelete={handleDeleteActivity}
+              showActions={true}
+            />
           )}
 
           {/* Boutons de navigation */}

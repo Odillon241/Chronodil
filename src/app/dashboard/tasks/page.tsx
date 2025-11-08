@@ -38,7 +38,7 @@ import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { createTask, updateTask, deleteTask, getMyTasks, getAvailableUsersForSharing, updateTaskStatus, updateTaskPriority } from "@/actions/task.actions";
 import { getMyProjects } from "@/actions/project.actions";
-import { getAvailableHRTimesheetsForTask } from "@/actions/hr-timesheet.actions";
+import { getAvailableHRTimesheetsForTask, getActivityCatalog, getActivityCategories } from "@/actions/hr-timesheet.actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -55,6 +55,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskComments } from "@/components/features/task-comments";
 import { TaskActivityTimeline } from "@/components/features/task-activity-timeline";
 import { useSession } from "@/lib/auth-client";
+import type { Session } from "@/lib/auth";
 import { TaskRoadmap } from "@/components/features/task-roadmap";
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 import { TaskKanban } from "@/components/features/task-kanban";
@@ -62,25 +63,29 @@ import { TaskGantt } from "@/components/features/task-gantt";
 import { TaskCalendar } from "@/components/features/task-calendar";
 import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
 import { useTasks, type ViewMode } from "@/contexts/tasks-context";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function TasksPage() {
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: Session | null };
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   
   // Utiliser le contexte pour les tâches
   const {
-    tasks,
+    userTasks,
+    allTasks,
     filteredTasks,
     isLoading,
     searchQuery,
     statusFilter,
     priorityFilter,
     selectedProject,
+    userFilter,
     viewMode,
     setSearchQuery,
     setStatusFilter,
     setPriorityFilter,
     setSelectedProject,
+    setUserFilter,
     setViewMode,
     refreshTasks,
   } = useTasks();
@@ -95,9 +100,13 @@ export default function TasksPage() {
   const [showCalendar, setShowCalendar] = useState(true);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [catalog, setCatalog] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>("");
 
-  // Activer les rappels de tâches
-  useTaskReminders({ tasks });
+  // Activer les rappels de tâches (utiliser userTasks pour les rappels)
+  useTaskReminders({ tasks: userTasks });
 
   // Écouter les changements en temps réel sur les tâches
   useRealtimeTasks({
@@ -110,7 +119,7 @@ export default function TasksPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    projectId: "none",
+    projectId: "no-project",
     estimatedHours: "",
     dueDate: "",
     reminderDate: "",
@@ -123,13 +132,55 @@ export default function TasksPage() {
     trainingLevel: undefined,
     masteryLevel: undefined,
     understandingLevel: undefined,
-    hrTimesheetId: "none",
+    hrTimesheetId: "no-timesheet",
+    activityType: "OPERATIONAL",
+    activityName: "",
+    periodicity: "WEEKLY",
   });
 
   useEffect(() => {
     loadProjects();
     loadAvailableTimesheets();
+    loadActivityCatalog();
   }, []);
+
+  // Initialiser la catégorie et l'activité lors de l'édition si le catalogue est chargé
+  useEffect(() => {
+    if (editingTask && editingTask.activityName && catalog.length > 0) {
+      const catalogItem = catalog.find((item: any) => item.name === editingTask.activityName);
+      if (catalogItem) {
+        setSelectedCategory(catalogItem.category);
+        setSelectedCatalogId(catalogItem.id);
+      }
+    }
+  }, [editingTask, catalog]);
+
+  const loadActivityCatalog = async () => {
+    try {
+      const [catalogResult, categoriesResult] = await Promise.all([
+        getActivityCatalog({}),
+        getActivityCategories(),
+      ]);
+      if (catalogResult?.data) {
+        setCatalog(catalogResult.data);
+      }
+      if (categoriesResult?.data) {
+        setCategories(categoriesResult.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement du catalogue d'activités:", error);
+    }
+  };
+
+  // Déterminer le type à partir de la catégorie
+  const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
+    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
+  };
+
+  // Filtrer les activités du catalogue selon la catégorie
+  const filteredCatalogActivities = selectedCategory
+    ? catalog.filter((item: any) => item.category === selectedCategory)
+    : [];
 
   const loadProjects = async () => {
     try {
@@ -157,7 +208,7 @@ export default function TasksPage() {
   const loadAvailableUsers = async (projectId?: string) => {
     try {
       const result = await getAvailableUsersForSharing({
-        projectId: projectId === "none" ? undefined : projectId,
+        projectId: projectId === "no-project" ? undefined : projectId,
       });
       if (result?.data) {
         setAvailableUsers(result.data);
@@ -193,7 +244,7 @@ export default function TasksPage() {
         const result = await createTask({
           name: formData.name,
           description: formData.description,
-          projectId: formData.projectId === "none" ? undefined : formData.projectId || undefined,
+          projectId: formData.projectId === "no-project" ? undefined : formData.projectId || undefined,
           estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
           dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
           reminderDate: formData.reminderDate ? new Date(formData.reminderDate) : undefined,
@@ -207,7 +258,10 @@ export default function TasksPage() {
           trainingLevel: formData.trainingLevel,
           masteryLevel: formData.masteryLevel,
           understandingLevel: formData.understandingLevel,
-          hrTimesheetId: formData.hrTimesheetId === "none" ? undefined : formData.hrTimesheetId || undefined,
+          hrTimesheetId: formData.hrTimesheetId === "no-timesheet" ? undefined : formData.hrTimesheetId || undefined,
+          activityType: formData.activityType || undefined,
+          activityName: formData.activityName || undefined,
+          periodicity: formData.periodicity || undefined,
         });
 
         if (result?.data) {
@@ -235,7 +289,7 @@ export default function TasksPage() {
     setFormData({
       name: task.name,
       description: task.description || "",
-      projectId: task.projectId || "none",
+      projectId: task.projectId || "no-project",
       estimatedHours: task.estimatedHours?.toString() || "",
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
       reminderDate: task.reminderDate ? new Date(task.reminderDate).toISOString().split("T")[0] : "",
@@ -248,8 +302,16 @@ export default function TasksPage() {
       trainingLevel: task.trainingLevel || undefined,
       masteryLevel: task.masteryLevel || undefined,
       understandingLevel: task.understandingLevel || undefined,
-      hrTimesheetId: task.hrTimesheetId || "none",
+      activityType: task.activityType || "OPERATIONAL",
+      activityName: task.activityName || "",
+      periodicity: task.periodicity || "WEEKLY",
+      hrTimesheetId: task.hrTimesheetId || "no-timesheet",
     });
+    
+    // Réinitialiser la catégorie et l'activité (sera mis à jour par useEffect si le catalogue est chargé)
+    setSelectedCategory("");
+    setSelectedCatalogId("");
+    
     setIsDialogOpen(true);
   };
 
@@ -316,7 +378,7 @@ export default function TasksPage() {
     setFormData({
       name: "",
       description: "",
-      projectId: "none",
+      projectId: "no-project",
       estimatedHours: "",
       dueDate: "",
       reminderDate: "",
@@ -329,10 +391,35 @@ export default function TasksPage() {
       trainingLevel: undefined,
       masteryLevel: undefined,
       understandingLevel: undefined,
-      hrTimesheetId: "none",
+      hrTimesheetId: "no-timesheet",
+      activityType: "OPERATIONAL",
+      activityName: "",
+      periodicity: "WEEKLY",
     });
     setSelectedUsers([]);
     setEditingTask(null);
+    setSelectedCategory("");
+    setSelectedCatalogId("");
+  };
+
+  // Gérer la sélection d'activité du catalogue
+  const handleCatalogItemSelect = (catalogId: string) => {
+    setSelectedCatalogId(catalogId);
+    const catalogItem = catalog.find((c: any) => c.id === catalogId);
+    if (catalogItem) {
+      // Auto-remplir les champs
+      setFormData({
+        ...formData,
+        activityName: catalogItem.name,
+        activityType: getTypeFromCategory(catalogItem.category),
+      });
+      if (catalogItem.defaultPeriodicity) {
+        setFormData((prev) => ({
+          ...prev,
+          periodicity: catalogItem.defaultPeriodicity,
+        }));
+      }
+    }
   };
 
   const handleSelectTask = (taskId: string) => {
@@ -498,7 +585,7 @@ export default function TasksPage() {
                         <SelectValue placeholder="Sélectionnez un projet (optionnel)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Aucun projet</SelectItem>
+                        <SelectItem value="no-project">Aucun projet</SelectItem>
                         {projects.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name}
@@ -520,7 +607,7 @@ export default function TasksPage() {
                         <SelectValue placeholder="Lier à une feuille de temps..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Aucune feuille de temps</SelectItem>
+                        <SelectItem value="no-timesheet">Aucune feuille de temps</SelectItem>
                         {availableTimesheets.map((timesheet) => (
                           <SelectItem key={timesheet.id} value={timesheet.id}>
                             📅 Semaine du {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
@@ -558,6 +645,98 @@ export default function TasksPage() {
                   rows={3}
                 />
               </div>
+
+              {/* Nouveaux champs pour intégration avec activités RH */}
+              <Separator />
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm">Informations activité RH (optionnel)</h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="category" className="text-xs sm:text-sm">Catégorie</Label>
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={(value) => {
+                        setSelectedCategory(value);
+                        setSelectedCatalogId("");
+                        // Déterminer automatiquement le type OPERATIONAL/REPORTING
+                        const activityType = getTypeFromCategory(value);
+                        setFormData({
+                          ...formData,
+                          activityType,
+                          activityName: "",
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="text-xs sm:text-sm">
+                        <SelectValue placeholder="Sélectionner une catégorie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="activityName" className="text-xs sm:text-sm">Nom de l'activité</Label>
+                    <Select
+                      value={selectedCatalogId}
+                      onValueChange={handleCatalogItemSelect}
+                      disabled={!selectedCategory}
+                    >
+                      <SelectTrigger className="text-xs sm:text-sm">
+                        <SelectValue placeholder={selectedCategory ? "Sélectionner une activité" : "Sélectionnez d'abord une catégorie"} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {filteredCatalogActivities.map((item: any) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="periodicity" className="text-xs sm:text-sm">Périodicité</Label>
+                    <Select
+                      value={formData.periodicity}
+                      onValueChange={(value) => setFormData({ ...formData, periodicity: value })}
+                    >
+                      <SelectTrigger className="text-xs sm:text-sm">
+                        <SelectValue placeholder="Périodicité" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DAILY">Quotidien</SelectItem>
+                        <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
+                        <SelectItem value="MONTHLY">Mensuel</SelectItem>
+                        <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
+                        <SelectItem value="WEEKLY_MONTHLY">Hebdo/Mensuel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Afficher le type auto-sélectionné */}
+                {selectedCatalogId && (
+                  <div className="space-y-2">
+                    <Label className="text-xs sm:text-sm">Type d'activité (auto)</Label>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={formData.activityType === "OPERATIONAL" ? "default" : "secondary"} className="text-xs">
+                        {formData.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Basé sur la catégorie sélectionnée
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Separator />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
@@ -697,7 +876,7 @@ export default function TasksPage() {
                           const isChecked = checked as boolean;
                           setFormData({ ...formData, isShared: isChecked });
                           if (isChecked && availableUsers.length === 0) {
-                            loadAvailableUsers(formData.projectId === "none" ? undefined : formData.projectId);
+                            loadAvailableUsers(formData.projectId === "no-project" ? undefined : formData.projectId);
                           } else if (!isChecked) {
                             // Reset availableUsers et selectedUsers quand on décoche
                             setAvailableUsers([]);
@@ -829,6 +1008,8 @@ export default function TasksPage() {
                     onDayDoubleClick={handleCalendarSlotDoubleClick}
                     onEventDelete={handleDirectDelete}
                     onEventToggle={handleToggleActive}
+                    currentUserId={session?.user?.id}
+                    currentUserRole={session?.user?.role}
                   />
                 </div>
                 {/* Légende - uniquement pour la vue calendrier */}
@@ -873,14 +1054,119 @@ export default function TasksPage() {
 
               {/* Vue Kanban */}
               <TabsContent value="kanban" className="mt-4 min-w-0">
-                <div className="w-full overflow-x-auto -mx-6 px-6">
-                  <TaskKanban
-                    tasks={filteredTasks}
-                    onEventClick={handleCalendarEventClick}
-                    onStatusChange={handleStatusChange}
-                    onEventDelete={handleDirectDelete}
-                    onEventToggle={handleToggleActive}
-                  />
+                <div className="space-y-4">
+                  {/* Barre de recherche et filtre pour le Kanban */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Rechercher une tâche..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                      {searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                          onClick={() => setSearchQuery("")}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="shrink-0 relative"
+                        >
+                          <Filter className="h-4 w-4" />
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80" align="end">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Utilisateur</Label>
+                            <Select value={userFilter} onValueChange={(value) => setUserFilter(value as "my" | "all")}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Filtrer par utilisateur" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="my">Mes tâches</SelectItem>
+                                <SelectItem value="all">Toutes les tâches</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Statut</Label>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Tous les statuts" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Tous les statuts</SelectItem>
+                                <SelectItem value="TODO">À faire</SelectItem>
+                                <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                                <SelectItem value="REVIEW">En revue</SelectItem>
+                                <SelectItem value="DONE">Terminé</SelectItem>
+                                <SelectItem value="BLOCKED">Bloqué</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Priorité</Label>
+                            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Toutes les priorités" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Toutes les priorités</SelectItem>
+                                <SelectItem value="LOW">Basse</SelectItem>
+                                <SelectItem value="MEDIUM">Moyenne</SelectItem>
+                                <SelectItem value="HIGH">Haute</SelectItem>
+                                <SelectItem value="URGENT">Urgente</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                setStatusFilter("all");
+                                setPriorityFilter("all");
+                                setUserFilter("my");
+                              }}
+                            >
+                              Réinitialiser les filtres
+                            </Button>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="w-full overflow-x-auto -mx-6 px-6">
+                    <TaskKanban
+                      tasks={filteredTasks}
+                      onEventClick={handleCalendarEventClick}
+                      onStatusChange={handleStatusChange}
+                      onEventDelete={handleDirectDelete}
+                      onEventToggle={handleToggleActive}
+                      currentUserId={session?.user?.id}
+                      currentUserRole={session?.user?.role}
+                    />
+                  </div>
                 </div>
               </TabsContent>
 
@@ -894,6 +1180,8 @@ export default function TasksPage() {
                     onEventDelete={handleDirectDelete}
                     onEventToggle={handleToggleActive}
                     onAddItem={handleCalendarSlotDoubleClick}
+                    currentUserId={session?.user?.id}
+                    currentUserRole={session?.user?.role}
                   />
                 </div>
               </TabsContent>
@@ -901,6 +1189,108 @@ export default function TasksPage() {
               {/* Vue Tableau */}
               <TabsContent value="table" className="mt-4">
                 <div className="space-y-4">
+                  {/* Barre de recherche et filtre pour le tableau */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Rechercher une tâche..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                      {searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                          onClick={() => setSearchQuery("")}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="shrink-0 relative"
+                        >
+                          <Filter className="h-4 w-4" />
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80" align="end">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Utilisateur</Label>
+                            <Select value={userFilter} onValueChange={(value) => setUserFilter(value as "my" | "all")}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Filtrer par utilisateur" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="my">Mes tâches</SelectItem>
+                                <SelectItem value="all">Toutes les tâches</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Statut</Label>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Tous les statuts" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Tous les statuts</SelectItem>
+                                <SelectItem value="TODO">À faire</SelectItem>
+                                <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                                <SelectItem value="REVIEW">En revue</SelectItem>
+                                <SelectItem value="DONE">Terminé</SelectItem>
+                                <SelectItem value="BLOCKED">Bloqué</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Priorité</Label>
+                            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Toutes les priorités" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Toutes les priorités</SelectItem>
+                                <SelectItem value="LOW">Basse</SelectItem>
+                                <SelectItem value="MEDIUM">Moyenne</SelectItem>
+                                <SelectItem value="HIGH">Haute</SelectItem>
+                                <SelectItem value="URGENT">Urgente</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                setStatusFilter("all");
+                                setPriorityFilter("all");
+                                setUserFilter("my");
+                              }}
+                            >
+                              Réinitialiser les filtres
+                            </Button>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
                   {filteredTasks.length === 0 ? (
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
@@ -914,261 +1304,361 @@ export default function TasksPage() {
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="hidden lg:block">
+                    <div className="hidden lg:block rounded-lg border bg-card">
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-12">
+                          <TableRow className="border-b bg-muted/30">
+                            <TableHead className="w-12 px-3">
                               <Checkbox
                                 checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
                                 onCheckedChange={handleSelectAll}
                               />
                             </TableHead>
-                            <TableHead>Nom</TableHead>
-                            <TableHead>Statut</TableHead>
-                            <TableHead>Priorité</TableHead>
-                            <TableHead>Projet</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Échéance</TableHead>
-                            <TableHead>Estimation</TableHead>
-                            <TableHead>Membres</TableHead>
-                            <TableHead className="w-20">Actions</TableHead>
+                            <TableHead className="font-semibold text-foreground">Nom</TableHead>
+                            <TableHead className="font-semibold text-foreground text-center">Statut</TableHead>
+                            <TableHead className="font-semibold text-foreground text-center">Priorité</TableHead>
+                            <TableHead className="font-semibold text-foreground">Projet</TableHead>
+                            <TableHead className="font-semibold text-foreground">Description</TableHead>
+                            <TableHead className="font-semibold text-foreground text-center">Échéance</TableHead>
+                            <TableHead className="font-semibold text-foreground text-center">Estimation</TableHead>
+                            <TableHead className="font-semibold text-foreground text-center">Membres</TableHead>
+                            <TableHead className="w-24 text-center font-semibold text-foreground">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {sortedTasks.map((task: any) => (
                             <ContextMenu key={task.id}>
                               <ContextMenuTrigger asChild>
-                                <TableRow className={selectedTasks.has(task.id) ? "bg-muted/50" : ""}>
-                                  <TableCell>
-                                    <Checkbox
-                                      checked={selectedTasks.has(task.id)}
-                                      onCheckedChange={() => handleSelectTask(task.id)}
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center gap-2">
-                                      <span className={`font-medium ${!task.isActive && "line-through text-muted-foreground"}`}>
-                                        {task.name}
-                                      </span>
-                                      {!task.isActive && (
-                                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                                          Inactive
-                                        </span>
-                                      )}
-                                      {task.isShared && (
-                                        <Users className="h-4 w-4 text-blue-600" aria-label="Tâche partagée" />
-                                      )}
-                                      {task.reminderDate && (
-                                        <Bell className="h-4 w-4 text-amber-600" aria-label="Rappel activé" />
-                                      )}
+                                <TableRow className={`border-b transition-colors ${selectedTasks.has(task.id) ? "bg-muted/50" : "hover:bg-muted/30"}`}>
+                                  <TableCell className="px-3 py-3">
+                                    <div className="flex items-center justify-center">
+                                      <Checkbox
+                                        checked={selectedTasks.has(task.id)}
+                                        onCheckedChange={() => handleSelectTask(task.id)}
+                                      />
                                     </div>
                                   </TableCell>
-                                  <TableCell>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                                          <TaskStatusBadge status={task.status} />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="start">
-                                        <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskStatus({ id: task.id, status: "TODO" });
-                                          if (result?.data) {
-                                            toast.success("Statut mis à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          À faire
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
-                                          if (result?.data) {
-                                            toast.success("Statut mis à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          En cours
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
-                                          if (result?.data) {
-                                            toast.success("Statut mis à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Revue
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskStatus({ id: task.id, status: "DONE" });
-                                          if (result?.data) {
-                                            toast.success("Tâche terminée !");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Terminé
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
-                                          if (result?.data) {
-                                            toast.success("Statut mis à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Bloqué
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
+                                  <TableCell className="px-4 py-3">
+                                    <div className="flex items-center gap-2 min-w-[200px]">
+                                      <span className={`font-medium text-sm ${!task.isActive && "line-through text-muted-foreground"}`}>
+                                        {task.name}
+                                      </span>
+                                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                                        {!task.isActive && (
+                                          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                            Inactive
+                                          </span>
+                                        )}
+                                        {task.isShared && (
+                                          <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" aria-label="Tâche partagée" />
+                                        )}
+                                        {task.reminderDate && (
+                                          <Bell className="h-4 w-4 text-amber-600 dark:text-amber-400" aria-label="Rappel activé" />
+                                        )}
+                                      </div>
+                                    </div>
                                   </TableCell>
-                                  <TableCell>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                                          <TaskPriorityBadge priority={task.priority} />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="start">
-                                        <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
-                                          if (result?.data) {
-                                            toast.success("Priorité mise à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Basse
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
-                                          if (result?.data) {
-                                            toast.success("Priorité mise à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Moyenne
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
-                                          if (result?.data) {
-                                            toast.success("Priorité mise à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Haute
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={async () => {
-                                          const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
-                                          if (result?.data) {
-                                            toast.success("Priorité mise à jour");
-                                            refreshTasks();
-                                          }
-                                        }}>
-                                          Urgent
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
+                                  <TableCell className="px-4 py-3">
+                                    {(() => {
+                                      const isCreator = task.Creator?.id === session?.user?.id;
+                                      const isAdmin = session?.user?.role === "ADMIN";
+                                      const canModify = isCreator || isAdmin;
+                                      
+                                      if (!canModify) {
+                                        return (
+                                          <div className="flex items-center justify-center">
+                                            <TaskStatusBadge status={task.status} />
+                                          </div>
+                                        );
+                                      }
+                                      
+                                      return (
+                                        <div className="flex items-center justify-center">
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                                                <TaskStatusBadge status={task.status} />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="start">
+                                            <DropdownMenuLabel>Changer le statut</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskStatus({ id: task.id, status: "TODO" });
+                                              if (result?.data) {
+                                                toast.success("Statut mis à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              À faire
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskStatus({ id: task.id, status: "IN_PROGRESS" });
+                                              if (result?.data) {
+                                                toast.success("Statut mis à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              En cours
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskStatus({ id: task.id, status: "REVIEW" });
+                                              if (result?.data) {
+                                                toast.success("Statut mis à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Revue
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskStatus({ id: task.id, status: "DONE" });
+                                              if (result?.data) {
+                                                toast.success("Tâche terminée !");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Terminé
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskStatus({ id: task.id, status: "BLOCKED" });
+                                              if (result?.data) {
+                                                toast.success("Statut mis à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Bloqué
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        </div>
+                                      );
+                                    })()}
                                   </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center gap-2">
+                                  <TableCell className="px-4 py-3">
+                                    {(() => {
+                                      const isCreator = task.Creator?.id === session?.user?.id;
+                                      const isAdmin = session?.user?.role === "ADMIN";
+                                      const canModify = isCreator || isAdmin;
+                                      
+                                      if (!canModify) {
+                                        return (
+                                          <div className="flex items-center justify-center">
+                                            <TaskPriorityBadge priority={task.priority} />
+                                          </div>
+                                        );
+                                      }
+                                      
+                                      return (
+                                        <div className="flex items-center justify-center">
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                                                <TaskPriorityBadge priority={task.priority} />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="start">
+                                            <DropdownMenuLabel>Changer la priorité</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskPriority({ id: task.id, priority: "LOW" });
+                                              if (result?.data) {
+                                                toast.success("Priorité mise à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Basse
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskPriority({ id: task.id, priority: "MEDIUM" });
+                                              if (result?.data) {
+                                                toast.success("Priorité mise à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Moyenne
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskPriority({ id: task.id, priority: "HIGH" });
+                                              if (result?.data) {
+                                                toast.success("Priorité mise à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Haute
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => {
+                                              const result = await updateTaskPriority({ id: task.id, priority: "URGENT" });
+                                              if (result?.data) {
+                                                toast.success("Priorité mise à jour");
+                                                refreshTasks();
+                                              } else if (result?.serverError) {
+                                                toast.error(result.serverError);
+                                              }
+                                            }}>
+                                              Urgent
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        </div>
+                                      );
+                                    })()}
+                                  </TableCell>
+                                  <TableCell className="px-4 py-3">
+                                    <div className="flex items-center gap-2 min-w-[120px]">
                                       <div
-                                        className="w-3 h-3 rounded-full"
+                                        className="w-3 h-3 rounded-full flex-shrink-0"
                                         style={{
                                           backgroundColor: task.Project?.color || '#6b7280'
                                         }}
                                       />
-                                      <span>{task.Project?.name || "Sans projet"}</span>
+                                      <span className="text-sm truncate">{task.Project?.name || "Sans projet"}</span>
                                     </div>
                                   </TableCell>
-                                  <TableCell>
-                                    <span className="text-sm text-muted-foreground truncate block">
+                                  <TableCell className="px-4 py-3">
+                                    <span className="text-sm text-muted-foreground truncate block max-w-[200px]" title={task.description || undefined}>
                                       {task.description || "-"}
                                     </span>
                                   </TableCell>
-                                  <TableCell>
-                                    {task.dueDate ? (
-                                      <span className="text-sm">
-                                        {new Date(task.dueDate).toLocaleDateString("fr-FR")}
-                                      </span>
-                                    ) : (
-                                      "-"
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="text-sm">
-                                      {task.estimatedHours ? `${task.estimatedHours}h` : "-"}
-                                    </span>
-                                  </TableCell>
-                                  <TableCell>
-                                    {task.TaskMember && task.TaskMember.length > 0 ? (
-                                      <div className="flex -space-x-2">
-                                        {task.TaskMember.slice(0, 3).map((member: any) => (
-                                          <Avatar key={member.User.id} className="h-6 w-6 sm:h-7 sm:w-7 border-2 border-background">
-                                            <AvatarImage src={member.User.avatar || undefined} />
-                                            <AvatarFallback className="text-xs">
-                                              {member.User.name.split(" ").map((n: string) => n[0]).join("")}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                        ))}
-                                        {task.TaskMember.length > 3 && (
-                                          <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                                            <span className="text-xs text-muted-foreground">
-                                              +{task.TaskMember.length - 3}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      "-"
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex gap-1">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleEdit(task)}
-                                        className="h-8 w-8 p-0"
-                                      >
-                                        <Edit className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleDelete(task.id)}
-                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
+                                  <TableCell className="px-4 py-3">
+                                    <div className="flex items-center justify-center">
+                                      {task.dueDate ? (
+                                        <span className="text-sm whitespace-nowrap">
+                                          {new Date(task.dueDate).toLocaleDateString("fr-FR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                        </span>
+                                      ) : (
+                                        <span className="text-sm text-muted-foreground">-</span>
+                                      )}
                                     </div>
+                                  </TableCell>
+                                  <TableCell className="px-4 py-3">
+                                    <div className="flex items-center justify-center">
+                                      <span className="text-sm whitespace-nowrap">
+                                        {task.estimatedHours ? `${task.estimatedHours}h` : <span className="text-muted-foreground">-</span>}
+                                      </span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="px-4 py-3">
+                                    <div className="flex items-center justify-center">
+                                      {task.TaskMember && task.TaskMember.length > 0 ? (
+                                        <div className="flex -space-x-2">
+                                          {task.TaskMember.slice(0, 3).map((member: any) => (
+                                            <Avatar key={member.User.id} className="h-7 w-7 border-2 border-background hover:z-10 transition-transform hover:scale-110">
+                                              <AvatarImage src={member.User.avatar || undefined} />
+                                              <AvatarFallback className="text-xs">
+                                                {member.User.name.split(" ").map((n: string) => n[0]).join("")}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                          ))}
+                                          {task.TaskMember.length > 3 && (
+                                            <div className="h-7 w-7 rounded-full bg-muted border-2 border-background flex items-center justify-center hover:z-10 transition-transform hover:scale-110">
+                                              <span className="text-xs text-muted-foreground font-medium">
+                                                +{task.TaskMember.length - 3}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <span className="text-sm text-muted-foreground">-</span>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="px-4 py-3">
+                                    {(() => {
+                                      const isCreator = task.Creator?.id === session?.user?.id;
+                                      const isAdmin = session?.user?.role === "ADMIN";
+                                      const canModify = isCreator || isAdmin;
+                                      
+                                      if (!canModify) return null;
+                                      
+                                      return (
+                                        <div className="flex items-center justify-center gap-1">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleEdit(task);
+                                            }}
+                                            className="h-8 w-8 p-0 hover:bg-accent"
+                                            title="Modifier"
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDelete(task.id);
+                                            }}
+                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                            title="Supprimer"
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      );
+                                    })()}
                                   </TableCell>
                                 </TableRow>
                               </ContextMenuTrigger>
                               <ContextMenuContent>
-                                <ContextMenuItem onClick={() => handleEdit(task)}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Modifier
-                                </ContextMenuItem>
-                                <ContextMenuItem onClick={() => handleToggleActive(task)}>
-                                  {task.isActive ? (
+                                {(() => {
+                                  const isCreator = task.Creator?.id === session?.user?.id;
+                                  const isAdmin = session?.user?.role === "ADMIN";
+                                  const canModify = isCreator || isAdmin;
+                                  
+                                  return (
                                     <>
-                                      <Circle className="h-4 w-4 mr-2" />
-                                      Désactiver
+                                      {canModify && (
+                                        <ContextMenuItem onClick={() => handleEdit(task)}>
+                                          <Edit className="h-4 w-4 mr-2" />
+                                          Modifier
+                                        </ContextMenuItem>
+                                      )}
+                                      {canModify && (
+                                        <ContextMenuItem onClick={() => handleToggleActive(task)}>
+                                          {task.isActive ? (
+                                            <>
+                                              <Circle className="h-4 w-4 mr-2" />
+                                              Désactiver
+                                            </>
+                                          ) : (
+                                            <>
+                                              <CheckCircle className="h-4 w-4 mr-2" />
+                                              Activer
+                                            </>
+                                          )}
+                                        </ContextMenuItem>
+                                      )}
+                                      {canModify && (
+                                        <>
+                                          <ContextMenuSeparator />
+                                          <ContextMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Supprimer
+                                          </ContextMenuItem>
+                                        </>
+                                      )}
                                     </>
-                                  ) : (
-                                    <>
-                                      <CheckCircle className="h-4 w-4 mr-2" />
-                                      Activer
-                                    </>
-                                  )}
-                                </ContextMenuItem>
-                                <ContextMenuSeparator />
-                                <ContextMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Supprimer
-                                </ContextMenuItem>
+                                  );
+                                })()}
                               </ContextMenuContent>
                             </ContextMenu>
                           ))}

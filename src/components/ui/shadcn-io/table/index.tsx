@@ -15,7 +15,7 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import type { FC, ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -197,7 +197,11 @@ export function TableRow<TData>({ row, children, className, onClick, ...props }:
       onClick={onClick}
       {...props}
     >
-      {row.getVisibleCells().map((cell) => children({ cell }))}
+      {row.getVisibleCells().map((cell) => (
+        <Fragment key={cell.id}>
+          {children({ cell })}
+        </Fragment>
+      ))}
     </tr>
   );
 }

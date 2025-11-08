@@ -33,6 +33,12 @@ export interface Task {
     name: string;
     color: string;
   };
+  Creator?: {
+    id: string;
+    name: string;
+    email?: string;
+    avatar?: string;
+  };
 }
 
 export const STATUS_COLORS = {

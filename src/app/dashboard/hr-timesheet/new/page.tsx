@@ -21,8 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { format, startOfWeek, endOfWeek, differenceInDays } from "date-fns";
+import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
+import { calculateWorkingHours } from "@/lib/business-hours";
 import {
   createHRTimesheet,
   addHRActivity,
@@ -33,6 +34,7 @@ import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
 
 interface Activity {
   taskId?: string;
@@ -45,6 +47,7 @@ interface Activity {
   startDate: Date;
   endDate: Date;
   status: "IN_PROGRESS" | "COMPLETED";
+  soundEnabled: boolean;
   catalogId?: string;
   priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ";
@@ -100,8 +103,9 @@ export default function NewHRTimesheetPage() {
   } = useForm<HRTimesheetInput>({
     resolver: zodResolver(hrTimesheetSchema),
     defaultValues: {
+      // Semaine de travail : du lundi au vendredi
       weekStartDate: startOfWeek(new Date(), { weekStartsOn: 1 }),
-      weekEndDate: endOfWeek(new Date(), { weekStartsOn: 1 }),
+      weekEndDate: addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), // Vendredi
       employeeName: "",
       position: "",
       site: "",
@@ -257,6 +261,7 @@ export default function NewHRTimesheetPage() {
       startDate: activityData.startDate,
       endDate: activityData.endDate,
       status: activityData.status,
+      soundEnabled: false, // Default: no sound notification
       catalogId: activityData.catalogId,
       priority: selectedTask?.priority,
       complexity: selectedTask?.complexity || undefined,
@@ -301,12 +306,43 @@ export default function NewHRTimesheetPage() {
 
       let successCount = 0;
       for (const activity of activities) {
+        // Transformer l'objet Activity local en HRActivityInput compatible avec le backend
+        // On ne garde QUE les champs définis dans hrActivitySchema
+        const activityInput: HRActivityInput = {
+          activityType: activity.activityType,
+          activityName: activity.activityName,
+          description: activity.description,
+          periodicity: activity.periodicity,
+          weeklyQuantity: activity.weeklyQuantity,
+          totalHours: activity.totalHours,
+          startDate: activity.startDate,
+          endDate: activity.endDate,
+          status: activity.status,
+          soundEnabled: activity.soundEnabled,
+          catalogId: activity.catalogId,
+          taskId: activity.taskId, // ✅ Lier la tâche existante
+          priority: activity.priority,
+          complexity: activity.complexity,
+          estimatedHours: activity.estimatedHours,
+        };
+
+        console.log("📤 Envoi activité au backend:", {
+          taskId: activityInput.taskId,
+          activityName: activityInput.activityName,
+        });
+
         const activityResult = await addHRActivity({
           timesheetId,
-          activity,
+          activity: activityInput,
         });
+
+        if (activityResult?.serverError) {
+          console.error("❌ Erreur création activité:", activityResult.serverError);
+        }
+
         if (activityResult?.data) {
           successCount++;
+          console.log("✅ Activité créée avec succès, taskId:", activityResult.data.taskId);
         }
       }
 
@@ -324,14 +360,6 @@ export default function NewHRTimesheetPage() {
     }
   };
 
-  const calculateActivityDuration = (start: Date, end: Date): number => {
-    const days = differenceInDays(end, start);
-    return days * 24;
-  };
-
-  const totalActivitiesHours = activities.reduce((sum, activity) => {
-    return sum + calculateActivityDuration(activity.startDate, activity.endDate);
-  }, 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -374,7 +402,8 @@ export default function NewHRTimesheetPage() {
                     onSelect={(d: Date | undefined) => {
                       if (d) {
                         const weekStart = startOfWeek(d, { weekStartsOn: 1 });
-                        const weekEnd = endOfWeek(d, { weekStartsOn: 1 });
+                        // Semaine de travail : du lundi au vendredi (4 jours après lundi)
+                        const weekEnd = addDays(weekStart, 4);
                         setTimesheetValue("weekStartDate", weekStart);
                         setTimesheetValue("weekEndDate", weekEnd);
                       }
@@ -777,12 +806,12 @@ export default function NewHRTimesheetPage() {
       {/* Liste des activités ajoutées */}
       <Card>
         <CardHeader>
-          <CardTitle>Activités de la semaine ({activities.length})</CardTitle>
+          <CardTitle>Activités de la semaine</CardTitle>
           <CardDescription>
             Liste des activités qui seront ajoutées à cette feuille de temps
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           {activities.length === 0 ? (
             <div className="text-center py-8 border rounded-lg bg-muted/30">
               <p className="text-muted-foreground">Aucune activité ajoutée</p>
@@ -792,113 +821,34 @@ export default function NewHRTimesheetPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-4">
-                {activities.map((activity, index) => (
-                  <Card key={index} className="relative">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-3">
-                          {/* Badges */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {activity.projectName && (
-                              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted">
-                                <div
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: activity.projectColor || "#3b82f6" }}
-                                />
-                                <span className="text-xs font-medium">{activity.projectName}</span>
-                              </div>
-                            )}
-                            <Badge variant={activity.activityType === "OPERATIONAL" ? "default" : "secondary"}>
-                              {activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
-                            </Badge>
-                            <Badge variant="outline">
-                              {activity.periodicity === "DAILY" ? "Quotidien" :
-                               activity.periodicity === "WEEKLY" ? "Hebdomadaire" :
-                               activity.periodicity === "MONTHLY" ? "Mensuel" : "Ponctuel"}
-                            </Badge>
-                            <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
-                              {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
-                            </Badge>
-                            {activity.priority && (
-                              <Badge variant={activity.priority === "URGENT" ? "destructive" : "outline"}>
-                                {activity.priority === "URGENT" ? "🔥 Urgent" :
-                                 activity.priority === "HIGH" ? "⬆️ Haute" :
-                                 activity.priority === "MEDIUM" ? "➡️ Moyenne" : "⬇️ Basse"}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Nom */}
-                          <div>
-                            <h4 className="font-semibold text-base">{activity.activityName}</h4>
-                            {activity.description && (
-                              <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
-                            )}
-                          </div>
-
-                          {/* Période et durée */}
-                          <div className="flex flex-col gap-2 pt-2 border-t">
-                            <div className="flex flex-wrap items-center gap-3 text-sm">
-                              <div className="flex items-center gap-2">
-                                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">Période:</span>
-                                <span className="font-medium">
-                                  {format(activity.startDate, "dd/MM/yyyy", { locale: fr })}
-                                  {" → "}
-                                  {format(activity.endDate, "dd/MM/yyyy", { locale: fr })}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-4 text-sm">
-                              {activity.totalHours && (
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-primary" />
-                                  <span className="text-muted-foreground">Durée totale:</span>
-                                  <span className="font-semibold text-primary">
-                                    {activity.totalHours}h
-                                  </span>
-                                </div>
-                              )}
-                              {activity.weeklyQuantity && (
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="gap-1">
-                                    <span className="text-muted-foreground">Quantité/sem:</span>
-                                    <span className="font-semibold">{activity.weeklyQuantity}x</span>
-                                  </Badge>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bouton suppression */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveActivity(index)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Total */}
-              <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <p className="font-semibold">Total heures</p>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">{totalActivitiesHours}h</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <HRTimesheetActivitiesTable
+                activities={activities.map((activity, index) => {
+                  const catalogItem = activity.catalogId 
+                    ? catalog.find(item => item.id === activity.catalogId)
+                    : null;
+                  
+                  return {
+                    id: `temp-${index}`,
+                    activityType: activity.activityType,
+                    activityName: activity.activityName,
+                    description: activity.description,
+                    periodicity: activity.periodicity,
+                    startDate: activity.startDate,
+                    endDate: activity.endDate,
+                    totalHours: activity.totalHours || calculateWorkingHours(activity.startDate, activity.endDate),
+                    status: activity.status,
+                    ActivityCatalog: catalogItem ? {
+                      name: catalogItem.name,
+                      category: catalogItem.category
+                    } : null,
+                  };
+                })}
+                onDelete={(id) => {
+                  const index = parseInt(id.replace("temp-", ""));
+                  handleRemoveActivity(index);
+                }}
+                showActions={true}
+              />
             </>
           )}
         </CardContent>
