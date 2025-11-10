@@ -333,7 +333,7 @@ export const getMyTeam = authActionClient
         Department: true,
         _count: {
           select: {
-            Task: true,
+            Task_Task_createdByToUser: true,
           },
         },
       },

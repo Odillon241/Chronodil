@@ -8,8 +8,6 @@
   const nextConfig = {
     reactStrictMode: true,
 
-    // Note: reactCompiler et cacheComponents peuvent être activés si nécessaire
-
     experimental: {
       serverActions: {
         bodySizeLimit: '2mb',

@@ -28,12 +28,12 @@ export const metadata = {
 async function getDashboardData(userId: string) {
   // Exécution séquentielle pour respecter la limite du pool de connexions (connection_limit=1)
   // Chaque requête s'exécute une après l'autre pour éviter les timeouts
-  
-  let activeProjects = [];
-  let myProjects = [];
-  let taskStats = [];
-  let recentTasks = [];
-  let recentHRTimesheets = [];
+
+  let activeProjects: any[] = [];
+  let myProjects: any[] = [];
+  let taskStats: any[] = [];
+  let recentTasks: any[] = [];
+  let recentHRTimesheets: any[] = [];
 
   try {
     // 1. Projets actifs
@@ -84,7 +84,7 @@ async function getDashboardData(userId: string) {
         isActive: true,
       },
       _count: true,
-    });
+    }) as any;
   } catch (error) {
     console.error("Error fetching taskStats:", error);
   }
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data.recentHRTimesheets.map((timesheet) => (
+                      data.recentHRTimesheets.map((timesheet: any) => (
                         <TableRow key={timesheet.id} className="group">
                           <TableCell className="py-4">
                             <div className="flex items-center gap-2">
@@ -426,16 +426,16 @@ export default async function DashboardPage() {
                       </TableRow>
                     ) : (
                       <>
-                        {data.myProjects.map((project) => (
+                        {data.myProjects.map((project: any) => (
                           <TableRow key={`my-${project.id}`} className="group">
                             <TableCell className="py-4">
                               <div className="flex items-center gap-3">
                                 <div
                                   className="h-5 w-5 rounded-full shrink-0 ring-2 ring-offset-2 ring-offset-background transition-all group-hover:ring-4"
-                                  style={{ 
+                                  style={{
                                     backgroundColor: project.color,
-                                    ringColor: project.color + "40"
-                                  }}
+                                    "--tw-ring-color": project.color + "40"
+                                  } as React.CSSProperties}
                                 />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-semibold text-foreground leading-tight">
@@ -461,16 +461,16 @@ export default async function DashboardPage() {
                             </TableCell>
                           </TableRow>
                         ))}
-                        {data.activeProjects.map((project) => (
+                        {data.activeProjects.map((project: any) => (
                           <TableRow key={`active-${project.id}`} className="group">
                             <TableCell className="py-4">
                               <div className="flex items-center gap-3">
                                 <div
                                   className="h-5 w-5 rounded-full shrink-0 ring-2 ring-offset-2 ring-offset-background transition-all group-hover:ring-4"
-                                  style={{ 
+                                  style={{
                                     backgroundColor: project.color,
-                                    ringColor: project.color + "40"
-                                  }}
+                                    "--tw-ring-color": project.color + "40"
+                                  } as React.CSSProperties}
                                 />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-semibold text-foreground leading-tight">
@@ -577,7 +577,7 @@ export default async function DashboardPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data.recentTasks.map((task) => (
+                      data.recentTasks.map((task: any) => (
                         <TableRow key={task.id} className="group">
                           <TableCell className="py-4">
                             <div className="flex-1 min-w-0">
@@ -592,10 +592,10 @@ export default async function DashboardPage() {
                                 <>
                                   <div
                                     className="h-3 w-3 rounded-full shrink-0 ring-1 ring-offset-1 ring-offset-background"
-                                    style={{ 
+                                    style={{
                                       backgroundColor: task.Project.color || "#94a3b8",
-                                      ringColor: (task.Project.color || "#94a3b8") + "40"
-                                    }}
+                                      "--tw-ring-color": (task.Project.color || "#94a3b8") + "40"
+                                    } as React.CSSProperties}
                                   />
                                   <span className="text-sm text-muted-foreground truncate">
                                     {task.Project.name}

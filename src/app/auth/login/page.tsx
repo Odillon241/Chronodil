@@ -17,9 +17,6 @@ import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Note: dynamic='force-dynamic' supprimé pour compatibilité avec cacheComponents (PPR)
-// La page Client Component reste dynamique par nature
-
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

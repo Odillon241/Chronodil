@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description: "Application de gestion des feuilles de temps",
   icons: {
     icon: "/SVG/logo avec icône seulepapier_entête.svg",
-    shortcut: "/SVG/logo avec icône seulepapier_entête.svg",
-    apple: "/SVG/logo avec icône seulepapier_entête.svg",
   },
 };
 
