@@ -83,11 +83,11 @@ export function ProjectTeamDialog({
     try {
       const result = await getUsers({});
       if (result?.data) {
-        // Filter out users already in the project
+        // Filter out users already in the project and ADMIN users
         const currentMemberIds = project?.ProjectMember?.map((m) => (m.user?.id || m.User?.id)) || 
                                 project?.members?.map((m) => (m.user?.id || m.User?.id)) || [];
         const filtered = (result.data as any[]).filter(
-          (user: any) => !currentMemberIds.includes(user.id)
+          (user: any) => !currentMemberIds.includes(user.id) && user.role !== "ADMIN"
         );
         setAvailableUsers(filtered as User[]);
       }

@@ -55,22 +55,22 @@ export function FilterButtonGroup({
 
   return (
     <div className={cn("flex flex-col sm:flex-row gap-2", className)}>
-      <ButtonGroup className="flex-1">
+      <ButtonGroup className="w-auto border border-input rounded-md">
         {/* Champ de recherche */}
-        <div className="relative flex-1">
+        <div className="relative w-auto max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={placeholder}
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4"
+            className="pl-10 pr-4 w-full border-0"
           />
         </div>
 
         {/* Bouton de filtre avec popover */}
         <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0">
+            <Button variant="outline" size="icon" className="shrink-0 ml-2 border-0">
               <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>

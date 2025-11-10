@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -144,17 +144,6 @@ export default function TasksPage() {
     loadActivityCatalog();
   }, []);
 
-  // Initialiser la catégorie et l'activité lors de l'édition si le catalogue est chargé
-  useEffect(() => {
-    if (editingTask && editingTask.activityName && catalog.length > 0) {
-      const catalogItem = catalog.find((item: any) => item.name === editingTask.activityName);
-      if (catalogItem) {
-        setSelectedCategory(catalogItem.category);
-        setSelectedCatalogId(catalogItem.id);
-      }
-    }
-  }, [editingTask, catalog]);
-
   const loadActivityCatalog = async () => {
     try {
       const [catalogResult, categoriesResult] = await Promise.all([
@@ -254,7 +243,7 @@ export default function TasksPage() {
           sharedWith: formData.isShared ? selectedUsers : undefined,
           status: formData.status as "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED",
           priority: formData.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-          complexity: formData.complexity as "FAIBLE" | "MOYEN" | "ÉLEVÉ",
+          complexity: formData.complexity as "FAIBLE" | "MOYEN" | "LEV_",
           trainingLevel: formData.trainingLevel,
           masteryLevel: formData.masteryLevel,
           understandingLevel: formData.understandingLevel,
@@ -307,11 +296,22 @@ export default function TasksPage() {
       periodicity: task.periodicity || "WEEKLY",
       hrTimesheetId: task.hrTimesheetId || "no-timesheet",
     });
-    
-    // Réinitialiser la catégorie et l'activité (sera mis à jour par useEffect si le catalogue est chargé)
-    setSelectedCategory("");
-    setSelectedCatalogId("");
-    
+
+    // Initialiser la catégorie et l'activité depuis le catalogue
+    if (task.activityName && catalog.length > 0) {
+      const catalogItem = catalog.find((item: any) => item.name === task.activityName);
+      if (catalogItem) {
+        setSelectedCategory(catalogItem.category);
+        setSelectedCatalogId(catalogItem.id);
+      } else {
+        setSelectedCategory("");
+        setSelectedCatalogId("");
+      }
+    } else {
+      setSelectedCategory("");
+      setSelectedCatalogId("");
+    }
+
     setIsDialogOpen(true);
   };
 
@@ -1674,3 +1674,4 @@ export default function TasksPage() {
     </div>
   );
 }
+

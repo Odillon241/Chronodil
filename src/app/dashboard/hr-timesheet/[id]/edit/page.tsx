@@ -72,7 +72,7 @@ interface Timesheet {
   totalHours: number;
   status: string;
   employeeObservations?: string | null;
-  activities: Activity[];
+  HRActivity: Activity[];
 }
 
 interface CatalogItem {
@@ -90,7 +90,7 @@ interface Task {
   description?: string | null;
   status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED";
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-  complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ" | null;
+  complexity?: "FAIBLE" | "MOYEN" | "LEV_" | null;
   estimatedHours?: number | null;
   dueDate?: Date | null;
   Project?: {
@@ -542,7 +542,7 @@ export default function EditHRTimesheetPage() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-sm">
-                        {timesheet.activities.length} {timesheet.activities.length === 1 ? "activité" : "activités"}
+                        {timesheet.HRActivity.length} {timesheet.HRActivity.length === 1 ? "activité" : "activités"}
                       </Badge>
                     </div>
                   </TableCell>
@@ -868,7 +868,7 @@ export default function EditHRTimesheetPage() {
           )}
 
           {/* Liste des activités */}
-          {timesheet.activities.length === 0 ? (
+          {timesheet.HRActivity.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <p className="text-muted-foreground">Aucune activité ajoutée</p>
               <p className="text-sm text-muted-foreground mt-2">
@@ -877,14 +877,14 @@ export default function EditHRTimesheetPage() {
             </div>
           ) : (
             <HRTimesheetActivitiesTable
-              activities={timesheet.activities}
+              activities={timesheet.HRActivity}
               onDelete={handleDeleteActivity}
               showActions={true}
             />
           )}
 
           {/* Boutons de navigation */}
-          {timesheet.activities.length > 0 && (
+          {timesheet.HRActivity.length > 0 && (
             <div className="flex gap-2 pt-4">
               <Button
                 onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}`)}

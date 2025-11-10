@@ -78,7 +78,7 @@ interface Timesheet {
   OdillonSigner?: {
     name: string;
   } | null;
-  activities: Activity[];
+  HRActivity: Activity[];
 }
 
 export default function ValidateHRTimesheetPage() {
@@ -269,7 +269,7 @@ export default function ValidateHRTimesheetPage() {
 
   const validationLevel = timesheet.status === "PENDING" ? "Manager" : "Admin/Odillon";
 
-  const groupedActivities = timesheet.activities.reduce((acc, activity) => {
+  const groupedActivities = timesheet.HRActivity.reduce((acc, activity) => {
     const category = activity.ActivityCatalog?.category || "Autres";
     if (!acc[category]) {
       acc[category] = [];
@@ -372,7 +372,7 @@ export default function ValidateHRTimesheetPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {timesheet.activities.length === 0 ? (
+          {timesheet.HRActivity.length === 0 ? (
             <div className="text-center py-12 border rounded-lg bg-muted/30">
               <AlertCircle className="h-12 w-12 mx-auto mb-4 text-amber-600" />
               <p className="text-muted-foreground">Aucune activité enregistrée</p>

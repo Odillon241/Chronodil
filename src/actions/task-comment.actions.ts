@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -57,6 +57,8 @@ export const createTaskComment = actionClient
         taskId: parsedInput.taskId,
         userId: session.user.id,
         content: parsedInput.content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       include: {
         User: {

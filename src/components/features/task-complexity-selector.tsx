@@ -17,7 +17,7 @@ interface TaskComplexitySelectorProps {
   required?: boolean;
 }
 
-const complexityOptions: TaskComplexity[] = ['FAIBLE', 'MOYEN', 'ÉLEVÉ'];
+const complexityOptions: TaskComplexity[] = ['FAIBLE', 'MOYEN', 'ELEVE'];
 
 export function TaskComplexitySelector({
   value = 'MOYEN',
@@ -52,3 +52,4 @@ export function TaskComplexitySelector({
     </div>
   );
 }
+

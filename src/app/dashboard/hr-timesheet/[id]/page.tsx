@@ -57,17 +57,17 @@ interface Timesheet {
   employeeObservations?: string | null;
   managerComments?: string | null;
   odillonComments?: string | null;
-  User?: {
+  User_HRTimesheet_userIdToUser?: {
     name: string;
     email: string;
   };
-  ManagerSigner?: {
+  User_HRTimesheet_managerSignedByIdToUser?: {
     name: string;
   } | null;
-  OdillonSigner?: {
+  User_HRTimesheet_odillonSignedByIdToUser?: {
     name: string;
   } | null;
-  activities: Activity[];
+  HRActivity: Activity[];
 }
 
 export default function HRTimesheetDetailPage() {
@@ -279,8 +279,8 @@ export default function HRTimesheetDetailPage() {
                   <TableCell>
                     <div>
                       <p className="font-semibold">{timesheet.employeeName}</p>
-                      {timesheet.User && (
-                        <p className="text-sm text-muted-foreground">{timesheet.User.email}</p>
+                      {timesheet.User_HRTimesheet_userIdToUser && (
+                        <p className="text-sm text-muted-foreground">{timesheet.User_HRTimesheet_userIdToUser.email}</p>
                       )}
                     </div>
                   </TableCell>
@@ -317,7 +317,7 @@ export default function HRTimesheetDetailPage() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-sm">
-                        {timesheet.activities.length} {timesheet.activities.length === 1 ? "activité" : "activités"}
+                        {timesheet.HRActivity.length} {timesheet.HRActivity.length === 1 ? "activité" : "activités"}
                       </Badge>
                     </div>
                   </TableCell>
@@ -382,7 +382,7 @@ export default function HRTimesheetDetailPage() {
         </CardHeader>
         <CardContent>
           <HRTimesheetActivitiesTable
-            activities={timesheet.activities}
+            activities={timesheet.HRActivity}
             onDelete={timesheet.status === "DRAFT" ? handleDeleteActivity : undefined}
             showActions={timesheet.status === "DRAFT"}
           />

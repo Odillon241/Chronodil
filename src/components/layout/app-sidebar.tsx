@@ -21,6 +21,7 @@ import {
   Shield,
   FileText,
   MessageSquare,
+  BarChart3,
 } from "lucide-react";
 
 import {
@@ -87,6 +88,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: t("navigation.chat"),
       url: "/dashboard/chat",
       icon: MessageSquare,
+    },
+    {
+      title: t("navigation.reports"),
+      url: "/dashboard/reports",
+      icon: BarChart3,
     },
   ], [t]);
 

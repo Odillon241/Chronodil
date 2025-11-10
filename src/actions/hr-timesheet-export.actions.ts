@@ -21,10 +21,10 @@ export const exportHRTimesheetToExcel = authActionClient
     const timesheet = await prisma.hRTimesheet.findUnique({
       where: { id: timesheetId },
       include: {
-        User: true,
-        ManagerSigner: true,
-        OdillonSigner: true,
-        activities: {
+        User_HRTimesheet_userIdToUser: true,
+        User_HRTimesheet_managerSignedByIdToUser: true,
+        User_HRTimesheet_odillonSignedByIdToUser: true,
+        HRActivity: {
           include: {
             ActivityCatalog: true,
           },
@@ -53,7 +53,7 @@ export const exportHRTimesheetToExcel = authActionClient
       timesheet.userId === userId ||
       user.role === "ADMIN" ||
       user.role === "HR" ||
-      (user.role === "MANAGER" && timesheet.User.managerId === userId);
+      (user.role === "MANAGER" && timesheet.User_HRTimesheet_userIdToUser.managerId === userId);
 
     if (!canExport) {
       throw new Error("Vous n'êtes pas autorisé à exporter ce timesheet");
@@ -130,14 +130,14 @@ export const exportHRTimesheetToExcel = authActionClient
     headerRow.alignment = { horizontal: "center", vertical: "middle" };
 
     // Grouper les activités par catégorie
-    const groupedActivities = timesheet.activities.reduce((acc: Record<string, any[]>, activity: any) => {
+    const groupedActivities = timesheet.HRActivity.reduce((acc: Record<string, any[]>, activity: any) => {
       const category = activity.ActivityCatalog?.category || "Autres";
       if (!acc[category]) {
         acc[category] = [];
       }
       acc[category].push(activity);
       return acc;
-    }, {} as Record<string, typeof timesheet.activities>);
+    }, {} as Record<string, typeof timesheet.HRActivity>);
 
     // Ajouter les activités groupées par catégorie
     Object.entries(groupedActivities).forEach(([category, activities]) => {
@@ -215,7 +215,7 @@ export const exportHRTimesheetToExcel = authActionClient
     if (timesheet.managerSignedAt) {
       worksheet.addRow([
         "Manager:",
-        timesheet.ManagerSigner?.name || "N/A",
+        timesheet.User_HRTimesheet_managerSignedByIdToUser?.name || "N/A",
         "Validé le:",
         format(timesheet.managerSignedAt, "dd/MM/yyyy à HH:mm", { locale: fr }),
       ]);
@@ -228,7 +228,7 @@ export const exportHRTimesheetToExcel = authActionClient
     if (timesheet.odillonSignedAt) {
       worksheet.addRow([
         "Admin/Odillon:",
-        timesheet.OdillonSigner?.name || "N/A",
+        timesheet.User_HRTimesheet_odillonSignedByIdToUser?.name || "N/A",
         "Approuvé le:",
         format(timesheet.odillonSignedAt, "dd/MM/yyyy à HH:mm", { locale: fr }),
       ]);

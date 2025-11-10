@@ -197,13 +197,13 @@ export function ChatNewConversationDialog({
 
           {/* Messages Directs */}
           <TabsContent value="direct" className="space-y-4">
-            <div className="relative">
+            <div className="relative w-auto max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un utilisateur..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 w-full"
               />
             </div>
 
@@ -274,13 +274,13 @@ export function ChatNewConversationDialog({
               </div>
             )}
 
-            <div className="relative">
+            <div className="relative w-auto max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher des membres..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 w-full"
               />
             </div>
 
@@ -332,13 +332,13 @@ export function ChatNewConversationDialog({
 
           {/* Projets */}
           <TabsContent value="project" className="space-y-4">
-            <div className="relative">
+            <div className="relative w-auto max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un projet..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 w-full"
               />
             </div>
 

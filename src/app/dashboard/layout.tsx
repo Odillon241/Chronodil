@@ -1,13 +1,55 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useState, useEffect } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { NotificationDropdown } from "@/components/features/notification-dropdown";
-import { ModeToggle } from "@/components/ui/mode-toggle";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
-import { SearchButtonWrapper } from "@/components/features/search-button-wrapper";
 import { CommandPalette } from "@/components/features/command-palette";
 import { SettingsProvider } from "@/components/providers/settings-provider";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+
+function SearchBar() {
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
+  }, []);
+
+  return (
+    <div className="relative w-full group">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Input
+        type="text"
+        placeholder="Rechercher..."
+        className="pl-9 pr-20 h-9 cursor-pointer"
+        onClick={() => {
+          const event = new CustomEvent("open-search");
+          document.dispatchEvent(event);
+        }}
+        readOnly
+      />
+      <kbd className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+        {isMac ? (
+          <>
+            <span className="text-xs">⌘</span>
+            <span className="text-xs">+</span>
+            <span className="text-xs">K</span>
+          </>
+        ) : (
+          <>
+            <span className="text-xs">Ctrl</span>
+            <span className="text-xs">+</span>
+            <span className="text-xs">K</span>
+          </>
+        )}
+      </kbd>
+    </div>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -29,11 +71,11 @@ export default function DashboardLayout({
                 <DynamicBreadcrumb />
               </Suspense>
             </div>
+            <div className="hidden md:flex items-center gap-2 max-w-md mx-4">
+              <SearchBar />
+            </div>
             <div className="flex items-center gap-2">
-              <Suspense fallback={null}>
-                <SearchButtonWrapper />
-              </Suspense>
-              <ModeToggle />
+              <ThemeSwitcher />
               <Suspense fallback={<div>Loading...</div>}>
                 <NotificationDropdown />
               </Suspense>

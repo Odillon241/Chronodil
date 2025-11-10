@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
@@ -71,8 +71,8 @@ export const createHRTimesheet = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -98,7 +98,7 @@ export const getMyHRTimesheets = authActionClient
           ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
         },
         include: {
-          activities: {
+          HRActivity: {
             include: {
               ActivityCatalog: true,
               Task: {
@@ -109,7 +109,7 @@ export const getMyHRTimesheets = authActionClient
                       color: true,
                     },
                   },
-                  Creator: {
+                  User_Task_createdByToUser: {
                     select: {
                       name: true,
                       email: true,
@@ -137,9 +137,9 @@ export const getMyHRTimesheets = authActionClient
               createdAt: "asc",
             },
           },
-          User: true,
-          ManagerSigner: true,
-          OdillonSigner: true,
+          User_HRTimesheet_userIdToUser: true,
+          User_HRTimesheet_managerSignedByIdToUser: true,
+          User_HRTimesheet_odillonSignedByIdToUser: true,
         },
         orderBy: {
           weekStartDate: "desc",
@@ -187,7 +187,7 @@ export const getHRTimesheetsForApproval = authActionClient
       const timesheets = await prisma.hRTimesheet.findMany({
         where: whereConditions,
         include: {
-          activities: {
+          HRActivity: {
             include: {
               ActivityCatalog: true,
               Task: {
@@ -198,7 +198,7 @@ export const getHRTimesheetsForApproval = authActionClient
                       color: true,
                     },
                   },
-                  Creator: {
+                  User_Task_createdByToUser: {
                     select: {
                       name: true,
                       email: true,
@@ -226,12 +226,12 @@ export const getHRTimesheetsForApproval = authActionClient
               createdAt: "asc",
             },
           },
-          User: true,
-          ManagerSigner: true,
-          OdillonSigner: true,
+          User_HRTimesheet_userIdToUser: true,
+          User_HRTimesheet_managerSignedByIdToUser: true,
+          User_HRTimesheet_odillonSignedByIdToUser: true,
           _count: {
             select: {
-              activities: true,
+              HRActivity: true,
             },
           },
         },
@@ -259,7 +259,7 @@ export const getHRTimesheet = authActionClient
     const timesheet = await prisma.hRTimesheet.findUnique({
       where: { id },
       include: {
-        activities: {
+        HRActivity: {
           include: {
             ActivityCatalog: true,
           },
@@ -267,14 +267,14 @@ export const getHRTimesheet = authActionClient
             createdAt: "asc",
           },
         },
-        User: {
+        User_HRTimesheet_userIdToUser: {
           include: {
             Department: true,
             User: true, // Manager
           },
         },
-        ManagerSigner: true,
-        OdillonSigner: true,
+        User_HRTimesheet_managerSignedByIdToUser: true,
+        User_HRTimesheet_odillonSignedByIdToUser: true,
       },
     });
 
@@ -287,7 +287,7 @@ export const getHRTimesheet = authActionClient
       timesheet.userId === userId ||
       userRole === "ADMIN" ||
       userRole === "HR" ||
-      timesheet.User.managerId === userId;
+      timesheet.User_HRTimesheet_userIdToUser.managerId === userId;
 
     if (!canView) {
       throw new Error("Vous n'avez pas la permission de voir ce timesheet");
@@ -330,8 +330,8 @@ export const updateHRTimesheet = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -353,7 +353,7 @@ export const deleteHRTimesheet = authActionClient
     const existingTimesheet = await prisma.hRTimesheet.findUnique({
       where: { id },
       include: {
-        User: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -458,7 +458,7 @@ export const addHRActivity = authActionClient
           hrTimesheetId: timesheetId,
           status: taskStatus,
           priority: activity.priority || "MEDIUM",
-          complexity: activity.complexity || "MOYEN",
+          complexity: (activity.complexity || "MOYEN") as any,
           estimatedHours: activity.estimatedHours || totalHours,
           dueDate: activity.dueDate || activity.endDate,
           reminderDate: activity.reminderDate,
@@ -509,7 +509,7 @@ export const addHRActivity = authActionClient
         // Nouveaux champs Task-related
         taskId: linkedTaskId,
         priority: activity.priority,
-        complexity: activity.complexity,
+        complexity: activity.complexity as any,
         estimatedHours: activity.estimatedHours,
         dueDate: activity.dueDate,
         reminderDate: activity.reminderDate,
@@ -552,13 +552,13 @@ export const updateHRActivity = authActionClient
     const activity = await prisma.hRActivity.findFirst({
       where: {
         id,
-        hrTimesheet: {
+        HRTimesheet: {
           userId,
           status: "DRAFT",
         },
       },
       include: {
-        hrTimesheet: true,
+        HRTimesheet: true,
       },
     });
 
@@ -575,10 +575,14 @@ export const updateHRActivity = authActionClient
       totalHours = calculateWorkingHours(startDate, endDate);
     }
 
+    // Exclure les champs problÃ©matiques et les gÃ©rer avec des casts
+    const { taskId, catalogId, complexity, ...updateData } = data;
+
     const updatedActivity = await prisma.hRActivity.update({
       where: { id },
       data: {
-        ...data,
+        ...updateData,
+        ...(complexity ? { complexity: complexity as any } : {}),
         ...(data.startDate || data.endDate ? { totalHours } : {}),
         updatedAt: new Date(),
       },
@@ -608,13 +612,13 @@ export const deleteHRActivity = authActionClient
     const activity = await prisma.hRActivity.findFirst({
       where: {
         id,
-        hrTimesheet: {
+        HRTimesheet: {
           userId,
           status: "DRAFT",
         },
       },
       include: {
-        hrTimesheet: true,
+        HRTimesheet: true,
       },
     });
 
@@ -655,8 +659,8 @@ export const submitHRTimesheet = authActionClient
         status: "DRAFT",
       },
       include: {
-        activities: true,
-        User: {
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: {
           include: {
             User: true, // Manager
           },
@@ -669,12 +673,12 @@ export const submitHRTimesheet = authActionClient
     }
 
     // Vérifier qu'il y a au moins une activité
-    if (timesheet.activities.length === 0) {
+    if (timesheet.HRActivity.length === 0) {
       throw new Error("Vous devez ajouter au moins une activité avant de soumettre");
     }
 
     // Vérifier que l'utilisateur a un manager
-    if (!timesheet.User.managerId) {
+    if (!timesheet.User_HRTimesheet_userIdToUser.managerId) {
       throw new Error(
         "Vous n'avez pas de manager assigné. Veuillez contacter votre administrateur."
       );
@@ -689,8 +693,8 @@ export const submitHRTimesheet = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -698,9 +702,9 @@ export const submitHRTimesheet = authActionClient
     await prisma.notification.create({
       data: {
         id: nanoid(),
-        userId: timesheet.User.managerId,
+        userId: timesheet.User_HRTimesheet_userIdToUser.managerId,
         title: "Nouvelle feuille de temps RH à valider",
-        message: `${timesheet.User.name} a soumis sa feuille de temps hebdomadaire pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()}`,
+        message: `${timesheet.User_HRTimesheet_userIdToUser.name} a soumis sa feuille de temps hebdomadaire pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()}`,
         type: "hr_timesheet_submitted",
         link: `/dashboard/hr-timesheet/${timesheetId}`,
       },
@@ -730,7 +734,7 @@ export const cancelHRTimesheetSubmission = authActionClient
         status: "PENDING",
       },
       include: {
-        User: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -747,16 +751,16 @@ export const cancelHRTimesheetSubmission = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
     // Supprimer la notification créée pour le manager (optionnel)
-    if (timesheet.User.managerId) {
+    if (timesheet.User_HRTimesheet_userIdToUser.managerId) {
       await prisma.notification.deleteMany({
         where: {
-          userId: timesheet.User.managerId,
+          userId: timesheet.User_HRTimesheet_userIdToUser.managerId,
           type: "hr_timesheet_submitted",
           link: `/dashboard/hr-timesheet/${timesheetId}`,
         },
@@ -782,7 +786,7 @@ export const managerApproveHRTimesheet = authActionClient
     const timesheet = await prisma.hRTimesheet.findUnique({
       where: { id: timesheetId },
       include: {
-        User: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -791,7 +795,7 @@ export const managerApproveHRTimesheet = authActionClient
     }
 
     // Vérifier que l'utilisateur est le manager ou admin
-    const isManager = timesheet.User.managerId === userId;
+    const isManager = timesheet.User_HRTimesheet_userIdToUser.managerId === userId;
     const isAdmin = userRole === "ADMIN" || userRole === "HR";
 
     if (!isManager && !isAdmin) {
@@ -815,9 +819,9 @@ export const managerApproveHRTimesheet = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
-        ManagerSigner: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
+        User_HRTimesheet_managerSignedByIdToUser: true,
       },
     });
 
@@ -857,7 +861,7 @@ export const managerApproveHRTimesheet = authActionClient
             id: nanoid(),
             userId: admin.id,
             title: "Feuille de temps RH en attente de validation finale",
-            message: `La feuille de temps de ${timesheet.User.name} pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()} est en attente de votre validation finale`,
+            message: `La feuille de temps de ${timesheet.User_HRTimesheet_userIdToUser.name} pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()} est en attente de votre validation finale`,
             type: "hr_timesheet_pending_final",
             link: `/dashboard/hr-timesheet/${timesheetId}`,
           },
@@ -890,7 +894,7 @@ export const odillonApproveHRTimesheet = authActionClient
     const timesheet = await prisma.hRTimesheet.findUnique({
       where: { id: timesheetId },
       include: {
-        User: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -915,10 +919,10 @@ export const odillonApproveHRTimesheet = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
-        ManagerSigner: true,
-        OdillonSigner: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
+        User_HRTimesheet_managerSignedByIdToUser: true,
+        User_HRTimesheet_odillonSignedByIdToUser: true,
       },
     });
 
@@ -1072,7 +1076,7 @@ export const getHRTimesheetStats = authActionClient
         },
       },
       include: {
-        activities: true,
+        HRActivity: true,
       },
     });
 
@@ -1085,7 +1089,7 @@ export const getHRTimesheetStats = authActionClient
       .reduce((sum, ts) => sum + ts.totalHours, 0);
 
     const activitiesByType = timesheets
-      .flatMap((ts) => ts.activities)
+      .flatMap((ts) => ts.HRActivity)
       .reduce(
         (acc, activity) => {
           acc[activity.activityType] = (acc[activity.activityType] || 0) + activity.totalHours;
@@ -1095,7 +1099,7 @@ export const getHRTimesheetStats = authActionClient
       );
 
     const activitiesByCategory = timesheets
-      .flatMap((ts) => ts.activities)
+      .flatMap((ts) => ts.HRActivity)
       .reduce(
         (acc, activity) => {
           const category = activity.activityName;
@@ -1110,7 +1114,7 @@ export const getHRTimesheetStats = authActionClient
       approvedHours,
       pendingHours,
       timesheetsCount: timesheets.length,
-      activitiesCount: timesheets.reduce((sum, ts) => sum + ts.activities.length, 0),
+      activitiesCount: timesheets.reduce((sum, ts) => sum + ts.HRActivity.length, 0),
       activitiesByType,
       activitiesByCategory,
       statusBreakdown: {
@@ -1145,7 +1149,7 @@ export const updateHRTimesheetStatus = authActionClient
     const timesheet = await prisma.hRTimesheet.findUnique({
       where: { id: timesheetId },
       include: {
-        User: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -1161,7 +1165,7 @@ export const updateHRTimesheetStatus = authActionClient
       }
     } else {
       // Les managers peuvent changer vers MANAGER_APPROVED ou REJECTED
-      const isManager = timesheet.User.managerId === userId;
+      const isManager = timesheet.User_HRTimesheet_userIdToUser.managerId === userId;
       const isAdmin = userRole === "ADMIN" || userRole === "HR";
 
       if (!isManager && !isAdmin) {
@@ -1188,8 +1192,8 @@ export const updateHRTimesheetStatus = authActionClient
         updatedAt: new Date(),
       },
       include: {
-        activities: true,
-        User: true,
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -1220,3 +1224,10 @@ async function updateTimesheetTotalHours(timesheetId: string) {
 
   return totalHours;
 }
+
+
+
+
+
+
+

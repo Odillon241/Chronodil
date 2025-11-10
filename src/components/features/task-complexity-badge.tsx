@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Badge } from '@/components/ui/badge';
 import { Zap, Gauge, AlertCircle } from 'lucide-react';
@@ -22,7 +22,7 @@ const complexityConfig = {
     icon: Zap,
     description: 'Tâche nécessitant expertise modérée',
   },
-  ÉLEVÉ: {
+  LEV_: {
     label: 'Élevé',
     color: 'bg-red-100 text-red-800 border-red-300',
     icon: AlertCircle,
@@ -58,3 +58,4 @@ export function TaskComplexityBadge({
     </div>
   );
 }
+

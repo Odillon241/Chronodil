@@ -73,7 +73,7 @@ export const ListProvider: FC<ListProviderProps> = ({
         onDragStart={handleDragStart}
         sensors={sensors}
       >
-        <div className={cn('flex h-full gap-4 p-4', className)}>
+        <div className={cn('flex flex-col h-full gap-4 p-4', className)}>
           {children}
         </div>
         <DragOverlay>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -50,7 +50,7 @@ interface Activity {
   soundEnabled: boolean;
   catalogId?: string;
   priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-  complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ";
+  complexity?: "FAIBLE" | "MOYEN" | "LEV_";
   estimatedHours?: number;
   projectName?: string;
   projectColor?: string;
@@ -71,7 +71,7 @@ interface Task {
   description?: string | null;
   status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED";
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-  complexity?: "FAIBLE" | "MOYEN" | "ÉLEVÉ" | null;
+  complexity?: "FAIBLE" | "MOYEN" | "LEV_" | null;
   estimatedHours?: number | null;
   dueDate?: Date | null;
   Project?: {
@@ -885,3 +885,4 @@ export default function NewHRTimesheetPage() {
     </div>
   );
 }
+

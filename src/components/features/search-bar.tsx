@@ -17,11 +17,11 @@ export function SearchBar({
   className = "",
 }: SearchBarProps) {
   return (
-    <div className={`relative flex-1 ${className}`}>
+    <div className={`relative w-auto max-w-xs ${className}`}>
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         placeholder={placeholder}
-        className="pl-10"
+        className="pl-10 w-full"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

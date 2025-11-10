@@ -77,6 +77,14 @@ import { useSession } from "@/lib/auth-client";
 import { ProjectHealthIndicator } from "@/components/features/project-health-indicator";
 import { FilterButtonGroup } from "@/components/ui/filter-button-group";
 import { StatusTabs } from "@/components/ui/status-menubar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type ViewMode = "grid" | "list";
 type SortField = "name" | "code" | "createdAt" | "budgetHours" | "progress";
@@ -112,7 +120,7 @@ export default function ProjectsPage() {
 
   // Filter and view states
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [filterDepartment, setFilterDepartment] = useState<string>("all");
@@ -123,6 +131,11 @@ export default function ProjectsPage() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
+
+  // Filtrer les utilisateurs pour exclure les comptes ADMIN
+  const availableUsers = useMemo(() => {
+    return users.filter((user) => user.role !== "ADMIN");
+  }, [users]);
 
   useEffect(() => {
     loadData();
@@ -136,7 +149,7 @@ export default function ProjectsPage() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterDepartment, filterStartDate, filterEndDate, filterStatus]);
+  }, [searchQuery, filterStartDate, filterEndDate, filterStatus]);
 
   const loadData = async () => {
     setLoading(true);
@@ -466,8 +479,7 @@ export default function ProjectsPage() {
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.code.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesDepartment =
-        filterDepartment === "all" || project.departmentId === filterDepartment;
+      const matchesDepartment = true;
 
       // Date range filtering
       let matchesDateRange = true;
@@ -521,7 +533,7 @@ export default function ProjectsPage() {
     });
 
     return filtered;
-  }, [projects, searchQuery, filterDepartment, filterStartDate, filterEndDate, sortField, sortOrder]);
+  }, [projects, searchQuery, filterStartDate, filterEndDate, sortField, sortOrder]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -716,12 +728,12 @@ export default function ProjectsPage() {
                     Sélectionnez les membres à ajouter au projet (vous serez automatiquement ajouté)
                   </p>
                   <div className="border rounded-md p-4 max-h-[200px] overflow-y-auto space-y-2">
-                    {users.length === 0 ? (
+                    {availableUsers.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-2">
                         Aucun utilisateur disponible
                       </p>
                     ) : (
-                      users.map((user) => (
+                      availableUsers.map((user) => (
                         <div key={user.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={`user-${user.id}`}
@@ -793,6 +805,9 @@ export default function ProjectsPage() {
         </Dialog>
       </div>
 
+      {/* Barre de séparation */}
+      <div className="border-b"></div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
@@ -855,12 +870,11 @@ export default function ProjectsPage() {
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           filterOptions={[
-            { id: 'department', label: 'Département', value: 'department' },
             { id: 'status', label: 'Statut', value: 'status' },
             { id: 'date', label: 'Date', value: 'date' },
           ]}
-          selectedFilter={filterDepartment}
-          onFilterChange={setFilterDepartment}
+          selectedFilter=""
+          onFilterChange={() => {}}
           startDate={filterStartDate}
           endDate={filterEndDate}
           onDateChange={(start, end) => {
@@ -881,24 +895,6 @@ export default function ProjectsPage() {
             selectedValue={filterStatus}
             onValueChange={setFilterStatus}
           />
-
-          {/* Filtres de département */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-              <SelectTrigger className="w-[200px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Département" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les départements</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
 
@@ -943,20 +939,23 @@ export default function ProjectsPage() {
           </DropdownMenu>
         </div>
 
-        <div className="flex items-center border rounded-md">
-          <Button
-            variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("grid")}
-          >
-            <Grid3x3 className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center border rounded-md overflow-hidden">
           <Button
             variant={viewMode === "list" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setViewMode("list")}
+            className="rounded-none border-0"
           >
             <List className="h-4 w-4" />
+          </Button>
+          <div className="h-6 w-px bg-border" />
+          <Button
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+            className="rounded-none border-0"
+          >
+            <Grid3x3 className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -969,7 +968,7 @@ export default function ProjectsPage() {
             <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Aucun projet trouvé</h3>
             <p className="text-sm text-muted-foreground text-center mb-4">
-              {searchQuery || filterDepartment !== "all"
+              {searchQuery
                 ? t("noProjectsFilter")
                 : t("startCreating")}
             </p>
@@ -1203,110 +1202,171 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-        <div className="space-y-2">
-          {paginatedProjects.map((project) => {
-            const progress = project.budgetHours
-              ? (project.usedHours / project.budgetHours) * 100
-              : 0;
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead>Nom du projet</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Département</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-center">Membres</TableHead>
+                  <TableHead className="text-center">Budget</TableHead>
+                  <TableHead className="text-center">Progression</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedProjects.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                      Aucun projet trouvé
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedProjects.map((project) => {
+                    const progress = project.budgetHours
+                      ? (project.usedHours / project.budgetHours) * 100
+                      : 0;
+                    const progressColor =
+                      progress > 90
+                        ? "bg-red-500"
+                        : progress > 70
+                          ? "bg-amber-500"
+                          : "bg-green-500";
 
-            return (
-              <Card key={project.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: project.color || "#dd2d4a" }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold truncate">{project.name}</h3>
+                    return (
+                      <TableRow key={project.id}>
+                        <TableCell>
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: project.color || "#dd2d4a" }}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {project.name}
+                            {project.budgetHours && (
+                              <ProjectHealthIndicator
+                                budgetHours={project.budgetHours}
+                                consumedHours={project.usedHours || 0}
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="outline" className="text-xs">
                             {project.code}
                           </Badge>
-                          {project.Department && (
+                        </TableCell>
+                        <TableCell>
+                          {project.Department ? (
                             <Badge variant="secondary" className="text-xs">
                               {project.Department.name}
                             </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
                           )}
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {project.description || t("noDescription")}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <div className="text-center min-w-[80px]">
-                        <div className="text-sm font-medium">
-                          {project.ProjectMember?.length || 0}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Membres</div>
-                      </div>
-
-                      {project.budgetHours && (
-                        <div className="text-center min-w-[100px]">
-                          <div className="text-sm font-medium">
-                            {progress.toFixed(0)}%
+                        </TableCell>
+                        <TableCell className="max-w-[300px]">
+                          <p className="text-sm text-muted-foreground truncate">
+                            {project.description || t("noDescription")}
+                          </p>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">
+                              {project.ProjectMember?.length || 0}
+                            </span>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {project.usedHours?.toFixed(0) || 0}/{project.budgetHours}h
-                          </div>
-                        </div>
-                      )}
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetails(project)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Détails
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditProject(project)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Modifier
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleManageTeam(project)}>
-                            <Users className="mr-2 h-4 w-4" />
-                            Gérer l'équipe
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCloneProject(project)}>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Cloner
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleArchiveProject(project)}
-                            className="text-amber-600"
-                          >
-                            <Archive className="mr-2 h-4 w-4" />
-                            {project.isActive ? t("archive") : t("reactivate")}
-                          </DropdownMenuItem>
-                          {canDeleteProject(project) && (
-                            <>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {project.budgetHours ? (
+                            <div className="flex flex-col items-center">
+                              <span className="text-sm font-medium">
+                                {project.usedHours?.toFixed(0) || 0}/{project.budgetHours}h
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {Math.max(0, project.budgetHours - (project.usedHours || 0)).toFixed(0)}h restantes
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {project.budgetHours ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-sm font-medium">{progress.toFixed(0)}%</span>
+                              <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full ${progressColor} transition-all`}
+                                  style={{ width: `${Math.min(progress, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewDetails(project)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Détails
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditProject(project)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleManageTeam(project)}>
+                                <Users className="mr-2 h-4 w-4" />
+                                Gérer l'équipe
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleCloneProject(project)}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Cloner
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => handleDeleteProject(project)}
-                                className="text-destructive focus:text-destructive"
+                                onClick={() => handleArchiveProject(project)}
+                                className="text-amber-600"
                               >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Supprimer
+                                <Archive className="mr-2 h-4 w-4" />
+                                {project.isActive ? t("archive") : t("reactivate")}
                               </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                              {canDeleteProject(project) && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteProject(project)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Supprimer
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
         {/* Pagination Controls */}
         {paginationInfo.totalPages > 1 && (

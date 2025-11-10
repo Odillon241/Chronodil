@@ -137,7 +137,7 @@ interface HRTimesheet {
     name: string;
   } | null;
   _count?: {
-    activities: number;
+    HRActivity: number;
   };
 }
 
@@ -465,8 +465,8 @@ export default function HRTimesheetPage() {
     
     currentTimesheets.forEach((ts: any) => {
       // Tâches liées aux activités
-      if (ts.activities && Array.isArray(ts.activities)) {
-        ts.activities.forEach((activity: any) => {
+      if (ts.HRActivity && Array.isArray(ts.HRActivity)) {
+        ts.HRActivity.forEach((activity: any) => {
           if (activity?.Task && activity.Task.id) {
             const task = activity.Task;
             const taskStatus = task.status || "TODO";
@@ -612,7 +612,7 @@ export default function HRTimesheetPage() {
         {timesheet._count && (
           <div className="text-sm">
             <p className="text-muted-foreground">Activités enregistrées</p>
-            <p className="font-medium">{timesheet._count.activities} activité(s)</p>
+            <p className="font-medium">{timesheet._count.HRActivity} activité(s)</p>
           </div>
         )}
 
@@ -1794,6 +1794,7 @@ export default function HRTimesheetPage() {
             <span className="sm:hidden">Nouveau</span>
           </Button>
         </div>
+        <Separator />
 
         {/* Sélecteur de données */}
         <Navbar18
@@ -1825,7 +1826,7 @@ export default function HRTimesheetPage() {
 
         {/* Menubar pour sélection de vues */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <Menubar className="w-auto">
+          <Menubar className="w-auto border-0">
             {views.map((view) => (
               <MenubarMenu key={view.id}>
                 <MenubarTrigger
@@ -1956,7 +1957,7 @@ export default function HRTimesheetPage() {
               </Card>
 
               {/* Activités */}
-              {previewTimesheet.activities && previewTimesheet.activities.length > 0 && (
+              {previewTimesheet.HRActivity && previewTimesheet.HRActivity.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
@@ -1965,7 +1966,7 @@ export default function HRTimesheetPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {previewTimesheet.activities.map((activity: any) => (
+                      {previewTimesheet.HRActivity.map((activity: any) => (
                         <Card key={activity.id}>
                           <CardContent className="pt-6">
                             <div className="space-y-3">

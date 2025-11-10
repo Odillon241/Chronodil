@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 // Schéma de base pour une activité RH (sans validation)
 const hrActivityBaseSchema = z.object({
@@ -19,7 +19,7 @@ const hrActivityBaseSchema = z.object({
   // Nouveaux champs pour intégration avec Task
   taskId: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-  complexity: z.enum(["FAIBLE", "MOYEN", "ÉLEVÉ"]).optional(),
+  complexity: z.enum(["FAIBLE", "MOYEN", "LEV_"]).optional(),
   estimatedHours: z.number().min(0).optional(),
   dueDate: z.date().optional(),
   reminderDate: z.date().optional(),
@@ -105,3 +105,4 @@ export type ManagerApprovalInput = z.infer<typeof managerApprovalSchema>;
 export type OdillonApprovalInput = z.infer<typeof odillonApprovalSchema>;
 export type HRTimesheetFilterInput = z.infer<typeof hrTimesheetFilterSchema>;
 export type ActivityCatalogFilterInput = z.infer<typeof activityCatalogFilterSchema>;
+

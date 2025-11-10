@@ -30,7 +30,7 @@ importers:
         specifier: ^1.10.7
         version: 1.10.7
       '@prisma/client':
-        specifier: ^6.18.0
+        specifier: ^6.19.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.15

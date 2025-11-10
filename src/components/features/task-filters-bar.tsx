@@ -34,13 +34,13 @@ export function TaskFiltersBar({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Recherche */}
-        <div className="relative flex-1">
+        <div className="relative w-auto max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Rechercher une tâche..."
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
-            className="pl-9"
+            className="pl-9 w-full"
           />
         </div>
 

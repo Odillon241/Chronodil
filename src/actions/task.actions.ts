@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -22,7 +22,7 @@ const createTaskSchema = z.object({
   sharedWith: z.array(z.string()).optional(), // Array of user IDs
   status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-  complexity: z.enum(["FAIBLE", "MOYEN", "ÉLEVÉ"]).optional(),
+  complexity: z.enum(["FAIBLE", "MOYEN", "LEV_"]).optional(),
   trainingLevel: z.enum(["NONE", "BASIC", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional().nullable(),
   masteryLevel: z.enum(["NOVICE", "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional().nullable(),
   understandingLevel: z.enum(["NONE", "SUPERFICIAL", "WORKING", "COMPREHENSIVE", "EXPERT"]).optional().nullable(),
@@ -96,10 +96,14 @@ export const createTask = actionClient
     // Créer la tâche avec transaction pour garantir la cohérence
     const task = await prisma.$transaction(async (tx) => {
       // Créer la tâche
+      // Exclure complexity pour le caster
+      const { complexity, ...taskDataWithoutComplexity } = taskData;
+
       const newTask = await tx.task.create({
         data: {
           id: taskId,
-          ...taskData,
+          ...taskDataWithoutComplexity,
+          ...(complexity ? { complexity: complexity as any } : {}),
           hrTimesheetId,
           createdBy: session.user.id,
           createdAt: new Date(),
@@ -389,7 +393,7 @@ export const getMyTasks = actionClient
             name: true,
           },
         },
-        Creator: {
+        User_Task_createdByToUser: {
           select: {
             name: true,
             email: true,
@@ -465,7 +469,7 @@ export const getAllTasks = actionClient
             name: true,
           },
         },
-        Creator: {
+        User_Task_createdByToUser: {
           select: {
             name: true,
             email: true,
@@ -761,7 +765,7 @@ export const evaluateTask = actionClient
 
 const updateTaskComplexitySchema = z.object({
   id: z.string(),
-  complexity: z.enum(["FAIBLE", "MOYEN", "ÉLEVÉ"]),
+  complexity: z.enum(["FAIBLE", "MOYEN", "LEV_"]),
   recurrence: z.string().optional(),
 });
 
@@ -844,7 +848,7 @@ export const getUserTasksForHRTimesheet = authActionClient
               color: true,
             },
           },
-          Creator: {
+          User_Task_createdByToUser: {
             select: {
               id: true,
               name: true,
@@ -868,3 +872,4 @@ export const getUserTasksForHRTimesheet = authActionClient
       );
     }
   });
+
