@@ -60,7 +60,11 @@
       "Bash(src/app/dashboard/reports/templates/page.tsx)",
       "Bash(src/components/features/generate-report-dialog.tsx)",
       "Bash(src/components/features/report-template-editor-dialog.tsx)",
-      "Bash(src/lib/validations/report-template.ts)"
+      "Bash(src/lib/validations/report-template.ts)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" status)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" ls-files)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff HEAD src/app/dashboard/reports/page.tsx)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .claude/settings.local.json)"
     ],
     "deny": [],
     "ask": []
