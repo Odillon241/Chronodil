@@ -566,9 +566,13 @@ export const updateHRActivity = authActionClient
       throw new Error("Activité non trouvée ou non modifiable");
     }
 
-    // Recalculer les heures si les dates ont changé
+    // Gérer totalHours : priorité à la valeur manuelle si fournie
     let totalHours = activity.totalHours;
-    if (data.startDate || data.endDate) {
+    if (data.totalHours !== undefined && data.totalHours > 0) {
+      // L'utilisateur a fourni une valeur manuelle, on l'utilise
+      totalHours = data.totalHours;
+    } else if (data.startDate || data.endDate) {
+      // Si les dates changent et aucune valeur manuelle, recalculer automatiquement
       const startDate = data.startDate || activity.startDate;
       const endDate = data.endDate || activity.endDate;
       // Calculer les heures ouvrables (8h/jour, lundi-vendredi)
@@ -576,14 +580,15 @@ export const updateHRActivity = authActionClient
     }
 
     // Exclure les champs problÃ©matiques et les gÃ©rer avec des casts
-    const { taskId, catalogId, complexity, ...updateData } = data;
+    const { taskId, catalogId, complexity, totalHours: _, ...updateData } = data;
 
     const updatedActivity = await prisma.hRActivity.update({
       where: { id },
       data: {
         ...updateData,
         ...(complexity ? { complexity: complexity as any } : {}),
-        ...(data.startDate || data.endDate ? { totalHours } : {}),
+        // Toujours mettre à jour totalHours si fourni ou si les dates ont changé
+        ...((data.totalHours !== undefined || data.startDate || data.endDate) ? { totalHours } : {}),
         updatedAt: new Date(),
       },
       include: {

@@ -41,6 +41,7 @@ import {
   getActivityCatalog,
   getActivityCategories,
   updateHRTimesheet,
+  updateHRActivity,
 } from "@/actions/hr-timesheet.actions";
 import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
 import { useRouter, useParams } from "next/navigation";
@@ -56,7 +57,9 @@ interface Activity {
   endDate: Date;
   totalHours: number;
   status: string;
+  taskId?: string | null;
   ActivityCatalog?: {
+    id: string;
     name: string;
     category: string;
   } | null;
@@ -230,6 +233,7 @@ export default function EditHRTimesheetPage() {
   const [inputMode, setInputMode] = useState<"task" | "manual">("task");
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [selectedCatalogId, setSelectedCatalogId] = useState<string>("");
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
   const {
     register,
@@ -269,6 +273,16 @@ export default function EditHRTimesheetPage() {
           router.push(`/dashboard/hr-timesheet/${timesheetId}`);
           return;
         }
+
+        console.log("📥 Timesheet chargé:", {
+          activitiesCount: ts.HRActivity.length,
+          activities: ts.HRActivity.map(a => ({
+            id: a.id,
+            name: a.activityName,
+            weeklyQuantity: a.weeklyQuantity,
+            totalHours: a.totalHours,
+          })),
+        });
 
         setTimesheet(ts);
       } else {
@@ -346,13 +360,86 @@ export default function EditHRTimesheetPage() {
 
   // Fonction pour déterminer le type à partir de la catégorie
   const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
-    // La catégorie "Reporting" correspond au type REPORTING, toutes les autres sont OPERATIONAL
-    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
+    // La catégorie "CONTROLE ET REPORTING" correspond au type REPORTING, toutes les autres sont OPERATIONAL
+    return category === "CONTROLE ET REPORTING" ? "REPORTING" : "OPERATIONAL";
   };
 
   const onSubmitActivity = async (data: HRActivityInput) => {
     if (!timesheet) return;
 
+    // Si on est en mode édition
+    if (editingActivity) {
+      setIsSaving(true);
+      try {
+        // Transformer l'objet en données de mise à jour
+        let updateData: Partial<HRActivityInput> = {
+          activityName: data.activityName,
+          description: data.description,
+          periodicity: data.periodicity,
+          weeklyQuantity: data.weeklyQuantity,
+          totalHours: data.totalHours,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          status: data.status,
+        };
+
+        // Si on est en mode tâche, inclure les champs de la tâche
+        if (inputMode === "task" && selectedTaskId) {
+          const selectedTask = availableTasks.find(t => t.id === selectedTaskId);
+          updateData = {
+            ...updateData,
+            taskId: selectedTaskId,
+            priority: selectedTask?.priority,
+            complexity: selectedTask?.complexity || undefined,
+            estimatedHours: selectedTask?.estimatedHours || undefined,
+          };
+        } else {
+          // Mode manuel
+          const activityType = getTypeFromCategory(selectedCategory);
+          updateData = {
+            ...updateData,
+            activityType,
+          };
+          // Si un catalogId a été sélectionné, l'inclure
+          if (selectedCatalogId) {
+            updateData.catalogId = selectedCatalogId;
+          }
+        }
+
+        console.log("📤 Mise à jour activité:", {
+          id: editingActivity.id,
+          updateData,
+          weeklyQuantity: updateData.weeklyQuantity,
+          totalHours: updateData.totalHours,
+        });
+
+        const result = await updateHRActivity({
+          id: editingActivity.id,
+          data: updateData,
+        });
+
+        if (result?.serverError) {
+          toast.error(result.serverError);
+        } else if (result?.data) {
+          console.log("✅ Activité mise à jour:", {
+            weeklyQuantity: result.data.weeklyQuantity,
+            totalHours: result.data.totalHours,
+          });
+          toast.success("Activité mise à jour !");
+          resetForm();
+          loadTimesheet();
+        } else {
+          toast.error("Erreur lors de la mise à jour");
+        }
+      } catch (error) {
+        toast.error("Erreur lors de la mise à jour");
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    // Mode création
     // Transformer l'objet en HRActivityInput compatible avec le backend
     let activityData: HRActivityInput;
 
@@ -399,11 +486,7 @@ export default function EditHRTimesheetPage() {
       if (result?.data) {
         toast.success("Activité ajoutée !");
         console.log("✅ Activité créée avec succès, taskId:", result.data.taskId);
-        reset();
-        setSelectedCategory("");
-        setSelectedTaskId("");
-        setSelectedCatalogId("");
-        setShowActivityForm(false);
+        resetForm();
         loadTimesheet(); // Recharger pour voir la nouvelle activité
       } else {
         toast.error(result?.serverError || "Erreur lors de l'ajout");
@@ -433,6 +516,57 @@ export default function EditHRTimesheetPage() {
     } catch (error) {
       toast.error("Erreur lors de la suppression");
     }
+  };
+
+  const handleEditActivity = (activity: Activity) => {
+    setEditingActivity(activity);
+    setShowActivityForm(true);
+
+    // Pré-remplir le formulaire avec les données de l'activité
+    setValue("activityName", activity.activityName);
+    setValue("description", activity.description || "");
+    setValue("periodicity", activity.periodicity as any);
+    setValue("weeklyQuantity", activity.weeklyQuantity || undefined);
+    setValue("totalHours", activity.totalHours || undefined);
+    setValue("startDate", new Date(activity.startDate));
+    setValue("endDate", new Date(activity.endDate));
+    setValue("status", activity.status as any);
+    setValue("activityType", activity.activityType as any);
+
+    // Déterminer le mode de saisie
+    if (activity.taskId) {
+      // Activité liée à une tâche
+      setInputMode("task");
+      setSelectedTaskId(activity.taskId);
+      // Trouver la tâche pour pré-remplir les champs
+      const task = availableTasks.find(t => t.id === activity.taskId);
+      if (task) {
+        setValue("priority", task.priority);
+        setValue("complexity", task.complexity || undefined);
+        setValue("estimatedHours", task.estimatedHours || undefined);
+      }
+    } else if (activity.ActivityCatalog) {
+      // Activité du catalogue
+      setInputMode("manual");
+      setSelectedCategory(activity.ActivityCatalog.category);
+      setSelectedCatalogId(activity.ActivityCatalog.id);
+      setValue("catalogId", activity.ActivityCatalog.id);
+    } else {
+      // Activité manuelle sans catalogue
+      setInputMode("manual");
+      setSelectedCategory("");
+      setSelectedCatalogId("");
+    }
+  };
+
+  const resetForm = () => {
+    reset();
+    setSelectedCategory("");
+    setSelectedTaskId("");
+    setSelectedCatalogId("");
+    setEditingActivity(null);
+    setShowActivityForm(false);
+    setInputMode("task");
   };
 
   const calculateActivityDuration = (start: Date, end: Date): number => {
@@ -565,19 +699,29 @@ export default function EditHRTimesheetPage() {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => setShowActivityForm(!showActivityForm)}
+                onClick={() => {
+                  resetForm();
+                  setShowActivityForm(true);
+                }}
                 className="bg-primary hover:bg-primary"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Nouvelle activité
+                {editingActivity ? "Nouvelle activité" : "Nouvelle activité"}
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Formulaire d'ajout d'activité */}
+          {/* Formulaire d'ajout/édition d'activité */}
           {showActivityForm && (
             <div className="p-4 border rounded-lg bg-muted/50">
+              {editingActivity && (
+                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 rounded-md">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    ✏️ Édition de l'activité : {editingActivity.activityName}
+                  </p>
+                </div>
+              )}
               <form onSubmit={handleSubmit(onSubmitActivity)} className="space-y-4">
                 {/* Choix du mode de saisie */}
                 <div className="space-y-2">
@@ -796,6 +940,38 @@ export default function EditHRTimesheetPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
+                    <Label htmlFor="weeklyQuantity">Quantité hebdomadaire</Label>
+                    <Input
+                      id="weeklyQuantity"
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Ex: 5"
+                      {...register("weeklyQuantity", { valueAsNumber: true })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Nombre de fois que l'activité est effectuée par semaine
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="totalHours">Durée totale (heures)</Label>
+                    <Input
+                      id="totalHours"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder="Ex: 8.5"
+                      {...register("totalHours", { valueAsNumber: true })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Nombre total d'heures consacrées à cette activité
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
                     <Label htmlFor="startDate">Date début *</Label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -846,19 +1022,22 @@ export default function EditHRTimesheetPage() {
                     className="bg-primary hover:bg-primary"
                     disabled={isSaving}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {isSaving ? "Ajout..." : "Ajouter l'activité"}
+                    {editingActivity ? (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        {isSaving ? "Mise à jour..." : "Mettre à jour l'activité"}
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {isSaving ? "Ajout..." : "Ajouter l'activité"}
+                      </>
+                    )}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => {
-                      reset();
-                      setSelectedCategory("");
-                      setSelectedTaskId("");
-                      setSelectedCatalogId("");
-                      setShowActivityForm(false);
-                    }}
+                    onClick={resetForm}
                   >
                     Annuler
                   </Button>
@@ -879,6 +1058,7 @@ export default function EditHRTimesheetPage() {
             <HRTimesheetActivitiesTable
               activities={timesheet.HRActivity}
               onDelete={handleDeleteActivity}
+              onEdit={handleEditActivity}
               showActions={true}
             />
           )}

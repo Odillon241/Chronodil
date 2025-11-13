@@ -3,7 +3,14 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Search, X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter } from "lucide-react";
+import { Search, X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter, Edit2 } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +57,7 @@ interface Activity {
 interface HRTimesheetActivitiesTableProps {
   activities: Activity[];
   onDelete?: (id: string) => void;
+  onEdit?: (activity: Activity) => void;
   showActions?: boolean;
 }
 
@@ -75,6 +83,7 @@ const getActivityTypeBadge = (type: string) => {
 export function HRTimesheetActivitiesTable({
   activities,
   onDelete,
+  onEdit,
   showActions = false,
 }: HRTimesheetActivitiesTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -511,61 +520,101 @@ export function HRTimesheetActivitiesTable({
             </TableHeader>
             <TableBody>
               {filteredDisplayActivities.map((activity) => (
-                <TableRow key={activity.id}>
-                  <TableCell className="font-medium">
-                    {activity.ActivityCatalog?.category || "Autres"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="font-medium">{activity.activityName}</p>
-                      {activity.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {activity.description}
-                        </p>
-                      )}
-                      <div className="text-xs text-muted-foreground md:hidden">
+                <ContextMenu key={activity.id}>
+                  <ContextMenuTrigger asChild>
+                    <TableRow>
+                      <TableCell className="font-medium">
+                        {activity.ActivityCatalog?.category || "Autres"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <p className="font-medium">{activity.activityName}</p>
+                          {activity.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-1">
+                              {activity.description}
+                            </p>
+                          )}
+                          <div className="text-xs text-muted-foreground md:hidden">
+                            {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
+                            {" → "}
+                            {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getActivityTypeBadge(activity.activityType)}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="outline">
+                          {getPeriodicityLabel(activity.periodicity)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
+                          {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
                         {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
                         {" → "}
                         {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getActivityTypeBadge(activity.activityType)}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Badge variant="outline">
-                      {getPeriodicityLabel(activity.periodicity)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
-                      {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
-                    {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
-                    {" → "}
-                    {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-semibold text-primary">
-                      {activity.totalHours.toFixed(1)}h
-                    </span>
-                  </TableCell>
-                  {showActions && onDelete && (
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(activity.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="font-semibold text-primary">
+                          {activity.totalHours.toFixed(1)}h
+                        </span>
+                      </TableCell>
+                      {showActions && (
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {onEdit && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onEdit(activity)}
+                                className="text-primary hover:text-primary"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {onDelete && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onDelete(activity.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  </ContextMenuTrigger>
+                  {showActions && (
+                    <ContextMenuContent>
+                      {onEdit && (
+                        <ContextMenuItem onClick={() => onEdit(activity)}>
+                          <Edit2 className="mr-2 h-4 w-4" />
+                          Éditer l'activité
+                        </ContextMenuItem>
+                      )}
+                      {onDelete && (
+                        <>
+                          {onEdit && <ContextMenuSeparator />}
+                          <ContextMenuItem
+                            onClick={() => onDelete(activity.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Supprimer l'activité
+                          </ContextMenuItem>
+                        </>
+                      )}
+                    </ContextMenuContent>
                   )}
-                </TableRow>
+                </ContextMenu>
               ))}
             </TableBody>
           </Table>
