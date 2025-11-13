@@ -143,10 +143,24 @@ export function TaskGantt({
     return tasks
       .filter((task) => task.dueDate)
       .map((task) => {
-        const startAt = task.dueDate ? new Date(task.dueDate) : new Date();
-        const endAt = task.estimatedHours
-          ? new Date(startAt.getTime() + task.estimatedHours * 60 * 60 * 1000)
-          : new Date(startAt.getTime() + 24 * 60 * 60 * 1000); // Par défaut 1 jour
+        const dueDate = task.dueDate ? new Date(task.dueDate) : new Date();
+
+        // Calculer la date de début en fonction des heures estimées
+        // Si estimatedHours existe, on calcule startAt = dueDate - estimatedHours
+        // Sinon, on affiche la tâche sur 1 jour (startAt = dueDate, endAt = dueDate + 24h)
+        let startAt: Date;
+        let endAt: Date;
+
+        if (task.estimatedHours && task.estimatedHours > 0) {
+          // Convertir les heures en millisecondes et calculer la date de début
+          const durationMs = task.estimatedHours * 60 * 60 * 1000;
+          startAt = new Date(dueDate.getTime() - durationMs);
+          endAt = dueDate;
+        } else {
+          // Par défaut, afficher la tâche sur 1 jour
+          startAt = dueDate;
+          endAt = new Date(dueDate.getTime() + 24 * 60 * 60 * 1000);
+        }
 
         return {
           id: task.id,

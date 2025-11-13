@@ -57,13 +57,27 @@ import { TaskActivityTimeline } from "@/components/features/task-activity-timeli
 import { useSession } from "@/lib/auth-client";
 import type { Session } from "@/lib/auth";
 import { TaskRoadmap } from "@/components/features/task-roadmap";
-import { useRealtimeTasks } from "@/hooks/use-realtime-tasks";
+import { useRealtimeTasksOptimized } from "@/hooks/use-realtime-tasks.optimized";
 import { TaskKanban } from "@/components/features/task-kanban";
 import { TaskGantt } from "@/components/features/task-gantt";
 import { TaskCalendar } from "@/components/features/task-calendar";
 import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
 import { useTasks, type ViewMode } from "@/contexts/tasks-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { LoaderIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Messages de chargement rotatifs
+const loadingMessages = [
+  "Chargement des tâches...",
+  "Veuillez patienter, chargement en cours...",
+  "Cela ne prendra que quelques secondes...",
+  "Merci de votre patience, chargement des données...",
+  "Presque terminé, veuillez patienter...",
+  "Récupération de vos tâches en cours...",
+  "Chargement, merci d'attendre...",
+  "Traitement des données, veuillez patienter...",
+];
 
 export default function TasksPage() {
   const { data: session } = useSession() as { data: Session | null };
@@ -104,17 +118,30 @@ export default function TasksPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedCatalogId, setSelectedCatalogId] = useState<string>("");
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+
+  // Faire tourner les messages pendant le chargement
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingMessageIndex(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+    }, 2000); // Changer de message toutes les 2 secondes
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   // Activer les rappels de tâches (utiliser userTasks pour les rappels)
   useTaskReminders({ tasks: userTasks });
 
   // Écouter les changements en temps réel sur les tâches
-  useRealtimeTasks({
-    onTaskChange: (eventType, taskId) => {
-      console.log('🔄 Mise à jour en temps réel - Rechargement des tâches...', { eventType, taskId });
-      refreshTasks();
-    },
-    userId: session?.user?.id
+  // ⚡ OPTIMISÉ: Filtrage côté serveur + synchronisation automatique React Query
+  useRealtimeTasksOptimized({
+    userId: session?.user?.id || "",
+    enabled: !!session?.user?.id,
   });
 
   const [formData, setFormData] = useState({
@@ -999,6 +1026,16 @@ export default function TasksPage() {
                 />
               </div>
 
+              {/* Loader de chargement */}
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 min-h-[400px]">
+                  <LoaderIcon className="h-8 w-8 animate-spin text-primary mb-4" />
+                  <p className="text-sm text-muted-foreground animate-pulse">
+                    {loadingMessages[loadingMessageIndex]}
+                  </p>
+                </div>
+              ) : (
+                <>
               {/* Vue Calendrier */}
               <TabsContent value="calendar" className="mt-4 min-w-0">
                 <div className="w-full overflow-x-auto -mx-6 px-6">
@@ -1669,6 +1706,8 @@ export default function TasksPage() {
                   )}
                 </div>
               </TabsContent>
+                </>
+              )}
             </Tabs>
       )}
       <ConfirmationDialog />

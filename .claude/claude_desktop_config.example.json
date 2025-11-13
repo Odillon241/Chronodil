@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "REMPLACEZ_PAR_VOTRE_TOKEN_PERSONNEL"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/server@latest"
+      ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-shadcn@latest"
+      ]
+    }
+  },
+  "globalShortcut": "Ctrl+Space"
+}

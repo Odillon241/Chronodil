@@ -104,13 +104,14 @@ const getPriorityColor = (priority: string) => {
 };
 
 // Composant pour une tâche draggable
-function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, currentUserId, currentUserRole }: {
+function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, currentUserId, currentUserRole, currentDate }: {
   task: Task;
   onEventClick: (task: Task) => void;
   onEventDelete?: (taskId: string) => Promise<void>;
   onEventToggle?: (task: Task) => Promise<void>;
   currentUserId?: string;
   currentUserRole?: string;
+  currentDate: Date;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
@@ -120,6 +121,23 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
   const priorityColor = getPriorityColor(task.priority);
   const isCompleted = task.status === "DONE";
 
+  // Déterminer si c'est le premier jour, un jour intermédiaire ou le dernier jour
+  const dueDate = task.dueDate ? new Date(task.dueDate) : new Date();
+  const startDate = task.estimatedHours && task.estimatedHours > 0
+    ? new Date(dueDate.getTime() - task.estimatedHours * 60 * 60 * 1000)
+    : dueDate;
+
+  const currentDateNorm = new Date(currentDate);
+  currentDateNorm.setHours(0, 0, 0, 0);
+  const startDateNorm = new Date(startDate);
+  startDateNorm.setHours(0, 0, 0, 0);
+  const dueDateNorm = new Date(dueDate);
+  dueDateNorm.setHours(0, 0, 0, 0);
+
+  const isFirstDay = currentDateNorm.getTime() === startDateNorm.getTime();
+  const isLastDay = currentDateNorm.getTime() === dueDateNorm.getTime();
+  const isMiddleDay = !isFirstDay && !isLastDay;
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -128,10 +146,16 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
           {...listeners}
           {...attributes}
           className={cn(
-            "group relative px-2 py-1 mb-1 rounded border-l-4 text-xs cursor-pointer transition-all",
+            "group relative px-2 py-1 mb-1 text-xs cursor-pointer transition-all",
             priorityColor,
             isCompleted && "opacity-60 line-through",
-            isDragging && "opacity-50"
+            isDragging && "opacity-50",
+            // Arrondir les coins selon la position dans la période
+            isFirstDay && "rounded-l border-l-4",
+            isLastDay && "rounded-r border-r-4",
+            isMiddleDay && "border-l-0 border-r-0",
+            // Ajouter un indicateur visuel pour les jours intermédiaires
+            isMiddleDay && "border-t-2 border-b-2"
           )}
           onClick={() => onEventClick(task)}
         >
@@ -309,6 +333,7 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
             onEventToggle={onEventToggle}
             currentUserId={currentUserId}
             currentUserRole={currentUserRole}
+            currentDate={date}
           />
         ))}
 
@@ -352,18 +377,47 @@ export function TaskCalendar({
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   // Grouper les tâches par jour
+  // Les tâches avec estimatedHours s'affichent sur plusieurs jours consécutifs
   const tasksByDay = useMemo(() => {
     const grouped = new Map<string, Task[]>();
 
     tasks.forEach(task => {
       if (task.dueDate) {
-        const date = new Date(task.dueDate);
-        const dayKey = format(date, 'yyyy-MM-dd');
+        const dueDate = new Date(task.dueDate);
 
-        if (!grouped.has(dayKey)) {
-          grouped.set(dayKey, []);
+        // Calculer la date de début en fonction des heures estimées
+        let startDate: Date;
+        if (task.estimatedHours && task.estimatedHours > 0) {
+          // Si estimatedHours existe, calculer startDate = dueDate - estimatedHours
+          const durationMs = task.estimatedHours * 60 * 60 * 1000;
+          startDate = new Date(dueDate.getTime() - durationMs);
+        } else {
+          // Par défaut, afficher sur 1 jour uniquement
+          startDate = dueDate;
         }
-        grouped.get(dayKey)!.push(task);
+
+        // Générer toutes les dates entre startDate et dueDate
+        const currentDate = new Date(startDate);
+        currentDate.setHours(0, 0, 0, 0); // Normaliser à minuit
+        const endDate = new Date(dueDate);
+        endDate.setHours(0, 0, 0, 0); // Normaliser à minuit
+
+        // Limiter à 60 jours maximum pour éviter les boucles infinies
+        let dayCount = 0;
+        const maxDays = 60;
+
+        while (currentDate <= endDate && dayCount < maxDays) {
+          const dayKey = format(currentDate, 'yyyy-MM-dd');
+
+          if (!grouped.has(dayKey)) {
+            grouped.set(dayKey, []);
+          }
+          grouped.get(dayKey)!.push(task);
+
+          // Avancer d'un jour
+          currentDate.setDate(currentDate.getDate() + 1);
+          dayCount++;
+        }
       }
     });
 
