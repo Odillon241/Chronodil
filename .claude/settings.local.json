@@ -66,7 +66,22 @@
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff HEAD src/app/dashboard/reports/page.tsx)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .claude/settings.local.json)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nchore: Mettre à jour la configuration locale Claude\n\n- Mise à jour de .claude/settings.local.json\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(del \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13_UPSERT.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13_CLEAN.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\CHOISIR_VERSION_SEED.md\")"
+      "Bash(del \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13_UPSERT.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13_CLEAN.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\CHOISIR_VERSION_SEED.md\")",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfix: Corriger les erreurs TypeScript dans les hooks realtime et hr-timesheet\n\nCorrections apportées:\n- src/app/dashboard/hr-timesheet/[id]/edit/page.tsx: Ajout du fallback pour activity.ActivityCatalog.id (ligne 552)\n- src/hooks/use-realtime-chat.tsx: Cast ''as any'' pour payload.new/old (lignes 53-54, 82-83, 108-110)\n- src/hooks/use-realtime-dashboard.tsx: Cast ''as any'' pour payload.new/old (lignes 52, 66, 81, 96)\n- src/hooks/use-realtime-hr-timesheets.tsx: Cast ''as any'' pour payload.new/old (lignes 51-53, 88)\n- src/hooks/use-realtime-projects.tsx: Cast ''as any'' pour payload.new/old (lignes 51-52, 88-89)\n- src/hooks/use-realtime-tasks.tsx: Cast ''as any'' pour payload.new/old (lignes 59-60, 98, 103, 123, 127, 146)\n\nRésolution:\n- Tous les fichiers realtime utilisent désormais des casts explicites pour éviter les erreurs TypeScript\n- Le champ catalogId dans hr-timesheet utilise l''opérateur de coalescence nulle (??) pour garantir un string\n- TypeScript compile maintenant sans erreurs (vérifié avec pnpm tsc --noEmit)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(vercel --version:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel logs:*)",
+      "Bash(vercel inspect:*)",
+      "Bash(vercel build:*)",
+      "Bash(vercel pull:*)",
+      "Bash(pnpm --version:*)",
+      "Bash(npm view:*)",
+      "Bash(corepack install)",
+      "Bash(vercel deploy:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: Restaurer l''environnement de déploiement Vercel\n\n- Restauration de pnpm-lock.yaml pour le déploiement Vercel\n- Résolution du problème: \"Headless installation requires a pnpm-lock.yaml file\"\n- package.json maintient pnpm@9.0.0 (version stable)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
