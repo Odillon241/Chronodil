@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FolderKanban, Users, CheckSquare2, Calendar, Clock, ListTodo, Plus, FileText } from "lucide-react";
 import Link from "next/link";
+import { DashboardRealtimeWrapper } from "@/components/features/dashboard-realtime-wrapper";
 
 export const metadata = {
   title: 'Tableau de bord | Chronodil',
@@ -158,6 +159,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
+      <DashboardRealtimeWrapper />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("title")}</h1>

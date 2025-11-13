@@ -59,7 +59,7 @@ interface Activity {
   status: string;
   taskId?: string | null;
   ActivityCatalog?: {
-    id: string;
+    id?: string;
     name: string;
     category: string;
   } | null;
@@ -549,8 +549,9 @@ export default function EditHRTimesheetPage() {
       // Activité du catalogue
       setInputMode("manual");
       setSelectedCategory(activity.ActivityCatalog.category);
-      setSelectedCatalogId(activity.ActivityCatalog.id);
-      setValue("catalogId", activity.ActivityCatalog.id);
+      const catalogId = activity.ActivityCatalog.id ?? "";
+      setSelectedCatalogId(catalogId);
+      setValue("catalogId", catalogId);
     } else {
       // Activité manuelle sans catalogue
       setInputMode("manual");

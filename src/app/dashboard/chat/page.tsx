@@ -19,6 +19,7 @@ import {
 } from "@/actions/chat.actions";
 import { getAllUsersForChat } from "@/actions/user.actions";
 import { getProjects } from "@/actions/project.actions";
+import { useRealtimeChat } from "@/hooks/use-realtime-chat";
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -107,6 +108,29 @@ export default function ChatPage() {
     }
   }, [conversationIdParam, loading]);
 
+  // Real-time updates pour le chat
+  useRealtimeChat({
+    onConversationChange: (eventType, conversationId) => {
+      // Rafraîchir la liste des conversations
+      loadConversations();
+      // Si la conversation modifiée est celle actuellement sélectionnée, la recharger
+      if (conversationId && selectedConversation?.id === conversationId) {
+        loadConversation(conversationId);
+      }
+    },
+    onMessageChange: (eventType, messageId, conversationId) => {
+      // Si c'est un message dans la conversation actuelle, rafraîchir
+      if (conversationId && selectedConversation?.id === conversationId) {
+        loadConversation(conversationId);
+        loadConversations(); // Pour mettre à jour le compteur de messages non lus
+      } else {
+        // Sinon, juste rafraîchir la liste pour mettre à jour les compteurs
+        loadConversations();
+      }
+    },
+    userId: currentUser?.id,
+  });
+
   // Gérer la sélection d'une conversation
   const handleSelectConversation = async (conversationId: string) => {
     await loadConversation(conversationId);
@@ -175,7 +199,7 @@ export default function ChatPage() {
 
   if (!currentUser) {
     return (
-      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex items-center justify-center">
+      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-20" />
           <p className="text-xs sm:text-sm text-muted-foreground">Chargement...</p>
@@ -186,7 +210,7 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex">
+      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex bg-background">
         {/* Sidebar Skeleton */}
         <div className="w-full md:w-80 border-r p-3 md:p-4 space-y-3 md:space-y-4">
           <Skeleton className="h-9 md:h-10 w-full" />
@@ -211,10 +235,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="fixed inset-0 top-16 left-0 md:left-64 right-0">
+    <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 bg-background">
       <div className="grid grid-cols-1 md:grid-cols-[350px,1fr] h-full">
         {/* Sidebar - Liste des conversations */}
-        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 ${selectedConversation ? 'hidden md:block' : 'block'}`}>
+        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 bg-background ${selectedConversation ? 'hidden md:block' : 'block'}`}>
           <ChatConversationList
             conversations={conversations}
             currentUserId={currentUser.id}
@@ -227,7 +251,7 @@ export default function ChatPage() {
         </Card>
 
         {/* Main Content - Messages */}
-        <Card className={`rounded-none border-0 ${selectedConversation ? 'block' : 'hidden md:block'}`}>
+        <Card className={`rounded-none border-0 bg-background ${selectedConversation ? 'block' : 'hidden md:block'}`}>
           {selectedConversation ? (
             <ChatMessageList
               conversation={selectedConversation}

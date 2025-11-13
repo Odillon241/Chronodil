@@ -10,7 +10,7 @@ import {
   GanttSidebarItem,
   GanttFeatureList,
   GanttFeatureListGroup,
-  GanttFeatureRow,
+  GanttFeatureItem,
   GanttToday,
   GanttMarker,
   GanttCreateMarkerTrigger,
@@ -87,6 +87,33 @@ const getPriorityLabel = (priority: string) => {
     default:
       return priority;
   }
+};
+
+// Palette de couleurs pour les avatars
+const AVATAR_COLORS = [
+  { bg: "bg-blue-500", text: "text-white" },
+  { bg: "bg-green-500", text: "text-white" },
+  { bg: "bg-purple-500", text: "text-white" },
+  { bg: "bg-pink-500", text: "text-white" },
+  { bg: "bg-orange-500", text: "text-white" },
+  { bg: "bg-cyan-500", text: "text-white" },
+  { bg: "bg-indigo-500", text: "text-white" },
+  { bg: "bg-red-500", text: "text-white" },
+  { bg: "bg-yellow-500", text: "text-white" },
+  { bg: "bg-teal-500", text: "text-white" },
+  { bg: "bg-amber-500", text: "text-white" },
+  { bg: "bg-rose-500", text: "text-white" },
+];
+
+// Générer une couleur cohérente basée sur l'ID ou le nom de l'utilisateur
+const getAvatarColor = (userId: string | undefined, userName: string | undefined) => {
+  const identifier = userId || userName || "default";
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
 };
 
 export function TaskGantt({
@@ -382,99 +409,126 @@ export function TaskGantt({
             ) : (
               Array.from(featuresByLane.entries()).map(([lane, features]) => (
                 <GanttFeatureListGroup key={lane}>
-                  <GanttFeatureRow
-                    features={features}
-                    onMove={handleMove}
-                  >
-                    {(feature) => {
-                      const task = tasksMap.get(feature.id);
-                      if (!task) return null;
+                  {features.map((feature) => {
+                    const task = tasksMap.get(feature.id);
+                    if (!task) return null;
 
-                      return (
-                        <ContextMenu>
-                          <ContextMenuTrigger className="flex-1 w-full">
-                            <div className="flex items-center gap-2 w-full">
-                              <div
-                                className="h-2 w-2 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: feature.status.color }}
-                              />
-                              <p className="flex-1 truncate font-medium">
-                                {feature.name}
-                              </p>
-                              <div className="flex items-center gap-1 flex-shrink-0">
-                                {task.Creator && task.Creator.id !== currentUserId && (
-                                  <Avatar className="h-4 w-4 border border-border">
-                                    <AvatarImage src={task.Creator.avatar || undefined} />
-                                    <AvatarFallback className="text-[8px]">
-                                      {task.Creator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                )}
-                                <Badge
-                                  variant="outline"
+                    return (
+                      <ContextMenu key={feature.id}>
+                        <ContextMenuTrigger asChild>
+                          <div className="flex w-full" data-feature-id={feature.id}>
+                            <button
+                              onClick={() => handleSelectItem(feature.id)}
+                              type="button"
+                              className="w-full"
+                            >
+                              <GanttFeatureItem
+                                {...feature}
+                                onMove={handleMove}
+                              >
+                                {/* Bulle d'indicateur de statut */}
+                                <div
                                   className={cn(
-                                    "text-[10px] px-1 py-0",
-                                    getPriorityColor(task.priority)
+                                    "h-2 w-2 shrink-0 rounded-full mr-2",
+                                    task?.status === "DONE"
+                                      ? "bg-green-500"
+                                      : task?.status === "IN_PROGRESS"
+                                      ? "bg-blue-500 animate-pulse"
+                                      : "bg-gray-400"
                                   )}
-                                >
-                                  {getPriorityLabel(task.priority)}
-                                </Badge>
-                              </div>
-                            </div>
-                          </ContextMenuTrigger>
-                          <ContextMenuContent>
-                            {(() => {
-                              const isCreator = task.Creator?.id === currentUserId;
-                              const isAdmin = currentUserRole === "ADMIN";
-                              const canModify = isCreator || isAdmin;
-                              
-                              return (
-                                <>
-                                  {canModify && (
+                                  title={
+                                    task?.status === "DONE"
+                                      ? "Terminé"
+                                      : task?.status === "IN_PROGRESS"
+                                      ? "En cours"
+                                      : "À faire"
+                                  }
+                                />
+                                <p className="flex-1 truncate text-xs">
+                                  {feature.name}
+                                </p>
+                                {(() => {
+                                  const creator = (task as any).Creator || (task as any).User_Task_createdByToUser;
+                                  if (!creator) return null;
+                                  
+                                  const initials = creator.name
+                                    ?.split(" ")
+                                    .map((n: string) => n[0])
+                                    .join("")
+                                    .slice(0, 2)
+                                    .toUpperCase() || "?";
+                                  
+                                  const color = getAvatarColor(creator.id, creator.name);
+                                  
+                                  return (
+                                    <Avatar className="h-6 w-6 flex-shrink-0">
+                                      <AvatarImage src={creator.avatar || undefined} alt={creator.name} />
+                                      <AvatarFallback className={cn(
+                                        "text-[10px] font-medium leading-none flex items-center justify-center",
+                                        color.bg,
+                                        color.text
+                                      )}>
+                                        {initials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  );
+                                })()}
+                              </GanttFeatureItem>
+                            </button>
+                          </div>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          {(() => {
+                            const isCreator = task.Creator?.id === currentUserId;
+                            const isAdmin = currentUserRole === "ADMIN";
+                            const canModify = isCreator || isAdmin;
+                            
+                            return (
+                              <>
+                                {canModify && (
+                                  <ContextMenuItem
+                                    onClick={() => handleSelectItem(feature.id)}
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Modifier
+                                  </ContextMenuItem>
+                                )}
+                                {canModify && onEventToggle && (
+                                  <ContextMenuItem
+                                    onClick={() => handleToggle(feature.id)}
+                                  >
+                                    {task.isActive ? (
+                                      <>
+                                        <Circle className="h-4 w-4 mr-2" />
+                                        Désactiver
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        Activer
+                                      </>
+                                    )}
+                                  </ContextMenuItem>
+                                )}
+                                {canModify && onEventDelete && (
+                                  <>
+                                    <ContextMenuSeparator />
                                     <ContextMenuItem
-                                      onClick={() => handleSelectItem(feature.id)}
+                                      onClick={() => handleDelete(feature.id)}
+                                      className="text-destructive"
                                     >
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Modifier
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Supprimer
                                     </ContextMenuItem>
-                                  )}
-                                  {canModify && onEventToggle && (
-                                    <ContextMenuItem
-                                      onClick={() => handleToggle(feature.id)}
-                                    >
-                                      {task.isActive ? (
-                                        <>
-                                          <Circle className="h-4 w-4 mr-2" />
-                                          Désactiver
-                                        </>
-                                      ) : (
-                                        <>
-                                          <CheckCircle className="h-4 w-4 mr-2" />
-                                          Activer
-                                        </>
-                                      )}
-                                    </ContextMenuItem>
-                                  )}
-                                  {canModify && onEventDelete && (
-                                    <>
-                                      <ContextMenuSeparator />
-                                      <ContextMenuItem
-                                        onClick={() => handleDelete(feature.id)}
-                                        className="text-destructive"
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Supprimer
-                                      </ContextMenuItem>
-                                    </>
-                                  )}
-                                </>
-                              );
-                            })()}
-                          </ContextMenuContent>
-                        </ContextMenu>
-                      );
-                    }}
-                  </GanttFeatureRow>
+                                  </>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </ContextMenuContent>
+                      </ContextMenu>
+                    );
+                  })}
                 </GanttFeatureListGroup>
               ))
             )}

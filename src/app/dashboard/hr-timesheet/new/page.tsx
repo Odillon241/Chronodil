@@ -202,7 +202,7 @@ export default function NewHRTimesheetPage() {
 
   // Déterminer le type à partir de la catégorie
   const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
-    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
+    return category === "CONTROLE ET REPORTING" ? "REPORTING" : "OPERATIONAL";
   };
 
   // Filtrer les activités du catalogue selon la catégorie

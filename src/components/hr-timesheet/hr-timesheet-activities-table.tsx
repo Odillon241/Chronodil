@@ -49,6 +49,7 @@ interface Activity {
   totalHours: number;
   status: string;
   ActivityCatalog?: {
+    id?: string;
     name: string;
     category: string;
   } | null;

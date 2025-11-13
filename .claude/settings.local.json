@@ -64,7 +64,9 @@
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" status)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" ls-files)",
       "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" diff HEAD src/app/dashboard/reports/page.tsx)",
-      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .claude/settings.local.json)"
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" add .claude/settings.local.json)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nchore: Mettre à jour la configuration locale Claude\n\n- Mise à jour de .claude/settings.local.json\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(del \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13_UPSERT.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\seed_activity_catalog_2025_11_13_CLEAN.sql\" \"C:\\Users\\nexon\\chronodil_app_clone\\CHRONODIL_app\\prisma\\migrations\\CHOISIR_VERSION_SEED.md\")"
     ],
     "deny": [],
     "ask": []

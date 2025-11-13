@@ -50,6 +50,7 @@ import {
 import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+import { useRealtimeHRTimesheets } from "@/hooks/use-realtime-hr-timesheets";
 import {
   Menubar,
   MenubarMenu,
@@ -309,6 +310,19 @@ export default function HRTimesheetPage() {
       loadPendingTimesheets();
     }
   }, [dataView, loadMyTimesheets, loadPendingTimesheets]);
+
+  // Real-time updates pour HR Timesheets
+  useRealtimeHRTimesheets({
+    onHRTimesheetChange: (eventType, hrTimesheetId) => {
+      // Rafraîchir les données selon la vue actuelle
+      if (dataView === "my") {
+        loadMyTimesheets();
+      } else {
+        loadPendingTimesheets();
+      }
+    },
+    userId: session?.user?.id,
+  });
 
   const handleDelete = async (id: string) => {
     const confirmed = await showConfirmation({

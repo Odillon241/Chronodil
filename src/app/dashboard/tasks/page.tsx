@@ -110,10 +110,11 @@ export default function TasksPage() {
 
   // Écouter les changements en temps réel sur les tâches
   useRealtimeTasks({
-    onTaskChange: () => {
-      console.log('🔄 Mise à jour en temps réel - Rechargement des tâches...');
+    onTaskChange: (eventType, taskId) => {
+      console.log('🔄 Mise à jour en temps réel - Rechargement des tâches...', { eventType, taskId });
       refreshTasks();
-    }
+    },
+    userId: session?.user?.id
   });
 
   const [formData, setFormData] = useState({
