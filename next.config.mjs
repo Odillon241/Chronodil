@@ -8,10 +8,15 @@
   const nextConfig = {
     reactStrictMode: true,
 
+    // Ignorer les erreurs de prerendering
+    staticPageGenerationTimeout: 120,
+
     experimental: {
       serverActions: {
         bodySizeLimit: '2mb',
       },
+      // Désactiver le PPR qui cause des problèmes
+      ppr: false,
     },
 
     images: {

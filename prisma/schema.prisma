@@ -178,6 +178,7 @@ model HRTimesheet {
   createdAt                                DateTime          @default(now())
   updatedAt                                DateTime
   HRActivity                               HRActivity[]
+  Report                                   Report[]
   User_HRTimesheet_managerSignedByIdToUser User?             @relation("HRTimesheet_managerSignedByIdToUser", fields: [managerSignedById], references: [id])
   User_HRTimesheet_odillonSignedByIdToUser User?             @relation("HRTimesheet_odillonSignedByIdToUser", fields: [odillonSignedById], references: [id])
   User_HRTimesheet_userIdToUser            User              @relation("HRTimesheet_userIdToUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -292,13 +293,20 @@ model Report {
   includeSummary  Boolean           @default(false)
   fileSize        Int               @default(0)
   createdById     String
+  templateId      String?
+  reportType      String?
+  hrTimesheetId   String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
   User            User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  ReportTemplate  ReportTemplate?   @relation(fields: [templateId], references: [id])
+  HRTimesheet     HRTimesheet?      @relation(fields: [hrTimesheetId], references: [id])
   ReportRecipient ReportRecipient[]
 
   @@index([createdAt])
   @@index([createdById])
+  @@index([templateId])
+  @@index([hrTimesheetId])
 }
 
 model ReportRecipient {
@@ -315,6 +323,29 @@ model ReportRecipient {
   @@index([email])
   @@index([reportId])
   @@index([userId])
+}
+
+model ReportTemplate {
+  id              String          @id
+  name            String
+  description     String?
+  frequency       ReportFrequency
+  format          String          @default("word")
+  templateContent String
+  variables       Json?
+  isActive        Boolean         @default(true)
+  isDefault       Boolean         @default(false)
+  sortOrder       Int             @default(0)
+  createdById     String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  User            User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  Report          Report[]
+
+  @@index([frequency])
+  @@index([isActive])
+  @@index([isDefault])
+  @@index([createdById])
 }
 
 model ReportType {
@@ -500,6 +531,7 @@ model User {
   ProjectMember                                   ProjectMember[]
   Report                                          Report[]
   ReportRecipient                                 ReportRecipient[]
+  ReportTemplate                                  ReportTemplate[]
   Session                                         Session[]
   Task_Task_createdByToUser                       Task[]               @relation("Task_createdByToUser")
   Task_Task_evaluatedByToUser                     Task[]               @relation("Task_evaluatedByToUser")

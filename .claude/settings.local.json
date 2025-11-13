@@ -81,7 +81,11 @@
       "Bash(vercel deploy:*)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nchore: Restaurer l''environnement de déploiement Vercel\n\n- Restauration de pnpm-lock.yaml pour le déploiement Vercel\n- Résolution du problème: \"Headless installation requires a pnpm-lock.yaml file\"\n- package.json maintient pnpm@9.0.0 (version stable)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: Restaurer l''environnement de déploiement Vercel\n\n- Restauration de pnpm-lock.yaml pour le déploiement Vercel\n- Résolution du problème: \"Headless installation requires a pnpm-lock.yaml file\"\n- package.json maintient pnpm@9.0.0 (version stable)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(del:*)",
+      "Bash(git restore:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

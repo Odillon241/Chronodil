@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Force dynamic rendering pour tout le site (évite les erreurs de prerendering avec next-intl)
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
