@@ -477,12 +477,12 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="department">Département</Label>
-                  <Select value={form.departmentId || undefined} onValueChange={(val) => setForm({ ...form, departmentId: val === "none" ? "" : val })}>
+                  <Select value={form.departmentId || undefined} onValueChange={(val) => setForm({ ...form, departmentId: val === "no-department" ? "" : val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Aucun</SelectItem>
+                      <SelectItem value="no-department">Aucun</SelectItem>
                       {departments.map((dept) => (
                         <SelectItem key={dept.id} value={dept.id}>
                           {dept.name} ({dept.code})
@@ -494,12 +494,12 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="manager">Manager</Label>
-                  <Select value={form.managerId || undefined} onValueChange={(val) => setForm({ ...form, managerId: val === "none" ? "" : val })}>
+                  <Select value={form.managerId || undefined} onValueChange={(val) => setForm({ ...form, managerId: val === "no-manager" ? "" : val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Aucun</SelectItem>
+                      <SelectItem value="no-manager">Aucun</SelectItem>
                       {availableManagers.map((manager) => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.name || manager.email}
