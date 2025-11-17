@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
 import { compare, hash } from "@node-rs/bcrypt";
 import type { Role } from "@prisma/client";
+import { sendEmail, getResetPasswordEmailTemplate } from "@/lib/email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -11,6 +12,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    sendResetPassword: async ({ user, url, token }, request) => {
+      console.log(`📧 Envoi d'email de réinitialisation à ${user.email}`);
+
+      await sendEmail({
+        to: user.email,
+        subject: "Réinitialisation de votre mot de passe Chronodil",
+        html: getResetPasswordEmailTemplate(url, user.name),
+      });
+
+      console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
+    },
+    resetPasswordTokenExpiresIn: 3600, // 1 heure
     password: {
       hash: async (password: string) => hash(password, 10),
       verify: async (data: { hash: string; password: string }) => compare(data.password, data.hash),

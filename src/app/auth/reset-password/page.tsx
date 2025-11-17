@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTheme } from "next-themes";
-import { resetPasswordSchema, resetPasswordConfirmSchema, type ResetPasswordInput, type ResetPasswordConfirmInput } from "@/lib/validations/auth";
+import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,27 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { toast } from "sonner";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+
+// Schéma de validation
+const resetPasswordSchema = z.object({
+  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
+});
+
+type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
   const [isLoading, setIsLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
+  const [isValidToken, setIsValidToken] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -30,174 +44,100 @@ function ResetPasswordContent() {
     setMounted(true);
   }, []);
 
-  // Utiliser le logo clair par défaut pour éviter le mismatch d'hydratation
-  const logoSrc = mounted && resolvedTheme === "dark" 
-    ? "/assets/media/logo-dark.svg" 
+  const logoSrc = mounted && resolvedTheme === "dark"
+    ? "/assets/media/logo-dark.svg"
     : "/assets/media/logo.svg";
 
-  // Formulaire pour demander la réinitialisation
   const {
-    register: registerRequest,
-    handleSubmit: handleSubmitRequest,
-    formState: { errors: errorsRequest },
+    register,
+    handleSubmit,
+    formState: { errors },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
   });
 
-  // Formulaire pour confirmer la réinitialisation avec token
-  const {
-    register: registerConfirm,
-    handleSubmit: handleSubmitConfirm,
-    formState: { errors: errorsConfirm },
-  } = useForm<ResetPasswordConfirmInput>({
-    resolver: zodResolver(resetPasswordConfirmSchema),
-    defaultValues: {
-      token: token || "",
-    },
-  });
+  // Vérifier la validité du token
+  useEffect(() => {
+    const verifyToken = async () => {
+      setIsValidating(true);
 
-  // Demander la réinitialisation (envoyer l'email)
-  const onRequestReset = async (data: ResetPasswordInput) => {
-    setIsLoading(true);
-    try {
-      // Utiliser l'API Better Auth pour envoyer l'email de réinitialisation
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-        }),
-      });
+      try {
+        // Récupérer le token depuis l'URL
+        const tokenParam = searchParams.get("token");
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Gérer les erreurs spécifiques
-        if (response.status === 404) {
-          toast.error(result.error?.message || "Aucun compte n'est associé à cet email.");
-        } else {
-          toast.error(result.error?.message || "Erreur lors de l'envoi de l'email");
+        if (!tokenParam) {
+          console.error("Token manquant dans l'URL");
+          setIsValidToken(false);
+          setIsValidating(false);
+          toast.error("Lien invalide. Demandez un nouveau lien de réinitialisation.");
+          return;
         }
-        return;
+
+        setToken(tokenParam);
+        setIsValidToken(true);
+      } catch (error) {
+        console.error("Erreur lors de la vérification:", error);
+        setIsValidToken(false);
+        toast.error("Une erreur s'est produite");
+      } finally {
+        setIsValidating(false);
       }
+    };
 
-      setEmailSent(true);
-      toast.success("Un email de réinitialisation a été envoyé à votre adresse");
-    } catch (error) {
-      toast.error("Une erreur s'est produite");
-    } finally {
-      setIsLoading(false);
+    verifyToken();
+  }, [searchParams]);
+
+  const onSubmit = async (data: ResetPasswordInput) => {
+    if (!token) {
+      toast.error("Token manquant");
+      return;
     }
-  };
 
-  // Confirmer la réinitialisation avec le token
-  const onConfirmReset = async (data: ResetPasswordConfirmInput) => {
     setIsLoading(true);
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/reset-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: data.token,
-          password: data.password,
-        }),
+      // Appeler Better Auth pour réinitialiser le mot de passe
+      const { data: result, error } = await authClient.resetPassword({
+        newPassword: data.password,
+        token,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        toast.error(result.error?.message || "Erreur lors de la réinitialisation");
+      if (error) {
+        toast.error(error.message || "Erreur lors de la réinitialisation");
         return;
       }
 
-      toast.success("Mot de passe réinitialisé avec succès ! Redirection...");
+      setResetSuccess(true);
+      toast.success("Mot de passe réinitialisé avec succès!");
+
+      // Rediriger vers la page de login après 2 secondes
       setTimeout(() => {
         router.push("/auth/login");
-      }, 1500);
-    } catch (error) {
+      }, 2000);
+    } catch (error: any) {
+      console.error("Erreur:", error);
       toast.error("Une erreur s'est produite");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Si un token est présent dans l'URL, afficher le formulaire de confirmation
-  if (token) {
+  // État de validation (affiche un spinner)
+  if (isValidating) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
         <Card className="w-full max-w-md relative z-10">
-          <CardHeader className="space-y-1">
-            <div className="flex items-center justify-center mb-4">
-              <Image
-                src={logoSrc}
-                alt="Chronodil Logo"
-                width={180}
-                height={60}
-                className="h-16 w-auto"
-                priority
-              />
-            </div>
-            <CardDescription className="text-center font-heading">
-              Définissez votre nouveau mot de passe
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmitConfirm(onConfirmReset)}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Nouveau mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...registerConfirm("password")}
-                  disabled={isLoading}
-                />
-                {errorsConfirm.password && (
-                  <p className="text-sm text-destructive">{errorsConfirm.password.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmer le nouveau mot de passe</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  {...registerConfirm("confirmPassword")}
-                  disabled={isLoading}
-                />
-                {errorsConfirm.confirmPassword && (
-                  <p className="text-sm text-destructive">{errorsConfirm.confirmPassword.message}</p>
-                )}
-              </div>
-              <Input
-                type="hidden"
-                {...registerConfirm("token")}
-              />
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary"
-                disabled={isLoading}
-              >
-                {isLoading ? "Réinitialisation..." : "Réinitialiser le mot de passe"}
-              </Button>
-              <p className="text-sm text-center text-muted-foreground">
-                <Link href="/auth/login" className="text-primary hover:text-primary font-medium">
-                  Retour à la connexion
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Vérification du lien...</p>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Si l'email a été envoyé, afficher un message de confirmation
-  if (emailSent) {
+  // Token invalide ou expiré
+  if (!isValidToken) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
         <Card className="w-full max-w-md relative z-10">
@@ -212,12 +152,25 @@ function ResetPasswordContent() {
                 priority
               />
             </div>
-            <CardTitle className="text-center">Email envoyé !</CardTitle>
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-destructive/10 p-3">
+                <AlertCircle className="h-8 w-8 text-destructive" />
+              </div>
+            </div>
+            <CardTitle className="text-center">Lien invalide ou expiré</CardTitle>
             <CardDescription className="text-center font-heading mt-4">
-              Vérifiez votre boîte de réception. Un lien de réinitialisation a été envoyé à votre adresse email.
+              Ce lien de réinitialisation n'est plus valide. Il a peut-être expiré ou a déjà été utilisé.
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex flex-col space-y-4">
+            <Link href="/auth/forgot-password" className="w-full">
+              <Button
+                type="button"
+                className="w-full bg-primary hover:bg-primary"
+              >
+                Demander un nouveau lien
+              </Button>
+            </Link>
             <Link href="/auth/login" className="w-full">
               <Button
                 type="button"
@@ -227,21 +180,71 @@ function ResetPasswordContent() {
                 Retour à la connexion
               </Button>
             </Link>
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setEmailSent(false)}
-            >
-              Renvoyer l'email
-            </Button>
           </CardFooter>
         </Card>
+
+        {/* Pied de page */}
+        <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
+          <span>&copy; 2025 by </span>
+          <Image
+            src="/assets/media/logo d'odillon corrigé.png"
+            alt="ODILLON Logo"
+            width={250}
+            height={80}
+            className="h-12 w-auto"
+          />
+        </footer>
       </div>
     );
   }
 
-  // Formulaire de demande de réinitialisation
+  // Succès - Mot de passe réinitialisé
+  if (resetSuccess) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
+        <Card className="w-full max-w-md relative z-10">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center justify-center mb-4">
+              <Image
+                src={logoSrc}
+                alt="Chronodil Logo"
+                width={180}
+                height={60}
+                className="h-16 w-auto"
+                priority
+              />
+            </div>
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-primary/10 p-3">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-center">Mot de passe réinitialisé !</CardTitle>
+            <CardDescription className="text-center font-heading mt-4">
+              Votre mot de passe a été réinitialisé avec succès.
+              <br />
+              <br />
+              Vous allez être redirigé vers la page de connexion...
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {/* Pied de page */}
+        <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
+          <span>&copy; 2025 by </span>
+          <Image
+            src="/assets/media/logo d'odillon corrigé.png"
+            alt="ODILLON Logo"
+            width={250}
+            height={80}
+            className="h-12 w-auto"
+          />
+        </footer>
+      </div>
+    );
+  }
+
+  // Formulaire de réinitialisation
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
       {/* Grille interactive */}
@@ -263,14 +266,15 @@ function ResetPasswordContent() {
           })}
         </svg>
       </div>
+
       {/* Citation inspirante */}
       <div className="text-center mb-8 relative z-10 max-w-2xl mx-auto px-4">
         <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-[5rem] flex items-center justify-center">
           <TypingText
             text={[
-              '"Réinitialisez votre mot de passe en toute sécurité."',
+              '"Créez un nouveau mot de passe sécurisé."',
               '"Votre sécurité est notre priorité."',
-              '"Un lien de réinitialisation vous sera envoyé."'
+              '"Choisissez un mot de passe fort."'
             ]}
             as="blockquote"
             className="text-center font-serif tracking-wide"
@@ -304,23 +308,37 @@ function ResetPasswordContent() {
               priority
             />
           </div>
+          <CardTitle className="text-center">Nouveau mot de passe</CardTitle>
           <CardDescription className="text-center font-heading">
-            Entrez votre adresse email pour recevoir un lien de réinitialisation
+            Choisissez un nouveau mot de passe sécurisé
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmitRequest(onRequestReset)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="password">Nouveau mot de passe</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="nom@exemple.com"
-                {...registerRequest("email")}
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                {...register("password")}
                 disabled={isLoading}
               />
-              {errorsRequest.email && (
-                <p className="text-sm text-destructive">{errorsRequest.email.message}</p>
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                {...register("confirmPassword")}
+                disabled={isLoading}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
               )}
             </div>
           </CardContent>
@@ -330,18 +348,24 @@ function ResetPasswordContent() {
               className="w-full bg-primary hover:bg-primary"
               disabled={isLoading}
             >
-              {isLoading ? "Envoi..." : "Envoyer le lien de réinitialisation"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Réinitialisation...
+                </>
+              ) : (
+                "Réinitialiser le mot de passe"
+              )}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
-              Vous vous souvenez de votre mot de passe ?{" "}
-              <Link href="/auth/login" className="text-primary hover:text-primary font-medium">
-                Se connecter
+              <Link href="/auth/login" className="text-primary hover:text-primary/80 font-medium">
+                Retour à la connexion
               </Link>
             </p>
           </CardFooter>
         </form>
       </Card>
-      
+
       {/* Pied de page */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
         <span>&copy; 2025 by </span>
@@ -360,16 +384,11 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Chargement...</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     }>
       <ResetPasswordContent />
     </Suspense>
   );
 }
-

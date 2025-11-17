@@ -150,8 +150,8 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mot de passe</Label>
                 <Link
-                  href="/auth/reset-password"
-                  className="text-sm text-primary hover:text-primary"
+                  href="/auth/forgot-password"
+                  className="text-sm text-primary hover:text-primary/80"
                 >
                   Mot de passe oublié ?
                 </Link>
