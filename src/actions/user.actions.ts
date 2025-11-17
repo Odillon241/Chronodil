@@ -24,6 +24,7 @@ export const getMyProfile = authActionClient
         email: true,
         role: true,
         avatar: true,
+        position: true,
         createdAt: true,
         updatedAt: true,
         Department: {
