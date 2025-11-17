@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,7 +91,7 @@ export default function HRTimesheetDetailPage() {
       if (result?.data) {
         setTimesheet(result.data as Timesheet);
       } else {
-        toast.error("Timesheet non trouvé");
+        toast.error("Timesheet non trouvÃ©");
         router.push("/dashboard/hr-timesheet");
       }
     } catch (error) {
@@ -104,7 +104,7 @@ export default function HRTimesheetDetailPage() {
   };
 
   const handleDeleteActivity = async (activityId: string) => {
-    if (!confirm("Supprimer cette activité ?")) return;
+    if (!confirm("Supprimer cette activitÃ© ?")) return;
 
     try {
       const result = await deleteHRActivity({
@@ -113,7 +113,7 @@ export default function HRTimesheetDetailPage() {
       });
 
       if (result?.data) {
-        toast.success("Activité supprimée");
+        toast.success("ActivitÃ© supprimÃ©e");
         loadTimesheet();
       } else {
         toast.error(result?.serverError || "Erreur lors de la suppression");
@@ -129,7 +129,7 @@ export default function HRTimesheetDetailPage() {
     try {
       const result = await submitHRTimesheet({ timesheetId });
       if (result?.data) {
-        toast.success("Timesheet soumis avec succès !");
+        toast.success("Timesheet soumis avec succÃ¨s !");
         loadTimesheet();
       } else {
         toast.error(result?.serverError || "Erreur lors de la soumission");
@@ -142,31 +142,31 @@ export default function HRTimesheetDetailPage() {
   const handleExportExcel = async () => {
     try {
       setIsExporting(true);
-      toast.info("Génération du fichier Excel en cours...");
+      toast.info("GÃ©nÃ©ration du fichier Excel en cours...");
 
       const result = await exportHRTimesheetToExcel({ timesheetId });
 
-      if (result?.data?.data) {
+      if (result?.data) {
         // Convertir base64 en blob
-        const byteCharacters = atob(result.data.data.fileData);
+        const byteCharacters = atob(result.data.fileData);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: result.data.data.mimeType });
+        const blob = new Blob([byteArray], { type: result.data.mimeType });
 
-        // Créer un lien de téléchargement
+        // CrÃ©er un lien de tÃ©lÃ©chargement
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = result.data.data.fileName;
+        link.download = result.data.fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
 
-        toast.success("Fichier Excel téléchargé avec succès !");
+        toast.success("Fichier Excel tÃ©lÃ©chargÃ© avec succÃ¨s !");
       } else {
         toast.error(result?.serverError || "Erreur lors de l'export");
       }
@@ -182,9 +182,9 @@ export default function HRTimesheetDetailPage() {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", label: string }> = {
       DRAFT: { variant: "outline", label: "Brouillon" },
       PENDING: { variant: "secondary", label: "En attente" },
-      MANAGER_APPROVED: { variant: "default", label: "Validé Manager" },
-      APPROVED: { variant: "default", label: "Approuvé" },
-      REJECTED: { variant: "destructive", label: "Rejeté" },
+      MANAGER_APPROVED: { variant: "default", label: "ValidÃ© Manager" },
+      APPROVED: { variant: "default", label: "ApprouvÃ©" },
+      REJECTED: { variant: "destructive", label: "RejetÃ©" },
     };
 
     const config = variants[status] || variants.DRAFT;
@@ -207,7 +207,7 @@ export default function HRTimesheetDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header amélioré */}
+      {/* Header amÃ©liorÃ© */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
@@ -260,10 +260,10 @@ export default function HRTimesheetDetailPage() {
         </div>
       </div>
 
-      {/* Informations générales */}
+      {/* Informations gÃ©nÃ©rales */}
       <Card>
         <CardHeader>
-          <CardTitle>Informations générales</CardTitle>
+          <CardTitle>Informations gÃ©nÃ©rales</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -273,7 +273,7 @@ export default function HRTimesheetDetailPage() {
                   <TableCell className="w-[200px] font-medium">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      Employé
+                      EmployÃ©
                     </div>
                   </TableCell>
                   <TableCell>
@@ -311,13 +311,13 @@ export default function HRTimesheetDetailPage() {
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <Activity className="h-4 w-4 text-muted-foreground" />
-                      Nombre d'activités
+                      Nombre d'activitÃ©s
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-sm">
-                        {timesheet.HRActivity.length} {timesheet.HRActivity.length === 1 ? "activité" : "activités"}
+                        {timesheet.HRActivity.length} {timesheet.HRActivity.length === 1 ? "activitÃ©" : "activitÃ©s"}
                       </Badge>
                     </div>
                   </TableCell>
@@ -330,7 +330,7 @@ export default function HRTimesheetDetailPage() {
             <>
               <Separator className="my-4" />
               <div>
-                <p className="text-sm font-medium mb-2">Observations de l'employé</p>
+                <p className="text-sm font-medium mb-2">Observations de l'employÃ©</p>
                 <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
                   {timesheet.employeeObservations}
                 </p>
@@ -346,7 +346,7 @@ export default function HRTimesheetDetailPage() {
             <div className="flex items-start gap-2">
               <XCircle className="h-5 w-5 text-destructive mt-0.5" />
               <div>
-                <p className="font-medium text-destructive">Timesheet rejeté</p>
+                <p className="font-medium text-destructive">Timesheet rejetÃ©</p>
                 {(timesheet.managerComments || timesheet.odillonComments) && (
                   <p className="text-sm text-muted-foreground mt-1">
                     Raison: {timesheet.managerComments || timesheet.odillonComments}
@@ -358,14 +358,14 @@ export default function HRTimesheetDetailPage() {
         </Card>
       )}
 
-      {/* Liste des activités en tableau */}
+      {/* Liste des activitÃ©s en tableau */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Activités</CardTitle>
+              <CardTitle>ActivitÃ©s</CardTitle>
               <CardDescription>
-                Détail des activités réalisées durant la semaine
+                DÃ©tail des activitÃ©s rÃ©alisÃ©es durant la semaine
               </CardDescription>
             </div>
             {timesheet.status === "DRAFT" && (
@@ -375,7 +375,7 @@ export default function HRTimesheetDetailPage() {
                 onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Gérer les activités
+                GÃ©rer les activitÃ©s
               </Button>
             )}
           </div>

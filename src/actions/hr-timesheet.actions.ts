@@ -171,7 +171,7 @@ export const getHRTimesheetsForApproval = authActionClient
 
     // Si manager, voir ses équipes
     if (userRole === "MANAGER") {
-      whereConditions.User = {
+      whereConditions.User_HRTimesheet_userIdToUser = {
         managerId: userId,
       };
       // Statut PENDING ou MANAGER_APPROVED
