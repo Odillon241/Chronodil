@@ -1474,14 +1474,9 @@ export default function HRTimesheetPage() {
 
     const handleExport = async (id: string) => {
       try {
-        console.log("[Export] Début de l'export pour timesheet:", id);
-
         const result = await exportHRTimesheetToExcel({ timesheetId: id });
-        console.log("[Export] Résultat de l'action serveur:", result);
 
         if (result && 'data' in result && result.data && 'fileData' in result.data) {
-          console.log("[Export] Structure de données valide détectée");
-
           // Type assertion pour les données
           const data = result.data as unknown as {
             fileData: string;
@@ -1489,43 +1484,29 @@ export default function HRTimesheetPage() {
             mimeType: string;
           };
 
-          console.log("[Export] Nom du fichier:", data.fileName);
-          console.log("[Export] Type MIME:", data.mimeType);
-          console.log("[Export] Taille des données base64:", data.fileData.length, "caractères");
-
           // Convertir base64 en blob
-          console.log("[Export] Conversion base64 vers blob...");
           const binaryString = atob(data.fileData);
           const bytes = new Uint8Array(binaryString.length);
           for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
           const blob = new Blob([bytes], { type: data.mimeType });
-          console.log("[Export] Blob créé, taille:", blob.size, "octets");
 
           // Créer un lien de téléchargement
-          console.log("[Export] Création du lien de téléchargement...");
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
           link.download = data.fileName;
           document.body.appendChild(link);
           link.click();
-          console.log("[Export] Lien cliqué, téléchargement déclenché");
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
 
           toast.success("Timesheet exporté avec succès");
         } else {
-          console.error("[Export] Structure de données invalide:", result);
-          console.error("[Export] result.serverError:", result?.serverError);
-          console.error("[Export] result.validationErrors:", (result as any)?.validationErrors);
           toast.error(result?.serverError || "Erreur lors de l'export");
         }
       } catch (error: any) {
-        console.error("[Export] Exception attrapée:", error);
-        console.error("[Export] Message d'erreur:", error.message);
-        console.error("[Export] Stack trace:", error.stack);
         toast.error(error.message || "Erreur lors de l'export");
       }
     };
