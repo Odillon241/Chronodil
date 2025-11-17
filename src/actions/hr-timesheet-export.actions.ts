@@ -17,6 +17,9 @@ export const exportHRTimesheetToExcel = authActionClient
     const { timesheetId } = parsedInput;
     const { userId } = ctx;
 
+    console.log("[Export Server] Début de l'export pour timesheet:", timesheetId);
+    console.log("[Export Server] User ID:", userId);
+
     // Récupérer le timesheet avec toutes les données
     const timesheet = await prisma.hRTimesheet.findUnique({
       where: { id: timesheetId },
@@ -35,9 +38,14 @@ export const exportHRTimesheetToExcel = authActionClient
       },
     });
 
+    console.log("[Export Server] Timesheet trouvé:", !!timesheet);
+
     if (!timesheet) {
+      console.error("[Export Server] Timesheet non trouvé pour l'ID:", timesheetId);
       throw new Error("Timesheet non trouvé");
     }
+
+    console.log("[Export Server] Nombre d'activités:", timesheet.HRActivity.length);
 
     // Vérifier les permissions
     const user = await prisma.user.findUnique({
@@ -45,8 +53,11 @@ export const exportHRTimesheetToExcel = authActionClient
     });
 
     if (!user) {
+      console.error("[Export Server] Utilisateur non trouvé pour l'ID:", userId);
       throw new Error("Utilisateur non trouvé");
     }
+
+    console.log("[Export Server] Rôle de l'utilisateur:", user.role);
 
     // Seul le propriétaire, son manager, HR ou Admin peuvent exporter
     const canExport =
@@ -55,7 +66,10 @@ export const exportHRTimesheetToExcel = authActionClient
       user.role === "HR" ||
       (user.role === "MANAGER" && timesheet.User_HRTimesheet_userIdToUser.managerId === userId);
 
+    console.log("[Export Server] Permission d'export:", canExport);
+
     if (!canExport) {
+      console.error("[Export Server] Permission refusée pour l'utilisateur:", userId);
       throw new Error("Vous n'êtes pas autorisé à exporter ce timesheet");
     }
 
@@ -253,23 +267,29 @@ export const exportHRTimesheetToExcel = authActionClient
     });
 
     // Générer le buffer Excel
+    console.log("[Export Server] Génération du buffer Excel...");
     const buffer = await workbook.xlsx.writeBuffer();
+    console.log("[Export Server] Buffer généré, taille:", buffer.length, "octets");
 
     // Convertir en base64 pour le retour
+    console.log("[Export Server] Conversion en base64...");
     const base64 = Buffer.from(buffer).toString("base64");
+    console.log("[Export Server] Base64 généré, longueur:", base64.length, "caractères");
 
     const fileName = `Timesheet_RH_${timesheet.employeeName.replace(/\s+/g, "_")}_${format(
       timesheet.weekStartDate,
       "yyyy-MM-dd",
     )}.xlsx`;
 
+    console.log("[Export Server] Nom de fichier généré:", fileName);
+    console.log("[Export Server] Export terminé avec succès");
+
+    // next-safe-action retourne automatiquement { data: ... }
+    // Donc on retourne directement l'objet de données
     return {
-      success: true,
-      data: {
-        fileData: base64,
-        fileName,
-        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      },
+      fileData: base64,
+      fileName,
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     };
   });
 
