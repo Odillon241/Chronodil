@@ -31,6 +31,7 @@ import {
   getActivityCategories,
 } from "@/actions/hr-timesheet.actions";
 import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
+import { getMyProfile } from "@/actions/user.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -131,6 +132,23 @@ export default function NewHRTimesheetPage() {
       status: "IN_PROGRESS",
     },
   });
+
+  // Charger le profil utilisateur et pré-remplir les champs
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const profileResult = await getMyProfile({});
+        if (profileResult?.data) {
+          const { name, position } = profileResult.data;
+          setTimesheetValue("employeeName", name || "");
+          setTimesheetValue("position", position || "");
+        }
+      } catch (error) {
+        console.error("Erreur chargement profil utilisateur:", error);
+      }
+    };
+    loadUserProfile();
+  }, [setTimesheetValue]);
 
   // Charger les tâches et le catalogue
   useEffect(() => {

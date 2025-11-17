@@ -665,11 +665,7 @@ export const submitHRTimesheet = authActionClient
       },
       include: {
         HRActivity: true,
-        User_HRTimesheet_userIdToUser: {
-          include: {
-            User: true, // Manager
-          },
-        },
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 

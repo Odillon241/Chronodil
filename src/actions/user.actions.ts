@@ -65,6 +65,7 @@ export const updateMyProfile = authActionClient
       name: z.string().min(2).optional(),
       email: z.string().email().optional(),
       avatar: z.string().optional(),
+      position: z.string().optional(),
     })
   )
   .action(async ({ parsedInput, ctx }) => {

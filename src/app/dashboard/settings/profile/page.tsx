@@ -54,6 +54,7 @@ interface UserProfile {
   email: string;
   role: string;
   avatar: string | null;
+  position: string | null;
   department: {
     id: string;
     name: string;
@@ -106,6 +107,7 @@ export default function ProfilePage() {
           name: result.data.name || "",
           email: result.data.email,
           avatar: result.data.avatar || "",
+          position: result.data.position || "",
         });
       }
     } catch (error) {
@@ -142,6 +144,7 @@ export default function ProfilePage() {
       name: user?.name || "",
       email: user?.email || "",
       avatar: user?.avatar || "",
+      position: user?.position || "",
     });
     setIsEditing(false);
   };
@@ -280,6 +283,7 @@ export default function ProfilePage() {
         name: user?.name || '',
         email: user?.email || '',
         avatar: avatarUrl,
+        position: user?.position || '',
       });
 
       if (result?.data) {
@@ -499,6 +503,22 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="position">Poste</Label>
+                    <div className="relative">
+                      <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="position"
+                        className="pl-10"
+                        placeholder="Ex: Développeur Full-Stack, Chef de projet..."
+                        {...register("position")}
+                      />
+                    </div>
+                    {errors.position && (
+                      <p className="text-sm text-destructive">{errors.position.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="avatar">URL photo de profil</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -571,6 +591,14 @@ export default function ProfilePage() {
                       Rôle
                     </div>
                     <p className="text-sm font-medium pl-6">{getRoleLabel(user.role)}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Briefcase className="h-4 w-4" />
+                      Poste
+                    </div>
+                    <p className="text-sm font-medium pl-6">{user.position || "Non renseigné"}</p>
                   </div>
 
                   {user.department && (
