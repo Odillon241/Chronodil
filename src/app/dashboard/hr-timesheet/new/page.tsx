@@ -139,9 +139,9 @@ export default function NewHRTimesheetPage() {
       try {
         const profileResult = await getMyProfile({});
         if (profileResult?.data) {
-          const { name, position } = profileResult.data;
-          setTimesheetValue("employeeName", name || "");
-          setTimesheetValue("position", position || "");
+          const userData = profileResult.data as any;
+          setTimesheetValue("employeeName", userData.name || "");
+          setTimesheetValue("position", userData.position || "");
         }
       } catch (error) {
         console.error("Erreur chargement profil utilisateur:", error);

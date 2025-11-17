@@ -42,6 +42,7 @@ import {
   Camera,
   Smile,
   Upload,
+  Briefcase,
 } from "lucide-react";
 import { SpinnerCustom } from "@/components/features/loading-spinner";
 import { toast } from "sonner";
@@ -102,12 +103,13 @@ export default function ProfilePage() {
     try {
       const result = await getMyProfile({});
       if (result?.data) {
-        setUser(result.data as any);
+        const userData = result.data as any;
+        setUser(userData);
         reset({
-          name: result.data.name || "",
-          email: result.data.email,
-          avatar: result.data.avatar || "",
-          position: result.data.position || "",
+          name: userData.name || "",
+          email: userData.email,
+          avatar: userData.avatar || "",
+          position: userData.position || "",
         });
       }
     } catch (error) {
