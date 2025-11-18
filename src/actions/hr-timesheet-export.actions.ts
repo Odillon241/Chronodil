@@ -63,31 +63,53 @@ export const exportHRTimesheetToExcel = authActionClient
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Feuille de temps RH");
 
-    // Configuration des colonnes
+    // ⚙️ Configuration de la mise en page pour tenir sur une page en paysage
+    worksheet.pageSetup = {
+      paperSize: 9, // A4
+      orientation: 'landscape', // Format paysage
+      fitToPage: true,
+      fitToWidth: 1, // Tenir sur 1 page en largeur
+      fitToHeight: 1, // Tenir sur 1 page en hauteur
+      margins: {
+        left: 0.25,
+        right: 0.25,
+        top: 0.25,
+        bottom: 0.25,
+        header: 0.1,
+        footer: 0.1,
+      },
+      horizontalCentered: true,
+      verticalCentered: false,
+    };
+
+    // Configuration pour l'impression
+    worksheet.properties.defaultRowHeight = 15;
+
+    // Configuration des colonnes (largeurs optimisées pour tenir sur une page A4 paysage)
     worksheet.columns = [
-      { header: "Type", key: "type", width: 15 },
-      { header: "Nom de l'activité", key: "name", width: 40 },
-      { header: "Catégorie", key: "category", width: 20 },
-      { header: "Périodicité", key: "periodicity", width: 15 },
-      { header: "Quantité/semaine", key: "weeklyQuantity", width: 18 },
-      { header: "Date début", key: "startDate", width: 12 },
-      { header: "Date fin", key: "endDate", width: 12 },
-      { header: "Total heures", key: "totalHours", width: 12 },
-      { header: "Statut", key: "status", width: 12 },
+      { header: "Type", key: "type", width: 10 },
+      { header: "Nom de l'activité", key: "name", width: 28 },
+      { header: "Catégorie", key: "category", width: 15 },
+      { header: "Périodicité", key: "periodicity", width: 10 },
+      { header: "Qté/sem", key: "weeklyQuantity", width: 8 },
+      { header: "Début", key: "startDate", width: 9 },
+      { header: "Fin", key: "endDate", width: 9 },
+      { header: "Heures", key: "totalHours", width: 8 },
+      { header: "Statut", key: "status", width: 10 },
     ];
 
     // En-tête du document
     worksheet.mergeCells("A1:I1");
     const titleCell = worksheet.getCell("A1");
     titleCell.value = "FEUILLE DE TEMPS RH - CHRONODIL";
-    titleCell.font = { size: 18, bold: true, color: { argb: "FFFFFFFF" } };
+    titleCell.font = { size: 14, bold: true, color: { argb: "FFFFFFFF" } };
     titleCell.alignment = { horizontal: "center", vertical: "middle" };
     titleCell.fill = {
       type: "pattern",
       pattern: "solid",
       fgColor: { argb: "FF10B981" }, // Vert moderne (emerald-500)
     };
-    worksheet.getRow(1).height = 30;
+    worksheet.getRow(1).height = 22;
 
     // Informations générales - Section avec style
     worksheet.addRow([]);
@@ -102,12 +124,12 @@ export const exportHRTimesheetToExcel = authActionClient
 
     // Style pour les informations générales
     infoRows.forEach((row) => {
-      row.height = 20;
+      row.height = 16;
       const labelCell = row.getCell(1);
       const valueCell = row.getCell(2);
 
       // Style des labels (colonne A)
-      labelCell.font = { bold: true, size: 11 };
+      labelCell.font = { bold: true, size: 9 };
       labelCell.fill = {
         type: "pattern",
         pattern: "solid",
@@ -116,7 +138,7 @@ export const exportHRTimesheetToExcel = authActionClient
       labelCell.alignment = { vertical: "middle", horizontal: "right" };
 
       // Style des valeurs (colonne B)
-      valueCell.font = { size: 11 };
+      valueCell.font = { size: 9 };
       valueCell.alignment = { vertical: "middle" };
 
       // Bordures fines
@@ -145,14 +167,14 @@ export const exportHRTimesheetToExcel = authActionClient
       pattern: "solid",
       fgColor: { argb: statusColors[timesheet.status] || "FFFFFFFF" },
     };
-    statusCell.font = { bold: true, size: 11 };
+    statusCell.font = { bold: true, size: 9 };
 
     worksheet.addRow([]);
 
     // Observations
     if (timesheet.employeeObservations) {
       const obsLabelRow = worksheet.addRow(["Observations de l'employé:"]);
-      obsLabelRow.getCell(1).font = { bold: true, size: 11, italic: true };
+      obsLabelRow.getCell(1).font = { bold: true, size: 9, italic: true };
       obsLabelRow.getCell(1).fill = {
         type: "pattern",
         pattern: "solid",
@@ -163,13 +185,14 @@ export const exportHRTimesheetToExcel = authActionClient
       const obsRow = worksheet.addRow([timesheet.employeeObservations]);
       worksheet.mergeCells(`A${obsRow.number}:I${obsRow.number}`);
       obsRow.getCell(1).alignment = { wrapText: true, vertical: "top" };
+      obsRow.getCell(1).font = { size: 8 };
       obsRow.getCell(1).border = {
         top: { style: "thin", color: { argb: "FFD1D5DB" } },
         left: { style: "thin", color: { argb: "FFD1D5DB" } },
         bottom: { style: "thin", color: { argb: "FFD1D5DB" } },
         right: { style: "thin", color: { argb: "FFD1D5DB" } },
       };
-      obsRow.height = 40;
+      obsRow.height = 30;
       worksheet.addRow([]);
     }
 
@@ -179,21 +202,21 @@ export const exportHRTimesheetToExcel = authActionClient
       "Nom de l'activité",
       "Catégorie",
       "Périodicité",
-      "Quantité/semaine",
-      "Date début",
-      "Date fin",
-      "Total heures",
+      "Qté/sem",
+      "Début",
+      "Fin",
+      "Heures",
       "Statut",
     ]);
 
-    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 9 };
     headerRow.fill = {
       type: "pattern",
       pattern: "solid",
       fgColor: { argb: "FF059669" }, // Vert foncé (emerald-600)
     };
-    headerRow.alignment = { horizontal: "center", vertical: "middle" };
-    headerRow.height = 25;
+    headerRow.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    headerRow.height = 20;
 
     // Bordures pour les en-têtes
     headerRow.eachCell((cell) => {
@@ -220,13 +243,13 @@ export const exportHRTimesheetToExcel = authActionClient
       // Ligne de catégorie
       const categoryRow = worksheet.addRow([category]);
       worksheet.mergeCells(`A${categoryRow.number}:I${categoryRow.number}`);
-      categoryRow.font = { bold: true, size: 12, color: { argb: "FF1F2937" } };
+      categoryRow.font = { bold: true, size: 9, color: { argb: "FF1F2937" } };
       categoryRow.fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FFE5E7EB" }, // Gris clair moderne
       };
-      categoryRow.height = 22;
+      categoryRow.height = 16;
       categoryRow.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
 
       // Bordure pour la catégorie
@@ -242,19 +265,20 @@ export const exportHRTimesheetToExcel = authActionClient
       // Activités de cette catégorie
       activities.forEach((activity: any) => {
         const row = worksheet.addRow({
-          type: activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting",
+          type: activity.activityType === "OPERATIONAL" ? "Opéra." : "Report.",
           name: activity.activityName,
           category: activity.ActivityCatalog?.category || "Autres",
           periodicity: getPeriodicityLabel(activity.periodicity),
           weeklyQuantity: activity.weeklyQuantity || "",
-          startDate: format(activity.startDate, "dd/MM/yyyy", { locale: fr }),
-          endDate: format(activity.endDate, "dd/MM/yyyy", { locale: fr }),
+          startDate: format(activity.startDate, "dd/MM/yy", { locale: fr }),
+          endDate: format(activity.endDate, "dd/MM/yy", { locale: fr }),
           totalHours: activity.totalHours,
-          status: activity.status === "COMPLETED" ? "Terminé" : "En cours",
+          status: activity.status === "COMPLETED" ? "OK" : "En cours",
         });
 
-        row.height = 22;
+        row.height = 15;
         row.alignment = { vertical: "middle" };
+        row.font = { size: 8 };
 
         // Style conditionnel selon le type
         const typeCell = row.getCell("type");
@@ -313,12 +337,12 @@ export const exportHRTimesheetToExcel = authActionClient
 
     // Ligne de total
     worksheet.addRow([]);
-    const totalRow = worksheet.addRow(["", "", "", "", "", "", "TOTAL HEURES:", timesheet.totalHours]);
-    totalRow.height = 28;
+    const totalRow = worksheet.addRow(["", "", "", "", "", "", "TOTAL:", timesheet.totalHours + " h"]);
+    totalRow.height = 20;
 
-    // Style du label "TOTAL HEURES:"
+    // Style du label "TOTAL:"
     const totalLabelCell = totalRow.getCell("G");
-    totalLabelCell.font = { bold: true, size: 13, color: { argb: "FFFFFFFF" } };
+    totalLabelCell.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } };
     totalLabelCell.fill = {
       type: "pattern",
       pattern: "solid",
@@ -334,7 +358,7 @@ export const exportHRTimesheetToExcel = authActionClient
 
     // Style de la valeur du total
     const totalValueCell = totalRow.getCell("H");
-    totalValueCell.font = { bold: true, size: 14, color: { argb: "FF065F46" } }; // Vert foncé
+    totalValueCell.font = { bold: true, size: 10, color: { argb: "FF065F46" } }; // Vert foncé
     totalValueCell.fill = {
       type: "pattern",
       pattern: "solid",
@@ -350,16 +374,15 @@ export const exportHRTimesheetToExcel = authActionClient
 
     // Section signatures
     worksheet.addRow([]);
-    worksheet.addRow([]);
-    const signaturesHeaderRow = worksheet.addRow(["SIGNATURES ET VALIDATIONS"]);
+    const signaturesHeaderRow = worksheet.addRow(["SIGNATURES"]);
     worksheet.mergeCells(`A${signaturesHeaderRow.number}:I${signaturesHeaderRow.number}`);
-    signaturesHeaderRow.font = { bold: true, size: 13, color: { argb: "FFFFFFFF" } };
+    signaturesHeaderRow.font = { bold: true, size: 10, color: { argb: "FFFFFFFF" } };
     signaturesHeaderRow.fill = {
       type: "pattern",
       pattern: "solid",
       fgColor: { argb: "FF6366F1" }, // Indigo-500
     };
-    signaturesHeaderRow.height = 26;
+    signaturesHeaderRow.height = 18;
     signaturesHeaderRow.alignment = { horizontal: "center", vertical: "middle" };
     signaturesHeaderRow.eachCell((cell) => {
       cell.border = {
@@ -370,21 +393,20 @@ export const exportHRTimesheetToExcel = authActionClient
       };
     });
 
-    worksheet.addRow([]);
-
     if (timesheet.employeeSignedAt) {
       const empRow = worksheet.addRow([
         "Employé:",
         timesheet.employeeName,
         "",
-        "Signé le:",
-        format(timesheet.employeeSignedAt, "dd/MM/yyyy à HH:mm", { locale: fr }),
+        "Signé:",
+        format(timesheet.employeeSignedAt, "dd/MM/yy HH:mm", { locale: fr }),
       ]);
-      empRow.height = 22;
-      empRow.getCell(1).font = { bold: true, size: 11 };
+      empRow.height = 14;
+      empRow.getCell(1).font = { bold: true, size: 8 };
       empRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE0E7FF" } }; // Indigo clair
-      empRow.getCell(4).font = { bold: true, size: 10, italic: true };
-      empRow.getCell(5).font = { size: 10 };
+      empRow.getCell(2).font = { size: 8 };
+      empRow.getCell(4).font = { bold: true, size: 8, italic: true };
+      empRow.getCell(5).font = { size: 8 };
 
       empRow.eachCell((cell) => {
         cell.alignment = { vertical: "middle" };
@@ -402,14 +424,15 @@ export const exportHRTimesheetToExcel = authActionClient
         "Manager:",
         timesheet.User_HRTimesheet_managerSignedByIdToUser?.name || "N/A",
         "",
-        "Validé le:",
-        format(timesheet.managerSignedAt, "dd/MM/yyyy à HH:mm", { locale: fr }),
+        "Validé:",
+        format(timesheet.managerSignedAt, "dd/MM/yy HH:mm", { locale: fr }),
       ]);
-      mgrRow.height = 22;
-      mgrRow.getCell(1).font = { bold: true, size: 11 };
+      mgrRow.height = 14;
+      mgrRow.getCell(1).font = { bold: true, size: 8 };
       mgrRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFBFDBFE" } }; // Bleu clair
-      mgrRow.getCell(4).font = { bold: true, size: 10, italic: true };
-      mgrRow.getCell(5).font = { size: 10 };
+      mgrRow.getCell(2).font = { size: 8 };
+      mgrRow.getCell(4).font = { bold: true, size: 8, italic: true };
+      mgrRow.getCell(5).font = { size: 8 };
 
       mgrRow.eachCell((cell) => {
         cell.alignment = { vertical: "middle" };
@@ -422,11 +445,12 @@ export const exportHRTimesheetToExcel = authActionClient
       });
 
       if (timesheet.managerComments) {
-        const commentRow = worksheet.addRow(["Commentaires manager:", timesheet.managerComments]);
+        const commentRow = worksheet.addRow(["Commentaires:", timesheet.managerComments]);
         worksheet.mergeCells(`B${commentRow.number}:I${commentRow.number}`);
-        commentRow.height = 30;
-        commentRow.getCell(1).font = { bold: true, size: 10, italic: true };
+        commentRow.height = 20;
+        commentRow.getCell(1).font = { bold: true, size: 7, italic: true };
         commentRow.getCell(1).alignment = { vertical: "top", wrapText: true };
+        commentRow.getCell(2).font = { size: 7 };
         commentRow.getCell(2).alignment = { vertical: "top", wrapText: true };
         commentRow.eachCell((cell) => {
           cell.border = {
@@ -441,17 +465,18 @@ export const exportHRTimesheetToExcel = authActionClient
 
     if (timesheet.odillonSignedAt) {
       const adminRow = worksheet.addRow([
-        "Admin/Odillon:",
+        "Admin:",
         timesheet.User_HRTimesheet_odillonSignedByIdToUser?.name || "N/A",
         "",
-        "Approuvé le:",
-        format(timesheet.odillonSignedAt, "dd/MM/yyyy à HH:mm", { locale: fr }),
+        "Approuvé:",
+        format(timesheet.odillonSignedAt, "dd/MM/yy HH:mm", { locale: fr }),
       ]);
-      adminRow.height = 22;
-      adminRow.getCell(1).font = { bold: true, size: 11 };
+      adminRow.height = 14;
+      adminRow.getCell(1).font = { bold: true, size: 8 };
       adminRow.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } }; // Vert clair
-      adminRow.getCell(4).font = { bold: true, size: 10, italic: true };
-      adminRow.getCell(5).font = { size: 10 };
+      adminRow.getCell(2).font = { size: 8 };
+      adminRow.getCell(4).font = { bold: true, size: 8, italic: true };
+      adminRow.getCell(5).font = { size: 8 };
 
       adminRow.eachCell((cell) => {
         cell.alignment = { vertical: "middle" };
@@ -464,11 +489,12 @@ export const exportHRTimesheetToExcel = authActionClient
       });
 
       if (timesheet.odillonComments) {
-        const commentRow = worksheet.addRow(["Commentaires admin:", timesheet.odillonComments]);
+        const commentRow = worksheet.addRow(["Commentaires:", timesheet.odillonComments]);
         worksheet.mergeCells(`B${commentRow.number}:I${commentRow.number}`);
-        commentRow.height = 30;
-        commentRow.getCell(1).font = { bold: true, size: 10, italic: true };
+        commentRow.height = 20;
+        commentRow.getCell(1).font = { bold: true, size: 7, italic: true };
         commentRow.getCell(1).alignment = { vertical: "top", wrapText: true };
+        commentRow.getCell(2).font = { size: 7 };
         commentRow.getCell(2).alignment = { vertical: "top", wrapText: true };
         commentRow.eachCell((cell) => {
           cell.border = {
@@ -514,11 +540,11 @@ function getStatusLabel(status: string): string {
 
 function getPeriodicityLabel(periodicity: string): string {
   const labels: Record<string, string> = {
-    DAILY: "Quotidien",
-    WEEKLY: "Hebdomadaire",
-    MONTHLY: "Mensuel",
-    PUNCTUAL: "Ponctuel",
-    WEEKLY_MONTHLY: "Hebdo/Mensuel",
+    DAILY: "Quot.",
+    WEEKLY: "Hebdo",
+    MONTHLY: "Mens.",
+    PUNCTUAL: "Ponct.",
+    WEEKLY_MONTHLY: "H/M",
   };
   return labels[periodicity] || periodicity;
 }
