@@ -1,0 +1,10 @@
+# Custom server (Socket.IO) - Not compatible with Vercel serverless
+server.ts
+
+# Socket.IO server-side manager
+src/lib/socketio-manager.ts
+src/lib/websocket-manager.ts
+
+# Socket.IO test page and scripts
+src/app/dashboard/test/socketio/
+scripts/create-test-conversation.ts
