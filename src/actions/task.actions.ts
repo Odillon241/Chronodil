@@ -7,6 +7,7 @@ import { actionClient, authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { logTaskActivity, logTaskChanges } from "@/lib/task-activity";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 const createTaskSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -176,6 +177,20 @@ export const createTask = actionClient
       action: "created",
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: session.user.id,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.TASK,
+      entityId: task.id,
+      changes: {
+        name: task.name,
+        status: task.status,
+        projectId: task.projectId,
+        createdBy: task.createdBy,
+      },
+    });
+
     return task;
   });
 
@@ -227,6 +242,28 @@ export const updateTask = actionClient
     // Logger les changements
     await logTaskChanges(id, session.user.id, task, updatedTask);
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: session.user.id,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.TASK,
+      entityId: id,
+      changes: {
+        previous: {
+          name: task.name,
+          status: task.status,
+          priority: task.priority,
+          description: task.description,
+        },
+        new: {
+          name: updatedTask.name,
+          status: updatedTask.status,
+          priority: updatedTask.priority,
+          description: updatedTask.description,
+        },
+      },
+    });
+
     return updatedTask;
   });
 
@@ -257,8 +294,25 @@ export const deleteTask = actionClient
       throw new Error("Vous n'avez pas la permission de supprimer cette tâche. Seul le créateur ou un administrateur peut supprimer une tâche.");
     }
 
+    // Sauvegarder les informations de la tâche avant suppression pour l'audit
+    const taskData = {
+      name: task.name,
+      status: task.status,
+      projectId: task.projectId,
+      createdBy: task.createdBy,
+    };
+
     await prisma.task.delete({
       where: { id: parsedInput.id },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: session.user.id,
+      action: AuditActions.DELETE,
+      entity: AuditEntities.TASK,
+      entityId: parsedInput.id,
+      changes: taskData,
     });
 
     return { success: true };

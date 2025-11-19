@@ -20,6 +20,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2, Clock, User, Briefcase, MapPin, Check, X, Activity } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
@@ -579,7 +580,10 @@ export default function EditHRTimesheetPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Chargement...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
       </div>
     );
   }
@@ -1023,15 +1027,20 @@ export default function EditHRTimesheetPage() {
                     className="bg-primary hover:bg-primary"
                     disabled={isSaving}
                   >
-                    {editingActivity ? (
+                    {isSaving ? (
+                      <span className="flex items-center gap-2">
+                        <Spinner />
+                        {editingActivity ? "Mise à jour..." : "Ajout..."}
+                      </span>
+                    ) : editingActivity ? (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        {isSaving ? "Mise à jour..." : "Mettre à jour l'activité"}
+                        Mettre à jour l'activité
                       </>
                     ) : (
                       <>
                         <Plus className="mr-2 h-4 w-4" />
-                        {isSaving ? "Ajout..." : "Ajouter l'activité"}
+                        Ajouter l'activité
                       </>
                     )}
                   </Button>

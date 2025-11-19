@@ -6,6 +6,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { CacheTags } from "@/lib/cache";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -64,6 +65,20 @@ export const createProject = authActionClient
         })
       )
     );
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.PROJECT,
+      entityId: project.id,
+      changes: {
+        name: project.name,
+        code: project.code,
+        departmentId: project.departmentId,
+        createdBy: project.createdBy,
+      },
+    });
 
     // Invalider le cache des projets
     revalidatePath("/dashboard/projects");
@@ -169,10 +184,9 @@ export const updateProject = authActionClient
     const { userRole, userId } = ctx;
     const { id, data } = parsedInput;
 
-    // Récupérer le projet avec son créateur
+    // Récupérer le projet avec son créateur et ses données complètes
     const existingProject = await prisma.project.findUnique({
       where: { id },
-      select: { id: true, createdBy: true },
     });
 
     if (!existingProject) {
@@ -190,6 +204,21 @@ export const updateProject = authActionClient
     const project = await prisma.project.update({
       where: { id },
       data,
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.PROJECT,
+      entityId: id,
+      changes: {
+        previous: {
+          name: existingProject.name,
+          code: existingProject.code,
+        },
+        new: data,
+      },
     });
 
     revalidatePath("/dashboard/projects");
@@ -225,6 +254,19 @@ export const archiveProject = authActionClient
     const project = await prisma.project.update({
       where: { id: parsedInput.id },
       data: { isActive: !existingProject.isActive },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.PROJECT,
+      entityId: parsedInput.id,
+      changes: {
+        previous: { isActive: existingProject.isActive },
+        new: { isActive: project.isActive },
+        action: project.isActive ? "Réactivation" : "Archivage",
+      },
     });
 
     revalidatePath("/dashboard/projects");
@@ -410,7 +452,7 @@ export const deleteProject = authActionClient
     // Récupérer le projet avec son créateur
     const project = await prisma.project.findUnique({
       where: { id: parsedInput.id },
-      select: { id: true, name: true, createdBy: true },
+      select: { id: true, name: true, code: true, createdBy: true },
     });
 
     if (!project) {
@@ -427,11 +469,28 @@ export const deleteProject = authActionClient
       throw new Error("Vous n'avez pas la permission de supprimer ce projet. Seul le créateur ou un administrateur peut supprimer un projet.");
     }
 
+    // Sauvegarder les informations du projet avant suppression pour l'audit
+    const projectData = {
+      name: project.name,
+      code: project.code || null,
+      createdBy: project.createdBy,
+    };
+
     // Supprimer le projet (cascade deletion pour les membres et entrées de timesheet)
     await prisma.project.delete({
       where: { id: parsedInput.id },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.DELETE,
+      entity: AuditEntities.PROJECT,
+      entityId: parsedInput.id,
+      changes: projectData,
+    });
+
     revalidatePath("/dashboard/projects");
+    revalidateTag(CacheTags.PROJECTS, 'max');
     return { success: true, projectName: project.name };
   });

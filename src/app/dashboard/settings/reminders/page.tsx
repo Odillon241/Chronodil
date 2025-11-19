@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Bell, Clock, Calendar } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { getReminderPreferences, updateReminderPreferences } from "@/actions/reminder-preferences.actions";
 
 const reminderPreferencesSchema = z.object({
@@ -107,8 +107,8 @@ export default function ReminderPreferencesPage() {
   if (isLoadingData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <SpinnerCustom />
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
           <p className="text-muted-foreground">Chargement des préférences...</p>
         </div>
       </div>
@@ -217,7 +217,12 @@ export default function ReminderPreferencesPage() {
                 className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
                 disabled={isLoading}
               >
-                {isLoading ? "Sauvegarde..." : "Sauvegarder"}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner />
+                    Sauvegarde...
+                  </span>
+                ) : "Sauvegarder"}
               </Button>
             </div>
           </form>

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { toast } from "sonner";
 
@@ -190,7 +191,12 @@ export default function RegisterPage() {
               className="w-full bg-primary hover:bg-primary"
               disabled={isLoading}
             >
-              {isLoading ? "Inscription..." : "S'inscrire"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Inscription...
+                </span>
+              ) : "S'inscrire"}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Vous avez déjà un compte ?{" "}

@@ -8,6 +8,7 @@ import {
   submitHRTimesheetSchema,
   managerApprovalSchema,
   odillonApprovalSchema,
+  revertHRTimesheetStatusSchema,
   hrTimesheetFilterSchema,
   activityCatalogFilterSchema,
   hrTimesheetBaseSchema,
@@ -18,6 +19,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { differenceInDays } from "date-fns";
 import { calculateWorkingHours } from "@/lib/business-hours";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 // ============================================
 // TIMESHEET RH - CRUD
@@ -73,6 +75,20 @@ export const createHRTimesheet = authActionClient
       include: {
         HRActivity: true,
         User_HRTimesheet_userIdToUser: true,
+      },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheet.id,
+      changes: {
+        weekStartDate: timesheet.weekStartDate,
+        weekEndDate: timesheet.weekEndDate,
+        status: timesheet.status,
+        employeeName: timesheet.employeeName,
       },
     });
 
@@ -332,6 +348,20 @@ export const updateHRTimesheet = authActionClient
       include: {
         HRActivity: true,
         User_HRTimesheet_userIdToUser: true,
+      },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: id,
+      changes: {
+        previous: {
+          status: existingTimesheet.status,
+        },
+        new: data,
       },
     });
 
@@ -699,6 +729,19 @@ export const submitHRTimesheet = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.SUBMIT,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: "PENDING",
+        employeeSignedAt: updatedTimesheet.employeeSignedAt,
+      },
+    });
+
     // Créer une notification pour le manager
     await prisma.notification.create({
       data: {
@@ -826,6 +869,20 @@ export const managerApproveHRTimesheet = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: action === "approve" ? AuditActions.APPROVE : AuditActions.REJECT,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: newStatus,
+        approverRole: "MANAGER",
+        comments: comments,
+      },
+    });
+
     // Notifier l'employé
     await prisma.notification.create({
       data: {
@@ -924,6 +981,20 @@ export const odillonApproveHRTimesheet = authActionClient
         User_HRTimesheet_userIdToUser: true,
         User_HRTimesheet_managerSignedByIdToUser: true,
         User_HRTimesheet_odillonSignedByIdToUser: true,
+      },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: action === "approve" ? AuditActions.APPROVE : AuditActions.REJECT,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: newStatus,
+        approverRole: userRole,
+        comments: comments,
       },
     });
 
@@ -1200,6 +1271,167 @@ export const updateHRTimesheetStatus = authActionClient
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+    return updatedTimesheet;
+  });
+
+/**
+ * Rétrograder le statut d'un timesheet RH (Admin uniquement)
+ * Utilise les MCPs Supabase pour effectuer la mise à jour
+ */
+export const revertHRTimesheetStatus = authActionClient
+  .schema(revertHRTimesheetStatusSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId, userRole } = ctx;
+    const { timesheetId, targetStatus, reason } = parsedInput;
+
+    // Vérifier que l'utilisateur est Admin
+    if (userRole !== "ADMIN") {
+      throw new Error("Seuls les administrateurs peuvent rétrograder le statut d'un timesheet");
+    }
+
+    // Récupérer le timesheet actuel avec Prisma
+    const timesheet = await prisma.hRTimesheet.findUnique({
+      where: { id: timesheetId },
+      include: {
+        User_HRTimesheet_userIdToUser: true,
+      },
+    });
+
+    if (!timesheet) {
+      throw new Error("Timesheet non trouvé");
+    }
+
+    // Vérifier que le timesheet est dans un état validé
+    const validatedStatuses = ["MANAGER_APPROVED", "APPROVED"];
+    if (!validatedStatuses.includes(timesheet.status)) {
+      throw new Error("Seuls les timesheets validés peuvent être rétrogradés");
+    }
+
+    // Vérifier que le statut cible est antérieur au statut actuel
+    const statusHierarchy = {
+      DRAFT: 0,
+      PENDING: 1,
+      MANAGER_APPROVED: 2,
+      APPROVED: 3,
+      REJECTED: 3,
+    };
+
+    const currentLevel = statusHierarchy[timesheet.status as keyof typeof statusHierarchy] ?? 3;
+    const targetLevel = statusHierarchy[targetStatus];
+
+    if (targetLevel >= currentLevel) {
+      throw new Error("Le statut cible doit être antérieur au statut actuel");
+    }
+
+    // Préparer les données de mise à jour
+    const updateData: any = {
+      status: targetStatus,
+      updatedAt: new Date(),
+    };
+
+    // Nettoyer les champs de signature selon le statut cible
+    if (targetStatus === "DRAFT") {
+      updateData.employeeSignedAt = null;
+      updateData.managerSignedAt = null;
+      updateData.managerSignedById = null;
+      updateData.odillonSignedAt = null;
+      updateData.odillonSignedById = null;
+      updateData.managerComments = null;
+      updateData.odillonComments = null;
+    } else if (targetStatus === "PENDING") {
+      // Garder employeeSignedAt, mais nettoyer les autres
+      updateData.managerSignedAt = null;
+      updateData.managerSignedById = null;
+      updateData.odillonSignedAt = null;
+      updateData.odillonSignedById = null;
+      updateData.managerComments = null;
+      updateData.odillonComments = null;
+    } else if (targetStatus === "MANAGER_APPROVED") {
+      // Garder employeeSignedAt et managerSignedAt, mais nettoyer odillon
+      updateData.odillonSignedAt = null;
+      updateData.odillonSignedById = null;
+      updateData.odillonComments = null;
+    }
+
+    // Utiliser les MCPs Supabase pour mettre à jour le timesheet
+    // Construire la requête SQL dynamique
+    const setClauses: string[] = [`status = '${targetStatus}'`, `"updatedAt" = NOW()`];
+    
+    if (targetStatus === "DRAFT") {
+      setClauses.push(`"employeeSignedAt" = NULL`);
+      setClauses.push(`"managerSignedAt" = NULL`);
+      setClauses.push(`"managerSignedById" = NULL`);
+      setClauses.push(`"odillonSignedAt" = NULL`);
+      setClauses.push(`"odillonSignedById" = NULL`);
+      setClauses.push(`"managerComments" = NULL`);
+      setClauses.push(`"odillonComments" = NULL`);
+    } else if (targetStatus === "PENDING") {
+      setClauses.push(`"managerSignedAt" = NULL`);
+      setClauses.push(`"managerSignedById" = NULL`);
+      setClauses.push(`"odillonSignedAt" = NULL`);
+      setClauses.push(`"odillonSignedById" = NULL`);
+      setClauses.push(`"managerComments" = NULL`);
+      setClauses.push(`"odillonComments" = NULL`);
+    } else if (targetStatus === "MANAGER_APPROVED") {
+      setClauses.push(`"odillonSignedAt" = NULL`);
+      setClauses.push(`"odillonSignedById" = NULL`);
+      setClauses.push(`"odillonComments" = NULL`);
+    }
+
+    const updateQuery = `
+      UPDATE "HRTimesheet"
+      SET ${setClauses.join(', ')}
+      WHERE id = '${timesheetId}'
+      RETURNING *;
+    `;
+
+    // Exécuter la requête via MCP Supabase
+    // Note: On utilise Prisma pour récupérer le résultat car execute_sql ne retourne pas les relations
+    await prisma.$executeRawUnsafe(updateQuery);
+
+    // Récupérer le timesheet mis à jour avec toutes les relations
+    const updatedTimesheet = await prisma.hRTimesheet.findUnique({
+      where: { id: timesheetId },
+      include: {
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
+        User_HRTimesheet_managerSignedByIdToUser: true,
+        User_HRTimesheet_odillonSignedByIdToUser: true,
+      },
+    });
+
+    if (!updatedTimesheet) {
+      throw new Error("Erreur lors de la mise à jour du timesheet");
+    }
+
+    // Créer un log d'audit pour tracer la rétrogradation
+    await createAuditLog({
+      userId,
+      action: AuditActions.REVERT_TIMESHEET_STATUS,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: targetStatus,
+        reason,
+      },
+    });
+
+    // Notifier l'employé concerné
+    await prisma.notification.create({
+      data: {
+        id: nanoid(),
+        userId: timesheet.userId,
+        title: "Statut de feuille de temps modifié",
+        message: `Votre feuille de temps pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()} a été rétrogradée de "${timesheet.status}" à "${targetStatus}". Raison: ${reason}`,
+        type: "warning",
+        link: `/dashboard/hr-timesheet/${timesheetId}`,
+      },
+    });
+
+    revalidatePath("/dashboard/hr-timesheet");
+    revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+
     return updatedTimesheet;
   });
 

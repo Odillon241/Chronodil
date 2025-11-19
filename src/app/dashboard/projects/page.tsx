@@ -57,7 +57,7 @@ import {
   ChevronRight,
   Trash2,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import {
@@ -606,7 +606,7 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <SpinnerCustom />
+        <Spinner className="size-6" />
       </div>
     );
   }
@@ -797,10 +797,10 @@ export default function ProjectsPage() {
                   disabled={submitting}
                 >
                   {submitting ? (
-                    <>
-                      <SpinnerCustom />
+                    <span className="flex items-center gap-2">
+                      <Spinner />
                       Création...
-                    </>
+                    </span>
                   ) : (
                     <>
                       <Plus className="mr-2 h-4 w-4" />
@@ -1594,10 +1594,10 @@ export default function ProjectsPage() {
                 disabled={submitting}
               >
                 {submitting ? (
-                  <>
-                    <SpinnerCustom />
+                  <span className="flex items-center gap-2">
+                    <Spinner />
                     Mise à jour...
-                  </>
+                  </span>
                 ) : (
                   <>
                     <Edit className="mr-2 h-4 w-4" />

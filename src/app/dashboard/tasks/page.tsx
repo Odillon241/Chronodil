@@ -64,7 +64,7 @@ import { TaskCalendar } from "@/components/features/task-calendar";
 import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
 import { useTasks, type ViewMode } from "@/contexts/tasks-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { LoaderIcon } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Messages de chargement rotatifs
@@ -978,7 +978,12 @@ export default function TasksPage() {
                   className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Enregistrement..." : editingTask ? "Mettre à jour" : "Créer"}
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Spinner />
+                      Enregistrement...
+                    </span>
+                  ) : editingTask ? "Mettre à jour" : "Créer"}
                 </Button>
               </div>
             </form>
@@ -1029,7 +1034,7 @@ export default function TasksPage() {
               {/* Loader de chargement */}
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 min-h-[400px]">
-                  <LoaderIcon className="h-8 w-8 animate-spin text-primary mb-4" />
+                  <Spinner className="h-8 w-8 text-primary mb-4" />
                   <p className="text-sm text-muted-foreground animate-pulse">
                     {loadingMessages[loadingMessageIndex]}
                   </p>

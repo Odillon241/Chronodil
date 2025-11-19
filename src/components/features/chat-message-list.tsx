@@ -42,7 +42,7 @@ import {
   BellOff,
   Info,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
 import { format, isToday, isYesterday } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -920,7 +920,7 @@ export function ChatMessageList({
             className="bg-primary hover:bg-primary h-8 w-8 sm:h-10 sm:w-10"
           >
             {sending ? (
-              <SpinnerCustom />
+              <Spinner className="size-4 sm:size-5" />
             ) : (
               <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             )}

@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getUserReports, deleteReport } from "@/actions/report.actions";
@@ -152,13 +153,14 @@ export default function ReportsPage() {
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       {/* En-tête */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Rapports</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Créez et gérez vos rapports d'activité
           </p>
         </div>
+        <Separator orientation="vertical" className="h-14" />
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
@@ -182,17 +184,9 @@ export default function ReportsPage() {
       </div>
 
       {/* Liste des rapports */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mes rapports</CardTitle>
-          <CardDescription>
-            {reports.length === 0
-              ? "Aucun rapport créé pour le moment"
-              : `${reports.length} rapport(s)`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {reports.length === 0 ? (
+      {reports.length === 0 ? (
+        <Card>
+          <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">Aucun rapport</h3>
@@ -204,7 +198,16 @@ export default function ReportsPage() {
                 Créer un rapport
               </Button>
             </div>
-          ) : (
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardDescription>
+              {reports.length} rapport(s)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -268,9 +271,9 @@ export default function ReportsPage() {
                 </TableBody>
               </Table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dialog d'édition */}
       <ReportEditorDialog

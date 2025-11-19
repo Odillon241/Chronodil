@@ -14,12 +14,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, Search } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, Search, MoreVertical } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Filters } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import type { FilterGroup, FilterOption } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -34,6 +36,13 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -46,6 +55,7 @@ import {
   getHRTimesheetsForApproval,
   updateHRTimesheetStatus,
   getHRTimesheet,
+  revertHRTimesheetStatus,
 } from "@/actions/hr-timesheet.actions";
 import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
 import { useRouter } from "next/navigation";
@@ -156,6 +166,8 @@ export default function HRTimesheetPage() {
   const { data: session } = useSession() as any;
   const userRole = session?.user?.role;
   const isAdmin = userRole === "ADMIN";
+  // Vérifier si l'utilisateur peut voir l'onglet "À valider" (MANAGER, DIRECTEUR, ADMIN uniquement)
+  const canViewPendingTab = userRole === "MANAGER" || userRole === "DIRECTEUR" || userRole === "ADMIN";
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [myTimesheets, setMyTimesheets] = useState<HRTimesheet[]>([]);
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
@@ -165,6 +177,10 @@ export default function HRTimesheetPage() {
   const [selectedTimesheet, setSelectedTimesheet] = useState<HRTimesheet | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewTimesheet, setPreviewTimesheet] = useState<any>(null);
+  const [revertDialogOpen, setRevertDialogOpen] = useState(false);
+  const [revertTargetStatus, setRevertTargetStatus] = useState<"DRAFT" | "PENDING" | "MANAGER_APPROVED" | null>(null);
+  const [revertReason, setRevertReason] = useState("");
+  const [revertTimesheetId, setRevertTimesheetId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     status: "all",
@@ -303,13 +319,44 @@ export default function HRTimesheetPage() {
     }
   }, []);
 
+  // Rediriger vers "my" si l'utilisateur est sur "pending" mais n'a pas les droits
+  useEffect(() => {
+    if (dataView === "pending" && !canViewPendingTab) {
+      setDataView("my");
+    }
+  }, [dataView, canViewPendingTab]);
+
   useEffect(() => {
     if (dataView === "my") {
       loadMyTimesheets();
-    } else {
+    } else if (dataView === "pending" && canViewPendingTab) {
       loadPendingTimesheets();
     }
-  }, [dataView, loadMyTimesheets, loadPendingTimesheets]);
+  }, [dataView, loadMyTimesheets, loadPendingTimesheets, canViewPendingTab]);
+
+  // Filtrer les liens de navigation selon les droits de l'utilisateur
+  const navigationLinks = useMemo<Navbar18NavItem[]>(() => {
+    const links: Navbar18NavItem[] = [
+      {
+        href: "#my",
+        label: "Mes timesheets",
+        active: dataView === "my",
+      },
+    ];
+
+    // Ajouter l'onglet "À valider" uniquement si l'utilisateur a les droits
+    if (canViewPendingTab) {
+      links.push({
+        href: "#pending",
+        label: "À valider",
+        active: dataView === "pending",
+        badge: pendingTimesheets.length > 0 ? pendingTimesheets.length : undefined,
+        badgeVariant: "destructive",
+      });
+    }
+
+    return links;
+  }, [canViewPendingTab, dataView, pendingTimesheets.length]);
 
   // Real-time updates pour HR Timesheets
   useRealtimeHRTimesheets({
@@ -393,6 +440,46 @@ export default function HRTimesheetPage() {
 
   const applyFilters = () => {
     applyFiltersFromGroups();
+  };
+
+  const handleRevertStatus = (timesheetId: string, currentStatus: string) => {
+    setRevertTimesheetId(timesheetId);
+    setRevertTargetStatus(null);
+    setRevertReason("");
+    setRevertDialogOpen(true);
+  };
+
+  const confirmRevertStatus = async () => {
+    if (!revertTimesheetId || !revertTargetStatus || !revertReason.trim()) {
+      toast.error("Veuillez remplir tous les champs");
+      return;
+    }
+
+    try {
+      const result = await revertHRTimesheetStatus({
+        timesheetId: revertTimesheetId,
+        targetStatus: revertTargetStatus,
+        reason: revertReason,
+      });
+
+      if (result?.data) {
+        toast.success("Statut rétrogradé avec succès", {
+          description: `Le timesheet a été rétrogradé vers "${STATUS_CONFIG[revertTargetStatus]?.name || revertTargetStatus}"`,
+        });
+        setRevertDialogOpen(false);
+        setRevertTimesheetId(null);
+        setRevertTargetStatus(null);
+        setRevertReason("");
+        loadMyTimesheets();
+        if (dataView === "pending") {
+          loadPendingTimesheets();
+        }
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la rétrogradation");
+      }
+    } catch (error: any) {
+      toast.error(error.message || String(error) || "Erreur lors de la rétrogradation");
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -707,6 +794,18 @@ export default function HRTimesheetPage() {
               Valider
             </Button>
           )}
+
+          {isAdmin && (timesheet.status === "MANAGER_APPROVED" || timesheet.status === "APPROVED") && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-orange-600 border-orange-600 hover:bg-orange-50"
+              onClick={() => handleRevertStatus(timesheet.id, timesheet.status)}
+            >
+              <Clock className="h-4 w-4 mr-1" />
+              Rétrograder
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -733,6 +832,18 @@ export default function HRTimesheetPage() {
             <Trash2 className="h-4 w-4" />
             Supprimer
           </ContextMenuItem>
+        )}
+        {isAdmin && (timesheet.status === "MANAGER_APPROVED" || timesheet.status === "APPROVED") && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onClick={() => handleRevertStatus(timesheet.id, timesheet.status)}
+              className="flex items-center gap-2 text-orange-600"
+            >
+              <Clock className="h-4 w-4" />
+              Rétrograder le statut
+            </ContextMenuItem>
+          </>
         )}
       </ContextMenuContent>
     </ContextMenu>
@@ -1636,6 +1747,99 @@ export default function HRTimesheetPage() {
           </div>
         ),
       },
+      {
+        id: 'actions',
+        header: () => (
+          <div className="flex items-center justify-center">
+            <span className="text-sm font-medium">Actions</span>
+          </div>
+        ),
+        cell: ({ row }) => {
+          const timesheetId = (row.original as { id: string }).id;
+          const timesheet = currentTimesheets.find(t => t.id === timesheetId);
+          const isDraft = timesheet?.status === 'DRAFT';
+          
+          return (
+            <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="sr-only">Ouvrir le menu</span>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleRowClick(timesheetId)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Voir détails
+                  </DropdownMenuItem>
+                  {isDraft && dataView === "my" && (
+                    <>
+                      <DropdownMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSubmit(timesheetId)}>
+                        <Send className="mr-2 h-4 w-4" />
+                        Soumettre
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {dataView === "pending" && (timesheet?.status === "PENDING" || timesheet?.status === "MANAGER_APPROVED") && (
+                    <DropdownMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/validate`)}>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Valider
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleExport(timesheetId)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCopyId(timesheetId)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copier l'ID
+                  </DropdownMenuItem>
+                  {isAdmin && (timesheet?.status === "MANAGER_APPROVED" || timesheet?.status === "APPROVED") && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleRevertStatus(timesheetId, timesheet?.status || "")}
+                        className="text-orange-600"
+                      >
+                        <Clock className="mr-2 h-4 w-4" />
+                        Rétrograder le statut
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-destructive"
+                    onClick={() => {
+                      if ((isDraft && dataView === "my") || isAdmin) {
+                        handleDelete(timesheetId);
+                      } else {
+                        toast.error("Seuls les brouillons peuvent être supprimés");
+                      }
+                    }}
+                    disabled={!isDraft && !isAdmin && dataView !== "my"}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+      },
     ];
 
     return (
@@ -1643,11 +1847,14 @@ export default function HRTimesheetPage() {
         {/* Tableau */}
         <div className="flex-1 overflow-auto border rounded-lg">
           {isLoading ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              Chargement...
+            <div className="flex h-full items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <Spinner className="size-6" />
+                <p className="text-muted-foreground">Chargement...</p>
+              </div>
             </div>
           ) : timesheetsAsFeatures.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg bg-muted/30">
+            <div className="text-center py-12 bg-muted/30">
               <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground">Aucun timesheet trouvé</p>
               {dataView === "my" && (
@@ -1724,6 +1931,18 @@ export default function HRTimesheetPage() {
                           <Copy className="mr-2 h-4 w-4" />
                           Copier l'ID
                         </ContextMenuItem>
+                        {isAdmin && (timesheet?.status === "MANAGER_APPROVED" || timesheet?.status === "APPROVED") && (
+                          <>
+                            <ContextMenuSeparator />
+                            <ContextMenuItem
+                              onClick={() => handleRevertStatus(timesheetId, timesheet?.status || "")}
+                              className="text-orange-600"
+                            >
+                              <Clock className="mr-2 h-4 w-4" />
+                              Rétrograder le statut
+                            </ContextMenuItem>
+                          </>
+                        )}
                         <ContextMenuSeparator />
                         <ContextMenuItem 
                           className="text-destructive"
@@ -1767,8 +1986,11 @@ export default function HRTimesheetPage() {
     );
 
     const commonLoadingState = (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
-        Chargement...
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
       </div>
     );
 
@@ -1813,20 +2035,7 @@ export default function HRTimesheetPage() {
 
         {/* Sélecteur de données */}
         <Navbar18
-          navigationLinks={[
-            {
-              href: "#my",
-              label: "Mes timesheets",
-              active: dataView === "my",
-            },
-            {
-              href: "#pending",
-              label: "À valider",
-              active: dataView === "pending",
-              badge: pendingTimesheets.length > 0 ? pendingTimesheets.length : undefined,
-              badgeVariant: "destructive",
-            },
-          ] as Navbar18NavItem[]}
+          navigationLinks={navigationLinks}
           onNavItemClick={(href) => {
             if (href === "#my") {
               setDataView("my");
@@ -1908,7 +2117,10 @@ export default function HRTimesheetPage() {
 
           {isLoadingPreview ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Chargement...</p>
+              <div className="flex flex-col items-center gap-4">
+                <Spinner className="size-5" />
+                <p className="text-muted-foreground">Chargement...</p>
+              </div>
             </div>
           ) : previewTimesheet ? (
             <div className="space-y-4">
@@ -2104,6 +2316,60 @@ export default function HRTimesheetPage() {
           ) : null}
         </DialogContent>
       </Dialog>
+
+      {/* Dialogue de rétrogradation de statut */}
+      <Dialog open={revertDialogOpen} onOpenChange={setRevertDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Rétrograder le statut de la feuille de temps</DialogTitle>
+            <DialogDescription>
+              Sélectionnez le statut vers lequel vous souhaitez rétrograder cette feuille de temps et indiquez la raison.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="target-status">Nouveau statut</Label>
+              <Select
+                value={revertTargetStatus || ""}
+                onValueChange={(value) => setRevertTargetStatus(value as "DRAFT" | "PENDING" | "MANAGER_APPROVED")}
+              >
+                <SelectTrigger id="target-status">
+                  <SelectValue placeholder="Sélectionner un statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DRAFT">Brouillon</SelectItem>
+                  <SelectItem value="PENDING">En attente</SelectItem>
+                  <SelectItem value="MANAGER_APPROVED">Validé Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="revert-reason">Raison de la rétrogradation *</Label>
+              <Textarea
+                id="revert-reason"
+                placeholder="Expliquez pourquoi vous rétrogradez ce statut..."
+                value={revertReason}
+                onChange={(e) => setRevertReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setRevertDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={confirmRevertStatus}
+              disabled={!revertTargetStatus || !revertReason.trim()}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              Confirmer la rétrogradation
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmationDialog />
     </div>
   );
 }

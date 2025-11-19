@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserPlus, X, Users } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { getUsers } from "@/actions/user.actions";
 import { addProjectMember, removeProjectMember } from "@/actions/project.actions";
@@ -220,7 +220,7 @@ export function ProjectTeamDialog({
 
                 {isLoadingUsers ? (
                   <div className="flex items-center justify-center py-8">
-                    <SpinnerCustom />
+                    <Spinner className="size-5" />
                   </div>
                 ) : availableUsers.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -270,10 +270,10 @@ export function ProjectTeamDialog({
                       className="w-full bg-primary hover:bg-primary"
                     >
                       {isLoading ? (
-                        <>
-                          <SpinnerCustom />
+                        <span className="flex items-center gap-2">
+                          <Spinner />
                           Ajout en cours...
-                        </>
+                        </span>
                       ) : (
                         <>
                           <UserPlus className="mr-2 h-4 w-4" />

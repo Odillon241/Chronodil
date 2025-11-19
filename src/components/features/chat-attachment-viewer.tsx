@@ -26,7 +26,7 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 interface Attachment {
@@ -177,7 +177,7 @@ export function ChatAttachmentViewer({
     if (!fileUrl) {
       return (
         <div className="flex items-center justify-center h-96">
-          <SpinnerCustom />
+          <Spinner className="size-5" />
         </div>
       );
     }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase-client";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { useDesktopNotifications } from "./use-desktop-notifications";
 
 interface UseRealtimeChatProps {
   onConversationChange: (eventType?: 'INSERT' | 'UPDATE' | 'DELETE', conversationId?: string) => void;
@@ -17,6 +18,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
   const retryCountRef = useRef(0);
   const maxRetries = 5;
   const isSubscribedRef = useRef(false);
+  const { notifyNewMessage } = useDesktopNotifications();
 
   const stableOnConversationChange = useCallback(onConversationChange, [onConversationChange]);
   const stableOnMessageChange = useCallback(onMessageChange, [onMessageChange]);
@@ -113,9 +115,24 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
 
             // Notifier seulement si ce n'est pas notre propre message
             if (eventType === 'INSERT' && senderId !== userId) {
+              // Les données User et Conversation ne sont pas incluses dans le payload realtime
+              // On utilise des valeurs par défaut et on peut améliorer avec une requête si nécessaire
+              const senderName = 'Quelqu\'un'; // Peut être amélioré avec une requête séparée
+              const messageContent = (payload.new as any)?.content || '';
+              
               toast.info('Nouveau message reçu', {
                 duration: 2000,
               });
+
+              // Afficher la notification de bureau
+              notifyNewMessage(
+                senderName,
+                undefined, // conversationName non disponible dans le payload
+                () => {
+                  // Rediriger vers la conversation
+                  window.location.href = `/dashboard/chat?conversation=${conversationId}`;
+                }
+              );
             }
 
             stableOnMessageChange(eventType, messageId, conversationId);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,11 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Bell, CheckCheck, Info, AlertCircle, CheckCircle, XCircle, ArrowRight } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
+import { useNotificationWithSound } from "@/hooks/use-notification-with-sound";
 import {
   getMyNotifications,
   markAsRead,
@@ -35,25 +38,23 @@ interface Notification {
 
 export function NotificationDropdown() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  // Hook pour jouer les sons de notification
+  const { playNotificationSound, soundEnabled } = useNotificationWithSound();
+
+  // Éviter les erreurs d'hydratation en ne rendant le DropdownMenu qu'après le montage
   useEffect(() => {
-    loadUnreadCount();
-    // Refresh every 30 seconds
-    const interval = setInterval(loadUnreadCount, 30000);
-    return () => clearInterval(interval);
+    setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadNotifications();
-    }
-  }, [isOpen]);
-
-  const loadUnreadCount = async () => {
+  // Fonctions de chargement avec useCallback pour éviter les dépendances cycliques
+  const loadUnreadCount = useCallback(async () => {
     try {
       const result = await getUnreadCount({});
       if (result?.data !== undefined) {
@@ -62,9 +63,9 @@ export function NotificationDropdown() {
     } catch (error) {
       console.error("Error loading unread count:", error);
     }
-  };
+  }, []);
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await getMyNotifications({ limit: 5 });
@@ -77,7 +78,56 @@ export function NotificationDropdown() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Callback pour gérer les nouvelles notifications en temps réel
+  const handleNewNotification = useCallback((notification: any) => {
+    console.log('🔔 Nouvelle notification reçue dans le dropdown:', notification);
+
+    // Jouer le son si activé
+    if (soundEnabled) {
+      // Déterminer le type de son selon le type de notification
+      let soundType: 'success' | 'error' | 'info' | 'warning' = 'info';
+      if (notification.type === 'success') soundType = 'success';
+      else if (notification.type === 'error') soundType = 'error';
+      else if (notification.type === 'warning') soundType = 'warning';
+
+      playNotificationSound(soundType);
+    }
+
+    // Afficher un toast
+    toast.info(notification.title, {
+      description: notification.message,
+      duration: 5000,
+    });
+
+    // Recharger le compteur et les notifications
+    loadUnreadCount();
+    if (isOpen) {
+      loadNotifications();
+    }
+  }, [soundEnabled, playNotificationSound, isOpen, loadUnreadCount, loadNotifications]);
+
+  // Hook realtime pour écouter les nouvelles notifications
+  useRealtimeNotifications({
+    onNewNotification: handleNewNotification,
+    userId: session?.user?.id || '',
+  });
+
+  useEffect(() => {
+    if (mounted) {
+    loadUnreadCount();
+    // Refresh every 30 seconds (fallback si realtime ne fonctionne pas)
+    const interval = setInterval(loadUnreadCount, 30000);
+    return () => clearInterval(interval);
+    }
+  }, [mounted, loadUnreadCount]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadNotifications();
+    }
+  }, [isOpen, loadNotifications]);
 
   const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -128,6 +178,16 @@ export function NotificationDropdown() {
     }
   };
 
+  // Pendant l'hydratation, rendre uniquement le bouton sans le DropdownMenu
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative h-8 w-8" disabled>
+        <Bell className="h-4 w-4" />
+        <span className="sr-only">Notifications</span>
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -163,7 +223,7 @@ export function NotificationDropdown() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <SpinnerCustom />
+            <Spinner className="size-5" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">

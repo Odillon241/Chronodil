@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -173,7 +174,12 @@ export default function LoginPage() {
               className="w-full bg-primary hover:bg-primary"
               disabled={isLoading}
             >
-              {isLoading ? "Connexion..." : "Se connecter"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Connexion...
+                </span>
+              ) : "Se connecter"}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Vous n'avez pas de compte ?{" "}

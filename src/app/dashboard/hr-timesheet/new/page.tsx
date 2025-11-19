@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -881,8 +882,17 @@ export default function NewHRTimesheetPage() {
               className="bg-green-600 hover:bg-green-700"
               disabled={isLoading || activities.length === 0}
             >
-              <Save className="mr-2 h-4 w-4" />
-              {isLoading ? "Création en cours..." : "Créer la feuille de temps"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Création en cours...
+                </span>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Créer la feuille de temps
+                </>
+              )}
             </Button>
             <Button
               variant="outline"

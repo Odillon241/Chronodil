@@ -13,8 +13,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Bell, CheckCheck, Trash2, Info, AlertCircle, CheckCircle, XCircle } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Bell, CheckCheck, Trash2, Info, AlertCircle, CheckCircle, XCircle, Filter, X } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { Separator } from "@/components/ui/separator";
+import { SearchBar } from "@/components/features/search-bar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -29,6 +44,10 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     loadNotifications();
@@ -88,7 +107,7 @@ export default function NotificationsPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(notifications.map((n) => n.id));
+      setSelectedIds(filteredNotifications.map((n) => n.id));
     } else {
       setSelectedIds([]);
     }
@@ -152,6 +171,41 @@ export default function NotificationsPage() {
   const allSelected = notifications.length > 0 && selectedIds.length === notifications.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < notifications.length;
 
+  // Filtrer les notifications selon la recherche et les filtres
+  const filteredNotifications = notifications.filter((notification) => {
+    // Filtre de recherche
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        notification.title?.toLowerCase().includes(query) ||
+        notification.message?.toLowerCase().includes(query) ||
+        notification.type?.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+
+    // Filtre par statut (lu/non lu)
+    if (filterStatus !== "all") {
+      if (filterStatus === "read" && !notification.isRead) return false;
+      if (filterStatus === "unread" && notification.isRead) return false;
+    }
+
+    // Filtre par type
+    if (filterType !== "all" && notification.type !== filterType) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const hasActiveFilters = filterStatus !== "all" || filterType !== "all";
+  const activeFiltersCount = (filterStatus !== "all" ? 1 : 0) + (filterType !== "all" ? 1 : 0);
+
+  const handleClearFilters = () => {
+    setFilterStatus("all");
+    setFilterType("all");
+    setIsFilterOpen(false);
+  };
+
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -202,19 +256,104 @@ export default function NotificationsPage() {
         </div>
       </div>
 
+      <Separator />
+
+      {/* Barre de recherche et filtre */}
+      <div className="flex items-center gap-4">
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Rechercher dans les notifications..."
+          className="w-full sm:w-auto flex-1"
+        />
+        
+        {/* Bouton filtre */}
+        <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="icon" className="shrink-0 relative">
+              <Filter className="h-4 w-4" />
+              {activeFiltersCount > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                >
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Filtres</Label>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-1 text-xs"
+                    onClick={handleClearFilters}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Effacer
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="filter-status">Statut</Label>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger id="filter-status">
+                    <SelectValue placeholder="Tous les statuts" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="unread">Non lues</SelectItem>
+                    <SelectItem value="read">Lues</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="filter-type">Type</Label>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger id="filter-type">
+                    <SelectValue placeholder="Tous les types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="info">Information</SelectItem>
+                    <SelectItem value="success">Succès</SelectItem>
+                    <SelectItem value="warning">Avertissement</SelectItem>
+                    <SelectItem value="error">Erreur</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {searchQuery && (
+          <p className="text-sm text-muted-foreground hidden sm:block">
+            {filteredNotifications.length} résultat{filteredNotifications.length > 1 ? "s" : ""}
+          </p>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <SpinnerCustom />
+          <Spinner className="size-5" />
         </div>
-      ) : notifications.length === 0 ? (
+      ) : filteredNotifications.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
             <Bell className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-3 sm:mb-4" />
             <p className="text-sm sm:text-base text-muted-foreground text-center">
-              Aucune notification
+              {searchQuery ? "Aucun résultat trouvé" : "Aucune notification"}
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
-              Vous serez notifié ici des événements importants
+              {searchQuery
+                ? "Essayez avec d'autres mots-clés"
+                : "Vous serez notifié ici des événements importants"}
             </p>
           </CardContent>
         </Card>
@@ -228,7 +367,7 @@ export default function NotificationsPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={allSelected}
+                        checked={filteredNotifications.length > 0 && selectedIds.length === filteredNotifications.length}
                         onCheckedChange={handleSelectAll}
                         aria-label="Sélectionner tout"
                         className={someSelected ? "data-[state=checked]:bg-muted" : ""}
@@ -243,7 +382,7 @@ export default function NotificationsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {notifications.map((notification) => (
+                  {filteredNotifications.map((notification) => (
                     <TableRow
                       key={notification.id}
                       className={!notification.isRead ? "bg-muted/30" : ""}
@@ -328,7 +467,7 @@ export default function NotificationsPage() {
 
             {/* Mobile Card View - Visible only on mobile */}
             <div className="md:hidden divide-y">
-              {notifications.map((notification) => (
+              {filteredNotifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={`p-4 space-y-3 ${

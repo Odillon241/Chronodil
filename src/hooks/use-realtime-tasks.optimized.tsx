@@ -94,6 +94,8 @@ export function useRealtimeTasksOptimized({
               queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() });
               if (canShowNotification("task-insert")) {
                 toast.info(`Nouvelle tâche: ${taskName}`);
+                // Utiliser le hook de notifications de bureau si disponible
+                // Note: Le hook doit être appelé au niveau du composant parent
               }
             } else if (eventType === "DELETE") {
               // Tâche supprimée: supprimer du cache + invalider listes
@@ -111,9 +113,13 @@ export function useRealtimeTasksOptimized({
               const changedStatus = (payload.new as any)?.status !== (payload.old as any)?.status;
               const changedPriority =
                 (payload.new as any)?.priority !== (payload.old as any)?.priority;
+              const newStatus = (payload.new as any)?.status;
+              const isCompleted = newStatus === 'DONE';
 
               if ((changedStatus || changedPriority) && canShowNotification("task-update")) {
                 toast.info(`Tâche mise à jour: ${taskName}`);
+                // Utiliser le hook de notifications de bureau si disponible
+                // Note: Le hook doit être appelé au niveau du composant parent
               }
             }
           }

@@ -44,7 +44,7 @@ import {
   Upload,
   Briefcase,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
@@ -335,9 +335,9 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <div className="text-center">
-          <SpinnerCustom />
-          <p className="text-muted-foreground mt-4">Chargement du profil...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Chargement du profil...</p>
         </div>
       </div>
     );
@@ -544,10 +544,10 @@ export default function ProfilePage() {
                     disabled={isSaving}
                   >
                     {isSaving ? (
-                      <>
-                        <SpinnerCustom />
+                      <span className="flex items-center gap-2">
+                        <Spinner />
                         Enregistrement...
-                      </>
+                      </span>
                     ) : (
                       <>
                         <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -812,10 +812,10 @@ export default function ProfilePage() {
                 disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
               >
                 {isUpdatingAvatar ? (
-                  <>
-                    <SpinnerCustom />
+                  <span className="flex items-center gap-2">
+                    <Spinner />
                     Mise à jour...
-                  </>
+                  </span>
                 ) : (
                   <>
                     <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />

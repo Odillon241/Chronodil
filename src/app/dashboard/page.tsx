@@ -239,7 +239,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-hidden rounded-b-lg border">
+              <div className="overflow-hidden rounded-b-lg">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -387,7 +387,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-hidden rounded-b-lg border">
+              <div className="overflow-hidden rounded-b-lg">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -533,7 +533,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-hidden rounded-b-lg border">
+              <div className="overflow-hidden rounded-b-lg">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">

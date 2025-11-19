@@ -8,6 +8,7 @@ import { MinimalTiptap } from "@/components/ui/minimal-tiptap-dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Edit2, Trash2, Send } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -263,8 +264,17 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
             {newComment.length}/1000 caractères
           </span>
           <Button type="submit" disabled={!newComment.trim() || isLoading}>
-            <Send className="h-4 w-4 mr-2" />
-            {isLoading ? "Envoi..." : "Commenter"}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Spinner />
+                Envoi...
+              </span>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Commenter
+              </>
+            )}
           </Button>
         </div>
       </form>

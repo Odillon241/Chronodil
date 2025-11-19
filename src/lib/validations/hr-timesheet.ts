@@ -79,6 +79,13 @@ export const odillonApprovalSchema = z.object({
   comments: z.string().optional(),
 });
 
+// Schéma pour rétrograder le statut d'un timesheet (Admin uniquement)
+export const revertHRTimesheetStatusSchema = z.object({
+  timesheetId: z.string(),
+  targetStatus: z.enum(["DRAFT", "PENDING", "MANAGER_APPROVED"]),
+  reason: z.string().min(1, "Une raison est requise pour rétrograder le statut"),
+});
+
 // Schéma pour filtrer les timesheets
 export const hrTimesheetFilterSchema = z.object({
   userId: z.string().optional(),

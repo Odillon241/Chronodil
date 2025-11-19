@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Plus, Trash2, Building2, Bell, Volume2, Mail, Monitor, Settings2, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -767,7 +768,10 @@ export default function SettingsPage() {
                 <div className="p-4 rounded-full bg-muted animate-pulse">
                   <Settings2 className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-center text-muted-foreground">Chargement des préférences...</p>
+                <div className="flex flex-col items-center gap-4">
+                  <Spinner className="size-6" />
+                  <p className="text-center text-muted-foreground">Chargement des préférences...</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1078,7 +1082,10 @@ export default function SettingsPage() {
                           className="space-y-2"
                         >
                           {isLoadingSounds ? (
-                            <div className="text-sm text-muted-foreground p-4">Chargement des sons...</div>
+                            <div className="flex flex-col items-center gap-4 p-4">
+                              <Spinner className="size-5" />
+                              <p className="text-sm text-muted-foreground">Chargement des sons...</p>
+                            </div>
                           ) : (
                             availableSounds.map((sound) => {
                               const currentValue = preferences?.notificationSoundType ?? 'new-notification-3-398649';
@@ -1563,7 +1570,10 @@ export default function SettingsPage() {
           {!generalSettings ? (
             <Card>
               <CardContent className="py-12">
-                <p className="text-center text-muted-foreground">Chargement des paramètres...</p>
+                <div className="flex flex-col items-center gap-4">
+                  <Spinner className="size-6" />
+                  <p className="text-center text-muted-foreground">Chargement des paramètres...</p>
+                </div>
               </CardContent>
             </Card>
           ) : (

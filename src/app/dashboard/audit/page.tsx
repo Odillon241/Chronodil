@@ -2,16 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Shield, Activity, Database, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -55,8 +48,8 @@ export default function AuditPage() {
   const [totalLogs, setTotalLogs] = useState(0);
 
   const [filters, setFilters] = useState({
-    entity: "",
-    action: "",
+    entity: "all",
+    action: "all",
     search: "",
   });
 
@@ -70,8 +63,8 @@ export default function AuditPage() {
       const offset = (currentPage - 1) * itemsPerPage;
       const [logsResult, statsResult] = await Promise.all([
         getAuditLogs({
-          entity: filters.entity === "all" ? undefined : filters.entity || undefined,
-          action: filters.action === "all" ? undefined : filters.action || undefined,
+          entity: filters.entity === "all" ? undefined : filters.entity,
+          action: filters.action === "all" ? undefined : filters.action,
           limit: itemsPerPage,
           offset: offset,
         }),
@@ -214,62 +207,31 @@ export default function AuditPage() {
       )}
 
       {/* Filtres */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base sm:text-lg">Filtres</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs sm:text-sm">Recherche</Label>
-              <Input
-                placeholder="Rechercher..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="text-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs sm:text-sm">Entité</Label>
-              <Select
-                value={filters.entity}
-                onValueChange={(value) => setFilters({ ...filters, entity: value })}
-              >
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Toutes les entités" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes</SelectItem>
-                  <SelectItem value="User">Utilisateur</SelectItem>
-                  <SelectItem value="Project">Projet</SelectItem>
-                  <SelectItem value="Task">Tâche</SelectItem>
-                  <SelectItem value="HRTimesheet">Timesheet RH</SelectItem>
-                  <SelectItem value="Message">Message</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs sm:text-sm">Action</Label>
-              <Select
-                value={filters.action}
-                onValueChange={(value) => setFilters({ ...filters, action: value })}
-              >
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Toutes les actions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes</SelectItem>
-                  <SelectItem value="CREATE">Création</SelectItem>
-                  <SelectItem value="UPDATE">Modification</SelectItem>
-                  <SelectItem value="DELETE">Suppression</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <FilterButtonGroup
+        searchValue={filters.search}
+        onSearchChange={(value) => setFilters({ ...filters, search: value })}
+        filterOptions={[
+          { id: "all", label: "Toutes les entités", value: "all" },
+          { id: "User", label: "Utilisateur", value: "User" },
+          { id: "Project", label: "Projet", value: "Project" },
+          { id: "Task", label: "Tâche", value: "Task" },
+          { id: "HRTimesheet", label: "Timesheet RH", value: "HRTimesheet" },
+          { id: "Message", label: "Message", value: "Message" },
+        ]}
+        selectedFilter={filters.entity}
+        onFilterChange={(value) => setFilters({ ...filters, entity: value })}
+        secondFilterOptions={[
+          { id: "all", label: "Toutes les actions", value: "all" },
+          { id: "CREATE", label: "Création", value: "CREATE" },
+          { id: "UPDATE", label: "Modification", value: "UPDATE" },
+          { id: "DELETE", label: "Suppression", value: "DELETE" },
+        ]}
+        selectedSecondFilter={filters.action}
+        onSecondFilterChange={(value) => setFilters({ ...filters, action: value })}
+        firstFilterLabel="Entité"
+        secondFilterLabel="Action"
+        placeholder="Rechercher..."
+      />
 
       {/* Liste des logs */}
       <Card>
@@ -282,7 +244,7 @@ export default function AuditPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
-              <SpinnerCustom />
+              <Spinner className="size-5" />
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">

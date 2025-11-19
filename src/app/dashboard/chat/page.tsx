@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageSquare } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
 import { ChatConversationList } from "@/components/features/chat-conversation-list";
@@ -201,7 +202,7 @@ export default function ChatPage() {
     return (
       <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-20" />
+          <Spinner className="size-6 mx-auto" />
           <p className="text-xs sm:text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>

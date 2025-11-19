@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 function ResetPasswordContent() {
@@ -182,7 +183,12 @@ function ResetPasswordContent() {
                 className="w-full bg-primary hover:bg-primary"
                 disabled={isLoading}
               >
-                {isLoading ? "Réinitialisation..." : "Réinitialiser le mot de passe"}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner />
+                    Réinitialisation...
+                  </span>
+                ) : "Réinitialiser le mot de passe"}
               </Button>
               <p className="text-sm text-center text-muted-foreground">
                 <Link href="/auth/login" className="text-primary hover:text-primary font-medium">
@@ -330,7 +336,12 @@ function ResetPasswordContent() {
               className="w-full bg-primary hover:bg-primary"
               disabled={isLoading}
             >
-              {isLoading ? "Envoi..." : "Envoyer le lien de réinitialisation"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Envoi...
+                </span>
+              ) : "Envoyer le lien de réinitialisation"}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Vous vous souvenez de votre mot de passe ?{" "}

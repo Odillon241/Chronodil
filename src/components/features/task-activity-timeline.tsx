@@ -19,7 +19,7 @@ import {
   Share2,
   Lock
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getTaskActivities } from "@/actions/task-activity.actions";
@@ -91,8 +91,8 @@ export function TaskActivityTimeline({ taskId }: TaskActivityTimelineProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-2">
-          <SpinnerCustom />
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-5" />
           <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>

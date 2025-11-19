@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/spinner";
 import { Plus } from "lucide-react";
 
 interface ProjectCreateDialogProps {
@@ -157,7 +158,12 @@ export function ProjectCreateDialog({ onSubmit, trigger }: ProjectCreateDialogPr
               className="bg-primary hover:bg-primary"
               disabled={isLoading}
             >
-              {isLoading ? "Création..." : "Créer"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Création...
+                </span>
+              ) : "Créer"}
             </Button>
           </DialogFooter>
         </form>

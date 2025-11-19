@@ -30,8 +30,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TitleWithCount } from "@/components/ui/title-with-count";
 import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2, Key } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { getUsers, createUser, updateUser, deleteUser, resetUserPassword } from "@/actions/user.actions";
@@ -355,7 +356,7 @@ export default function UsersManagementPage() {
   if (isClient && !session) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <SpinnerCustom />
+        <Spinner className="size-6" />
       </div>
     );
   }
@@ -523,7 +524,12 @@ export default function UsersManagementPage() {
                   Annuler
                 </Button>
                 <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm" disabled={isLoading}>
-                  {editingUser ? "Mettre à jour" : "Créer"}
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Spinner />
+                      {editingUser ? "Mise à jour..." : "Création..."}
+                    </span>
+                  ) : editingUser ? "Mettre à jour" : "Créer"}
                 </Button>
               </div>
             </form>
@@ -592,7 +598,9 @@ export default function UsersManagementPage() {
       {/* Users table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">Utilisateurs ({filteredUsers.length})</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">
+            <TitleWithCount title="Utilisateurs" count={filteredUsers.length} />
+          </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
             Liste de tous les utilisateurs de l'application
           </CardDescription>
@@ -600,7 +608,7 @@ export default function UsersManagementPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <SpinnerCustom />
+              <Spinner className="size-6" />
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">

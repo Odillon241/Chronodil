@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { CacheTags } from "@/lib/cache";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 // Récupérer le profil de l'utilisateur connecté
 export const getMyProfile = authActionClient
@@ -198,6 +199,21 @@ export const createUser = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: ctx.userId,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.USER,
+      entityId: user.id,
+      changes: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        departmentId: user.departmentId,
+        managerId: user.managerId,
+      },
+    });
+
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard/settings/users");
     revalidateTag(CacheTags.USERS, 'max');
@@ -249,7 +265,27 @@ export const updateUser = authActionClient
       data: parsedInput.data,
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.USER,
+      entityId: parsedInput.id,
+      changes: {
+        previous: {
+          name: targetUser.name,
+          email: targetUser.email,
+          role: targetUser.role,
+          departmentId: targetUser.departmentId,
+          managerId: targetUser.managerId,
+        },
+        new: parsedInput.data,
+      },
+    });
+
     revalidatePath("/dashboard/team");
+    revalidatePath("/dashboard/settings/users");
+    revalidateTag(CacheTags.USERS, 'max');
     return user;
   });
 
@@ -429,9 +465,26 @@ export const deleteUser = authActionClient
       throw new Error("Utilisateur non trouvé");
     }
 
+    // Sauvegarder les informations de l'utilisateur avant suppression pour l'audit
+    const userData = {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      departmentId: user.departmentId,
+    };
+
     // Supprimer l'utilisateur
     await prisma.user.delete({
       where: { id: parsedInput.id },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.DELETE,
+      entity: AuditEntities.USER,
+      entityId: parsedInput.id,
+      changes: userData,
     });
 
     revalidatePath("/dashboard/settings/users");

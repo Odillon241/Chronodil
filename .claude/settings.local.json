@@ -94,7 +94,13 @@
       "Bash(git commit:*)",
       "Bash(npx tsx:*)",
       "Bash(tasklist:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(echo:*)",
+      "mcp__next-devtools__init",
+      "mcp__next-devtools__nextjs_docs",
+      "mcp__context7__resolve-library-id",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" commit -m \"$(cat <<''EOF''\nfeat: Ajout complet du système de notifications avec sons et amélioration globale\n\nNouvelles fonctionnalités:\n- Système de notifications avec sons configurables\n- Support des notifications audio (3 sons différents)\n- Sélection des sons par type de notification\n- Tests complets pour les notifications (Jest)\n- Composants de test interactif pour les notifications\n- Système d''audit pour les actions utilisateur\n- Support Supabase pour les fichiers audio\n\nAméliorations:\n- Migration vers Socket.IO v4.8.1 pour le chat temps réel\n- Optimisations des hooks realtime (backoff exponentiel)\n- Support des tâches RH avec synchronisation bidirectionnelle\n- Amélioration des validations et schémas\n- Meilleure gestion de la complexité des tâches (LEV_)\n\nDocumentation:\n- Guide utilisateur complet (GUIDE_UTILISATEUR_CHRONODIL.md)\n- Résumé d''implémentation des notifications (IMPLEMENTATION_SUMMARY.md)\n- Documentation du système d''audit (docs/AUDIT_SYSTEM.md)\n- Documentation des sons de notification (docs/NOTIFICATION_SYSTEM.md)\n\nFichiers modifiés: 47 fichiers\nNouvelles additions: 20+ fichiers\n- Actions, pages, composants refactorisés\n- Tests unitaires et d''intégration\n- Ressources audio et scripts de configuration\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
