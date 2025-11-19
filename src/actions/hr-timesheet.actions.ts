@@ -579,7 +579,7 @@ export const updateHRActivity = authActionClient
       totalHours = calculateWorkingHours(startDate, endDate);
     }
 
-    // Exclure les champs problÃ©matiques et les gÃ©rer avec des casts
+    // Exclure les champs problématiques et les gérer avec des casts
     const { taskId, catalogId, complexity, totalHours: _, ...updateData } = data;
 
     const updatedActivity = await prisma.hRActivity.update({
