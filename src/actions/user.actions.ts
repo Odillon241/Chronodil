@@ -10,6 +10,8 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { CacheTags } from "@/lib/cache";
 import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 // Récupérer le profil de l'utilisateur connecté
 export const getMyProfile = authActionClient
@@ -586,4 +588,43 @@ export const resetUserPassword = authActionClient
       message: "Mot de passe réinitialisé avec succès",
       tempPassword: parsedInput.newPassword
     };
+  });
+
+// Changer le mot de passe de l'utilisateur connecté
+export const changeMyPassword = authActionClient
+  .schema(
+    z.object({
+      currentPassword: z.string().min(1, "Le mot de passe actuel est requis"),
+      newPassword: z.string().min(6, "Le nouveau mot de passe doit contenir au moins 6 caractères"),
+    })
+  )
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId } = ctx;
+    
+    try {
+      // Utiliser l'API Better Auth pour changer le mot de passe
+      const result = await auth.api.changePassword({
+        body: {
+          currentPassword: parsedInput.currentPassword,
+          newPassword: parsedInput.newPassword,
+          revokeOtherSessions: true, // Invalider les autres sessions pour la sécurité
+        },
+        headers: await headers(),
+      });
+
+      if (!result) {
+        throw new Error("Erreur lors du changement de mot de passe");
+      }
+
+      return {
+        success: true,
+        message: "Mot de passe modifié avec succès",
+      };
+    } catch (error: any) {
+      // Gérer les erreurs spécifiques de Better Auth
+      if (error.message?.includes("Invalid current password") || error.message?.includes("incorrect")) {
+        throw new Error("Le mot de passe actuel est incorrect");
+      }
+      throw new Error(error.message || "Erreur lors du changement de mot de passe");
+    }
   });

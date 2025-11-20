@@ -1549,13 +1549,7 @@ export default function SettingsPage() {
   function renderGeneralSection() {
     return (
       <div className="space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold">Paramètres généraux</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Personnalisez l'apparence, la langue et l'accessibilité
-            </p>
-          </div>
+        <div className="flex items-start justify-end gap-4">
           <Button
             variant="outline"
             onClick={handleResetGeneralSettings}

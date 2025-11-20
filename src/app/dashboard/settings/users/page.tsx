@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TitleWithCount } from "@/components/ui/title-with-count";
+import { Separator } from "@/components/ui/separator";
 import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2, Key } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
@@ -584,6 +585,8 @@ export default function UsersManagementPage() {
         </Dialog>
       </div>
 
+      <Separator />
+
       {/* Search bar */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -604,6 +607,7 @@ export default function UsersManagementPage() {
           <CardDescription className="text-xs sm:text-sm">
             Liste de tous les utilisateurs de l'application
           </CardDescription>
+          <Separator className="mt-4" />
         </CardHeader>
         <CardContent>
           {isLoading ? (
