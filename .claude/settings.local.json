@@ -107,7 +107,9 @@
       "Bash(npx playwright install:*)",
       "Bash(cmd /c taskkill /F /PID 55284)",
       "Bash(netstat:*)",
-      "Bash(kill-server.bat)"
+      "Bash(kill-server.bat)",
+      "Bash(if exist \"src\\app\\dashboard\\test\" rd /S /Q \"src\\app\\dashboard\\test\")",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

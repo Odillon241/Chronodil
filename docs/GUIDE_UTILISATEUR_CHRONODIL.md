@@ -1,1089 +1,1336 @@
-# Guide d'Utilisation - Application Chronodil
-
-> **Version** : 1.0  
-> **Date** : Janvier 2025  
-> **Application** : Chronodil - Gestion de Temps et Projets
+# CHRONODIL
+## Guide Utilisateur Complet
+### Application de Gestion du Temps et des Projets
 
 ---
 
-## Table des Matières
-
-1. [Introduction](#introduction)
-2. [Connexion et Premier Accès](#connexion)
-3. [Interface Générale](#interface)
-4. [Guide par Rôle](#guides-par-role)
-   - [Employé (EMPLOYEE)](#employee)
-   - [Manager (MANAGER)](#manager)
-   - [Ressources Humaines (HR)](#hr)
-   - [Directeur (DIRECTEUR)](#directeur)
-   - [Administrateur (ADMIN)](#admin)
-5. [Fonctionnalités Communes](#fonctionnalites-communes)
-6. [FAQ et Dépannage](#faq)
+**Version du guide** : 2.0.0
+**Dernière mise à jour** : Novembre 2025
+**Application** : Chronodil v0.1.0 (Next.js 16)
+**Auteur** : Équipe Chronodil
 
 ---
 
-## 1. Introduction {#introduction}
+## 📋 Table des matières
 
-**Chronodil** est une application de gestion de temps et de projets qui permet de :
-- ✅ Suivre les heures de travail
-- 📋 Gérer les tâches et projets
-- 📊 Générer des rapports d'activité
-- 💬 Collaborer en équipe
-- ✔️ Valider les feuilles de temps
-
-### Informations Techniques
-- **URL d'accès** : Fournie par votre administrateur
-- **Navigateurs supportés** : Chrome, Firefox, Safari, Edge (dernières versions)
-- **Authentification** : Email + mot de passe
-
----
-
-## 2. Connexion et Premier Accès {#connexion}
-
-![Page de connexion](images/01-page-connexion.png)
-
-<figcaption>Figure 1 : Page de connexion à l'application Chronodil</figcaption>
-
-### Première Connexion
-
-1. **Accédez à l'application** via l'URL fournie par votre entreprise
-2. **Cliquez sur "Se connecter"**
-3. **Entrez vos identifiants** :
-   - Email professionnel
-   - Mot de passe (fourni par l'administrateur)
-4. **Modifiez votre mot de passe** lors de la première connexion (recommandé)
-
-### Réinitialisation du Mot de Passe
-
-1. Cliquez sur "Mot de passe oublié ?"
-2. Entrez votre email professionnel
-3. Consultez votre boîte email
-4. Suivez le lien de réinitialisation
+1. [Introduction](#1-introduction)
+2. [Premiers pas](#2-premiers-pas)
+3. [Rôles et permissions](#3-rôles-et-permissions)
+4. [Dashboard](#4-dashboard)
+5. [Gestion des tâches](#5-gestion-des-tâches)
+6. [Gestion des projets](#6-gestion-des-projets)
+7. [Feuilles de temps RH](#7-feuilles-de-temps-rh)
+8. [Rapports et analyses](#8-rapports-et-analyses)
+9. [Chat et collaboration](#9-chat-et-collaboration)
+10. [Paramètres et préférences](#10-paramètres-et-préférences)
+11. [Bonnes pratiques](#11-bonnes-pratiques)
+12. [Raccourcis clavier](#12-raccourcis-clavier)
+13. [FAQ et dépannage](#13-faq-et-dépannage)
+14. [Glossaire](#14-glossaire)
 
 ---
 
-## 3. Interface Générale {#interface}
+## 1. Introduction
 
-![Tableau de bord](images/02-dashboard.png)
+### 🎯 Qu'est-ce que Chronodil ?
 
-<figcaption>Figure 2 : Vue d'ensemble du tableau de bord</figcaption>
+Chronodil est une **application moderne de gestion du temps et des projets** conçue pour améliorer la productivité et la collaboration au sein de votre organisation. Elle combine :
 
-### Navigation Principale
+- ✅ **Gestion des tâches** avec 5 vues différentes
+- 📊 **Suivi de projets** et gestion d'équipe
+- ⏱️ **Feuilles de temps RH** avec workflow de validation
+- 📈 **Rapports et analyses** personnalisables
+- 💬 **Chat d'équipe** en temps réel
+- 🔔 **Notifications** intelligentes
 
-L'interface se compose de :
+### 🌟 Avantages clés
 
-#### **Sidebar (Barre Latérale)**
-- 🏠 **Tableau de bord** : Vue d'ensemble de vos activités
-- ✅ **Tâches** : Gestion de vos tâches
-- 📁 **Projets** : Liste des projets
-- ⏱️ **Feuille de temps** : Saisie des heures travaillées
-- 📋 **Feuille RH** : Activités hebdomadaires (pour employés RH)
-- ✔️ **Validation** : Validation des feuilles de temps
-- 📊 **Rapports** : Génération et consultation de rapports
-- 💬 **Chat** : Messagerie interne
-- 🔔 **Notifications** : Centre de notifications
-- ⚙️ **Paramètres** : Configuration personnelle
+| Avantage | Description |
+|----------|-------------|
+| **Interface intuitive** | Design moderne et ergonomique adapté à tous les profils |
+| **Temps réel** | Synchronisation instantanée des données entre utilisateurs |
+| **Flexibilité** | 5 vues de tâches pour s'adapter à votre style de travail |
+| **Conformité RH** | Workflow de validation des temps conforme aux exigences légales |
+| **Analyses poussées** | Tableaux de bord et rapports pour piloter votre activité |
+| **Sécurité** | Authentification robuste et contrôle d'accès par rôles |
 
-#### **Header (En-tête)**
-- **Fil d'Ariane** : Navigation dans les sections
-- **Recherche globale** : Recherche rapide (Ctrl+K / Cmd+K)
-- **Notifications** : Icône cloche
-- **Profil utilisateur** : Avatar et menu déroulant
+### 🎓 À qui s'adresse Chronodil ?
 
----
-
-## 4. Guide par Rôle {#guides-par-role}
-
----
-
-## 👤 EMPLOYÉ (EMPLOYEE) {#employee}
-
-### Vue d'ensemble
-
-En tant qu'**employé**, vous pouvez :
-- ⏱️ Saisir vos heures de travail
-- ✅ Gérer vos tâches quotidiennes
-- 📊 Consulter vos statistiques
-- 💬 Communiquer avec votre équipe
+- **Employés** : Gérer vos tâches quotidiennes et déclarer vos temps
+- **Managers** : Piloter vos équipes et valider les temps
+- **RH** : Superviser les déclarations et analyser les données
+- **Administrateurs** : Configurer et administrer l'application
 
 ---
 
-### 📊 Tableau de Bord
+## 2. Premiers pas
 
-**Chemin** : Dashboard > Accueil
+### 🔐 Connexion à l'application
 
-Vous y trouverez :
-- **Résumé de la semaine** : Heures travaillées / Objectif hebdomadaire
-- **Tâches en cours** : Liste de vos tâches actives
-- **Projets actifs** : Projets auxquels vous participez
-- **Prochaines échéances** : Tâches à venir
+#### Première connexion
 
----
+1. **Accédez à l'URL** de Chronodil fournie par votre organisation
+2. **Saisissez votre email** professionnel
+3. **Entrez votre mot de passe** (fourni par l'administrateur)
+4. Cliquez sur **"Se connecter"**
 
-### ⏱️ Feuille de Temps
+> 💡 **Conseil** : Lors de votre première connexion, pensez à modifier votre mot de passe dans les paramètres.
 
-**Chemin** : Dashboard > Feuille de temps
+#### Comptes de démonstration
 
-![Feuille de temps](images/03-feuilles-de-temps.png)
+Pour tester l'application, utilisez l'un des comptes suivants :
 
-<figcaption>Figure 3 : Interface de gestion des feuilles de temps</figcaption>
+| Rôle | Email | Mot de passe |
+|------|-------|--------------|
+| **Administrateur** | admin@chronodil.com | Admin2025! |
+| **Manager** | manager@chronodil.com | Manager2025! |
+| **Employé** | employe@chronodil.com | Employee2025! |
 
-#### Saisir une Entrée
+> ⚠️ **Important** : Ces comptes sont à usage de démonstration uniquement. En production, utilisez vos identifiants personnels.
 
-1. Cliquez sur **"Nouvelle entrée"**
-2. Remplissez les champs :
-   - **Date** : Sélectionnez la date
-   - **Projet** : Choisissez le projet (si applicable)
-   - **Tâche** : Sélectionnez la tâche
-   - **Heures** : Indiquez la durée (ex: 2.5h)
-   - **Type** : Normal / Heures sup / Nuit / Week-end
-   - **Description** : Décrivez votre activité
-3. Cliquez sur **"Enregistrer"**
+### 🧭 Navigation dans l'interface
 
-#### Modifier une Entrée
+#### Barre latérale (Sidebar)
 
-1. Trouvez l'entrée dans la liste
-2. Cliquez sur l'icône **crayon (✏️)**
-3. Modifiez les informations
-4. Cliquez sur **"Mettre à jour"**
+La navigation principale se trouve dans la **barre latérale gauche** :
 
-**⚠️ Note** : Vous ne pouvez modifier que les entrées en statut "DRAFT" (Brouillon)
+| Icône | Section | Description | Raccourci |
+|-------|---------|-------------|-----------|
+| 🏠 | **Dashboard** | Vue d'ensemble et statistiques | `Ctrl+D` |
+| ✅ | **Tâches** | Gestion de vos tâches quotidiennes | `Ctrl+T` |
+| 📁 | **Projets** | Vos projets et leurs équipes | `Ctrl+P` |
+| 📋 | **Feuilles RH** | Activités RH hebdomadaires | `Ctrl+H` |
+| 📊 | **Rapports** | Analyses et exports de données | `Ctrl+R` |
+| 💬 | **Chat** | Messagerie d'équipe | `Ctrl+M` |
 
-#### Soumettre pour Validation
+#### Barre supérieure (Header)
 
-1. Vérifiez vos entrées de la semaine
-2. Cliquez sur **"Soumettre"**
-3. Confirmez l'envoi
-4. Statut passe à **"SUBMITTED"** (En attente de validation)
+En haut de page, vous trouverez :
 
-**📌 Conseil** : Soumettez vos feuilles de temps chaque vendredi avant 17h00
+- **🔍 Recherche globale** (`Ctrl+K`) : Recherche rapide dans toutes les données
+- **🔔 Notifications** : Centre de notifications en temps réel
+- **👤 Profil utilisateur** : Accès aux paramètres et déconnexion
 
----
+#### Palette de commandes
 
-### ✅ Gestion des Tâches
+Utilisez **Ctrl+K** pour ouvrir la **palette de commandes** et accéder rapidement à n'importe quelle fonction :
 
-**Chemin** : Dashboard > Tâches
+```
+Ctrl+K → "nouvelle tâche" → Entrée
+Ctrl+K → "rapport hebdomadaire" → Entrée
+```
 
-![Gestion des tâches](images/05-taches.png)
+### 🎨 Thème et apparence
 
-<figcaption>Figure 4 : Interface de gestion des tâches</figcaption>
+Chronodil propose deux thèmes :
 
-#### Consulter vos Tâches
+- **☀️ Mode clair** : Pour une utilisation en journée
+- **🌙 Mode sombre** : Pour réduire la fatigue visuelle
 
-Filtres disponibles :
-- **Statut** : À faire / En cours / Terminé
-- **Priorité** : Basse / Moyenne / Haute
-- **Projet** : Filtrer par projet
-- **Date d'échéance** : Trier par date
-
-#### Vues Disponibles
-
-1. **Vue Liste** : Liste classique avec détails
-2. **Vue Kanban** : Colonnes par statut (To Do, In Progress, Done)
-3. **Vue Gantt** : Timeline des tâches
-4. **Vue Calendrier** : Tâches sur un calendrier
-
-#### Mettre à Jour une Tâche
-
-1. Cliquez sur la tâche
-2. Modifiez :
-   - **Statut** : Déplacez dans la colonne appropriée (Kanban)
-   - **Progression** : Ajoutez des commentaires
-   - **Temps passé** : Liez à votre feuille de temps
-3. Cliquez sur **"Enregistrer"**
-
-#### Créer une Tâche Personnelle
-
-1. Cliquez sur **"Nouvelle tâche"**
-2. Remplissez :
-   - **Nom** : Titre de la tâche
-   - **Description** : Détails
-   - **Projet** : (Optionnel) Associez à un projet
-   - **Date d'échéance** : Date limite
-   - **Priorité** : Basse / Moyenne / Haute
-   - **Estimation** : Heures estimées
-3. Cliquez sur **"Créer"**
+Changez de thème via le menu utilisateur (icône en haut à droite).
 
 ---
 
-### 💬 Messagerie (Chat)
+## 3. Rôles et permissions
 
-**Chemin** : Dashboard > Chat
+Chronodil utilise un **système de rôles hiérarchiques** avec 5 niveaux. Chaque rôle hérite des permissions du niveau inférieur.
 
-#### Conversations Directes
+### 👤 EMPLOYEE (Employé)
 
-1. Cliquez sur **"Nouvelle conversation"**
-2. Sélectionnez un collègue
+**Niveau de base** pour tous les utilisateurs de l'application.
+
+#### Permissions
+
+✅ **Tâches**
+- Créer ses propres tâches
+- Modifier et supprimer ses tâches
+- Voir les tâches des projets dont il est membre
+- Commenter les tâches
+
+✅ **Projets**
+- Consulter les projets auxquels il est affecté
+- Voir les membres de l'équipe projet
+- Suivre l'avancement du projet
+
+✅ **Feuilles de temps**
+- Créer et modifier ses feuilles de temps (statut DRAFT)
+- Soumettre ses feuilles pour validation
+- Consulter l'historique de ses déclarations
+
+✅ **Chat**
+- Envoyer et recevoir des messages
+- Participer aux conversations d'équipe
+
+✅ **Profil**
+- Modifier ses informations personnelles
+- Gérer ses préférences
+
+#### Cas d'usage typique
+
+> **Marie, développeuse** : Elle crée ses tâches quotidiennes, les organise en Kanban, déclare ses temps hebdomadaires et communique avec son équipe via le chat.
+
+---
+
+### 👨‍💼 MANAGER (Responsable)
+
+**Gestion d'équipe** et première validation des temps.
+
+#### Permissions additionnelles
+
+✅ **Projets**
+- **Créer** de nouveaux projets
+- **Affecter** des membres aux projets
+- **Modifier** les informations des projets
+- **Archiver** des projets terminés
+
+✅ **Validation**
+- **Valider** les feuilles de temps de son équipe (PENDING → MANAGER_APPROVED)
+- **Rejeter** une feuille avec commentaire explicatif
+- Voir le statut de validation en temps réel
+
+✅ **Équipe**
+- Consulter les tâches de ses collaborateurs
+- Voir les statistiques d'équipe
+- Réaffecter des tâches
+
+#### Workflow de validation Manager
+
+```
+1. Employé soumet sa feuille → Statut PENDING
+2. Manager reçoit une notification
+3. Manager consulte la feuille
+4. Manager valide → MANAGER_APPROVED (ou rejette → DRAFT)
+5. Feuille passe à l'étape suivante (validation RH)
+```
+
+#### Cas d'usage typique
+
+> **Thomas, Chef de projet** : Il crée des projets, affecte son équipe, suit l'avancement des tâches via Gantt, et valide les feuilles de temps chaque vendredi.
+
+---
+
+### 👔 HR (Ressources Humaines)
+
+**Gestion RH globale** et validation finale des temps.
+
+#### Permissions additionnelles
+
+✅ **Validation finale**
+- **Approuver** définitivement les feuilles (MANAGER_APPROVED → APPROVED)
+- **Signature Odillon** : Validation officielle conforme
+- **Rejeter** vers le manager avec motif
+
+✅ **Gestion utilisateurs**
+- Créer des comptes utilisateurs
+- Modifier les informations RH (département, poste)
+- Désactiver des comptes
+- Gérer les droits d'accès
+
+✅ **Audit**
+- Accès aux **logs d'audit** complets
+- Traçabilité de toutes les actions
+- Export des données RH
+
+✅ **Rapports RH**
+- Rapports de temps par département
+- Analyses d'activité globale
+- Export massif pour paie
+
+#### Workflow de validation RH
+
+```
+1. Manager approuve → Statut MANAGER_APPROVED
+2. RH reçoit notification
+3. RH vérifie conformité
+4. RH approuve → APPROVED (signature Odillon)
+5. Feuille verrouillée et archivée
+```
+
+#### Cas d'usage typique
+
+> **Sophie, DRH** : Elle valide les feuilles hebdomadaires, génère les rapports mensuels pour la paie, gère les comptes utilisateurs et consulte les logs d'audit.
+
+---
+
+### 🔧 ADMIN (Administrateur)
+
+**Contrôle total** de l'application.
+
+#### Permissions additionnelles
+
+✅ **Administration système**
+- Accès aux **paramètres globaux**
+- Configuration de l'authentification
+- Gestion des intégrations (API)
+- Maintenance de la base de données
+
+✅ **Gestion des rôles**
+- Attribuer/modifier les rôles utilisateurs
+- Créer des rôles personnalisés (futur)
+- Gérer les permissions fines
+
+✅ **Support technique**
+- Accès aux logs système
+- Débogage en temps réel
+- Résolution des problèmes techniques
+
+✅ **Sécurité**
+- Gestion des sessions
+- Contrôle d'accès IP (si configuré)
+- Audit de sécurité
+
+#### Cas d'usage typique
+
+> **Lucas, Admin IT** : Il configure l'application, gère les comptes, résout les problèmes techniques, effectue les mises à jour et garantit la sécurité du système.
+
+---
+
+### 📊 Tableau récapitulatif des permissions
+
+| Fonctionnalité | EMPLOYEE | MANAGER | HR | ADMIN |
+|----------------|----------|---------|-----|-------|
+| Gérer ses tâches | ✅ | ✅ | ✅ | ✅ |
+| Voir tâches d'équipe | ⚠️ Limitée | ✅ | ✅ | ✅ |
+| Créer projets | ❌ | ✅ | ✅ | ✅ |
+| Soumettre feuille temps | ✅ | ✅ | ✅ | ✅ |
+| Validation Manager | ❌ | ✅ | ✅ | ✅ |
+| Validation RH finale | ❌ | ❌ | ✅ | ✅ |
+| Gérer utilisateurs | ❌ | ❌ | ✅ | ✅ |
+| Logs d'audit | ❌ | ⚠️ Limités | ✅ | ✅ |
+| Paramètres système | ❌ | ❌ | ❌ | ✅ |
+
+> 💡 **Légende** : ✅ Accès complet | ⚠️ Accès partiel | ❌ Pas d'accès
+
+---
+
+## 4. Dashboard
+
+Le **Dashboard** est votre **point d'entrée** dans Chronodil. Il offre une **vue d'ensemble** de toutes vos activités en temps réel.
+
+### 📊 Widgets disponibles
+
+#### 1. Vue d'ensemble (Aperçu)
+
+**Indicateurs clés** affichés en haut de page :
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  📋 12 Tâches actives  │  ⏱️ 35h cette semaine  │  ✅ 8 Terminées  │
+└─────────────────────────────────────────────────────────┘
+```
+
+- **Tâches actives** : Nombre de tâches en cours (TODO + IN_PROGRESS)
+- **Heures travaillées** : Total de la semaine en cours
+- **Tâches terminées** : Nombre de tâches complétées ce mois
+
+#### 2. Tâches du jour
+
+Liste des **tâches prioritaires** avec échéance aujourd'hui :
+
+- Triées par priorité (HIGH → MEDIUM → LOW)
+- Statut visuel (couleur selon urgence)
+- Action rapide : Marquer comme terminée en 1 clic
+
+> 💡 **Astuce** : Glissez-déposez les tâches pour réorganiser vos priorités.
+
+#### 3. Activité récente
+
+Fil d'actualité des **dernières actions** :
+
+```
+• Thomas a validé votre feuille de temps (il y a 5 min)
+• Nouvelle tâche assignée : "Révision du rapport" (il y a 1h)
+• Marie a commenté "Design homepage" (il y a 2h)
+```
+
+#### 4. Projets en cours
+
+**Cartes projet** avec indicateurs de progression :
+
+```
+┌──────────────────────────────────┐
+│  Site Web Entreprise             │
+│  ███████████░░░░░░░  68%         │
+│  👥 5 membres  │  📅 J-12        │
+└──────────────────────────────────┘
+```
+
+- Barre de progression
+- Nombre de membres
+- Jours restants avant échéance
+
+#### 5. Graphique d'activité
+
+**Graphique hebdomadaire** des heures travaillées :
+
+```
+Heures par jour
+   8h ┤     ╭─╮
+   6h ┤   ╭─╯ ╰╮
+   4h ┤ ╭─╯    ╰─╮
+   2h ┤─╯        ╰──
+      └──────────────
+      L M M J V S D
+```
+
+#### 6. Feuilles de temps en attente
+
+**Pour les Managers/RH** : Liste des feuilles à valider
+
+```
+⏳ 3 feuilles en attente de validation
+• Marie Dupont - Semaine 46 (PENDING)
+• Jean Martin - Semaine 46 (MANAGER_APPROVED)
+```
+
+### 🎛️ Personnalisation du Dashboard
+
+Cliquez sur **⚙️ Personnaliser** pour :
+
+- ✅ Afficher/masquer les widgets
+- 🔄 Réorganiser les widgets (glisser-déposer)
+- 🎨 Choisir les couleurs des graphiques
+- 📊 Sélectionner la période d'analyse (semaine, mois, année)
+
+> 💡 **Bonnes pratiques** : Configurez votre dashboard selon votre rôle. Un manager privilégiera les widgets d'équipe, un employé les tâches personnelles.
+
+---
+
+## 5. Gestion des tâches
+
+Le module **Tâches** est le **cœur** de votre organisation quotidienne. Chronodil propose **5 vues complémentaires** pour s'adapter à votre style de travail.
+
+### 📋 Les 5 vues disponibles
+
+#### 1. 📝 Vue Liste
+
+**Tableau détaillé** avec toutes les informations :
+
+- **Colonnes** : Nom, Projet, Statut, Priorité, Assigné, Échéance
+- **Tri** : Cliquez sur les en-têtes de colonnes
+- **Filtres** : Par statut, priorité, projet, assigné
+- **Recherche** : Champ de recherche en haut
+
+**Quand utiliser ?**
+- Besoin de voir beaucoup de détails
+- Tri et filtrage avancés
+- Export de données
+
+#### 2. 📊 Vue Kanban
+
+**Colonnes par statut** avec glisser-déposer :
+
+```
+┌─────────────┬─────────────┬─────────────┐
+│  À FAIRE    │  EN COURS   │  TERMINÉ    │
+├─────────────┼─────────────┼─────────────┤
+│ ┌─────────┐ │ ┌─────────┐ │ ┌─────────┐ │
+│ │ Tâche 1 │ │ │ Tâche 3 │ │ │ Tâche 5 │ │
+│ └─────────┘ │ └─────────┘ │ └─────────┘ │
+│ ┌─────────┐ │ ┌─────────┐ │             │
+│ │ Tâche 2 │ │ │ Tâche 4 │ │             │
+│ └─────────┘ │ └─────────┘ │             │
+└─────────────┴─────────────┴─────────────┘
+```
+
+**Quand utiliser ?**
+- Méthode Agile/Scrum
+- Visualisation du flux de travail
+- Réorganisation rapide
+
+> 💡 **Astuce** : Glissez une carte d'une colonne à l'autre pour changer son statut instantanément.
+
+#### 3. 📅 Vue Calendrier
+
+**Organisation par dates** d'échéance :
+
+```
+        Novembre 2025
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+│ Lun │ Mar │ Mer │ Jeu │ Ven │ Sam │ Dim │
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│  1  │  2  │  3  │  4  │  5  │  6  │  7  │
+│     │ 📌2 │     │ 📌1 │ 📌3 │     │     │
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+```
+
+**Quand utiliser ?**
+- Planification hebdomadaire/mensuelle
+- Gestion des échéances
+- Vue chronologique
+
+#### 4. 📈 Vue Gantt
+
+**Timeline de projet** avec dépendances :
+
+```
+Tâche         Nov |─────────────────────────|
+──────────────────┼──────────────────────────
+Tâche 1       ████████░░░░░░░░░░░░
+Tâche 2            ████████░░░░░░░░
+Tâche 3                 ████████
+```
+
+**Quand utiliser ?**
+- Planification de projet complexe
+- Visualisation des dépendances
+- Suivi de la charge de travail
+
+**Fonctionnalités** :
+- Zoom timeline (jour, semaine, mois)
+- Glisser-déposer pour déplacer les tâches
+- Créer des dépendances entre tâches
+
+#### 5. 🗺️ Vue Roadmap
+
+**Vision stratégique long terme** :
+
+```
+Q4 2025                    Q1 2026
+├───────────────────────────┼─────────────────
+│ Phase 1: Conception      │ Phase 2: Dev
+│ ████████████              │
+│                          │ Phase 3: Tests
+│                          │      ████████
+```
+
+**Quand utiliser ?**
+- Planification stratégique
+- Communication avec stakeholders
+- Vision d'ensemble multi-projets
+
+### ➕ Créer une tâche
+
+#### Méthode 1 : Bouton "+"
+
+1. Cliquez sur le bouton **"+"** en haut à droite
+2. Remplissez le formulaire :
+
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| **Nom** | ✅ Oui | Titre court et descriptif |
+| **Description** | ⚠️ Recommandé | Détails, contexte, objectifs |
+| **Projet** | ❌ Non | Projet parent (optionnel) |
+| **Statut** | ✅ Oui | TODO / IN_PROGRESS / DONE |
+| **Priorité** | ✅ Oui | LOW / MEDIUM / HIGH |
+| **Complexité** | ⚠️ Recommandé | FAIBLE / MOYEN / ÉLEVÉ |
+| **Assigné à** | ❌ Non | Membre de l'équipe |
+| **Date d'échéance** | ⚠️ Recommandé | Date limite |
+| **Heures estimées** | ❌ Non | Estimation en heures |
+
+3. Cliquez sur **"Créer la tâche"**
+
+#### Méthode 2 : Raccourci clavier
+
+```
+Ctrl+N → Ouvre le formulaire de création rapide
+```
+
+#### Méthode 3 : Depuis le Kanban
+
+- Cliquez sur **"+ Ajouter"** dans une colonne
+- La tâche est créée directement avec le statut de la colonne
+
+### ✏️ Modifier une tâche
+
+#### Accès au formulaire d'édition
+
+- **Vue Liste** : Cliquez sur l'icône ✏️
+- **Vue Kanban** : Cliquez sur la carte
+- **Toutes vues** : Double-clic sur la tâche
+
+#### Modifications rapides
+
+**Sans ouvrir le formulaire** :
+
+- **Kanban** : Glisser-déposer entre colonnes (change le statut)
+- **Gantt** : Glisser-déposer sur la timeline (change les dates)
+- **Liste** : Clic sur le statut/priorité (menu déroulant)
+
+### 🔗 Synchronisation bidirectionnelle
+
+> 💡 **Fonctionnalité unique** : Chronodil synchronise automatiquement les tâches et les activités RH.
+
+#### Scénario 1 : Création depuis Tâches
+
+```
+1. Vous créez une tâche "Formation Next.js"
+2. Vous créez une feuille de temps RH
+3. Vous pouvez sélectionner "Formation Next.js" dans la liste
+4. Les informations sont pré-remplies automatiquement
+```
+
+#### Scénario 2 : Création depuis Feuilles RH (saisie manuelle)
+
+```
+1. Vous créez une feuille de temps RH
+2. Vous choisissez "Saisie manuelle"
+3. Vous remplissez les champs (nom, description, etc.)
+4. Une tâche est créée AUTOMATIQUEMENT
+5. La tâche apparaît dans le module Tâches
+```
+
+> ⚠️ **Important** : Cette synchronisation garantit qu'aucune activité RH n'est "perdue" et que tout est traçable via les tâches.
+
+### 🗑️ Supprimer une tâche
+
+1. Ouvrez la tâche (mode édition)
+2. Cliquez sur **"🗑️ Supprimer"** (en bas du formulaire)
+3. Confirmez la suppression
+
+> ⚠️ **Attention** : La suppression est **définitive** et **irréversible**. Assurez-vous de vouloir vraiment supprimer la tâche.
+
+**Alternative** : Plutôt que supprimer, vous pouvez :
+- Passer le statut à DONE
+- Archiver le projet parent
+- Marquer comme "inactive"
+
+### 🔍 Filtrer et rechercher
+
+#### Filtres rapides
+
+En haut de chaque vue, utilisez les filtres :
+
+- **Statut** : TODO, IN_PROGRESS, DONE, TOUS
+- **Priorité** : LOW, MEDIUM, HIGH, TOUTES
+- **Projet** : Sélectionnez un projet spécifique
+- **Assigné** : Mes tâches / Équipe / Tous
+
+#### Recherche textuelle
+
+Champ de recherche en temps réel :
+
+```
+Tapez "rapport" → Filtrage instantané sur :
+- Nom de la tâche
+- Description
+- Commentaires
+- Tags
+```
+
+#### Filtres avancés (Vue Liste)
+
+Cliquez sur **"Filtres avancés"** pour combiner :
+
+- Date de création (entre le X et le Y)
+- Date d'échéance (prochains 7 jours, ce mois, etc.)
+- Complexité
+- Nombre d'heures estimées
+
+### 💬 Commentaires et collaboration
+
+#### Ajouter un commentaire
+
+1. Ouvrez une tâche
+2. Scrollez jusqu'à la section **"Commentaires"**
 3. Tapez votre message
-4. Appuyez sur **Entrée** pour envoyer
+4. Cliquez sur **"Envoyer"**
 
-#### Conversations de Projet
+#### Mentions
 
-- Accédez automatiquement aux chats des projets auxquels vous participez
-- Idéal pour les discussions liées au travail en équipe
+Mentionnez un utilisateur pour le notifier :
+
+```
+@marie Peux-tu valider cette approche ?
+```
+
+Marie recevra une notification instantanée.
+
+#### Pièces jointes (futur)
+
+> 🚀 **Prochainement** : Vous pourrez joindre des fichiers aux tâches (images, PDF, etc.)
 
 ---
+
+## 6. Gestion des projets
+
+Les **Projets** permettent de **regrouper des tâches** et d'**organiser des équipes** autour d'objectifs communs.
+
+> 📌 **Disponible pour** : MANAGER, HR, ADMIN
+
+### 📁 Qu'est-ce qu'un projet ?
+
+Un projet dans Chronodil contient :
+
+- **Informations** : Nom, description, dates, statut
+- **Équipe** : Liste des membres affectés
+- **Tâches** : Ensemble de tâches liées au projet
+- **Statistiques** : Progression, heures, budget
+
+### ➕ Créer un projet
+
+#### Étapes
+
+1. Allez dans **Projets** (barre latérale)
+2. Cliquez sur **"+ Nouveau projet"**
+3. Remplissez le formulaire :
+
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| **Nom** | ✅ Oui | Nom du projet |
+| **Description** | ⚠️ Recommandé | Objectifs, contexte |
+| **Date de début** | ❌ Non | Date de lancement |
+| **Date de fin** | ⚠️ Recommandé | Échéance globale |
+| **Statut** | ✅ Oui | ACTIVE / ARCHIVED |
+| **Budget** | ❌ Non | Budget alloué (optionnel) |
+| **Chef de projet** | ⚠️ Recommandé | Manager responsable |
+
+4. Cliquez sur **"Créer le projet"**
+
+### 👥 Gérer l'équipe projet
+
+#### Ajouter des membres
+
+1. Ouvrez le projet
+2. Cliquez sur l'onglet **"Équipe"**
+3. Cliquez sur **"+ Ajouter un membre"**
+4. Sélectionnez les utilisateurs
+5. Définissez leur rôle (optionnel) :
+   - **Chef de projet** : Responsable principal
+   - **Membre** : Contributeur standard
+   - **Observer** : Lecture seule (futur)
+
+6. Cliquez sur **"Ajouter"**
+
+#### Retirer des membres
+
+1. Cliquez sur l'icône **"🗑️"** à côté du membre
+2. Confirmez le retrait
+
+> ⚠️ **Attention** : Les tâches assignées au membre restent inchangées. Réaffectez-les manuellement si nécessaire.
+
+### 📊 Suivre l'avancement
+
+#### Tableau de bord projet
+
+Chaque projet dispose d'un **tableau de bord dédié** :
+
+```
+┌────────────────────────────────────────────────┐
+│  📁 Site Web Entreprise                        │
+│  ████████████░░░░░░░░  68% complété            │
+├────────────────────────────────────────────────┤
+│  📋 12/18 tâches terminées                     │
+│  ⏱️ 145h / 200h estimées                       │
+│  👥 5 membres                                  │
+│  📅 Échéance: 31/12/2025 (J-42)                │
+└────────────────────────────────────────────────┘
+```
+
+#### Graphiques d'avancement
+
+- **Burndown chart** : Visualiser la vélocité
+- **Répartition par statut** : Camembert TODO/IN_PROGRESS/DONE
+- **Heures par membre** : Diagramme en barres
+
+### 📋 Lier des tâches au projet
+
+#### Méthode 1 : Lors de la création de tâche
+
+Sélectionnez le projet dans le champ **"Projet"** du formulaire.
+
+#### Méthode 2 : Depuis le projet
+
+1. Ouvrez le projet
+2. Onglet **"Tâches"**
+3. Cliquez sur **"+ Nouvelle tâche"**
+4. Le projet est pré-sélectionné
+
+#### Méthode 3 : Réaffecter une tâche existante
+
+1. Éditez la tâche
+2. Changez le champ **"Projet"**
+3. Enregistrez
+
+### 🗂️ Archiver un projet
+
+Lorsqu'un projet est terminé :
+
+1. Ouvrez le projet
+2. Cliquez sur **"⚙️ Paramètres"**
+3. Changez le statut à **"ARCHIVED"**
+4. Enregistrez
+
+**Effet** :
+- Le projet n'apparaît plus dans la liste active
+- Les tâches restent accessibles
+- Les données sont conservées pour les rapports
+
+**Restaurer** : Repassez le statut à **"ACTIVE"**
+
+### 🔒 Permissions sur les projets
+
+| Action | EMPLOYEE | MANAGER | HR | ADMIN |
+|--------|----------|---------|-----|-------|
+| Voir projet (si membre) | ✅ | ✅ | ✅ | ✅ |
+| Créer projet | ❌ | ✅ | ✅ | ✅ |
+| Modifier projet | ❌ | ✅ (si chef) | ✅ | ✅ |
+| Ajouter membres | ❌ | ✅ (si chef) | ✅ | ✅ |
+| Archiver projet | ❌ | ✅ (si chef) | ✅ | ✅ |
+| Supprimer projet | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+## 7. Feuilles de temps RH
+
+Les **Feuilles de temps RH** permettent de déclarer vos **activités hebdomadaires** pour le suivi RH et la paie. Elles suivent un **workflow de validation structuré**.
+
+### 📋 Structure d'une feuille de temps
+
+Chaque feuille contient :
+
+- **En-tête** : Semaine, collaborateur, poste, site
+- **Activités** : Liste des tâches effectuées avec :
+  - Nom de l'activité
+  - Description
+  - Dates (début/fin)
+  - Nombre d'heures
+  - Périodicité (quotidien, hebdomadaire, etc.)
+  - Type d'activité RH
+- **Totaux** : Heures totales de la semaine
+- **Validations** : Statut et signatures
+
+### 🔄 Workflow de validation
+
+Une feuille passe par **4 étapes** :
+
+```
+1. DRAFT (Brouillon)
+   ↓ [Employé soumet]
+2. PENDING (En attente validation)
+   ↓ [Manager valide]
+3. MANAGER_APPROVED (Validé par manager)
+   ↓ [RH valide]
+4. APPROVED (Validé final - Signature Odillon)
+```
+
+#### Détails des statuts
+
+| Statut | Modifiable | Actions disponibles | Qui agit |
+|--------|------------|---------------------|----------|
+| **DRAFT** | ✅ Oui | Éditer, Supprimer, Soumettre | Employé |
+| **PENDING** | ❌ Non | Valider, Rejeter | Manager |
+| **MANAGER_APPROVED** | ❌ Non | Approuver, Rejeter | RH |
+| **APPROVED** | ❌ Non | Export | RH |
+
+### ➕ Créer une feuille de temps
+
+#### Étape 1 : Accès
+
+1. Cliquez sur **"Feuilles RH"** (barre latérale)
+2. Cliquez sur **"+ Nouvelle feuille de temps"**
+
+#### Étape 2 : Informations générales
+
+Remplissez l'en-tête :
+
+| Champ | Description |
+|-------|-------------|
+| **Semaine** | Sélectionnez la semaine (ex: Semaine 46 - 2025) |
+| **Poste** | Votre fonction (ex: Développeur Full Stack) |
+| **Site** | Lieu de travail (ex: Paris - Siège) |
+| **Notes** | Commentaires généraux (optionnel) |
+
+#### Étape 3 : Ajouter des activités
+
+Vous avez **2 méthodes** pour ajouter des activités :
+
+##### Méthode 1 : Tâche existante (recommandée)
+
+1. Cliquez sur **"+ Ajouter une activité"**
+2. Sélectionnez **"Tâche existante"**
+3. Choisissez la tâche dans la liste
+4. Les champs sont **pré-remplis** automatiquement :
+   - Nom
+   - Description
+   - Type d'activité
+   - Complexité
+5. Ajustez si nécessaire :
+   - Dates (début/fin)
+   - Heures travaillées
+   - Périodicité
+
+##### Méthode 2 : Saisie manuelle
+
+1. Cliquez sur **"+ Ajouter une activité"**
+2. Sélectionnez **"Saisie manuelle"**
+3. Remplissez tous les champs :
+
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| **Nom** | ✅ | Nom de l'activité |
+| **Description** | ⚠️ Recommandé | Détails de l'activité |
+| **Type d'activité** | ✅ | DEVELOPMENT, MEETING, FORMATION, etc. |
+| **Nom d'activité** | ❌ | Classification supplémentaire |
+| **Date de début** | ✅ | Date de début |
+| **Date de fin** | ✅ | Date de fin |
+| **Heures** | ✅ | Nombre d'heures (ex: 7.5) |
+| **Périodicité** | ✅ | DAILY, WEEKLY, MONTHLY, ONE_TIME |
+| **Complexité** | ⚠️ Recommandé | FAIBLE, MOYEN, ÉLEVÉ |
+
+4. Cliquez sur **"Ajouter"**
+
+> 💡 **Synchronisation** : Une tâche sera **créée automatiquement** pour cette activité, assurant la traçabilité.
+
+#### Étape 4 : Vérifier le total
+
+Le total des heures s'affiche en bas :
+
+```
+┌────────────────────────────┐
+│  Total semaine: 37.5h      │
+│  ────────────────────────  │
+│  Lundi:     7.5h           │
+│  Mardi:     7.5h           │
+│  Mercredi:  7.5h           │
+│  Jeudi:     7.5h           │
+│  Vendredi:  7.5h           │
+└────────────────────────────┘
+```
+
+> ⚠️ **Vérification** : Assurez-vous que le total correspond à vos heures contractuelles (ex: 35h, 39h).
+
+#### Étape 5 : Soumettre
+
+1. Vérifiez que toutes les activités sont correctes
+2. Cliquez sur **"Soumettre pour validation"**
+3. Confirmez
+
+**Résultat** :
+- Statut passe à **PENDING**
+- Manager reçoit une **notification**
+- Vous ne pouvez **plus modifier** la feuille
+
+### ✏️ Modifier une feuille
+
+#### Feuille en statut DRAFT
+
+Cliquez sur **"✏️ Modifier"** pour :
+- Ajouter/supprimer des activités
+- Modifier les heures
+- Changer les dates
+
+#### Feuille en statut PENDING, MANAGER_APPROVED, APPROVED
+
+**Impossible de modifier directement**.
+
+**Pour modifier** :
+1. Contactez votre manager/RH
+2. Ils peuvent **rejeter** la feuille
+3. Elle repasse en statut **DRAFT**
+4. Vous pouvez maintenant modifier
+5. Resoumettez après correction
+
+### ✅ Valider une feuille (Manager/RH)
+
+#### Pour les Managers
+
+1. Allez dans **"Feuilles RH"**
+2. Filtrez par statut **"PENDING"**
+3. Cliquez sur une feuille à valider
+4. Vérifiez les activités :
+   - Cohérence des heures
+   - Description suffisante
+   - Conformité avec le travail réalisé
+5. **Option 1 : Valider**
+   - Cliquez sur **"✅ Valider"**
+   - La feuille passe à **MANAGER_APPROVED**
+6. **Option 2 : Rejeter**
+   - Cliquez sur **"❌ Rejeter"**
+   - Ajoutez un **commentaire explicatif**
+   - La feuille repasse à **DRAFT**
+
+#### Pour les RH
+
+1. Filtrez par statut **"MANAGER_APPROVED"**
+2. Vérifiez la conformité légale :
+   - Respect du temps de travail
+   - Cohérence avec le contrat
+   - Signatures présentes
+3. **Option 1 : Approuver (Signature Odillon)**
+   - Cliquez sur **"✅ Approuver définitivement"**
+   - Confirmez la signature Odillon
+   - La feuille passe à **APPROVED**
+   - **Verrouillage final** : Plus aucune modification possible
+4. **Option 2 : Rejeter vers Manager**
+   - Cliquez sur **"❌ Rejeter"**
+   - Expliquez le motif
+   - La feuille repasse à **PENDING**
+
+### 📊 Rapport hebdomadaire
+
+Une fois **APPROVED**, la feuille est :
+
+- **Verrouillée** définitivement
+- **Disponible pour export** (Excel, PDF)
+- **Intégrée** aux rapports de paie
+- **Archivée** avec signature Odillon
+
+### 📤 Exporter une feuille
+
+1. Ouvrez la feuille (statut APPROVED)
+2. Cliquez sur **"📤 Exporter"**
+3. Choisissez le format :
+   - **Excel** : Pour traitement paie
+   - **PDF** : Pour archivage papier
+   - **JSON** : Pour intégration système
 
 ### 🔔 Notifications
 
-**Chemin** : Dashboard > Notifications ou Icône cloche
+Vous recevez des **notifications** automatiques :
 
-Types de notifications :
-- ✅ **Validation de feuille de temps** : Approuvée / Rejetée
-- 📋 **Nouvelle tâche assignée**
-- 💬 **Nouveaux messages**
-- ⏰ **Rappels d'échéances**
+| Événement | Destinataire | Message |
+|-----------|--------------|---------|
+| Feuille soumise | Manager | "Marie a soumis sa feuille S46" |
+| Feuille validée (Manager) | Employé + RH | "Votre feuille S46 a été validée" |
+| Feuille approuvée (RH) | Employé | "Votre feuille S46 est approuvée" |
+| Feuille rejetée | Employé | "Votre feuille S46 a été rejetée : [motif]" |
 
-#### Configurer les Notifications
+### ⚠️ Bonnes pratiques
 
-1. Allez dans **Paramètres > Notifications**
-2. Activez/désactivez :
-   - Notifications desktop
-   - Notifications email
-   - Sons de notification
-   - Volume des notifications
-
----
-
-### ⚙️ Paramètres
-
-**Chemin** : Dashboard > Paramètres
-
-![Paramètres](images/08-parametres.png)
-
-<figcaption>Figure 7 : Page de paramètres utilisateur</figcaption>
-
-#### Profil
-
-- **Photo de profil** : Téléchargez votre avatar
-- **Informations personnelles** : Nom, email
-- **Mot de passe** : Changez votre mot de passe
-
-#### Rappels
-
-- **Rappels de feuille de temps** :
-  - Activez les rappels automatiques
-  - Sélectionnez les jours (ex: Vendredi)
-  - Définissez l'heure (ex: 17:00)
-
-#### Apparence
-
-- **Mode sombre** : Activer/désactiver
-- **Couleur d'accent** : Personnalisez la couleur principale
-- **Densité d'affichage** : Compact / Normal / Confortable
-- **Taille de police** : Ajustez la taille du texte
-
-#### Accessibilité
-
-- **Mode contraste élevé**
-- **Mode lecteur d'écran**
-- **Réduction des animations**
-
-#### Langue et Région
-
-- **Langue** : Français / Anglais
-- **Format de date** : JJ/MM/AAAA ou MM/JJ/AAAA
-- **Format d'heure** : 12h ou 24h
-- **Fuseau horaire** : Africa/Libreville
+| ✅ À faire | ❌ À éviter |
+|-----------|-----------|
+| Déclarer vos temps chaque vendredi | Attendre la fin du mois |
+| Être précis dans les descriptions | Laisser vide ou "divers" |
+| Vérifier le total avant soumission | Soumettre sans relire |
+| Utiliser les tâches existantes | Toujours en saisie manuelle |
+| Respecter la périodicité réelle | Mettre tout en "quotidien" |
 
 ---
 
-### 📌 Bonnes Pratiques pour les Employés
+## 8. Rapports et analyses
 
-1. ✅ **Saisir quotidiennement** vos heures de travail
-2. ✅ **Soumettre avant vendredi 17h00** vos feuilles de temps
-3. ✅ **Mettre à jour** le statut de vos tâches régulièrement
-4. ✅ **Communiquer** via les chats de projet
-5. ✅ **Vérifier vos notifications** chaque jour
+Le module **Rapports** permet de **générer des analyses** et d'**exporter des données** pour le pilotage de l'activité.
 
----
+> 📌 **Accès** : Tous les rôles (rapports personnels) | MANAGER, HR, ADMIN (rapports d'équipe)
 
-## 👨‍💼 MANAGER {#manager}
+### 📊 Types de rapports disponibles
 
-### Vue d'ensemble
+#### 1. Rapport personnel
 
-En tant que **Manager**, vous avez accès à :
-- ✔️ **Validation des feuilles de temps** de votre équipe
-- 📊 **Suivi des performances** de vos collaborateurs
-- 📁 **Gestion des projets** sous votre responsabilité
-- 👥 **Attribution des tâches**
+**Pour les employés** : Vos statistiques individuelles
 
-Toutes les fonctionnalités **EMPLOYEE** sont également disponibles.
-
----
-
-### ✔️ Validation des Feuilles de Temps
-
-**Chemin** : Dashboard > Validation
-
-![Validation des feuilles](images/06-validation.png)
-
-<figcaption>Figure 5 : Interface de validation des feuilles de temps (Manager)</figcaption>
-
-#### Liste des Feuilles à Valider
-
-Vous verrez :
-- **Nom de l'employé**
-- **Période** (Semaine du ... au ...)
-- **Total d'heures** déclarées
-- **Statut** : En attente de validation
-
-#### Valider une Feuille de Temps
-
-1. Cliquez sur la feuille de temps
-2. **Vérifiez les entrées** :
-   - Heures déclarées
-   - Projets/Tâches associées
-   - Descriptions des activités
-3. Deux options :
-   - **Approuver** : Cliquez sur "Approuver"
-   - **Rejeter** : Cliquez sur "Rejeter" et ajoutez un commentaire expliquant la raison
-
-#### Ajout de Commentaires
-
-- Utilisez la zone **"Commentaire Manager"** pour :
-  - Demander des clarifications
-  - Justifier un rejet
-  - Ajouter des observations
-
----
-
-### 📊 Tableau de Bord Manager
-
-**Chemin** : Dashboard > Accueil
-
-En plus du tableau de bord employé, vous avez :
-
-- **Vue d'ensemble de l'équipe** :
-  - Nombre de feuilles en attente
-  - Taux de validation hebdomadaire
-  - Heures totales de l'équipe
-
-- **Performance des projets** :
-  - Projets sous votre responsabilité
-  - Budget heures vs heures consommées
-  - État d'avancement
-
----
-
-### 📁 Gestion des Projets
-
-**Chemin** : Dashboard > Projets
-
-![Gestion des projets](images/04-projets.png)
-
-<figcaption>Figure 6 : Interface de gestion des projets</figcaption>
-
-#### Créer un Projet
-
-1. Cliquez sur **"Nouveau projet"**
-2. Remplissez :
-   - **Nom du projet**
-   - **Code** : Code unique (ex: PROJ-2025-001)
-   - **Description**
-   - **Département**
-   - **Budget heures** : Heures allouées
-   - **Taux horaire**
-   - **Dates** : Date de début et de fin
-   - **Couleur** : Pour identification visuelle
-3. Cliquez sur **"Créer"**
-
-#### Gérer les Membres du Projet
-
-1. Ouvrez le projet
-2. Onglet **"Membres"**
-3. Cliquez sur **"Ajouter un membre"**
-4. Sélectionnez les employés
-5. Attribuez les rôles (Leader, Membre)
-
-#### Créer des Tâches pour le Projet
-
-1. Dans le projet, cliquez sur **"Nouvelle tâche"**
-2. Remplissez les détails
-3. **Assignez** à un ou plusieurs membres
-4. Définissez la **priorité** et la **complexité**
-5. Cliquez sur **"Créer"**
-
----
-
-### 👥 Gestion de l'Équipe
-
-#### Consulter les Membres de l'Équipe
-
-**Chemin** : Dashboard > Paramètres > Utilisateurs (si accès)
-
-- Vous voyez les employés sous votre supervision
-- Consultez leurs :
-  - Heures travaillées
-  - Tâches en cours
-  - Projets assignés
-
----
-
-### 📊 Rapports Manager
-
-**Chemin** : Dashboard > Rapports
-
-#### Générer un Rapport d'Équipe
-
-1. Cliquez sur **"Nouveau rapport"**
-2. Sélectionnez :
-   - **Type** : Rapport d'équipe
-   - **Période** : Semaine / Mois / Personnalisé
-   - **Membres** : Sélectionnez les employés
-3. **Options** :
-   - Inclure résumé
-   - Format : PDF / Excel
-4. Cliquez sur **"Générer"**
-
-Le rapport inclura :
-- Total d'heures par employé
+- Heures travaillées (semaine, mois, année)
+- Tâches terminées
 - Répartition par projet
-- Tâches complétées
-- Taux de validation
+- Historique des feuilles de temps
 
----
+**Accès** : `Rapports > Mon activité`
 
-### 📌 Bonnes Pratiques pour les Managers
+#### 2. Rapport d'équipe
 
-1. ✅ **Valider les feuilles de temps** avant lundi 12h00
-2. ✅ **Communiquer clairement** les raisons de rejet
-3. ✅ **Suivre l'avancement** des projets hebdomadairement
-4. ✅ **Répartir équitablement** les tâches dans l'équipe
-5. ✅ **Générer des rapports** mensuels pour le suivi
+**Pour les managers** : Statistiques de votre équipe
 
----
+- Heures par collaborateur
+- Tâches en retard
+- Charge de travail (capacité vs planifié)
+- Projets en cours
 
-## 👔 RESSOURCES HUMAINES (HR) {#hr}
+**Accès** : `Rapports > Mon équipe`
 
-### Vue d'ensemble
+#### 3. Rapport global
 
-En tant que **RH**, vous gérez :
-- 📋 **Feuilles de temps RH** (activités hebdomadaires)
-- ✔️ **Validation finale** des feuilles de temps (après manager)
-- 👥 **Gestion des utilisateurs** (avec ADMIN)
-- 📊 **Rapports globaux** de l'entreprise
-- 🗓️ **Jours fériés** et calendrier
+**Pour HR/ADMIN** : Vue d'ensemble de l'organisation
 
-Toutes les fonctionnalités **EMPLOYEE** et **MANAGER** sont disponibles.
+- Total heures par département
+- Coûts par projet
+- Analyse de la productivité
+- Données de paie
 
----
+**Accès** : `Rapports > Organisation`
 
-### 📋 Feuille RH (HR Timesheet)
+### 📈 Générer un rapport
 
-**Chemin** : Dashboard > Feuille RH
+#### Étape 1 : Sélectionner le type
 
-#### Créer une Feuille RH
+1. Cliquez sur **"Rapports"** (barre latérale)
+2. Choisissez le type de rapport
 
-1. Cliquez sur **"Nouvelle feuille RH"**
-2. Sélectionnez la **semaine** (Du ... au ...)
-3. Remplissez vos informations :
-   - **Nom de l'employé** (pré-rempli)
-   - **Poste** (pré-rempli)
-   - **Site** (ex: Libreville)
+#### Étape 2 : Configurer les filtres
 
-#### Ajouter des Activités
+| Filtre | Options |
+|--------|---------|
+| **Période** | Semaine, Mois, Trimestre, Année, Personnalisée |
+| **Utilisateurs** | Tous, Équipe, Département, Sélection manuelle |
+| **Projets** | Tous, Actifs, Archivés, Sélection |
+| **Statuts** | TODO, IN_PROGRESS, DONE, Tous |
 
-1. Cliquez sur **"Ajouter une activité"**
-2. Sélectionnez :
-   - **Type d'activité** :
-     - OPERATIONAL : Activités opérationnelles
-     - REPORTING : Rapports et documentation
-   - **Nom de l'activité** (sélectionnez dans le catalogue ou saisie libre)
-   - **Périodicité** : Quotidien / Hebdomadaire / Mensuel / Ponctuel
-   - **Quantité hebdomadaire** (si applicable)
-   - **Dates** : Date de début et de fin
-   - **Total d'heures** : Heures consommées
+#### Étape 3 : Sélectionner les métriques
 
-3. Cliquez sur **"Ajouter"**
+Cochez les indicateurs à inclure :
 
-#### Catalogue d'Activités
+- ✅ Heures totales
+- ✅ Nombre de tâches
+- ✅ Taux de complétion
+- ✅ Budget consommé
+- ✅ Répartition par priorité
+- ✅ Délais de validation
 
-Pour faciliter la saisie, utilisez le **Catalogue d'Activités** :
-- Activités pré-définies
-- Descriptions standardisées
-- Périodicités par défaut
+#### Étape 4 : Générer
 
-#### Soumettre la Feuille RH
+Cliquez sur **"📊 Générer le rapport"**
 
-1. Vérifiez toutes vos activités
-2. Zone **"Observations employé"** : Ajoutez des remarques
-3. Cliquez sur **"Soumettre"**
-4. Statut passe à **"PENDING"**
+Le rapport s'affiche avec :
+- **Graphiques** interactifs
+- **Tableaux** de données
+- **Indicateurs clés**
 
-#### Signature Électronique
+### 📤 Exporter un rapport
 
-La feuille suit ce workflow :
-1. **Employé** : Saisie et soumission
-2. **Manager** : Validation et signature
-3. **Directeur (Odillon)** : Approbation finale et signature
+Une fois généré, cliquez sur **"📤 Exporter"** :
 
----
+| Format | Usage |
+|--------|-------|
+| **Excel (.xlsx)** | Analyse approfondie, traitement données |
+| **PDF** | Présentation, archivage |
+| **CSV** | Import dans autres outils |
+| **JSON** | Intégration API |
 
-### ✔️ Validation Finale des Feuilles de Temps
+### 📊 Rapports prédéfinis
 
-**Chemin** : Dashboard > Validation
+Chronodil propose des **modèles de rapports** prêts à l'emploi :
 
-En tant que RH, vous pouvez :
-- Consulter toutes les feuilles de temps (tous employés)
-- Effectuer une **validation finale** après le manager
-- Verrouiller les feuilles approuvées (statut LOCKED)
+#### 1. Rapport hebdomadaire
 
-#### Processus de Validation
+**Configuration automatique** :
+- Période : Semaine en cours
+- Données : Heures, tâches, projets
+- Format : PDF
 
-1. Filtrez par **"Manager Approuvé"**
-2. Ouvrez la feuille de temps
-3. Vérifiez :
-   - Validation manager effectuée
-   - Cohérence des heures
-   - Respect des règles RH
-4. **Approuvez** ou **Rejetez**
+**Envoi** : Par email chaque lundi matin (optionnel)
 
----
+#### 2. Rapport mensuel de paie
 
-### 👥 Gestion des Utilisateurs
+**Pour RH** :
+- Période : Mois précédent
+- Données : Heures approuvées, feuilles validées
+- Format : Excel
+- Export automatique le 1er du mois
 
-**Chemin** : Dashboard > Paramètres > Utilisateurs
+#### 3. Dashboard projet
 
-#### Créer un Utilisateur
+**Pour managers** :
+- Progression du projet
+- Tâches par membre
+- Budget vs réalisé
+- Timeline Gantt
 
-1. Cliquez sur **"Nouvel utilisateur"**
-2. Remplissez :
-   - **Email** : Email professionnel
-   - **Nom complet**
-   - **Rôle** : EMPLOYEE / MANAGER / HR / DIRECTEUR / ADMIN
-   - **Département**
-   - **Manager** (si applicable)
-3. Cliquez sur **"Créer"**
+### 🎨 Personnaliser un rapport
 
-Un email d'activation est envoyé automatiquement à l'utilisateur.
+Créez vos **modèles personnalisés** :
 
-#### Modifier un Utilisateur
+1. Configurez un rapport
+2. Cliquez sur **"💾 Enregistrer comme modèle"**
+3. Donnez un nom
+4. Le modèle apparaît dans **"Mes modèles"**
 
-1. Trouvez l'utilisateur dans la liste
-2. Cliquez sur **"Modifier"**
-3. Changez les informations nécessaires
-4. Cliquez sur **"Enregistrer"**
+**Avantages** :
+- Regénération en 1 clic
+- Planification automatique
+- Partage avec l'équipe
 
-#### Désactiver un Utilisateur
+### 🔔 Planifier un rapport
 
-1. Trouvez l'utilisateur
-2. Cliquez sur **"Désactiver"**
-3. Confirmez
+Pour recevoir un rapport **automatiquement** :
 
-**⚠️ Note** : Les comptes ADMIN sont protégés contre la suppression
-
----
-
-### 📊 Rapports Globaux
-
-**Chemin** : Dashboard > Rapports
-
-![Rapports](images/07-rapports.png)
-
-<figcaption>Figure 8 : Interface de génération de rapports</figcaption>
-
-#### Générer un Rapport d'Entreprise
-
-1. Cliquez sur **"Nouveau rapport"**
-2. Sélectionnez :
-   - **Type** : Rapport global
-   - **Période** : Mois / Trimestre / Année
-   - **Départements** : Tous ou sélection
-3. **Inclure** :
-   - Statistiques par département
-   - Heures par projet
-   - Taux de validation
-   - Comparatif mensuel
-4. Cliquez sur **"Générer"**
-
-#### Rapports Disponibles
-
-- **Rapport hebdomadaire** : Activité de la semaine
-- **Rapport mensuel** : Vue d'ensemble du mois
-- **Rapport individuel** : Focus sur un employé
-- **Rapport par projet** : Analyse par projet
-
----
-
-### 🗓️ Gestion du Calendrier
-
-**Chemin** : Dashboard > Paramètres > Calendrier (si disponible)
-
-#### Ajouter un Jour Férié
-
-1. Cliquez sur **"Nouveau jour férié"**
-2. Remplissez :
-   - **Nom** : Nom du jour férié
-   - **Date**
-   - **Description**
-   - **Récurrent** : Oui/Non (ex: Noël chaque année)
-3. Cliquez sur **"Enregistrer"**
-
-Les jours fériés apparaissent automatiquement dans les calendriers de tous les utilisateurs.
-
----
-
-### 📌 Bonnes Pratiques pour les RH
-
-1. ✅ **Valider les feuilles** dans les 48h après validation manager
-2. ✅ **Maintenir à jour** le catalogue d'activités RH
-3. ✅ **Vérifier mensuellement** les incohérences dans les feuilles de temps
-4. ✅ **Générer des rapports** trimestriels pour la direction
-5. ✅ **Former les nouveaux employés** à l'utilisation de l'application
-
----
-
-## 🎯 DIRECTEUR {#directeur}
-
-### Vue d'ensemble
-
-En tant que **Directeur**, vous avez :
-- 📊 **Vue globale** de l'entreprise
-- ✔️ **Validation finale** des feuilles RH
-- 📈 **Tableaux de bord stratégiques**
-- 🔍 **Accès audit** complet
-
-Toutes les fonctionnalités des autres rôles sont disponibles.
-
----
-
-### 📊 Tableau de Bord Directeur
-
-**Chemin** : Dashboard > Accueil
-
-Vous avez accès à :
-
-#### Indicateurs Clés (KPI)
-
-- **Total heures entreprise** : Heures travaillées (mois en cours)
-- **Nombre de projets actifs**
-- **Taux de validation** : % de feuilles validées à temps
-- **Budget vs Réalisé** : Par projet et global
-
-#### Vue par Département
-
-- Performances par département
-- Comparatif inter-départements
-- Alertes sur dépassements budgétaires
-
-#### Projets Stratégiques
-
-- Projets prioritaires
-- État d'avancement
-- Risques identifiés
-
----
-
-### ✔️ Validation des Feuilles RH
-
-**Chemin** : Dashboard > Feuille RH ou Validation
-
-En tant que Directeur (Odillon), vous effectuez la **signature finale** des feuilles RH.
-
-#### Processus
-
-1. Accédez aux feuilles RH en statut **"MANAGER_APPROVED"**
-2. Vérifiez :
-   - Signature Manager présente
-   - Activités cohérentes
-   - Total d'heures conforme
-3. Ajoutez un commentaire si nécessaire (zone "Commentaire Odillon")
-4. Cliquez sur **"Approuver et Signer"**
-5. Statut passe à **"APPROVED"**
-
----
-
-### 📈 Rapports Stratégiques
-
-**Chemin** : Dashboard > Rapports
-
-#### Générer un Rapport de Direction
-
-1. Cliquez sur **"Nouveau rapport"**
-2. Sélectionnez **"Rapport de direction"**
+1. Générez le rapport
+2. Cliquez sur **"⏰ Planifier"**
 3. Configurez :
-   - **Période** : Trimestre / Semestre / Année
-   - **Inclure** :
-     - Vue consolidée par département
-     - Analyse budgétaire
-     - Indicateurs RH (turnover, absences)
-     - Projets terminés vs en cours
-     - Prévisions
-4. Cliquez sur **"Générer"**
+   - **Fréquence** : Quotidien, Hebdomadaire, Mensuel
+   - **Jour** : Lundi, Vendredi, 1er du mois, etc.
+   - **Heure** : 08:00, 17:00, etc.
+   - **Format** : Excel, PDF
+   - **Destinataires** : Vous, équipe, RH
+4. Cliquez sur **"Activer"**
 
-#### Tableaux de Bord Personnalisés
+**Exemple** :
+```
+Rapport hebdomadaire équipe
+• Tous les vendredis à 17:00
+• Format : PDF
+• Envoyé à : vous + manager@chronodil.com
+```
 
-- Créez des vues personnalisées
-- Épinglez les KPI importants
-- Exportez en PDF pour présentations
+### 📊 Indicateurs clés (KPI)
+
+#### Pour les employés
+
+- **Heures semaine** : Total semaine en cours
+- **Tâches complétées** : Nombre de DONE ce mois
+- **Taux de complétion** : Pourcentage de tâches terminées dans les délais
+- **Moyenne heures/jour** : Tendance hebdomadaire
+
+#### Pour les managers
+
+- **Charge équipe** : Heures planifiées vs disponibles
+- **Vélocité** : Nombre de tâches terminées / semaine
+- **Tâches en retard** : Échéance dépassée
+- **Taux de validation** : % de feuilles validées en temps
+
+#### Pour RH/Admin
+
+- **Total heures organisation** : Toutes équipes
+- **Coût par projet** : Budget vs réalisé
+- **Taux d'approbation** : % de feuilles approuvées sans rejet
+- **Conformité** : % de feuilles dans les délais
 
 ---
 
-### 🔍 Audit et Traçabilité
+## 9. Chat et collaboration
 
-**Chemin** : Dashboard > Audit
+Le module **Chat** permet la **communication en temps réel** entre les membres de l'équipe.
 
-![Audit](images/09-audit.png)
+> 🚀 **Temps réel** : Les messages sont synchronisés instantanément via WebSocket.
 
-<figcaption>Figure 9 : Interface d'audit et de traçabilité (Directeur/Admin)</figcaption>
+### 💬 Types de conversations
 
-#### Consulter les Logs d'Audit
+#### 1. Messages directs (DM)
 
-- **Toutes les actions** sont tracées :
-  - Qui ? (Utilisateur)
-  - Quoi ? (Action : création, modification, suppression)
-  - Quand ? (Date et heure)
-  - Où ? (IP, User Agent)
-  - Quoi de changé ? (Ancien/Nouveau)
+**Conversation privée** entre 2 utilisateurs :
 
-#### Filtres Disponibles
+- 🔒 Privé et confidentiel
+- Notifications push
+- Historique complet
 
+**Créer** :
+1. Cliquez sur **"💬 Chat"**
+2. Cliquez sur **"+ Nouveau message"**
+3. Sélectionnez un utilisateur
+4. Tapez votre message
+
+#### 2. Canaux de projet
+
+**Discussion d'équipe** par projet :
+
+- 👥 Tous les membres du projet
+- Contexte partagé
+- Historique projet
+
+**Accès** : Automatiquement créés pour chaque projet
+
+#### 3. Canaux d'équipe (futur)
+
+> 🚀 **Prochainement** : Canaux thématiques (Général, Annonces, Support, etc.)
+
+### ✉️ Envoyer un message
+
+1. Sélectionnez une conversation (liste de gauche)
+2. Tapez votre message dans le champ
+3. **Option 1** : Appuyez sur **Entrée**
+4. **Option 2** : Cliquez sur **"Envoyer"**
+
+### 🔔 Mentions
+
+**Mentionner** un utilisateur pour le notifier :
+
+```
+@marie Peux-tu vérifier ce rapport ?
+```
+
+**Mentionner tout le monde** :
+
+```
+@all Réunion dans 10 minutes !
+```
+
+### 📎 Pièces jointes (futur)
+
+> 🚀 **Prochainement** : Envoi de fichiers (images, PDF, etc.)
+
+### 🔍 Rechercher dans le chat
+
+**Barre de recherche** en haut :
+
+```
+Rechercher : "rapport" → Tous les messages contenant "rapport"
+```
+
+**Filtres** :
 - Par utilisateur
-- Par type d'action
-- Par entité (Projet, Tâche, Feuille de temps)
-- Par période
+- Par date
+- Par canal
+
+### 🔕 Notifications
+
+#### Paramètres de notification
+
+Configurez vos préférences :
+
+1. Cliquez sur **⚙️ Paramètres**
+2. Section **"Notifications"**
+3. Choisissez :
+   - **Toujours** : Tous les messages
+   - **Mentions uniquement** : Seulement si @vous
+   - **Jamais** : Désactiver
+
+#### Sons et alertes
+
+- **Son** : Notification sonore (activable)
+- **Bureau** : Notifications système (navigateur)
+- **Email** : Résumé par email (configurable)
+
+### ⏰ Statut de présence
+
+Votre statut s'affiche automatiquement :
+
+- 🟢 **En ligne** : Connecté et actif
+- 🟡 **Absent** : Inactif > 10 min
+- 🔴 **Hors ligne** : Déconnecté
+
+**Définir manuellement** :
+- Cliquez sur votre nom (en haut à droite)
+- Sélectionnez le statut
+
+### 📌 Épingler un message
+
+**Messages importants** :
+
+1. Survolez le message
+2. Cliquez sur l'icône **"📌 Épingler"**
+3. Le message reste en haut de la conversation
+
+**Accéder** : Cliquez sur **"📌 Messages épinglés"**
 
 ---
 
-### 📌 Bonnes Pratiques pour le Directeur
+## 10. Paramètres et préférences
 
-1. ✅ **Consulter le tableau de bord** chaque lundi matin
-2. ✅ **Valider les feuilles RH** dans la semaine
-3. ✅ **Analyser les rapports trimestriels** pour ajustements stratégiques
-4. ✅ **Identifier les projets en dérive** et prendre actions correctives
-5. ✅ **Utiliser l'audit** pour détecter anomalies
+Personnalisez votre expérience Chronodil dans les **Paramètres**.
 
----
+**Accès** : Cliquez sur votre **avatar** (en haut à droite) → **"⚙️ Paramètres"**
 
-## 🔐 ADMINISTRATEUR (ADMIN) {#admin}
+### 👤 Profil
 
-### Vue d'ensemble
+#### Informations personnelles
 
-En tant qu'**Administrateur**, vous avez :
-- 🔧 **Configuration complète** de l'application
-- 👥 **Gestion totale** des utilisateurs
-- 🗂️ **Gestion des départements**
-- 📋 **Catalogue d'activités**
-- 🔒 **Paramètres de sécurité**
-- 🗄️ **Gestion de la base de données**
+| Champ | Modifiable | Description |
+|-------|------------|-------------|
+| **Email** | ❌ Non | Email de connexion (contact admin pour modifier) |
+| **Nom complet** | ✅ Oui | Prénom + Nom |
+| **Avatar** | ✅ Oui | Photo de profil |
+| **Téléphone** | ✅ Oui | Numéro de téléphone |
+| **Poste** | ⚠️ RH/Admin | Fonction dans l'entreprise |
+| **Département** | ⚠️ RH/Admin | Service de rattachement |
 
-Tous les droits des autres rôles sont inclus.
+#### Changer l'avatar
 
----
+1. Cliquez sur **"Modifier l'avatar"**
+2. **Option 1** : Télécharger une image (JPG, PNG)
+3. **Option 2** : Utiliser Gravatar (basé sur email)
+4. Recadrez si nécessaire
+5. Enregistrez
 
-### 👥 Gestion des Utilisateurs (Complète)
+### 🔐 Sécurité
 
-**Chemin** : Dashboard > Paramètres > Utilisateurs
+#### Changer le mot de passe
 
-#### Toutes les Actions Utilisateurs
-
-1. **Créer** : Nouveaux comptes
-2. **Modifier** : Toutes les informations (email, rôle, département)
-3. **Désactiver/Réactiver** : Suspendre temporairement
-4. **Supprimer** : Suppression définitive (sauf ADMIN)
-5. **Réinitialiser mot de passe** : Envoi d'un lien de réinitialisation
-
-#### Gestion des Rôles
-
-Vous pouvez changer le rôle de n'importe quel utilisateur :
-- EMPLOYEE → MANAGER
-- MANAGER → HR
-- Etc.
-
-**⚠️ Important** : Les comptes ADMIN ne peuvent pas être supprimés via l'interface (protection)
-
----
-
-### 🗂️ Gestion des Départements
-
-**Chemin** : Dashboard > Paramètres > Départements
-
-#### Créer un Département
-
-1. Cliquez sur **"Nouveau département"**
-2. Remplissez :
-   - **Nom** : Nom du département
-   - **Code** : Code unique (ex: IT, HR, FIN)
-   - **Description**
-3. Cliquez sur **"Créer"**
-
-#### Associer des Utilisateurs
-
-- Dans la fiche utilisateur, sélectionnez le département
-- Tous les projets du département seront accessibles aux membres
-
----
-
-### 📋 Catalogue d'Activités RH
-
-**Chemin** : Dashboard > Paramètres > Catalogue d'activités
-
-#### Créer une Activité Type
-
-1. Cliquez sur **"Nouvelle activité"**
-2. Remplissez :
-   - **Nom** : Nom de l'activité
-   - **Catégorie** : Classification
-   - **Type** : OPERATIONAL / REPORTING
-   - **Périodicité par défaut** : DAILY / WEEKLY / MONTHLY / PUNCTUAL
-   - **Description**
-   - **Ordre d'affichage** : Pour tri
-3. **Activer/Désactiver** : Rendre disponible ou non
-
-#### Gestion du Catalogue
-
-- Modifiez les activités existantes
-- Désactivez les obsolètes (sans supprimer l'historique)
-- Réorganisez l'ordre d'affichage
-
----
-
-### 🔧 Paramètres de l'Entreprise
-
-**Chemin** : Dashboard > Paramètres > Entreprise
-
-#### Paramètres Généraux
-
-- **Nom de l'entreprise**
-- **Logo** : Téléchargez le logo (affiché dans l'application)
-- **Fuseau horaire** : Fuseau horaire par défaut
-- **Devise** : Pour les budgets (XAF, EUR, USD)
-
-#### Règles de Validation
-
-- **Validation automatique** : Activer/désactiver
-- **Délai de validation** : Nombre de jours pour valider
-- **Verrouillage automatique** : Verrouiller après X jours
-
-#### Heures de Travail
-
-- **Heures hebdomadaires** : Standard (ex: 40h)
-- **Heures supplémentaires** : Seuil déclenchement (ex: >40h)
-- **Jours travaillés** : Lun-Ven ou personnalisé
-
----
-
-### 🔒 Sécurité et Audit
-
-**Chemin** : Dashboard > Audit
-
-#### Monitoring
-
-- **Connexions** : Suivez les connexions utilisateurs
-- **Actions sensibles** :
-  - Suppressions
-  - Changements de rôles
-  - Modifications de feuilles validées
-- **Tentatives échouées** : Détection d'intrusions
-
-#### Exportation
-
-- Exportez les logs d'audit en CSV/Excel
-- Archivage mensuel recommandé
-
----
-
-### 🗄️ Gestion de la Base de Données
-
-#### Via Prisma Studio
-
-```bash
-pnpm db:studio
-```
-
-**⚠️ Réservé aux administrateurs techniques**
-
-- Accédez directement aux données
-- Modifiez manuellement si nécessaire
-- **Attention** : Actions irréversibles
-
-#### Migrations
-
-```bash
-pnpm db:migrate
-```
-
-Pour appliquer les changements de schéma après une mise à jour.
-
----
-
-### 📌 Bonnes Pratiques pour les Administrateurs
-
-1. ✅ **Sauvegarder régulièrement** la base de données
-2. ✅ **Auditer mensuellement** les logs de sécurité
-3. ✅ **Maintenir à jour** le catalogue d'activités
-4. ✅ **Former les managers** aux bonnes pratiques
-5. ✅ **Documenter les changements** de configuration
-6. ✅ **Tester les mises à jour** en environnement de staging avant production
-
----
-
-## 5. Fonctionnalités Communes {#fonctionnalites-communes}
-
-### 🔍 Recherche Globale
-
-**Raccourci** : `Ctrl+K` (Windows/Linux) ou `Cmd+K` (Mac)
-
-La recherche globale vous permet de trouver rapidement :
-- 📁 **Projets** : Par nom ou code
-- ✅ **Tâches** : Par titre ou description
-- 👥 **Utilisateurs** : Par nom ou email
-- ⏱️ **Feuilles de temps** : Par période ou employé
-- 💬 **Conversations** : Par contenu
-
-#### Utilisation
-
-1. Appuyez sur `Ctrl+K` / `Cmd+K`
-2. Tapez votre recherche
-3. Utilisez les flèches pour naviguer
-4. Appuyez sur `Entrée` pour accéder
-
----
-
-### 💬 Messagerie Instantanée
-
-**Chemin** : Dashboard > Chat
-
-#### Types de Conversations
-
-1. **Conversations Directes** : 1-à-1 avec un collègue
-2. **Conversations de Groupe** : Plusieurs participants
-3. **Conversations de Projet** : Liées à un projet spécifique
-
-#### Fonctionnalités
-
-- **Messages texte** : Envoi instantané
-- **Pièces jointes** : Fichiers, images
-- **Réactions** : Emoji sur les messages
-- **Réponses** : Répondre à un message spécifique
-- **Édition** : Modifier un message envoyé
-- **Suppression** : Supprimer un message
-
-#### Notifications
-
-- **Badge** : Nombre de messages non lus
-- **Son** : Notification sonore (configurable)
-- **Desktop** : Notification système
-
----
-
-### 🔔 Centre de Notifications
-
-**Chemin** : Icône cloche (Header) ou Dashboard > Notifications
-
-#### Types de Notifications
-
-| Icône | Type | Description |
-|-------|------|-------------|
-| ✅ | Validation | Feuille de temps validée/rejetée |
-| 📋 | Tâche | Nouvelle tâche assignée ou mise à jour |
-| 💬 | Message | Nouveau message dans une conversation |
-| ⏰ | Rappel | Rappel d'échéance ou action requise |
-| 📊 | Rapport | Rapport généré et disponible |
-| 👥 | Équipe | Changement dans votre équipe |
-
-#### Actions
-
-- **Marquer comme lu** : Clic sur la notification
-- **Tout marquer comme lu** : Bouton en haut
-- **Filtrer** : Par type de notification
-- **Supprimer** : Supprimer définitivement
-
----
-
-### 📊 Génération de Rapports
-
-**Chemin** : Dashboard > Rapports
-
-#### Types de Rapports
-
-1. **Rapport Individuel**
-   - Heures travaillées par employé
-   - Projets et tâches
-   - Période sélectionnable
-
-2. **Rapport d'Équipe**
-   - Vue d'ensemble de l'équipe/département
-   - Comparatif entre membres
-   - Taux de productivité
-
-3. **Rapport de Projet**
-   - Budget vs Réalisé
-   - Membres et contributions
-   - Timeline et jalons
-
-4. **Rapport Global**
-   - Toute l'entreprise
-   - Statistiques consolidées
-   - Tendances
-
-#### Formats d'Export
-
-- **PDF** : Pour impression et archivage
-- **Excel** : Pour analyse et traitement
-- **CSV** : Pour import dans d'autres outils
-
-#### Planification
-
-- **Rapports récurrents** : Programmez l'envoi automatique
-  - Hebdomadaire : Chaque lundi
-  - Mensuel : 1er jour du mois
-  - Personnalisé
-
----
-
-### 📅 Calendrier et Échéances
-
-#### Vue Calendrier
-
-- **Tâches** : Visualisez vos tâches sur un calendrier
-- **Projets** : Timeline des projets
-- **Jours fériés** : Affichés automatiquement
-- **Échéances** : Dates limites mises en évidence
-
-#### Rappels
-
-- Configurez des rappels pour :
-  - Échéances de tâches
-  - Soumission de feuilles de temps
-  - Validations en attente
-
----
-
-### 🎨 Personnalisation
-
-**Chemin** : Dashboard > Paramètres > Apparence
-
-#### Thèmes
-
-- **Mode clair** : Thème lumineux
-- **Mode sombre** : Thème sombre (réduit la fatigue oculaire)
-- **Automatique** : Selon l'heure (jour/nuit)
-
-#### Couleurs
-
-- **Couleurs d'accent** :
-  - Rusty Red (défaut)
-  - Blue
-  - Green
-  - Purple
-  - Orange
-
-#### Disposition
-
-- **Densité d'affichage** :
-  - Compact : Maximise l'espace
-  - Normal : Équilibré
-  - Confortable : Plus d'espacement
-
-- **Taille de police** : 12px à 20px
-
----
-
-### 🔒 Sécurité et Confidentialité
-
-#### Mots de Passe
+1. Section **"Sécurité"**
+2. Cliquez sur **"Modifier le mot de passe"**
+3. Remplissez :
+   - Mot de passe actuel
+   - Nouveau mot de passe
+   - Confirmation
+4. Cliquez sur **"Mettre à jour"**
 
 **Exigences** :
 - Minimum 8 caractères
@@ -1091,219 +1338,816 @@ La recherche globale vous permet de trouver rapidement :
 - Au moins 1 chiffre
 - Au moins 1 caractère spécial
 
-**Recommandations** :
-- Changez régulièrement votre mot de passe
-- N'utilisez pas le même mot de passe ailleurs
-- Utilisez un gestionnaire de mots de passe
+#### Sessions actives
 
-#### Sessions
+Consultez vos **sessions actives** :
 
-- **Sessions actives** : Consultez vos sessions
-- **Déconnexion** : Déconnectez-vous sur tous les appareils
-- **Expiration** : Les sessions expirent après 7 jours d'inactivité
+```
+🖥️ Chrome - Windows - Paris (Actuelle)
+📱 Safari - iPhone - Lyon (il y a 2h)
+```
 
-#### Données
+**Révoquer** : Cliquez sur **"Déconnecter"** pour fermer une session
 
-- **Audit** : Toutes les actions sont tracées
-- **Confidentialité** : Vos données ne sont jamais partagées
-- **Conformité** : Respect des réglementations RGPD
+### 🔔 Notifications
 
----
+#### Types de notifications
 
-## 6. FAQ et Dépannage {#faq}
+| Type | Par défaut | Configurable |
+|------|------------|--------------|
+| **Tâches assignées** | ✅ Activé | Oui |
+| **Mentions (@vous)** | ✅ Activé | Oui |
+| **Validations** | ✅ Activé | Oui |
+| **Commentaires** | ⚠️ Mentions uniquement | Oui |
+| **Projets** | ✅ Activé | Oui |
+| **Rapports** | ❌ Désactivé | Oui |
 
-### ❓ Questions Fréquentes
+#### Canaux de notification
 
-#### Connexion et Compte
+Pour chaque type, choisissez le canal :
 
-**Q : J'ai oublié mon mot de passe. Que faire ?**
-R : Cliquez sur "Mot de passe oublié ?" sur la page de connexion, entrez votre email professionnel, et suivez les instructions reçues par email.
+- ✅ **Dans l'application** (cloche 🔔)
+- ✅ **Email** (quotidien, immédiat)
+- ✅ **Push navigateur** (si activé)
 
-**Q : Mon compte est verrouillé. Pourquoi ?**
-R : Après 5 tentatives de connexion échouées, le compte est temporairement verrouillé (15 minutes). Contactez votre administrateur si le problème persiste.
+### 🎨 Apparence
 
-**Q : Puis-je utiliser l'application sur mon téléphone ?**
-R : Oui, l'application est responsive et fonctionne sur mobile, tablette et desktop.
+#### Thème
 
----
+- ☀️ **Clair** : Fond blanc, texte sombre
+- 🌙 **Sombre** : Fond sombre, texte clair
+- 🌓 **Automatique** : Selon l'heure (jour/nuit)
 
-#### Feuilles de Temps
+#### Taille de police
 
-**Q : Puis-je modifier une feuille de temps déjà soumise ?**
-R : Non, une fois soumise, vous ne pouvez plus la modifier. Contactez votre manager pour un rejet si des corrections sont nécessaires.
+Ajustez la taille :
+- **Petit** : Pour écrans haute résolution
+- **Moyen** : Par défaut
+- **Grand** : Pour meilleure lisibilité
 
-**Q : Quelle est la date limite de soumission ?**
-R : Généralement, chaque vendredi avant 17h00 pour la semaine en cours. Consultez les règles de votre entreprise.
+#### Densité d'affichage
 
-**Q : Comment déclarer des heures supplémentaires ?**
-R : Lors de la saisie, sélectionnez le type "OVERTIME" (Heures supplémentaires) dans le champ "Type".
+- **Compacte** : Plus d'infos à l'écran
+- **Normale** : Par défaut
+- **Confortable** : Plus d'espace
 
-**Q : Ma feuille de temps a été rejetée. Que faire ?**
-R : Consultez les commentaires du manager, corrigez les erreurs mentionnées, et soumettez à nouveau.
+### 🌍 Langue et région
 
----
+#### Langue
 
-#### Tâches et Projets
+Actuellement disponible :
+- 🇫🇷 **Français** (par défaut)
 
-**Q : Comment savoir quelles tâches me sont assignées ?**
-R : Allez dans Dashboard > Tâches. Par défaut, vous voyez vos tâches assignées. Utilisez les filtres pour affiner.
+> 🚀 **Prochainement** : Anglais, Espagnol, Allemand
 
-**Q : Puis-je créer une tâche sans projet associé ?**
-R : Oui, créez une "Tâche personnelle" sans sélectionner de projet.
+#### Fuseau horaire
 
-**Q : Comment marquer une tâche comme terminée ?**
-R : Changez le statut de la tâche à "DONE" (Terminé) ou déplacez-la dans la colonne "Done" en vue Kanban.
+Sélectionnez votre fuseau :
+- Europe/Paris (UTC+1)
+- Europe/London (UTC+0)
+- America/New_York (UTC-5)
+- etc.
 
----
+**Impact** : Affichage des dates et heures locales
 
-#### Notifications
+#### Format de date
 
-**Q : Je reçois trop de notifications. Puis-je les désactiver ?**
-R : Oui, allez dans Paramètres > Notifications et désactivez les types non souhaités. Vous pouvez garder les notifications critiques (validations, rappels).
+Choisissez le format :
+- **JJ/MM/AAAA** : 19/11/2025 (Europe)
+- **MM/JJ/AAAA** : 11/19/2025 (USA)
+- **AAAA-MM-JJ** : 2025-11-19 (ISO)
 
-**Q : Je ne reçois pas les notifications email. Pourquoi ?**
-R : Vérifiez :
-1. Paramètres > Notifications > "Notifications email" activées
-2. Vos spams/courrier indésirable
-3. Contactez votre administrateur IT
+### ⏱️ Préférences de travail
 
----
+#### Semaine de travail
 
-#### Rapports
+Définissez vos jours travaillés :
 
-**Q : Le rapport ne se génère pas. Que faire ?**
-R : Vérifiez :
-1. La période sélectionnée contient des données
-2. Vous avez les droits d'accès aux données demandées
-3. Actualisez la page et réessayez
+```
+☑️ Lundi
+☑️ Mardi
+☑️ Mercredi
+☑️ Jeudi
+☑️ Vendredi
+☐ Samedi
+☐ Dimanche
+```
 
-**Q : Puis-je programmer l'envoi automatique de rapports ?**
-R : Oui, lors de la création du rapport, cochez "Récurrent" et définissez la fréquence.
+**Impact** : Calcul des jours ouvrés dans les échéances
 
----
+#### Heures contractuelles
 
-### 🛠️ Dépannage
+Définissez votre durée de travail hebdomadaire :
+- 35 heures
+- 37.5 heures
+- 39 heures
+- Personnalisé
 
-#### Problèmes de Connexion
+**Impact** :
+- Validation des feuilles de temps
+- Alertes si dépassement
+- Calculs de charge
 
-**Symptôme** : "Erreur de connexion"
+#### Vue par défaut (Tâches)
 
-**Solutions** :
-1. Vérifiez votre connexion internet
-2. Videz le cache du navigateur (Ctrl+Shift+Delete)
-3. Essayez en navigation privée
-4. Contactez le support IT
-
----
-
-#### Problèmes d'Affichage
-
-**Symptôme** : L'interface ne s'affiche pas correctement
-
-**Solutions** :
-1. **Actualisez la page** (F5 ou Ctrl+R)
-2. **Effacez le cache** :
-   - Chrome : Ctrl+Shift+Delete > "Cached images and files"
-   - Firefox : Ctrl+Shift+Delete > "Cache"
-3. **Mettez à jour votre navigateur** (version récente recommandée)
-4. **Désactivez les extensions** de navigateur (bloqueurs de pub)
-
----
-
-#### Problèmes de Performance
-
-**Symptôme** : L'application est lente
-
-**Solutions** :
-1. **Fermez les onglets inutiles** du navigateur
-2. **Redémarrez votre navigateur**
-3. **Vérifiez votre connexion internet** (minimum 1 Mbps)
-4. **Signalez au support** si le problème persiste
+Choisissez la vue qui s'ouvre automatiquement :
+- Liste
+- Kanban ⭐ (par défaut)
+- Calendrier
+- Gantt
+- Roadmap
 
 ---
 
-#### Données Manquantes
+## 11. Bonnes pratiques
 
-**Symptôme** : Mes données ne s'affichent pas
+Adoptez ces **bonnes pratiques** pour tirer le meilleur parti de Chronodil.
 
-**Solutions** :
-1. **Vérifiez les filtres** appliqués (dates, statuts, projets)
-2. **Actualisez la page** (F5)
-3. **Vérifiez vos droits d'accès** avec votre manager
-4. **Contactez le support** si les données ont disparu
+### 📋 Gestion des tâches
+
+#### ✅ Nommage des tâches
+
+| ✅ Bon exemple | ❌ Mauvais exemple |
+|---------------|-------------------|
+| "Créer la page de connexion" | "Page" |
+| "Corriger bug #145 - Erreur 404" | "Bug" |
+| "Réunion équipe - Sprint planning" | "Réunion" |
+
+**Règles** :
+- **Verbe d'action** en début (Créer, Corriger, Analyser)
+- **Spécifique** et sans ambiguïté
+- **Contexte** suffisant (si besoin)
+
+#### ✅ Descriptions complètes
+
+Une bonne description contient :
+
+```markdown
+## Objectif
+Créer la page de connexion utilisateur
+
+## Détails
+- Formulaire email + mot de passe
+- Validation côté client
+- Gestion des erreurs
+- Lien "Mot de passe oublié"
+
+## Critères d'acceptation
+- [ ] Formulaire fonctionnel
+- [ ] Messages d'erreur clairs
+- [ ] Redirection après connexion
+- [ ] Responsive mobile
+
+## Ressources
+- Maquette Figma: [lien]
+- Doc API: [lien]
+```
+
+#### ✅ Priorisation
+
+**Utilisez la matrice urgence/importance** :
+
+| Urgent | Important | Priorité |
+|--------|-----------|----------|
+| ✅ | ✅ | 🔴 HIGH (faire immédiatement) |
+| ✅ | ❌ | 🟡 MEDIUM (planifier) |
+| ❌ | ✅ | 🟡 MEDIUM (déléguer si possible) |
+| ❌ | ❌ | 🟢 LOW (éliminer ou reporter) |
+
+#### ✅ Découpage des tâches
+
+**Une tâche = 1 journée max**
+
+Si > 1 jour, découpez :
+
+```
+❌ "Créer l'application mobile" (trop gros)
+
+✅ Découpage :
+1. "Setup projet React Native"
+2. "Créer l'écran de connexion"
+3. "Créer l'écran de liste"
+4. "Créer l'écran de détail"
+5. "Intégrer l'API"
+6. "Tests et corrections"
+```
+
+#### ✅ Mise à jour régulière
+
+**Rythme recommandé** :
+
+- **Matin** : Planifier les tâches du jour (vue Kanban)
+- **Pendant** : Déplacer les cartes (TODO → IN_PROGRESS → DONE)
+- **Soir** : Vérifier l'avancement, préparer le lendemain
+
+### 📊 Gestion des projets
+
+#### ✅ Structure projet
+
+**Hiérarchie claire** :
+
+```
+📁 Projet : Site Web Entreprise
+├── 📋 Phase 1 : Conception
+│   ├── ✅ Définir le cahier des charges
+│   ├── ✅ Créer les maquettes
+│   └── ⏳ Valider avec client
+├── 📋 Phase 2 : Développement
+│   ├── ⏳ Setup environnement
+│   ├── 📌 Développer homepage
+│   └── 📌 Développer pages secondaires
+└── 📋 Phase 3 : Tests et déploiement
+    └── 📌 Rédiger plan de tests
+```
+
+#### ✅ Équipe projet
+
+**Définissez les rôles** :
+
+| Rôle | Responsabilité | Exemple |
+|------|----------------|---------|
+| **Chef de projet** | Pilotage global | Thomas (Manager) |
+| **Tech Lead** | Architecture technique | Marie (Senior Dev) |
+| **Développeurs** | Réalisation | Jean, Sophie, Lucas |
+| **QA** | Tests et qualité | Emma |
+
+#### ✅ Suivi hebdomadaire
+
+**Rituel hebdomadaire** :
+
+```
+🗓️ Lundi 9h : Sprint planning
+- Objectifs de la semaine
+- Répartition des tâches
+- Questions bloquantes
+
+🗓️ Vendredi 16h : Rétrospective
+- Ce qui a bien fonctionné
+- Ce qui peut être amélioré
+- Actions pour la semaine suivante
+```
+
+### ⏱️ Feuilles de temps RH
+
+#### ✅ Déclaration hebdomadaire
+
+**Processus optimal** :
+
+```
+🗓️ Chaque vendredi 16h-17h :
+1. Créer la feuille de temps
+2. Ajouter toutes les activités de la semaine
+3. Vérifier le total (doit = heures contractuelles)
+4. Soumettre pour validation
+```
+
+**Pourquoi vendredi ?**
+- Mémoire fraîche de la semaine
+- Manager valide lundi
+- RH approuve mardi
+- Conforme aux délais de paie
+
+#### ✅ Précision des descriptions
+
+| ✅ Description précise | ❌ Description floue |
+|-----------------------|---------------------|
+| "Développement API REST - endpoints utilisateurs" | "Dev" |
+| "Réunion sprint planning - définition user stories" | "Réunion" |
+| "Formation Next.js 14 - nouveautés App Router" | "Formation" |
+
+#### ✅ Cohérence avec les tâches
+
+**Utilisez prioritairement les tâches existantes** :
+
+```
+✅ Méthode recommandée :
+1. Créer vos tâches quotidiennes au fur et à mesure
+2. En fin de semaine, créer la feuille RH
+3. Sélectionner les tâches existantes
+4. Heures pré-remplies automatiquement
+
+❌ À éviter :
+1. Attendre vendredi
+2. Essayer de se souvenir de toute la semaine
+3. Tout saisir manuellement
+4. Risque d'oublis et d'incohérences
+```
+
+### 📈 Rapports et analyses
+
+#### ✅ Rapports réguliers
+
+**Planifiez vos rapports** :
+
+| Fréquence | Rapport | Destinataire |
+|-----------|---------|--------------|
+| **Hebdomadaire** | Avancement projets | Manager + Équipe |
+| **Mensuel** | Heures et budget | Manager + RH |
+| **Trimestriel** | Bilan global | Direction |
+
+#### ✅ Exploiter les données
+
+**Utilisez les rapports pour** :
+
+- 📊 Identifier les goulots d'étranglement
+- ⏱️ Optimiser l'allocation des ressources
+- 💰 Suivre les budgets projet
+- 📈 Mesurer la vélocité d'équipe
+- 🎯 Ajuster les objectifs
 
 ---
 
-### 📞 Support et Assistance
+## 12. Raccourcis clavier
 
-#### Obtenir de l'Aide
+Gagnez du temps avec ces **raccourcis clavier**.
 
-1. **Documentation en ligne** : Consultez ce guide
-2. **Votre Manager** : Pour questions métier/processus
-3. **Service RH** : Pour questions liées aux feuilles RH
-4. **Support IT** : Pour problèmes techniques
-
-#### Signaler un Bug
-
-Si vous rencontrez un problème technique :
-
-1. **Capturez une capture d'écran** du problème
-2. **Notez** :
-   - Ce que vous faisiez
-   - Le message d'erreur (si affiché)
-   - Votre navigateur et version
-3. **Contactez le support** avec ces informations
-
----
-
-## Annexes
-
-### Raccourcis Clavier
+### 🌐 Globaux (toutes pages)
 
 | Raccourci | Action |
 |-----------|--------|
-| `Ctrl+K` / `Cmd+K` | Recherche globale |
-| `Ctrl+/` | Ouvrir la palette de commandes |
-| `Ctrl+B` | Afficher/Masquer la sidebar |
-| `Esc` | Fermer le modal actuel |
-| `?` | Afficher l'aide contextuelle |
+| `Ctrl+K` | Ouvrir la palette de commandes |
+| `Ctrl+D` | Aller au Dashboard |
+| `Ctrl+T` | Aller aux Tâches |
+| `Ctrl+P` | Aller aux Projets |
+| `Ctrl+H` | Aller aux Feuilles RH |
+| `Ctrl+R` | Aller aux Rapports |
+| `Ctrl+M` | Aller au Chat |
+| `Ctrl+,` | Ouvrir les Paramètres |
+| `Ctrl+/` | Afficher l'aide |
+| `Esc` | Fermer le dialogue/modal |
+
+### ✅ Page Tâches
+
+| Raccourci | Action |
+|-----------|--------|
+| `Ctrl+N` | Nouvelle tâche |
+| `Ctrl+F` | Rechercher une tâche |
+| `Ctrl+1` | Vue Liste |
+| `Ctrl+2` | Vue Kanban |
+| `Ctrl+3` | Vue Calendrier |
+| `Ctrl+4` | Vue Gantt |
+| `Ctrl+5` | Vue Roadmap |
+| `E` | Éditer la tâche sélectionnée |
+| `D` | Supprimer la tâche sélectionnée (avec confirmation) |
+| `C` | Commenter la tâche |
+| `↑` `↓` | Naviguer entre les tâches |
+| `Entrée` | Ouvrir la tâche sélectionnée |
+
+### 📁 Page Projets
+
+| Raccourci | Action |
+|-----------|--------|
+| `Ctrl+N` | Nouveau projet |
+| `Ctrl+F` | Rechercher un projet |
+| `E` | Éditer le projet sélectionné |
+| `T` | Voir les tâches du projet |
+| `U` | Voir l'équipe du projet |
+
+### 💬 Chat
+
+| Raccourci | Action |
+|-----------|--------|
+| `Ctrl+N` | Nouveau message |
+| `Ctrl+F` | Rechercher dans le chat |
+| `↑` `↓` | Naviguer entre les conversations |
+| `Entrée` | Envoyer le message |
+| `Shift+Entrée` | Nouvelle ligne (sans envoyer) |
+| `@` | Mentionner un utilisateur |
+| `Esc` | Quitter le champ de saisie |
+
+### 📝 Éditeur de texte (descriptions, commentaires)
+
+| Raccourci | Action |
+|-----------|--------|
+| `Ctrl+B` | Gras |
+| `Ctrl+I` | Italique |
+| `Ctrl+U` | Souligné |
+| `Ctrl+K` | Insérer un lien |
+| `Ctrl+Shift+7` | Liste numérotée |
+| `Ctrl+Shift+8` | Liste à puces |
+| `Ctrl+Z` | Annuler |
+| `Ctrl+Y` | Rétablir |
+
+### ⚙️ Palette de commandes (`Ctrl+K`)
+
+La **palette de commandes** permet d'accéder à **n'importe quelle fonction** :
+
+```
+Ctrl+K → Tapez ce que vous cherchez :
+
+"nouvelle tâche" → Créer une tâche
+"rapport équipe" → Générer rapport d'équipe
+"profil" → Ouvrir paramètres profil
+"thème sombre" → Activer mode sombre
+"Marie" → Envoyer message à Marie
+```
 
 ---
 
-### Glossaire
+## 13. FAQ et dépannage
 
-- **DRAFT** : Brouillon (statut initial des feuilles de temps)
-- **SUBMITTED** : Soumis pour validation
-- **APPROVED** : Approuvé/Validé
-- **REJECTED** : Rejeté
-- **LOCKED** : Verrouillé (ne peut plus être modifié)
-- **KPI** : Key Performance Indicator (Indicateur Clé de Performance)
-- **PPR** : Partial Prerendering (Technique d'optimisation Next.js)
-- **Timesheet** : Feuille de temps
-- **Task** : Tâche
+### ❓ Questions fréquentes
 
----
+#### Q1 : Pourquoi je ne vois pas le sélecteur de tâche dans la feuille RH ?
 
-### Informations Techniques
+**R :** Le sélecteur n'apparaît que si vous avez des **tâches actives** (statut TODO ou IN_PROGRESS) dont vous êtes **créateur ou membre**.
 
-- **Version de l'application** : Consultez le footer
-- **Navigateurs supportés** :
-  - Chrome 100+
-  - Firefox 100+
-  - Safari 15+
-  - Edge 100+
-- **Résolution minimum** : 1280x720 (Desktop), 360x640 (Mobile)
+**Solution** :
+1. Allez dans **Tâches**
+2. Créez au moins une tâche avec statut TODO ou IN_PROGRESS
+3. Retournez dans **Feuilles RH**
+4. Le sélecteur apparaît maintenant
 
 ---
 
-## Conclusion
+#### Q2 : Ma feuille de temps est bloquée au statut PENDING, je ne peux plus la modifier
 
-Ce guide couvre les principales fonctionnalités de **Chronodil** selon votre rôle. Pour des questions spécifiques ou des cas d'usage avancés, n'hésitez pas à contacter votre administrateur ou le support technique.
+**R :** C'est **normal**. Une fois soumise (PENDING), la feuille est **verrouillée** en attendant validation.
 
-**Bonne utilisation de Chronodil ! ⏱️📊✅**
+**Pour modifier** :
+1. Contactez votre **manager**
+2. Il peut **rejeter** la feuille (avec commentaire)
+3. Elle repasse en statut **DRAFT**
+4. Vous pouvez maintenant **modifier**
+5. **Resoumettez** après correction
 
 ---
 
-*Document généré le : 2025-01-05*
-*Version : 1.0*
-*Application : Chronodil - Gestion de Temps et Projets*
+#### Q3 : Je ne vois pas tous les projets dans la liste
+
+**R :** Vous ne voyez que les projets **dont vous êtes membre** ou **que vous avez créés**.
+
+**Pour voir plus de projets** :
+- Demandez à un **Manager** de vous ajouter au projet
+- Les Admins voient tous les projets
+
+---
+
+#### Q4 : Mes modifications de tâches ne sont pas sauvegardées
+
+**R :** Vérifiez :
+
+1. **Connexion internet** : Vérifiez votre connexion
+2. **Session expirée** : Reconnectez-vous
+3. **Permissions** : Vérifiez que vous pouvez modifier cette tâche
+4. **Champs obligatoires** : Tous les champs requis sont remplis ?
+
+**Message d'erreur ?** Consultez les logs (F12 → Console) et contactez le support.
+
+---
+
+#### Q5 : Comment supprimer mon compte ?
+
+**R :** Vous ne pouvez pas supprimer votre compte vous-même.
+
+**Contactez** :
+- Votre **RH** ou **Administrateur**
+- Ils désactiveront votre compte
+
+> 💡 **Note** : Les données historiques (feuilles approuvées) sont conservées pour conformité légale.
+
+---
+
+#### Q6 : Pourquoi certaines fonctionnalités sont grisées ?
+
+**R :** Votre **rôle** ne permet pas d'accéder à ces fonctionnalités.
+
+**Exemples** :
+- **Employé** : Ne peut pas créer de projets
+- **Employé/Manager** : Ne peut pas valider définitivement (signature RH)
+
+**Consultez** : Section [Rôles et permissions](#3-rôles-et-permissions) de ce guide.
+
+---
+
+#### Q7 : Comment récupérer mon mot de passe oublié ?
+
+**R :** Fonctionnalité de réinitialisation :
+
+1. Page de connexion → Cliquez sur **"Mot de passe oublié ?"**
+2. Entrez votre **email**
+3. Vous recevez un **lien de réinitialisation**
+4. Cliquez sur le lien (valide 1h)
+5. Définissez un **nouveau mot de passe**
+
+**Pas reçu d'email ?** Vérifiez vos spams ou contactez l'admin.
+
+---
+
+#### Q8 : Les notifications ne fonctionnent pas
+
+**R :** Vérifiez :
+
+**1. Paramètres Chronodil**
+- Allez dans **Paramètres → Notifications**
+- Vérifiez que les notifications sont **activées**
+
+**2. Paramètres navigateur**
+- **Chrome** : Paramètres → Confidentialité → Notifications → Autoriser Chronodil
+- **Firefox** : Options → Vie privée → Notifications → Autoriser
+- **Safari** : Préférences → Sites web → Notifications → Autoriser
+
+**3. Système d'exploitation**
+- **Windows** : Paramètres → Système → Notifications
+- **macOS** : Préférences Système → Notifications
+
+---
+
+#### Q9 : L'application est lente / ne charge pas
+
+**R :** Solutions :
+
+**1. Vider le cache**
+```
+Chrome/Edge : Ctrl+Shift+Del → Vider le cache
+Firefox : Ctrl+Shift+Del → Données en cache
+Safari : Cmd+Option+E
+```
+
+**2. Mettre à jour le navigateur**
+- Utilisez la **dernière version** de Chrome, Firefox, Edge ou Safari
+
+**3. Vérifier la connexion**
+- **Test** : Ouvrez d'autres sites web
+- **VPN** : Désactivez temporairement le VPN
+- **Proxy** : Vérifiez les paramètres proxy
+
+**4. Mode navigation privée**
+- Testez en **navigation privée** (Ctrl+Shift+N)
+- Si ça fonctionne → Problème d'extension ou cache
+
+**Toujours lent ?** Contactez le support technique.
+
+---
+
+### 🛠️ Dépannage avancé
+
+#### Console développeur
+
+**Afficher la console** : `F12` (Windows/Linux) ou `Cmd+Option+I` (Mac)
+
+**Onglets utiles** :
+- **Console** : Messages d'erreur JavaScript
+- **Network** : Requêtes réseau (échecs API)
+- **Application** : Données en cache
+
+**Recherchez** :
+- Messages en **rouge** (erreurs)
+- Requêtes avec statut **4xx** ou **5xx** (échecs)
+
+**Capturez** : Faites une capture d'écran et envoyez au support.
+
+---
+
+#### Problèmes connus et solutions
+
+| Problème | Cause | Solution |
+|----------|-------|----------|
+| "Session expirée" | Session timeout (24h inactivité) | Reconnectez-vous |
+| Tâches dupliquées | Double-clic accidentel | Rafraîchir la page (F5) |
+| Export vide | Filtres trop restrictifs | Élargir les filtres |
+| Chat ne charge pas | Problème WebSocket | Vérifier firewall/proxy |
+
+---
+
+### 📞 Contacter le support
+
+**Niveaux de support** :
+
+#### 1️⃣ Niveau 1 : Questions fonctionnelles
+
+**Contactez** : Votre **Manager**
+- Comment utiliser une fonctionnalité
+- Processus de validation
+- Bonnes pratiques
+
+#### 2️⃣ Niveau 2 : Problèmes RH
+
+**Contactez** : Service **RH**
+- Validation des feuilles
+- Gestion des comptes
+- Logs d'audit
+- Rapports de paie
+
+#### 3️⃣ Niveau 3 : Problèmes techniques
+
+**Contactez** : **Administrateur IT**
+- Bugs techniques
+- Erreurs système
+- Problèmes de connexion
+- Configuration
+
+**Email support** : contact@chronodil.com
+
+**Incluez dans votre message** :
+- **Nom et rôle**
+- **Description du problème** (détaillée)
+- **Étapes pour reproduire**
+- **Captures d'écran** (si applicable)
+- **Messages d'erreur** (console F12)
+- **Navigateur et système** (ex: Chrome 120, Windows 11)
+
+---
+
+## 14. Glossaire
+
+### 📖 Termes clés
+
+#### A
+
+**ADMIN**
+: Rôle administrateur avec contrôle total de l'application.
+
+**Activité RH**
+: Tâche déclarée dans une feuille de temps RH.
+
+**APPROVED**
+: Statut final d'une feuille de temps après validation RH (signature Odillon).
+
+#### B
+
+**Backlog**
+: Liste des tâches en attente (statut TODO).
+
+**Burndown**
+: Graphique montrant l'évolution de la charge de travail restante.
+
+#### C
+
+**Complexité**
+: Estimation de la difficulté d'une tâche (FAIBLE, MOYEN, ÉLEVÉ).
+
+#### D
+
+**Dashboard**
+: Tableau de bord avec vue d'ensemble des activités.
+
+**DONE**
+: Statut d'une tâche terminée.
+
+**DRAFT**
+: Statut initial d'une feuille de temps (brouillon modifiable).
+
+#### E
+
+**EMPLOYEE**
+: Rôle de base pour les employés.
+
+**Échéance**
+: Date limite pour terminer une tâche.
+
+#### F
+
+**Feuille de temps RH**
+: Déclaration hebdomadaire des activités professionnelles.
+
+#### G
+
+**Gantt**
+: Vue de planification avec timeline et dépendances.
+
+#### H
+
+**HR**
+: Rôle Ressources Humaines avec validation finale des temps.
+
+**Heures estimées**
+: Durée prévue pour réaliser une tâche.
+
+#### I
+
+**IN_PROGRESS**
+: Statut d'une tâche en cours de réalisation.
+
+#### K
+
+**Kanban**
+: Vue avec colonnes par statut (TODO, IN_PROGRESS, DONE).
+
+**KPI**
+: Key Performance Indicator (indicateur clé de performance).
+
+#### M
+
+**MANAGER**
+: Rôle de responsable d'équipe avec pouvoir de validation.
+
+**MANAGER_APPROVED**
+: Statut d'une feuille validée par le manager.
+
+**Mention**
+: Notification d'un utilisateur via @nom.
+
+#### P
+
+**PENDING**
+: Statut d'une feuille soumise en attente de validation.
+
+**Priorité**
+: Niveau d'urgence (LOW, MEDIUM, HIGH).
+
+**Palette de commandes**
+: Accès rapide aux fonctions (Ctrl+K).
+
+#### R
+
+**Roadmap**
+: Vue stratégique long terme des projets.
+
+**Rôle**
+: Niveau de permission (EMPLOYEE, MANAGER, HR, ADMIN).
+
+#### S
+
+**Signature Odillon**
+: Validation RH finale et officielle d'une feuille de temps.
+
+**Statut**
+: État d'avancement d'une tâche ou feuille de temps.
+
+**Synchronisation bidirectionnelle**
+: Lien automatique entre tâches et activités RH.
+
+#### T
+
+**TODO**
+: Statut d'une tâche à faire.
+
+**Tâche**
+: Unité de travail à réaliser.
+
+#### V
+
+**Vélocité**
+: Nombre de tâches terminées par période (mesure de productivité).
+
+**Vue**
+: Mode d'affichage des tâches (Liste, Kanban, Calendrier, Gantt, Roadmap).
+
+#### W
+
+**Workflow**
+: Processus de validation structuré (ex: DRAFT → PENDING → APPROVED).
+
+---
+
+## 🎓 Conclusion
+
+Vous êtes maintenant prêt à **maîtriser Chronodil** !
+
+### 📚 Récapitulatif
+
+Dans ce guide, vous avez appris :
+
+✅ **Naviguer** dans l'interface et utiliser les raccourcis
+✅ **Gérer vos tâches** avec 5 vues adaptées à votre style
+✅ **Organiser des projets** et piloter des équipes
+✅ **Déclarer vos temps** et suivre le workflow de validation
+✅ **Générer des rapports** pour piloter votre activité
+✅ **Collaborer** via le chat en temps réel
+✅ **Personnaliser** votre expérience selon vos préférences
+
+### 🚀 Prochaines étapes
+
+1. **Explorez** les différentes fonctionnalités
+2. **Créez** vos premières tâches et projets
+3. **Déclarez** votre première feuille de temps
+4. **Configurez** vos préférences et notifications
+5. **Partagez** vos bonnes pratiques avec l'équipe
+
+### 💡 Astuces finales
+
+- **Palette de commandes** (`Ctrl+K`) : Votre meilleur ami pour la navigation rapide
+- **Vue Kanban** : La plus populaire pour la gestion quotidienne
+- **Feuilles hebdomadaires** : Déclarez chaque vendredi pour ne rien oublier
+- **Synchronisation** : Utilisez les tâches existantes dans les feuilles RH
+- **Notifications** : Configurez-les selon vos besoins pour ne rien manquer
+
+### 📞 Besoin d'aide ?
+
+1. **Consultez** ce guide (section FAQ)
+2. **Utilisez** la palette de commandes pour trouver rapidement
+3. **Contactez** votre manager pour les questions fonctionnelles
+4. **Envoyez un email** à contact@chronodil.com pour le support technique
+
+---
+
+## 📄 Informations légales
+
+**Éditeur** : Chronodil
+**Version de l'application** : v0.1.0
+**Version du guide** : 2.0.0
+**Dernière mise à jour** : Novembre 2025
+**Technologie** : Next.js 16, React 19, Prisma, Supabase
+
+---
+
+<div align="center">
+
+**⏱️ Gérez vos temps efficacement avec Chronodil**
+
+---
+
+*Ce guide est mis à jour régulièrement. Consultez la version en ligne pour les dernières nouveautés.*
+
+</div>
