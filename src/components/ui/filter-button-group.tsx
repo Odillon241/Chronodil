@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Filter, Calendar } from "lucide-react"
+import { Filter, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
@@ -81,12 +81,11 @@ export function FilterButtonGroup({
       <ButtonGroup className="w-auto border border-input rounded-md">
         {/* Champ de recherche */}
         <div className="relative w-auto max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={placeholder}
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 w-full border-0"
+            className="pr-4 w-full border-0"
           />
         </div>
 

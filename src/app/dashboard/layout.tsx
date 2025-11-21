@@ -9,7 +9,6 @@ import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
 import { CommandPalette } from "@/components/features/command-palette";
 import { SettingsProvider } from "@/components/providers/settings-provider";
-import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 function SearchBar() {
@@ -21,11 +20,10 @@ function SearchBar() {
 
   return (
     <div className="relative w-full group">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type="text"
         placeholder="Rechercher..."
-        className="pl-9 pr-20 h-9 cursor-pointer"
+        className="pr-20 h-9 cursor-pointer"
         onClick={() => {
           const event = new CustomEvent("open-search");
           document.dispatchEvent(event);

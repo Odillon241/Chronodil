@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X, Filter } from "lucide-react";
+import { X, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,12 +35,11 @@ export function TaskFiltersBar({
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Recherche */}
         <div className="relative w-auto max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Rechercher une tâche..."
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
-            className="pl-9 w-full"
+            className="w-full"
           />
         </div>
 

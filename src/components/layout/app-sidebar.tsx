@@ -39,6 +39,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -84,6 +85,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/dashboard/tasks",
       icon: ListTodo,
     },
+  ], [t]);
+
+  const navSecondary = React.useMemo(() => [
     {
       title: t("navigation.chat"),
       url: "/dashboard/chat",
@@ -145,7 +149,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
@@ -240,8 +244,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarSeparator />
+            <SidebarMenu suppressHydrationWarning>
+              {navSecondary.map((item) => {
+                const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={isActive}
+                    >
+                      <Link href={item.url}>
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
+            <SidebarSeparator />
             <SidebarMenu suppressHydrationWarning>
               {filteredNavSettings.map((item) => {
                   const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
@@ -271,7 +302,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu suppressHydrationWarning>
           <SidebarMenuItem>
             {mounted ? (
@@ -345,13 +376,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       {t("navigation.profile")}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings">
-                      <Settings className="mr-2 h-4 w-4" />
-                      {t("navigation.settings")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     {t("navigation.logout")}

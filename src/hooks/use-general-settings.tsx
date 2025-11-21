@@ -20,6 +20,28 @@ export interface GeneralSettings {
   reduceMotion: boolean;
 }
 
+// Mapping pour migrer les anciennes couleurs vers les nouvelles
+const colorMigrationMap: Record<string, string> = {
+  "rusty-red": "green-anis",
+  "ou-crimson": "green-teal",
+  "powder-blue": "green-anis",
+  "golden-orange": "yellow-vibrant",
+  "green": "green-anis",
+  "dark-green": "green-teal",
+  "light-green": "green-anis",
+  "forest-green": "green-teal",
+  "sage-green": "green-anis",
+};
+
+const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal"];
+
+// Fonction pour normaliser la couleur d'accentuation
+const normalizeAccentColor = (accentColor: string | null | undefined): string => {
+  if (!accentColor) return "green-anis";
+  if (validAccentColors.includes(accentColor)) return accentColor;
+  return colorMigrationMap[accentColor] || "green-anis";
+};
+
 export function useGeneralSettings() {
   const { data: session } = useSession();
   const [settings, setSettings] = useState<GeneralSettings | null>(null);
@@ -69,8 +91,9 @@ export function useGeneralSettings() {
     // Appliquer la densité d'affichage
     document.documentElement.setAttribute("data-density", settings.viewDensity);
 
-    // Appliquer la couleur d'accentuation
-    document.documentElement.setAttribute("data-accent", settings.accentColor);
+    // Appliquer la couleur d'accentuation (normalisée)
+    const normalizedColor = normalizeAccentColor(settings.accentColor);
+    document.documentElement.setAttribute("data-accent", normalizedColor);
   };
 
   const updateSetting = (key: keyof GeneralSettings, value: any) => {

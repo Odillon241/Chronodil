@@ -14,7 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, Search, MoreVertical } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, MoreVertical } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Filters } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import type { FilterGroup, FilterOption } from "@/components/ui/shadcn-io/navbar-15/Filters";
@@ -2070,13 +2070,12 @@ export default function HRTimesheetPage() {
           {/* Barre de recherche et filtres */}
           <div className="flex items-center gap-2">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9"
+                className="h-9"
               />
             </div>
             {dataView === "my" && (

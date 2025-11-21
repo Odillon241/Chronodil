@@ -1,13 +1,13 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
 }
 
 export function SearchBar({
@@ -15,13 +15,14 @@ export function SearchBar({
   onChange,
   placeholder = "Rechercher...",
   className = "",
+  inputClassName = "",
 }: SearchBarProps) {
   return (
-    <div className={`relative w-auto max-w-xs ${className}`}>
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div className={`relative w-full ${className}`}>
       <Input
+        type="text"
         placeholder={placeholder}
-        className="pl-10 w-full"
+        className={inputClassName}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

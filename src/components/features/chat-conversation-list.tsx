@@ -11,7 +11,6 @@ import {
   Users,
   MessageSquare,
   FolderKanban,
-  Search,
   Plus,
   MoreVertical,
   Trash2,
@@ -27,6 +26,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { useRealtimePresence } from "@/hooks/use-realtime-presence";
+import { formatLastSeen } from "@/lib/utils/presence";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Conversation {
   id: string;
@@ -40,6 +47,7 @@ interface Conversation {
       email: string;
       avatar?: string | null;
       image?: string | null;
+      lastSeenAt?: Date | null;
     };
   }[];
   Project?: {
@@ -81,6 +89,7 @@ export function ChatConversationList({
   onLeaveConversation,
 }: ChatConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { isUserOnline, getLastSeenAt } = useRealtimePresence();
 
   const handleDeleteConversation = async (conversationId: string, conversationName: string) => {
     if (!onDeleteConversation) return;
@@ -169,6 +178,8 @@ export function ChatConversationList({
         avatar: otherUser?.avatar || otherUser?.image,
         icon: <MessageSquare className="h-4 w-4" />,
         color: "bg-blue-500",
+        userId: otherUser?.id,
+        lastSeenAt: otherUser?.lastSeenAt,
       };
     }
 
@@ -219,12 +230,10 @@ export function ChatConversationList({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher une conversation..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
           />
         </div>
       </div>
@@ -261,12 +270,42 @@ export function ChatConversationList({
                   >
                     {/* Avatar ou Icône */}
                     {display.avatar ? (
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={display.avatar} />
-                        <AvatarFallback>
-                          {display.name.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="relative">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage src={display.avatar} />
+                                <AvatarFallback>
+                                  {display.name.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              {/* Badge de présence (conversations directes uniquement) */}
+                              {conv.type === "DIRECT" && display.userId && (
+                                <span
+                                  className={cn(
+                                    "absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background",
+                                    isUserOnline(display.userId)
+                                      ? "bg-green-500"
+                                      : "bg-gray-400 dark:bg-gray-600"
+                                  )}
+                                />
+                              )}
+                            </div>
+                          </TooltipTrigger>
+                          {conv.type === "DIRECT" && display.userId && (
+                            <TooltipContent side="right">
+                              <p className="text-xs">
+                                {isUserOnline(display.userId)
+                                  ? "En ligne"
+                                  : `Hors ligne • ${formatLastSeen(
+                                      getLastSeenAt(display.userId) || display.lastSeenAt
+                                    )}`}
+                              </p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     ) : display.isGroup && display.members && display.members.length > 0 ? (
                       /* Avatars superposés pour les groupes */
                       <div className="flex -space-x-2">

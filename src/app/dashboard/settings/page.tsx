@@ -192,6 +192,28 @@ export default function SettingsPage() {
   const [isSavingGeneralSettings, setIsSavingGeneralSettings] = useState(false);
 
 
+  // Mapping pour migrer les anciennes couleurs vers les nouvelles
+  const colorMigrationMap: Record<string, string> = {
+    "rusty-red": "green-anis",
+    "ou-crimson": "green-teal",
+    "powder-blue": "green-anis",
+    "golden-orange": "yellow-vibrant",
+    "green": "green-anis",
+    "dark-green": "green-teal",
+    "light-green": "green-anis",
+    "forest-green": "green-teal",
+    "sage-green": "green-anis",
+  };
+
+  const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal"];
+
+  // Fonction pour normaliser la couleur d'accentuation
+  const normalizeAccentColor = (accentColor: string | null | undefined): string => {
+    if (!accentColor) return "green-anis";
+    if (validAccentColors.includes(accentColor)) return accentColor;
+    return colorMigrationMap[accentColor] || "green-anis";
+  };
+
   // Fonction pour appliquer les paramètres visuellement
   const applySettingsToUI = (settings: any) => {
     if (!settings) return;
@@ -216,8 +238,10 @@ export default function SettingsPage() {
     // Appliquer la densité d'affichage
     document.documentElement.setAttribute("data-density", settings.viewDensity);
 
-    // Appliquer la couleur d'accentuation
-    document.documentElement.setAttribute("data-accent", settings.accentColor);
+    // Appliquer la couleur d'accentuation (normalisée)
+    const normalizedColor = normalizeAccentColor(settings.accentColor);
+    document.documentElement.setAttribute("data-accent", normalizedColor);
+    // Note: La migration automatique sera gérée par AppearanceSection via useEffect
   };
 
   useEffect(() => {
@@ -1213,7 +1237,7 @@ export default function SettingsPage() {
                       <Button
                         variant="outline"
                         disabled={isInitializingHolidays}
-                        className="w-full sm:w-auto border-powder-blue text-powder-blue hover:bg-powder-blue hover:text-white text-xs sm:text-sm"
+                        className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white text-xs sm:text-sm"
                       >
                         {isInitializingHolidays ? "Ajout en cours..." : "🇬🇦 Initialiser jours fériés"}
                       </Button>
@@ -1323,7 +1347,7 @@ export default function SettingsPage() {
                       <Button
                         variant="outline"
                         disabled={isInitializingHolidays}
-                        className="border-powder-blue text-powder-blue hover:bg-powder-blue hover:text-white"
+                        className="border-primary text-primary hover:bg-primary hover:text-white"
                       >
                         🇬🇦 Initialiser avec les jours fériés du Gabon
                       </Button>

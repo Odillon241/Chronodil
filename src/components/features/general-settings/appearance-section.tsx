@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
+import { SettingsSlider } from "./settings-slider";
 
 interface AppearanceSectionProps {
   settings: {
@@ -22,12 +23,25 @@ interface AppearanceSectionProps {
 }
 
 const accentColors = [
-  { value: "rusty-red", label: "Green", class: "bg-primary" },
-  { value: "ou-crimson", label: "Dark Green", class: "bg-ou-crimson" },
-  { value: "powder-blue", label: "Light Green", class: "bg-powder-blue" },
-  { value: "forest-green", label: "Forest Green", class: "bg-forest-green" },
-  { value: "golden-orange", label: "Sage Green", class: "bg-golden-orange" },
+  { value: "yellow-vibrant", label: "Jaune vif", class: "bg-[#F8E800]" },
+  { value: "green-anis", label: "Vert anis", class: "bg-[#95C11F]" },
+  { value: "green-teal", label: "Vert sarcelle", class: "bg-[#39837A]" },
 ];
+
+// Mapping pour migrer les anciennes couleurs vers les nouvelles
+const colorMigrationMap: Record<string, string> = {
+  "rusty-red": "green-anis",
+  "ou-crimson": "green-teal",
+  "powder-blue": "green-anis",
+  "golden-orange": "yellow-vibrant",
+  "green": "green-anis",
+  "dark-green": "green-teal",
+  "light-green": "green-anis",
+  "forest-green": "green-teal",
+  "sage-green": "green-anis",
+};
+
+const validAccentColors = accentColors.map((c) => c.value);
 
 export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSectionProps) {
   const t = useTranslations("settings.appearance");
@@ -37,6 +51,23 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
     { value: "normal", label: t("density.normal") },
     { value: "comfortable", label: t("density.comfortable") },
   ];
+
+  // Migration automatique des anciennes couleurs
+  useEffect(() => {
+    if (settings?.accentColor && !validAccentColors.includes(settings.accentColor)) {
+      const migratedColor = colorMigrationMap[settings.accentColor] || "green";
+      console.log(`🔄 Migration de la couleur: ${settings.accentColor} → ${migratedColor}`);
+      onUpdate("accentColor", migratedColor);
+      document.documentElement.setAttribute("data-accent", migratedColor);
+    }
+  }, [settings?.accentColor, onUpdate]);
+
+  // Normaliser la couleur actuelle pour l'affichage
+  const currentAccentColor = settings?.accentColor 
+    ? (validAccentColors.includes(settings.accentColor) 
+        ? settings.accentColor 
+        : colorMigrationMap[settings.accentColor] || "green-anis")
+    : "green-anis";
 
   const handleAccentColorChange = (colorName: string) => {
     console.log("🎨 Changement couleur d'accentuation:", colorName);
@@ -56,21 +87,24 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
         <div className="space-y-3 border-t pt-6">
           <Label>{t("accentColor")}</Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {accentColors.map((color) => (
-              <button
-                key={color.value}
-                onClick={() => handleAccentColorChange(color.value)}
-                disabled={isSaving}
-                className={`relative p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 hover:bg-muted/50 ${
-                  settings.accentColor === color.value
-                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background"
-                    : "border-border"
-                }`}
-              >
-                <div className={`h-8 w-8 rounded-full ${color.class}`} />
-                <p className="text-xs font-medium text-center">{color.label}</p>
-              </button>
-            ))}
+            {accentColors.map((color) => {
+              const isSelected = currentAccentColor === color.value;
+              return (
+                <button
+                  key={color.value}
+                  onClick={() => handleAccentColorChange(color.value)}
+                  disabled={isSaving}
+                  className={`relative p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 hover:bg-muted/50 ${
+                    isSelected
+                      ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background"
+                      : "border-border"
+                  }`}
+                >
+                  <div className={`h-8 w-8 rounded-full ${color.class}`} />
+                  <p className="text-xs font-medium text-center">{color.label}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -81,7 +115,11 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
             <Label htmlFor="view-density">{t("viewDensity")}</Label>
             <Select
               value={settings.viewDensity}
-              onValueChange={(value) => onUpdate("viewDensity", value)}
+              onValueChange={(value) => {
+                // Appliquer immédiatement la densité d'affichage pour un feedback visuel instantané
+                document.documentElement.setAttribute("data-density", value);
+                onUpdate("viewDensity", value);
+              }}
             >
               <SelectTrigger id="view-density" disabled={isSaving}>
                 <SelectValue />
@@ -97,24 +135,22 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
           </div>
 
           {/* Font Size */}
-          <div className="space-y-3">
-            <Label htmlFor="font-size">
-              {t("fontSize")}: {settings.fontSize}px
-            </Label>
-            <Slider
-              id="font-size"
-              min={12}
-              max={24}
-              step={1}
-              value={[settings.fontSize]}
-              onValueChange={([value]) => onUpdate("fontSize", value)}
-              disabled={isSaving}
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("fontSizeDesc")}
-            </p>
-          </div>
+          <SettingsSlider
+            id="font-size"
+            label={t("fontSize")}
+            value={settings.fontSize}
+            min={12}
+            max={24}
+            step={1}
+            unit="px"
+            description={t("fontSizeDesc")}
+            onValueChange={(value) => onUpdate("fontSize", value)}
+            onValueChangeImmediate={(value) => {
+              // Appliquer immédiatement la taille de police pour un feedback visuel instantané
+              document.documentElement.style.fontSize = `${value}px`;
+            }}
+            disabled={isSaving}
+          />
         </div>
       </div>
     </div>

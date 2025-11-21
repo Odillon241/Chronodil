@@ -32,7 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TitleWithCount } from "@/components/ui/title-with-count";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Edit, Trash2, Search, UserPlus, Shield, Building2, Key } from "lucide-react";
+import { Plus, Edit, Trash2, UserPlus, Shield, Building2, Key } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
@@ -589,10 +589,8 @@ export default function UsersManagementPage() {
 
       {/* Search bar */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher un utilisateur..."
-          className="pl-10"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />

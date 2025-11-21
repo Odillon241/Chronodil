@@ -33,7 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen, Check, Search, Calendar, Bell, Users, X, Volume2, VolumeX, MoreVertical, Filter } from "lucide-react";
+import { Plus, Edit, Trash2, CheckCircle, Circle, FolderOpen, Check, Calendar, Bell, Users, X, Volume2, VolumeX, MoreVertical, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { createTask, updateTask, deleteTask, getMyTasks, getAvailableUsersForSharing, updateTaskStatus, updateTaskPriority } from "@/actions/task.actions";
@@ -1101,13 +1101,11 @@ export default function TasksPage() {
                   {/* Barre de recherche et filtre pour le Kanban */}
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1 max-w-md">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
                         placeholder="Rechercher une tâche..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
                       />
                       {searchQuery && (
                         <Button
@@ -1235,13 +1233,11 @@ export default function TasksPage() {
                   {/* Barre de recherche et filtre pour le tableau */}
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1 max-w-md">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
                         placeholder="Rechercher une tâche..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
                       />
                       {searchQuery && (
                         <Button

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Search, X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter, Edit2 } from "lucide-react";
+import { X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter, Edit2 } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -216,12 +216,11 @@ export function HRTimesheetActivitiesTable({
       <div className="mb-4">
         <div className="flex items-center gap-2">
           <div className="relative max-w-md flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Rechercher une activité..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10"
+              className="pr-10"
             />
             {searchQuery && (
               <Button

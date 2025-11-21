@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Users, FolderKanban, Search, X } from "lucide-react";
+import { MessageSquare, Users, FolderKanban, X } from "lucide-react";
 import { toast } from "sonner";
 import { createOrGetConversation } from "@/actions/chat.actions";
 
@@ -198,12 +198,11 @@ export function ChatNewConversationDialog({
           {/* Messages Directs */}
           <TabsContent value="direct" className="space-y-4">
             <div className="relative w-auto max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un utilisateur..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full"
+                className="w-full"
               />
             </div>
 
@@ -275,12 +274,11 @@ export function ChatNewConversationDialog({
             )}
 
             <div className="relative w-auto max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher des membres..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full"
+                className="w-full"
               />
             </div>
 
@@ -333,12 +331,11 @@ export function ChatNewConversationDialog({
           {/* Projets */}
           <TabsContent value="project" className="space-y-4">
             <div className="relative w-auto max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un projet..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full"
+                className="w-full"
               />
             </div>
 

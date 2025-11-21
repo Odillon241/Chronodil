@@ -72,6 +72,15 @@ const removeMemberSchema = z.object({
   userId: z.string(),
 });
 
+const pinMessageSchema = z.object({
+  messageId: z.string(),
+  conversationId: z.string(),
+});
+
+const unpinMessageSchema = z.object({
+  messageId: z.string(),
+});
+
 // ========================================
 // ACTIONS POUR LES CONVERSATIONS
 // ========================================
@@ -804,6 +813,133 @@ export const deleteConversation = authActionClient
     // Supprimer la conversation (cascade supprimera automatiquement les membres et messages)
     await prisma.conversation.delete({
       where: { id: conversationId },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { success: true };
+  });
+
+// ========================================
+// ACTIONS POUR LES MESSAGES ÉPINGLÉS
+// ========================================
+
+/**
+ * Épingler un message dans une conversation
+ * Limite : 3 messages épinglés maximum par conversation
+ */
+export const pinMessage = authActionClient
+  .schema(pinMessageSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { messageId, conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Vérifier que l'utilisateur est membre de la conversation
+    const membership = await prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId,
+      },
+    });
+
+    if (!membership) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Vérifier que l'utilisateur est admin (pour les groupes/projets) ou créateur (pour les directs)
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        ConversationMember: {
+          where: { userId },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new Error("Conversation introuvable");
+    }
+
+    // Vérifier les permissions
+    const isAdmin = conversation.ConversationMember[0]?.isAdmin;
+    const isCreator = conversation.createdBy === userId;
+
+    if (!isAdmin && !isCreator) {
+      throw new Error("Seuls les administrateurs ou le créateur peuvent épingler des messages");
+    }
+
+    // Vérifier le nombre de messages épinglés
+    const pinnedMessagesCount = await prisma.message.count({
+      where: {
+        conversationId,
+        pinnedAt: { not: null },
+      },
+    });
+
+    if (pinnedMessagesCount >= 3) {
+      throw new Error("Maximum 3 messages épinglés par conversation. Désépinglez un message pour en épingler un nouveau.");
+    }
+
+    // Épingler le message
+    await prisma.message.update({
+      where: { id: messageId },
+      data: {
+        pinnedAt: new Date(),
+        pinnedById: userId,
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { success: true };
+  });
+
+/**
+ * Désépingler un message
+ */
+export const unpinMessage = authActionClient
+  .schema(unpinMessageSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { messageId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Récupérer le message pour avoir la conversationId
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        Conversation: {
+          include: {
+            ConversationMember: {
+              where: { userId },
+            },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new Error("Message introuvable");
+    }
+
+    // Vérifier que l'utilisateur est membre de la conversation
+    if (message.Conversation.ConversationMember.length === 0) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Vérifier les permissions
+    const isAdmin = message.Conversation.ConversationMember[0]?.isAdmin;
+    const isCreator = message.Conversation.createdBy === userId;
+    const isPinner = message.pinnedById === userId;
+
+    if (!isAdmin && !isCreator && !isPinner) {
+      throw new Error("Seuls les administrateurs, le créateur ou celui qui a épinglé peuvent désépingler ce message");
+    }
+
+    // Désépingler le message
+    await prisma.message.update({
+      where: { id: messageId },
+      data: {
+        pinnedAt: null,
+        pinnedById: null,
+      },
     });
 
     revalidatePath("/dashboard/chat");

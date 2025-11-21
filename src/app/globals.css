@@ -75,65 +75,41 @@
   }
 
   /* Thèmes de couleur d'accentuation - Light Mode */
-  [data-accent="rusty-red"] {
-    --primary: 172.7 39.4% 36.9%;
-    --ring: 172.7 39.4% 36.9%;
-    --primary-foreground: 355.7 100% 97.3%;
+  [data-accent="yellow-vibrant"] {
+    --primary: 56 100% 49%;
+    --ring: 56 100% 49%;
+    --primary-foreground: 0 0% 10%;
   }
 
-  [data-accent="ou-crimson"] {
-    --primary: 172.7 39.4% 36.9%;
-    --ring: 172.7 39.4% 36.9%;
-    --primary-foreground: 355.7 100% 97.3%;
+  [data-accent="green-anis"] {
+    --primary: 76 72% 44%;
+    --ring: 76 72% 44%;
+    --primary-foreground: 0 0% 98%;
   }
 
-  [data-accent="powder-blue"] {
-    --primary: 172.7 39.4% 36.9%;
-    --ring: 172.7 39.4% 36.9%;
-    --primary-foreground: 355.7 100% 97.3%;
-  }
-
-  [data-accent="forest-green"] {
-    --primary: 172.7 39.4% 36.9%;
-    --ring: 172.7 39.4% 36.9%;
-    --primary-foreground: 355.7 100% 97.3%;
-  }
-
-  [data-accent="golden-orange"] {
-    --primary: 172.7 39.4% 36.9%;
-    --ring: 172.7 39.4% 36.9%;
-    --primary-foreground: 355.7 100% 97.3%;
+  [data-accent="green-teal"] {
+    --primary: 173 39% 37%;
+    --ring: 173 39% 37%;
+    --primary-foreground: 0 0% 98%;
   }
 
   /* Thèmes de couleur d'accentuation - Dark Mode */
-  .dark[data-accent="rusty-red"] {
-    --primary: 172.7 39.4% 45%;
-    --ring: 172.7 39.4% 30%;
-    --primary-foreground: 144.9 80.4% 10%;
+  .dark[data-accent="yellow-vibrant"] {
+    --primary: 56 100% 55%;
+    --ring: 56 100% 45%;
+    --primary-foreground: 0 0% 10%;
   }
 
-  .dark[data-accent="ou-crimson"] {
-    --primary: 172.7 39.4% 45%;
-    --ring: 172.7 39.4% 30%;
-    --primary-foreground: 144.9 80.4% 10%;
+  .dark[data-accent="green-anis"] {
+    --primary: 76 72% 52%;
+    --ring: 76 72% 42%;
+    --primary-foreground: 0 0% 98%;
   }
 
-  .dark[data-accent="powder-blue"] {
-    --primary: 172.7 39.4% 45%;
-    --ring: 172.7 39.4% 30%;
-    --primary-foreground: 144.9 80.4% 10%;
-  }
-
-  .dark[data-accent="forest-green"] {
-    --primary: 172.7 39.4% 45%;
-    --ring: 172.7 39.4% 30%;
-    --primary-foreground: 144.9 80.4% 10%;
-  }
-
-  .dark[data-accent="golden-orange"] {
-    --primary: 172.7 39.4% 45%;
-    --ring: 172.7 39.4% 30%;
-    --primary-foreground: 144.9 80.4% 10%;
+  .dark[data-accent="green-teal"] {
+    --primary: 173 39% 45%;
+    --ring: 173 39% 35%;
+    --primary-foreground: 0 0% 98%;
   }
 }
 
@@ -175,29 +151,113 @@
 }
 
 /* Paramètres généraux - Densité d'affichage */
+:root {
+  --spacing-scale: 1;
+}
+
 [data-density="compact"] {
   --spacing-scale: 0.75;
 }
 
-[data-density="compact"] .p-4 {
-  padding: calc(1rem * 0.75);
-}
-
-[data-density="compact"] .gap-4 {
-  gap: calc(1rem * 0.75);
+[data-density="normal"] {
+  --spacing-scale: 1;
 }
 
 [data-density="comfortable"] {
   --spacing-scale: 1.25;
 }
 
-[data-density="comfortable"] .p-4 {
-  padding: calc(1rem * 1.25);
+/* Application de l'échelle d'espacement aux classes Tailwind courantes via CSS custom properties */
+[data-density] {
+  /* Espacements verticaux (space-y) */
+  --space-y-1: calc(0.25rem * var(--spacing-scale));
+  --space-y-2: calc(0.5rem * var(--spacing-scale));
+  --space-y-3: calc(0.75rem * var(--spacing-scale));
+  --space-y-4: calc(1rem * var(--spacing-scale));
+  --space-y-5: calc(1.25rem * var(--spacing-scale));
+  --space-y-6: calc(1.5rem * var(--spacing-scale));
+  --space-y-8: calc(2rem * var(--spacing-scale));
+  
+  /* Gaps */
+  --gap-1: calc(0.25rem * var(--spacing-scale));
+  --gap-2: calc(0.5rem * var(--spacing-scale));
+  --gap-3: calc(0.75rem * var(--spacing-scale));
+  --gap-4: calc(1rem * var(--spacing-scale));
+  --gap-5: calc(1.25rem * var(--spacing-scale));
+  --gap-6: calc(1.5rem * var(--spacing-scale));
+  --gap-8: calc(2rem * var(--spacing-scale));
+  
+  /* Padding */
+  --p-1: calc(0.25rem * var(--spacing-scale));
+  --p-2: calc(0.5rem * var(--spacing-scale));
+  --p-3: calc(0.75rem * var(--spacing-scale));
+  --p-4: calc(1rem * var(--spacing-scale));
+  --p-5: calc(1.25rem * var(--spacing-scale));
+  --p-6: calc(1.5rem * var(--spacing-scale));
+  --p-8: calc(2rem * var(--spacing-scale));
+  
+  /* Padding horizontal */
+  --px-1: calc(0.25rem * var(--spacing-scale));
+  --px-2: calc(0.5rem * var(--spacing-scale));
+  --px-3: calc(0.75rem * var(--spacing-scale));
+  --px-4: calc(1rem * var(--spacing-scale));
+  --px-5: calc(1.25rem * var(--spacing-scale));
+  --px-6: calc(1.5rem * var(--spacing-scale));
+  
+  /* Padding vertical */
+  --py-1: calc(0.25rem * var(--spacing-scale));
+  --py-2: calc(0.5rem * var(--spacing-scale));
+  --py-3: calc(0.75rem * var(--spacing-scale));
+  --py-4: calc(1rem * var(--spacing-scale));
+  --py-5: calc(1.25rem * var(--spacing-scale));
+  --py-6: calc(1.5rem * var(--spacing-scale));
+  
+  /* Marges */
+  --m-1: calc(0.25rem * var(--spacing-scale));
+  --m-2: calc(0.5rem * var(--spacing-scale));
+  --m-3: calc(0.75rem * var(--spacing-scale));
+  --m-4: calc(1rem * var(--spacing-scale));
+  --m-5: calc(1.25rem * var(--spacing-scale));
+  --m-6: calc(1.5rem * var(--spacing-scale));
 }
 
-[data-density="comfortable"] .gap-4 {
-  gap: calc(1rem * 1.25);
-}
+/* Application aux classes Tailwind les plus utilisées */
+[data-density] .gap-1 { gap: var(--gap-1) !important; }
+[data-density] .gap-2 { gap: var(--gap-2) !important; }
+[data-density] .gap-3 { gap: var(--gap-3) !important; }
+[data-density] .gap-4 { gap: var(--gap-4) !important; }
+[data-density] .gap-5 { gap: var(--gap-5) !important; }
+[data-density] .gap-6 { gap: var(--gap-6) !important; }
+[data-density] .gap-8 { gap: var(--gap-8) !important; }
+
+[data-density] .p-1 { padding: var(--p-1) !important; }
+[data-density] .p-2 { padding: var(--p-2) !important; }
+[data-density] .p-3 { padding: var(--p-3) !important; }
+[data-density] .p-4 { padding: var(--p-4) !important; }
+[data-density] .p-5 { padding: var(--p-5) !important; }
+[data-density] .p-6 { padding: var(--p-6) !important; }
+[data-density] .p-8 { padding: var(--p-8) !important; }
+
+[data-density] .px-1 { padding-left: var(--px-1) !important; padding-right: var(--px-1) !important; }
+[data-density] .px-2 { padding-left: var(--px-2) !important; padding-right: var(--px-2) !important; }
+[data-density] .px-3 { padding-left: var(--px-3) !important; padding-right: var(--px-3) !important; }
+[data-density] .px-4 { padding-left: var(--px-4) !important; padding-right: var(--px-4) !important; }
+[data-density] .px-5 { padding-left: var(--px-5) !important; padding-right: var(--px-5) !important; }
+[data-density] .px-6 { padding-left: var(--px-6) !important; padding-right: var(--px-6) !important; }
+
+[data-density] .py-1 { padding-top: var(--py-1) !important; padding-bottom: var(--py-1) !important; }
+[data-density] .py-2 { padding-top: var(--py-2) !important; padding-bottom: var(--py-2) !important; }
+[data-density] .py-3 { padding-top: var(--py-3) !important; padding-bottom: var(--py-3) !important; }
+[data-density] .py-4 { padding-top: var(--py-4) !important; padding-bottom: var(--py-4) !important; }
+[data-density] .py-5 { padding-top: var(--py-5) !important; padding-bottom: var(--py-5) !important; }
+[data-density] .py-6 { padding-top: var(--py-6) !important; padding-bottom: var(--py-6) !important; }
+
+[data-density] .m-1 { margin: var(--m-1) !important; }
+[data-density] .m-2 { margin: var(--m-2) !important; }
+[data-density] .m-3 { margin: var(--m-3) !important; }
+[data-density] .m-4 { margin: var(--m-4) !important; }
+[data-density] .m-5 { margin: var(--m-5) !important; }
+[data-density] .m-6 { margin: var(--m-6) !important; }
 
 /* Styles pour la scrollbar du Kanban */
 .kanban-scrollbar {

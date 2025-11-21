@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -41,6 +47,8 @@ import {
   Bell,
   BellOff,
   Info,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
@@ -53,7 +61,12 @@ import {
   deleteMessage,
   markAsRead,
   toggleReaction,
+  pinMessage,
+  unpinMessage,
 } from "@/actions/chat.actions";
+import { useRealtimePresence } from "@/hooks/use-realtime-presence";
+import { formatLastSeen, getPresenceLabel } from "@/lib/utils/presence";
+import { LinkPreview } from "./link-preview";
 
 interface Message {
   id: string;
@@ -63,6 +76,8 @@ interface Message {
   attachments?: any;
   createdAt: Date;
   reactions?: Record<string, string[]> | null;
+  pinnedAt?: Date | null;
+  pinnedById?: string | null;
   User: {
     id: string;
     name: string;
@@ -127,10 +142,15 @@ export function ChatMessageList({
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isMuted, setIsMuted] = useState(false);
   const [showConversationInfo, setShowConversationInfo] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const draftTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hook de présence en temps réel
+  const { isUserOnline, getLastSeenAt } = useRealtimePresence();
 
   // Fonction pour formater la taille du fichier
   const formatFileSize = (bytes: number): string => {
@@ -140,6 +160,59 @@ export function ChatMessageList({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
+
+  // Fonction pour extraire les URLs d'un texte
+  const extractUrls = (text: string): string[] => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.match(urlRegex) || [];
+  };
+
+  // Clé localStorage pour le brouillon
+  const getDraftKey = () => `chat-draft-${conversation.id}`;
+
+  // Sauvegarder le brouillon dans localStorage
+  const saveDraft = (text: string) => {
+    if (text.trim()) {
+      localStorage.setItem(getDraftKey(), text);
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2000); // Afficher l'indicateur pendant 2s
+    } else {
+      localStorage.removeItem(getDraftKey());
+      setDraftSaved(false);
+    }
+  };
+
+  // Restaurer le brouillon au chargement de la conversation
+  useEffect(() => {
+    const draft = localStorage.getItem(getDraftKey());
+    if (draft) {
+      setMessage(draft);
+    }
+
+    // Cleanup: sauvegarder le brouillon au démontage
+    return () => {
+      if (message.trim()) {
+        localStorage.setItem(getDraftKey(), message);
+      }
+    };
+  }, [conversation.id]); // Se déclenche quand la conversation change
+
+  // Sauvegarder automatiquement le brouillon toutes les 2 secondes pendant la frappe
+  useEffect(() => {
+    if (draftTimeoutRef.current) {
+      clearTimeout(draftTimeoutRef.current);
+    }
+
+    draftTimeoutRef.current = setTimeout(() => {
+      saveDraft(message);
+    }, 2000);
+
+    return () => {
+      if (draftTimeoutRef.current) {
+        clearTimeout(draftTimeoutRef.current);
+      }
+    };
+  }, [message]);
 
   // Auto-scroll vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
@@ -222,6 +295,9 @@ export function ChatMessageList({
         setMessage("");
         setReplyingTo(null);
         setAttachments([]);
+        // Supprimer le brouillon après l'envoi réussi
+        localStorage.removeItem(getDraftKey());
+        setDraftSaved(false);
         onUpdate();
         toast.success("Message envoyé");
       } else {
@@ -392,6 +468,11 @@ export function ChatMessageList({
     return format(date, "dd MMMM yyyy", { locale: fr });
   };
 
+  // Séparer les messages épinglés des messages normaux
+  const pinnedMessages = conversation.Message.filter((msg) => msg.pinnedAt).sort(
+    (a, b) => new Date(a.pinnedAt!).getTime() - new Date(b.pinnedAt!).getTime()
+  );
+
   // Filtrer les messages selon la recherche
   const filteredMessages = searchQuery
     ? conversation.Message.filter((msg) =>
@@ -401,6 +482,41 @@ export function ChatMessageList({
     : conversation.Message;
 
   const messageGroups = groupMessagesByDate(filteredMessages);
+
+  // Gérer l'épinglage d'un message
+  const handlePinMessage = async (messageId: string) => {
+    try {
+      const result = await pinMessage({
+        messageId,
+        conversationId: conversation.id,
+      });
+
+      if (result?.serverError) {
+        toast.error(result.serverError);
+      } else {
+        toast.success("Message épinglé");
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error("Erreur lors de l'épinglage du message");
+    }
+  };
+
+  // Gérer le désépinglage d'un message
+  const handleUnpinMessage = async (messageId: string) => {
+    try {
+      const result = await unpinMessage({ messageId });
+
+      if (result?.serverError) {
+        toast.error(result.serverError);
+      } else {
+        toast.success("Message désépinglé");
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error("Erreur lors du désépinglage du message");
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -419,25 +535,66 @@ export function ChatMessageList({
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           ) : (
-            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-              <AvatarImage
-                src={
-                  conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
-                    ?.User.avatar ||
-                  conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
-                    ?.User.image ||
-                  undefined
-                }
-              />
-              <AvatarFallback>
-                {getConversationTitle().substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                      <AvatarImage
+                        src={
+                          conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
+                            ?.User.avatar ||
+                          conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
+                            ?.User.image ||
+                          undefined
+                        }
+                      />
+                      <AvatarFallback>
+                        {getConversationTitle().substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Badge de présence */}
+                    {(() => {
+                      const otherUser = conversation.ConversationMember.find((m) => m.User.id !== currentUserId)?.User;
+                      if (!otherUser) return null;
+                      const online = isUserOnline(otherUser.id);
+                      return (
+                        <span
+                          className={cn(
+                            "absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background",
+                            online ? "bg-green-500" : "bg-gray-400 dark:bg-gray-600"
+                          )}
+                        />
+                      );
+                    })()}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-xs">
+                    {(() => {
+                      const otherUser = conversation.ConversationMember.find((m) => m.User.id !== currentUserId)?.User;
+                      if (!otherUser) return null;
+                      const online = isUserOnline(otherUser.id);
+                      const lastSeen = getLastSeenAt(otherUser.id);
+                      return online ? "En ligne" : `Hors ligne • ${formatLastSeen(lastSeen)}`;
+                    })()}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold text-sm sm:text-base truncate">{getConversationTitle()}</h2>
             <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {conversation.ConversationMember.length} membre{conversation.ConversationMember.length > 1 ? "s" : ""}
+              {conversation.type === "DIRECT" ? (
+                (() => {
+                  const otherUser = conversation.ConversationMember.find((m) => m.User.id !== currentUserId)?.User;
+                  if (!otherUser) return null;
+                  return getPresenceLabel(isUserOnline(otherUser.id) ? new Date() : getLastSeenAt(otherUser.id));
+                })()
+              ) : (
+                `${conversation.ConversationMember.length} membre${conversation.ConversationMember.length > 1 ? "s" : ""}`
+              )}
             </p>
           </div>
         </div>
@@ -496,12 +653,10 @@ export function ChatMessageList({
       {showSearch && (
         <div className="p-3 border-b bg-muted/50">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Rechercher dans les messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
             />
             {searchQuery && (
               <Button
@@ -522,6 +677,48 @@ export function ChatMessageList({
         </div>
       )}
 
+      {/* Pinned Messages Section */}
+      {pinnedMessages.length > 0 && (
+        <div className="border-b bg-amber-50 dark:bg-amber-950/20">
+          <div className="p-3 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-amber-900 dark:text-amber-100">
+              <Pin className="h-4 w-4" />
+              <span>Messages épinglés ({pinnedMessages.length}/3)</span>
+            </div>
+            <div className="space-y-2">
+              {pinnedMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className="bg-white dark:bg-gray-900 rounded-lg p-3 flex items-start gap-2 group hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <Pin className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                        {msg.User.name}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {format(new Date(msg.createdAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                      {msg.content}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    onClick={() => handleUnpinMessage(msg.id)}
+                  >
+                    <PinOff className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-2 sm:p-4" ref={scrollRef}>
@@ -648,6 +845,18 @@ export function ChatMessageList({
                                   })}
                                 </div>
                               )}
+
+                              {/* Link Previews */}
+                              {!msg.isDeleted && extractUrls(msg.content).length > 0 && (
+                                <div className="mt-2 space-y-2">
+                                  {extractUrls(msg.content).map((url, idx) => (
+                                    <LinkPreview
+                                      key={`${msg.id}-url-${idx}`}
+                                      url={url}
+                                    />
+                                  ))}
+                                </div>
+                              )}
                             </div>
 
                             {/* Actions */}
@@ -673,6 +882,21 @@ export function ChatMessageList({
                                       <Reply className="mr-2 h-4 w-4" />
                                       Répondre
                                     </DropdownMenuItem>
+                                    {msg.pinnedAt ? (
+                                      <DropdownMenuItem
+                                        onClick={() => handleUnpinMessage(msg.id)}
+                                      >
+                                        <PinOff className="mr-2 h-4 w-4" />
+                                        Désépingler
+                                      </DropdownMenuItem>
+                                    ) : (
+                                      <DropdownMenuItem
+                                        onClick={() => handlePinMessage(msg.id)}
+                                      >
+                                        <Pin className="mr-2 h-4 w-4" />
+                                        Épingler
+                                      </DropdownMenuItem>
+                                    )}
                                     {isCurrentUser && (
                                       <>
                                         <DropdownMenuItem
@@ -926,6 +1150,14 @@ export function ChatMessageList({
             )}
           </Button>
         </div>
+
+        {/* Indicateur de brouillon enregistré */}
+        {draftSaved && message.trim() && (
+          <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            <span>Brouillon enregistré</span>
+          </div>
+        )}
       </div>
 
       {/* Dialog d'informations de la conversation */}
