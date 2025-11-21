@@ -26,7 +26,7 @@ interface UseDesktopNotificationsOptions {
   enabled?: boolean;
 }
 
-const ICON_URL = '/assets/media/logo-icon.svg';
+const ICON_URL = '/assets/media/icône du logoicône logo de chronodil.svg';
 
 // Messages par défaut pour chaque type de notification
 const DEFAULT_MESSAGES: Record<DesktopNotificationType, { title: string; body: string }> = {

@@ -947,7 +947,7 @@ export default function SettingsPage() {
                               console.log('[Desktop Notifications] Creating notification...');
                               
                               // Utiliser une icône qui existe vraiment
-                              const iconUrl = "/assets/media/logo-icon.svg";
+                              const iconUrl = "/assets/media/icône du logoicône logo de chronodil.svg";
                               
                               const notification = new Notification("🔔 Test de notification", {
                                 body: "Ceci est une notification de test depuis Chronodil. Si vous voyez ce message, les notifications fonctionnent correctement !",

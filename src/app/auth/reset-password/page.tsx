@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
@@ -270,7 +271,7 @@ function ResetPasswordContent() {
         </svg>
       </div>
       {/* Citation inspirante */}
-      <div className="text-center mb-8 relative z-10 max-w-2xl mx-auto px-4">
+      <div className="text-center mb-8 relative z-10 max-w-4xl mx-auto px-4">
         <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-[5rem] flex items-center justify-center">
           <TypingText
             text={[
@@ -279,7 +280,7 @@ function ResetPasswordContent() {
               '"Un lien de réinitialisation vous sera envoyé."'
             ]}
             as="blockquote"
-            className="text-center font-serif tracking-wide"
+            className="text-center font-serif tracking-wide whitespace-nowrap inline-block"
             typingSpeed={60}
             pauseDuration={3500}
             deletingSpeed={30}
@@ -299,23 +300,26 @@ function ResetPasswordContent() {
       </div>
 
       <Card className="w-full max-w-md relative z-10">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
+        <CardHeader className="space-y-3 p-4 pb-3">
+          <div className="flex items-center justify-center">
             <Image
               src={logoSrc}
               alt="Chronodil Logo"
               width={180}
               height={60}
-              className="h-16 w-auto"
+              className="h-14 w-auto"
               priority
             />
           </div>
-          <CardDescription className="text-center font-heading">
-            Entrez votre adresse email pour recevoir un lien de réinitialisation
-          </CardDescription>
+          <div className="space-y-2">
+            <CardDescription className="text-center font-heading text-base">
+              Entrez votre adresse email pour recevoir un lien de réinitialisation
+            </CardDescription>
+            <Separator className="mt-1" />
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmitRequest(onRequestReset)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 pt-3">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -330,11 +334,12 @@ function ResetPasswordContent() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-3 p-4 pt-3">
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary"
+              className="w-full bg-primary hover:bg-primary/90 transition-colors"
               disabled={isLoading}
+              size="lg"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -343,12 +348,15 @@ function ResetPasswordContent() {
                 </span>
               ) : "Envoyer le lien de réinitialisation"}
             </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Vous vous souvenez de votre mot de passe ?{" "}
-              <Link href="/auth/login" className="text-primary hover:text-primary font-medium">
-                Se connecter
-              </Link>
-            </p>
+            <div className="w-full">
+              <Separator className="mb-3" />
+              <p className="text-sm text-center text-muted-foreground">
+                Vous vous souvenez de votre mot de passe ?{" "}
+                <Link href="/auth/login" className="text-primary hover:text-primary/80 font-medium transition-colors underline">
+                  Se connecter
+                </Link>
+              </p>
+            </div>
           </CardFooter>
         </form>
       </Card>
@@ -356,13 +364,7 @@ function ResetPasswordContent() {
       {/* Pied de page */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
         <span>&copy; 2025 by </span>
-        <Image
-          src="/assets/media/logo-odillon.png"
-          alt="ODILLON Logo"
-          width={250}
-          height={80}
-          className="h-12 w-auto"
-        />
+        <span className="font-semibold">ODILLON</span>
       </footer>
     </div>
   );

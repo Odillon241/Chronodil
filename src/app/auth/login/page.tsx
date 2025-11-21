@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
@@ -88,7 +89,7 @@ export default function LoginPage() {
         </svg>
       </div>
       {/* Citation inspirante avec effet de frappe */}
-      <div className="text-center mb-8 relative z-10 max-w-2xl mx-auto px-4">
+      <div className="text-center mb-8 relative z-10 max-w-4xl mx-auto px-4">
         <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-[5rem] flex items-center justify-center">
           <TypingText
             text={[
@@ -97,7 +98,7 @@ export default function LoginPage() {
               '"Optimisez votre productivité avec nous."'
             ]}
             as="blockquote"
-            className="text-center font-serif tracking-wide"
+            className="text-center font-serif tracking-wide whitespace-nowrap inline-block"
             typingSpeed={60}
             pauseDuration={3500}
             deletingSpeed={30}
@@ -117,23 +118,26 @@ export default function LoginPage() {
       </div>
 
       <Card className="w-full max-w-md relative z-10">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
+        <CardHeader className="space-y-3 p-4 pb-3">
+          <div className="flex items-center justify-center">
             <Image
               src={logoSrc}
               alt="Chronodil Logo"
               width={180}
               height={60}
-              className="h-16 w-auto"
+              className="h-14 w-auto"
               priority
             />
           </div>
-          <CardDescription className="text-center font-heading">
-            Connectez-vous à votre compte
-          </CardDescription>
+          <div className="space-y-2">
+            <CardDescription className="text-center font-heading text-base">
+              Connectez-vous à votre compte
+            </CardDescription>
+            <Separator className="mt-1" />
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 pt-3">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -148,31 +152,30 @@ export default function LoginPage() {
               )}
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Link
-                  href="/auth/reset-password"
-                  className="text-sm text-primary hover:text-primary"
-                >
-                  Mot de passe oublié ?
-                </Link>
-              </div>
+              <Label htmlFor="password">Mot de passe</Label>
               <Input
                 id="password"
                 type="password"
                 {...register("password")}
                 disabled={isLoading}
               />
+              <Link
+                href="/auth/reset-password"
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium underline"
+              >
+                Mot de passe oublié ?
+              </Link>
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-3 p-4 pt-3">
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary"
+              className="w-full bg-primary hover:bg-primary/90 transition-colors"
               disabled={isLoading}
+              size="lg"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -181,12 +184,15 @@ export default function LoginPage() {
                 </span>
               ) : "Se connecter"}
             </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Vous n'avez pas de compte ?{" "}
-              <Link href="/auth/register" className="text-primary hover:text-primary font-medium">
-                S'inscrire
-              </Link>
-            </p>
+            <div className="w-full">
+              <Separator className="mb-3" />
+              <p className="text-sm text-center text-muted-foreground">
+                Vous n'avez pas de compte ?{" "}
+                <Link href="/auth/register" className="text-primary hover:text-primary/80 font-medium transition-colors underline">
+                  S'inscrire
+                </Link>
+              </p>
+            </div>
           </CardFooter>
         </form>
       </Card>
@@ -194,13 +200,7 @@ export default function LoginPage() {
       {/* Pied de page avec copyright */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
         <span>&copy; 2025 by </span>
-        <Image
-          src="/assets/media/logo-odillon.png"
-          alt="ODILLON Logo"
-          width={250}
-          height={80}
-          className="h-12 w-auto"
-        />
+        <span className="font-semibold">ODILLON</span>
       </footer>
     </div>
   );

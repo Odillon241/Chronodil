@@ -152,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Link href="/dashboard">
                 <div className="flex aspect-square size-8 items-center justify-center">
                   <Image
-                    src="/assets/media/logo-icon.svg"
+                    src="/assets/media/icône du logoicône logo de chronodil.svg"
                     alt="Chronodil"
                     width={32}
                     height={32}

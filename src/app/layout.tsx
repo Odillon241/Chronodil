@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Chronodil - Gestion des temps",
   description: "Application de gestion des feuilles de temps",
   icons: {
-    icon: "/SVG/logo avec icône seulepapier_entête.svg",
+    icon: "/assets/media/icône du logoicône logo de chronodil.svg",
   },
 };
 

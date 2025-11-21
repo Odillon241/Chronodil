@@ -211,13 +211,7 @@ export default function RegisterPage() {
       {/* Pied de page avec copyright */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
         <span>&copy; 2025 by </span>
-        <Image
-          src="/assets/media/logo-odillon.png"
-          alt="ODILLON Logo"
-          width={250}
-          height={80}
-          className="h-12 w-auto"
-        />
+        <span className="font-semibold">ODILLON</span>
       </footer>
     </div>
   );
