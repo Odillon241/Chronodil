@@ -382,14 +382,13 @@ export default function NewHRTimesheetPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nouvelle feuille de temps RH</h1>
-          <p className="text-muted-foreground">Créez un nouveau timesheet hebdomadaire</p>
-        </div>
+      <Button variant="ghost" onClick={() => router.back()} className="w-fit">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Retour
+      </Button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Nouvelle feuille de temps RH</h1>
+        <p className="text-muted-foreground">Créez un nouveau timesheet hebdomadaire</p>
       </div>
 
       {/* Informations générales du timesheet */}
@@ -879,7 +878,6 @@ export default function NewHRTimesheetPage() {
           <div className="flex gap-2">
             <Button
               onClick={handleSubmitTimesheet(onSubmitFinal)}
-              className="bg-green-600 hover:bg-green-700"
               disabled={isLoading || activities.length === 0}
             >
               {isLoading ? (

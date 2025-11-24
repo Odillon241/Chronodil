@@ -93,6 +93,12 @@
     --primary-foreground: 0 0% 98%;
   }
 
+  [data-accent="dark"] {
+    --primary: 0 0% 17%;
+    --ring: 0 0% 17%;
+    --primary-foreground: 0 0% 98%;
+  }
+
   /* Thèmes de couleur d'accentuation - Dark Mode */
   .dark[data-accent="yellow-vibrant"] {
     --primary: 56 100% 55%;
@@ -110,6 +116,12 @@
     --primary: 173 39% 45%;
     --ring: 173 39% 35%;
     --primary-foreground: 0 0% 98%;
+  }
+
+  .dark[data-accent="dark"] {
+    --primary: 0 0% 85%;
+    --ring: 0 0% 75%;
+    --primary-foreground: 0 0% 10%;
   }
 }
 

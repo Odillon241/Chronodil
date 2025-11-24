@@ -89,7 +89,7 @@ export const revertHRTimesheetStatusSchema = z.object({
 // Schéma pour filtrer les timesheets
 export const hrTimesheetFilterSchema = z.object({
   userId: z.string().optional(),
-  status: z.enum(["DRAFT", "PENDING", "MANAGER_APPROVED", "APPROVED", "REJECTED"]).optional(),
+  status: z.enum(["all", "DRAFT", "PENDING", "MANAGER_APPROVED", "APPROVED", "REJECTED"]).optional(),
   weekStartDate: z.date().optional(),
   weekEndDate: z.date().optional(),
 });

@@ -39,7 +39,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -246,7 +245,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarSeparator />
             <SidebarMenu suppressHydrationWarning>
               {navSecondary.map((item) => {
                 const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
@@ -272,7 +270,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
-            <SidebarSeparator />
             <SidebarMenu suppressHydrationWarning>
               {filteredNavSettings.map((item) => {
                   const isActive = pathname === item.url || pathname.startsWith(item.url + "/");

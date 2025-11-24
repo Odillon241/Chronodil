@@ -17,7 +17,7 @@ const colorMigrationMap: Record<string, string> = {
   "sage-green": "green-anis",
 };
 
-const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal"];
+const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal", "dark"];
 
 // Fonction pour normaliser la couleur d'accentuation
 const normalizeAccentColor = (accentColor: string | null | undefined): string => {
@@ -43,16 +43,65 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const result = await getGeneralSettings({});
         if (result?.data) {
           applySettings(result.data);
-          setIsInitialized(true);
+        } else {
+          // Appliquer les valeurs par défaut si aucun paramètre n'est trouvé
+          applySettings({
+            accentColor: "green-anis",
+            viewDensity: "normal",
+            fontSize: 12,
+            highContrast: false,
+            reduceMotion: false,
+          });
         }
+        setIsInitialized(true);
       } catch (error) {
         console.error("Erreur lors du chargement des paramètres:", error);
+        // Appliquer les valeurs par défaut en cas d'erreur
+        applySettings({
+          accentColor: "green-anis",
+          viewDensity: "normal",
+          fontSize: 12,
+          highContrast: false,
+          reduceMotion: false,
+        });
         setIsInitialized(true);
       }
     };
 
     loadAndApplySettings();
   }, [session?.user, isInitialized]);
+
+  // Écouter les événements de mise à jour des paramètres
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const handleSettingsUpdate = async () => {
+      try {
+        const result = await getGeneralSettings({});
+        if (result?.data) {
+          applySettings(result.data);
+        } else {
+          // Appliquer les valeurs par défaut si aucun paramètre n'est trouvé
+          applySettings({
+            accentColor: "green-anis",
+            viewDensity: "normal",
+            fontSize: 12,
+            highContrast: false,
+            reduceMotion: false,
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors du rechargement des paramètres:", error);
+      }
+    };
+
+    // Écouter l'événement personnalisé de mise à jour des paramètres
+    window.addEventListener("settings-updated", handleSettingsUpdate);
+
+    return () => {
+      window.removeEventListener("settings-updated", handleSettingsUpdate);
+    };
+  }, [session?.user]);
 
   const applySettings = (settings: any) => {
     if (!settings) return;
@@ -79,13 +128,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     // Appliquer la densité d'affichage
     if (settings.viewDensity) {
       document.documentElement.setAttribute("data-density", settings.viewDensity);
+    } else {
+      // Valeur par défaut si non définie
+      document.documentElement.setAttribute("data-density", "normal");
     }
 
-    // Appliquer la couleur d'accentuation (normalisée)
-    if (settings.accentColor) {
-      const normalizedColor = normalizeAccentColor(settings.accentColor);
-      document.documentElement.setAttribute("data-accent", normalizedColor);
-    }
+    // Appliquer la couleur d'accentuation (normalisée) - TOUJOURS appliquer une valeur
+    const normalizedColor = normalizeAccentColor(settings.accentColor);
+    document.documentElement.setAttribute("data-accent", normalizedColor);
   };
 
   return <>{children}</>;

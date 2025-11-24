@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +30,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TitleWithCount } from "@/components/ui/title-with-count";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Edit, Trash2, UserPlus, Shield, Building2, Key } from "lucide-react";
+import { Plus, Edit, Trash2, UserPlus, Shield, Building2, Key, Users, X, Download } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
@@ -80,6 +81,8 @@ export default function UsersManagementPage() {
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [isClient, setIsClient] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const selectAllCheckboxRef = useRef<HTMLButtonElement>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -171,7 +174,7 @@ export default function UsersManagementPage() {
         password: form.password,
         role: form.role,
         departmentId: form.departmentId || undefined,
-        managerId: form.managerId || undefined,
+        managerId: form.managerId && form.managerId !== "all-validators" ? form.managerId : undefined,
       });
 
       if (result?.data) {
@@ -202,7 +205,7 @@ export default function UsersManagementPage() {
       password: "",
       role: user.role as any,
       departmentId: user.department?.id || "",
-      managerId: user.manager?.id || "",
+      managerId: user.manager?.id || "all-validators",
     });
     setIsDialogOpen(true);
   };
@@ -220,7 +223,7 @@ export default function UsersManagementPage() {
           email: form.email,
           role: form.role,
           departmentId: form.departmentId || undefined,
-          managerId: form.managerId || undefined,
+          managerId: form.managerId && form.managerId !== "all-validators" ? form.managerId : undefined,
         },
       });
 
@@ -282,6 +285,255 @@ export default function UsersManagementPage() {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  // Gestion de la sélection multiple
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    setSelectedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(userId);
+      } else {
+        newSet.delete(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(new Set(filteredUsers.map((u) => u.id)));
+    } else {
+      setSelectedUsers(new Set());
+    }
+  };
+
+  const isAllSelected = filteredUsers.length > 0 && selectedUsers.size === filteredUsers.length;
+  const isIndeterminate = selectedUsers.size > 0 && selectedUsers.size < filteredUsers.length;
+
+  // Gérer l'état indeterminate pour la checkbox "Tout sélectionner"
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      const element = selectAllCheckboxRef.current as unknown as HTMLInputElement;
+      if (element) {
+        element.indeterminate = isIndeterminate;
+      }
+    }
+  }, [isIndeterminate]);
+
+  // Actions en masse
+  const handleBulkDelete = async () => {
+    const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
+    const admins = selectedUsersList.filter((u) => u.role === "ADMIN");
+    
+    if (admins.length > 0) {
+      toast.error("Les comptes administrateurs ne peuvent pas être supprimés");
+      return;
+    }
+
+    const confirmed = await showConfirmation({
+      title: "Supprimer les utilisateurs",
+      description: `Êtes-vous sûr de vouloir supprimer ${selectedUsersList.length} utilisateur(s) ? Cette action est irréversible.`,
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const deletePromises = selectedUsersList.map((user) => deleteUser({ id: user.id }));
+          const results = await Promise.all(deletePromises);
+          
+          const successCount = results.filter((r) => r?.data).length;
+          if (successCount === selectedUsersList.length) {
+            toast.success(`${successCount} utilisateur(s) supprimé(s) avec succès`);
+            setSelectedUsers(new Set());
+            loadData();
+          } else {
+            toast.error(`Erreur lors de la suppression de certains utilisateurs`);
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la suppression");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleBulkRoleChange = async (newRole: "EMPLOYEE" | "MANAGER" | "HR" | "DIRECTEUR" | "ADMIN") => {
+    const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
+    
+    // Vérifier les permissions
+    const currentUser = session?.user as any;
+    if (newRole === "ADMIN" && currentUser?.role !== "ADMIN") {
+      toast.error("Seul un ADMIN peut créer ou modifier des comptes ADMIN");
+      return;
+    }
+
+    const confirmed = await showConfirmation({
+      title: "Changer le rôle",
+      description: `Voulez-vous changer le rôle de ${selectedUsersList.length} utilisateur(s) en "${getRoleLabel(newRole)}" ?`,
+      confirmText: "Confirmer",
+      cancelText: "Annuler",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const updatePromises = selectedUsersList.map((user) =>
+            updateUser({
+              id: user.id,
+              data: { role: newRole },
+            })
+          );
+          const results = await Promise.all(updatePromises);
+          
+          const successCount = results.filter((r) => r?.data).length;
+          if (successCount === selectedUsersList.length) {
+            toast.success(`${successCount} utilisateur(s) mis à jour avec succès`);
+            setSelectedUsers(new Set());
+            loadData();
+          } else {
+            const errors = results.filter((r) => !r?.data).map((r) => r?.serverError || "Erreur inconnue");
+            console.error("Erreurs de mise à jour:", errors);
+            toast.error(`Erreur lors de la mise à jour de certains utilisateurs`);
+          }
+        } catch (error) {
+          console.error("Erreur dans handleBulkRoleChange:", error);
+          toast.error(`Erreur lors de la mise à jour: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleBulkDepartmentChange = async (departmentId: string) => {
+    const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
+
+    const departmentLabel = departmentId === "no-department"
+      ? "Aucun département"
+      : departments.find(d => d.id === departmentId)?.name || "ce département";
+
+    const confirmed = await showConfirmation({
+      title: "Assigner un département",
+      description: `Voulez-vous assigner "${departmentLabel}" à ${selectedUsersList.length} utilisateur(s) ?`,
+      confirmText: "Confirmer",
+      cancelText: "Annuler",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const updatePromises = selectedUsersList.map((user) =>
+            updateUser({
+              id: user.id,
+              data: { departmentId: departmentId === "no-department" ? null : departmentId },
+            })
+          );
+          const results = await Promise.all(updatePromises);
+          
+          const successCount = results.filter((r) => r?.data).length;
+          if (successCount === selectedUsersList.length) {
+            toast.success(`${successCount} utilisateur(s) mis à jour avec succès`);
+            setSelectedUsers(new Set());
+            loadData();
+          } else {
+            const errors = results.filter((r) => !r?.data).map((r) => r?.serverError || "Erreur inconnue");
+            console.error("Erreurs de mise à jour:", errors);
+            toast.error(`Erreur lors de la mise à jour de certains utilisateurs`);
+          }
+        } catch (error) {
+          console.error("Erreur dans handleBulkDepartmentChange:", error);
+          toast.error(`Erreur lors de la mise à jour: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleBulkManagerChange = async (managerId: string) => {
+    const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
+
+    const managerLabel = managerId === "all-validators" 
+      ? "Tous les validateurs" 
+      : availableManagers.find(m => m.id === managerId)?.name || "ce manager";
+
+    const confirmed = await showConfirmation({
+      title: "Assigner un manager",
+      description: `Voulez-vous assigner "${managerLabel}" à ${selectedUsersList.length} utilisateur(s) ?`,
+      confirmText: "Confirmer",
+      cancelText: "Annuler",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const updatePromises = selectedUsersList.map((user) =>
+            updateUser({
+              id: user.id,
+              data: { 
+                managerId: managerId === "all-validators" || managerId === "no-manager" ? null : managerId 
+              },
+            })
+          );
+          const results = await Promise.all(updatePromises);
+          
+          const successCount = results.filter((r) => r?.data).length;
+          if (successCount === selectedUsersList.length) {
+            toast.success(`${successCount} utilisateur(s) mis à jour avec succès`);
+            setSelectedUsers(new Set());
+            loadData();
+          } else {
+            const errors = results.filter((r) => !r?.data).map((r) => r?.serverError || "Erreur inconnue");
+            console.error("Erreurs de mise à jour:", errors);
+            toast.error(`Erreur lors de la mise à jour de certains utilisateurs`);
+          }
+        } catch (error) {
+          console.error("Erreur dans handleBulkManagerChange:", error);
+          toast.error(`Erreur lors de la mise à jour: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const handleBulkResetPassword = async () => {
+    const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
+
+    const confirmed = await showConfirmation({
+      title: "Réinitialiser les mots de passe",
+      description: `Voulez-vous réinitialiser les mots de passe de ${selectedUsersList.length} utilisateur(s) ? Un nouveau mot de passe temporaire sera généré pour chacun.`,
+      confirmText: "Confirmer",
+      cancelText: "Annuler",
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          // Générer un mot de passe temporaire commun
+          const tempPassword = `Temp${Math.random().toString(36).slice(-8)}!`;
+          
+          const resetPromises = selectedUsersList.map((user) =>
+            resetUserPassword({
+              id: user.id,
+              newPassword: tempPassword,
+            })
+          );
+          const results = await Promise.all(resetPromises);
+          
+          const successCount = results.filter((r) => r?.data).length;
+          if (successCount === selectedUsersList.length) {
+            toast.success(`${successCount} mot(s) de passe réinitialisé(s)`, {
+              description: `Mot de passe temporaire : ${tempPassword}`,
+              duration: 10000,
+            });
+            setSelectedUsers(new Set());
+            loadData();
+          } else {
+            toast.error(`Erreur lors de la réinitialisation de certains mots de passe`);
+          }
+        } catch (error) {
+          toast.error("Erreur lors de la réinitialisation");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
   };
 
   // Get available managers (managers, HR, directeurs - exclude ADMIN as it's technical)
@@ -496,12 +748,14 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="manager">Manager</Label>
-                  <Select value={form.managerId || undefined} onValueChange={(val) => setForm({ ...form, managerId: val === "no-manager" ? "" : val })}>
+                  <Select value={form.managerId || "all-validators"} onValueChange={(val) => setForm({ ...form, managerId: val === "all-validators" ? "" : val })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="no-manager">Aucun</SelectItem>
+                      <SelectItem value="all-validators">
+                        <span className="font-medium">Tous les validateurs</span>
+                      </SelectItem>
                       {availableManagers.map((manager) => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.name || manager.email}
@@ -509,6 +763,9 @@ export default function UsersManagementPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Tous les validateurs :</strong> Tous les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN pourront voir et valider les feuilles de temps de cet utilisateur.
+                  </p>
                 </div>
               </div>
 
@@ -587,27 +844,170 @@ export default function UsersManagementPage() {
 
       <Separator />
 
-      {/* Search bar */}
-      <div className="relative max-w-md">
-        <Input
-          placeholder="Rechercher un utilisateur..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      {/* Barre d'actions en masse */}
+      {selectedUsers.size > 0 && (
+        <Card className="border-primary/20 bg-primary/5 shadow-sm">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-4">
+              {/* En-tête avec compteur et fermeture */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-base">
+                      {selectedUsers.size} utilisateur(s) sélectionné(s)
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Choisissez une action à appliquer à tous les utilisateurs sélectionnés
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedUsers(new Set())}
+                  className="h-8 w-8 p-0"
+                  title="Désélectionner tout"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <Separator />
+
+              {/* Actions groupées par catégorie */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Groupe 1: Modifications d'organisation */}
+                <div className="space-y-3">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Organisation
+                  </Label>
+                  <div className="space-y-2">
+                    <Select
+                      value=""
+                      onValueChange={(value) => {
+                        if (value === "EMPLOYEE" || value === "MANAGER" || value === "HR" || value === "DIRECTEUR" || value === "ADMIN") {
+                          handleBulkRoleChange(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Changer le rôle..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EMPLOYEE">Employé</SelectItem>
+                        <SelectItem value="MANAGER">Manager</SelectItem>
+                        <SelectItem value="HR">RH</SelectItem>
+                        <SelectItem value="DIRECTEUR">Directeur</SelectItem>
+                        {((session?.user as any)?.role === "ADMIN") && (
+                          <SelectItem value="ADMIN">Admin Technique</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select
+                      value=""
+                      onValueChange={(value) => {
+                        if (value) {
+                          handleBulkDepartmentChange(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Assigner un département..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no-department">Aucun département</SelectItem>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept.id} value={dept.id}>
+                            {dept.name} ({dept.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value=""
+                      onValueChange={(value) => {
+                        if (value) {
+                          handleBulkManagerChange(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Assigner un manager..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all-validators">
+                          <span className="font-medium">Tous les validateurs</span>
+                        </SelectItem>
+                        {availableManagers.map((manager) => (
+                          <SelectItem key={manager.id} value={manager.id}>
+                            {manager.name || manager.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Groupe 2: Actions de sécurité et suppression */}
+                <div className="space-y-3">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Sécurité & Actions
+                  </Label>
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBulkResetPassword}
+                      disabled={isLoading}
+                      className="w-full justify-start"
+                    >
+                      <Key className="h-4 w-4 mr-2" />
+                      Réinitialiser les mots de passe
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                      disabled={isLoading}
+                      className="w-full justify-start"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Supprimer les utilisateurs
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Users table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">
+      <div>
+        <div className="mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold">
             <TitleWithCount title="Utilisateurs" count={filteredUsers.length} />
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Liste de tous les utilisateurs de l'application
-          </CardDescription>
-          <Separator className="mt-4" />
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div>
+          {/* Search bar */}
+          <div className="relative max-w-md mb-4">
+            <Input
+              placeholder="Rechercher un utilisateur..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <Spinner className="size-6" />
@@ -623,6 +1023,17 @@ export default function UsersManagementPage() {
                 <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        ref={selectAllCheckboxRef}
+                        checked={isAllSelected && !isIndeterminate}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Sélectionner tout"
+                        className={isIndeterminate ? "data-[state=checked]:bg-primary/50" : ""}
+                      />
+                    </div>
+                  </TableHead>
                   <TableHead>Utilisateur</TableHead>
                   <TableHead>Rôle</TableHead>
                   <TableHead>Département</TableHead>
@@ -633,7 +1044,19 @@ export default function UsersManagementPage() {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
+                  <TableRow 
+                    key={user.id}
+                    className={selectedUsers.has(user.id) ? "bg-muted/50" : ""}
+                  >
+                    <TableCell>
+                      <div className="flex items-center justify-center">
+                        <Checkbox
+                          checked={selectedUsers.has(user.id)}
+                          onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
+                          aria-label={`Sélectionner ${user.name || user.email}`}
+                        />
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
@@ -723,8 +1146,18 @@ export default function UsersManagementPage() {
               {/* Mobile card view */}
               <div className="md:hidden space-y-3">
                 {filteredUsers.map((user) => (
-                  <div key={user.id} className="border rounded-lg p-3 space-y-3">
+                  <div 
+                    key={user.id} 
+                    className={`border rounded-lg p-3 space-y-3 ${selectedUsers.has(user.id) ? "bg-muted/50 border-primary/20" : ""}`}
+                  >
                     <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center pt-1">
+                        <Checkbox
+                          checked={selectedUsers.has(user.id)}
+                          onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
+                          aria-label={`Sélectionner ${user.name || user.email}`}
+                        />
+                      </div>
                       <Avatar className="h-12 w-12 flex-shrink-0">
                         <AvatarImage
                           src={
@@ -806,8 +1239,8 @@ export default function UsersManagementPage() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       <ConfirmationDialog />
     </div>
   );

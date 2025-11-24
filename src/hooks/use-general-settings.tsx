@@ -33,7 +33,7 @@ const colorMigrationMap: Record<string, string> = {
   "sage-green": "green-anis",
 };
 
-const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal"];
+const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal", "dark"];
 
 // Fonction pour normaliser la couleur d'accentuation
 const normalizeAccentColor = (accentColor: string | null | undefined): string => {
@@ -72,7 +72,9 @@ export function useGeneralSettings() {
 
   const applySettings = (settings: GeneralSettings) => {
     // Appliquer la taille de police
-    document.documentElement.style.fontSize = `${settings.fontSize}px`;
+    if (settings.fontSize) {
+      document.documentElement.style.fontSize = `${settings.fontSize}px`;
+    }
 
     // Appliquer le contraste élevé
     if (settings.highContrast) {
@@ -89,9 +91,13 @@ export function useGeneralSettings() {
     }
 
     // Appliquer la densité d'affichage
-    document.documentElement.setAttribute("data-density", settings.viewDensity);
+    if (settings.viewDensity) {
+      document.documentElement.setAttribute("data-density", settings.viewDensity);
+    } else {
+      document.documentElement.setAttribute("data-density", "normal");
+    }
 
-    // Appliquer la couleur d'accentuation (normalisée)
+    // Appliquer la couleur d'accentuation (normalisée) - TOUJOURS appliquer une valeur
     const normalizedColor = normalizeAccentColor(settings.accentColor);
     document.documentElement.setAttribute("data-accent", normalizedColor);
   };

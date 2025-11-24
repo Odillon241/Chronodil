@@ -9,7 +9,7 @@ import { z } from "zod";
 // Schéma de validation pour les paramètres généraux Phase 1
 const generalSettingsSchema = z.object({
   // Apparence
-  accentColor: z.enum(["yellow-vibrant", "green-anis", "green-teal"]).optional(),
+  accentColor: z.enum(["yellow-vibrant", "green-anis", "green-teal", "dark"]).optional(),
   viewDensity: z.enum(["compact", "normal", "comfortable"]).optional(),
   fontSize: z.number().int().min(12).max(24).optional(),
 

@@ -449,6 +449,7 @@ export const getMyTasks = actionClient
         },
         User_Task_createdByToUser: {
           select: {
+            id: true,
             name: true,
             email: true,
             avatar: true,
@@ -525,6 +526,7 @@ export const getAllTasks = actionClient
         },
         User_Task_createdByToUser: {
           select: {
+            id: true,
             name: true,
             email: true,
             avatar: true,
@@ -925,5 +927,177 @@ export const getUserTasksForHRTimesheet = authActionClient
         }`
       );
     }
+  });
+
+/**
+ * Récupérer les tâches d'un projet triées par date d'échéance
+ * Utilise l'index Task_projectId_dueDate_idx pour des performances optimales
+ */
+export const getProjectTasksByDueDate = authActionClient
+  .schema(z.object({
+    projectId: z.string(),
+    startDate: z.date().optional(),
+    endDate: z.date().optional(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { projectId, startDate, endDate } = parsedInput;
+
+    // Vérifier que l'utilisateur est membre du projet ou admin
+    const session = await getSession(await headers());
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    const member = await prisma.projectMember.findFirst({
+      where: {
+        projectId,
+        userId: ctx.userId,
+      },
+    });
+
+    if (!member && getUserRole(session) !== "ADMIN") {
+      throw new Error("Vous n'êtes pas membre de ce projet");
+    }
+
+    // Construire le filtre de dates
+    const dateFilter: any = {};
+    if (startDate || endDate) {
+      dateFilter.dueDate = {};
+      if (startDate) dateFilter.dueDate.gte = startDate;
+      if (endDate) dateFilter.dueDate.lte = endDate;
+    } else {
+      // Si pas de filtre, récupérer uniquement les tâches avec une date d'échéance
+      dateFilter.dueDate = { not: null };
+    }
+
+    // Cette requête utilise l'index composite Task_projectId_dueDate_idx
+    const tasks = await prisma.task.findMany({
+      where: {
+        projectId,
+        isActive: true,
+        ...dateFilter,
+      },
+      include: {
+        User_Task_createdByToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        TaskMember: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            TaskComment: true,
+            TaskActivity: true,
+          },
+        },
+      },
+      orderBy: [
+        { dueDate: "asc" },
+        { priority: "desc" },
+      ],
+    });
+
+    return { tasks, totalTasks: tasks.length };
+  });
+
+/**
+ * Récupérer les tâches d'une feuille de temps RH filtrées par statut
+ * Utilise l'index Task_hrTimesheetId_status_idx pour des performances optimales
+ */
+export const getHRTimesheetTasksByStatus = authActionClient
+  .schema(z.object({
+    hrTimesheetId: z.string(),
+    status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]).optional(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { hrTimesheetId, status } = parsedInput;
+
+    // Vérifier que la feuille de temps existe et appartient à l'utilisateur
+    const timesheet = await prisma.hRTimesheet.findFirst({
+      where: {
+        id: hrTimesheetId,
+        OR: [
+          { userId: ctx.userId },
+          // Permettre aux managers/directeurs de voir les feuilles de temps qu'ils supervisent
+          { managerSignedById: ctx.userId },
+          { odillonSignedById: ctx.userId },
+        ],
+      },
+    });
+
+    if (!timesheet) {
+      throw new Error("Feuille de temps non trouvée ou accès non autorisé");
+    }
+
+    // Construire le filtre de statut
+    const statusFilter: any = {};
+    if (status) {
+      statusFilter.status = status;
+    }
+
+    // Cette requête utilise l'index composite Task_hrTimesheetId_status_idx
+    const tasks = await prisma.task.findMany({
+      where: {
+        hrTimesheetId,
+        ...statusFilter,
+      },
+      include: {
+        Project: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            color: true,
+          },
+        },
+        User_Task_createdByToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        HRActivity: {
+          select: {
+            id: true,
+            activityName: true,
+            activityType: true,
+            periodicity: true,
+            totalHours: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: [
+        { status: "asc" },
+        { priority: "desc" },
+        { dueDate: "asc" },
+      ],
+    });
+
+    // Calculer les statistiques par statut
+    const statusStats = {
+      TODO: tasks.filter(t => t.status === "TODO").length,
+      IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS").length,
+      REVIEW: tasks.filter(t => t.status === "REVIEW").length,
+      DONE: tasks.filter(t => t.status === "DONE").length,
+      BLOCKED: tasks.filter(t => t.status === "BLOCKED").length,
+    };
+
+    return { tasks, totalTasks: tasks.length, statusStats };
   });
 

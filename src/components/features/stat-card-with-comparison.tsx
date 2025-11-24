@@ -48,13 +48,13 @@ export function StatCardWithComparison({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
         <CardTitle className="text-xs sm:text-sm font-medium">{title}</CardTitle>
         <div className={`${bgColor} p-1.5 sm:p-2 rounded-md`}>
           <Icon className={`h-3 w-3 sm:h-4 sm:w-4 ${color}`} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6 pb-3 pt-0">
         <div className="text-xl sm:text-2xl font-bold">{value}</div>
         <div className="flex items-center gap-2 mt-1">
           <p className="text-[10px] sm:text-xs text-muted-foreground">{description}</p>

@@ -946,3 +946,121 @@ export const unpinMessage = authActionClient
     return { success: true };
   });
 
+/**
+ * Récupérer tous les messages épinglés d'une conversation
+ * Utilise l'index Message_conversationId_pinnedAt_idx pour des performances optimales
+ */
+export const getPinnedMessages = authActionClient
+  .schema(z.object({ conversationId: z.string() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Vérifier que l'utilisateur est membre de la conversation
+    const membership = await prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId,
+      },
+    });
+
+    if (!membership) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Récupérer les messages épinglés triés par date d'épinglage (les plus récents en premier)
+    // Cette requête utilise l'index composite Message_conversationId_pinnedAt_idx
+    const pinnedMessages = await prisma.message.findMany({
+      where: {
+        conversationId,
+        pinnedAt: { not: null },
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            image: true,
+          },
+        },
+        Message: {
+          select: {
+            id: true,
+            content: true,
+            senderId: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        pinnedAt: "desc",
+      },
+    });
+
+    return { pinnedMessages };
+  });
+
+/**
+ * Récupérer toutes les réponses à un message
+ * Utilise l'index Message_replyToId_idx pour des performances optimales
+ */
+export const getMessageReplies = authActionClient
+  .schema(z.object({ messageId: z.string() }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { messageId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Récupérer le message parent pour vérifier l'accès
+    const parentMessage = await prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        Conversation: {
+          include: {
+            ConversationMember: {
+              where: { userId },
+            },
+          },
+        },
+      },
+    });
+
+    if (!parentMessage) {
+      throw new Error("Message introuvable");
+    }
+
+    // Vérifier que l'utilisateur est membre de la conversation
+    if (parentMessage.Conversation.ConversationMember.length === 0) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Récupérer toutes les réponses au message
+    // Cette requête utilise l'index Message_replyToId_idx
+    const replies = await prisma.message.findMany({
+      where: {
+        replyToId: messageId,
+        isDeleted: false,
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    return { replies, totalReplies: replies.length };
+  });
+

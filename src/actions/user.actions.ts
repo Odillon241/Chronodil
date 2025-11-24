@@ -118,6 +118,7 @@ export const getUsers = authActionClient
         _count: {
           select: {
             other_User: true,
+            HRTimesheet_HRTimesheet_userIdToUser: true,
           },
         },
       },
@@ -126,7 +127,28 @@ export const getUsers = authActionClient
       },
     });
 
-    return users;
+    // Mapper les données pour correspondre à l'interface attendue
+    const mappedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      department: user.Department ? {
+        id: user.Department.id,
+        name: user.Department.name,
+      } : null,
+      manager: user.User ? {
+        id: user.User.id,
+        name: user.User.name,
+      } : null,
+      _count: {
+        timesheetEntries: user._count.HRTimesheet_HRTimesheet_userIdToUser || 0,
+        subordinates: user._count.other_User || 0,
+      },
+    }));
+
+    return mappedUsers;
   });
 
 // Créer un utilisateur (Admin/HR/DIRECTEUR)
@@ -231,8 +253,8 @@ export const updateUser = authActionClient
         name: z.string().min(2).optional(),
         email: z.string().email().optional(),
         role: z.enum(["EMPLOYEE", "MANAGER", "HR", "DIRECTEUR", "ADMIN"]).optional(),
-        departmentId: z.string().optional(),
-        managerId: z.string().optional(),
+        departmentId: z.string().nullable().optional(),
+        managerId: z.string().nullable().optional(),
       }),
     })
   )
@@ -262,9 +284,26 @@ export const updateUser = authActionClient
       }
     }
 
+    // Construire l'objet de données en gérant explicitement null
+    const updateData: any = {};
+    
+    if (parsedInput.data.name !== undefined) updateData.name = parsedInput.data.name;
+    if (parsedInput.data.email !== undefined) updateData.email = parsedInput.data.email;
+    if (parsedInput.data.role !== undefined) updateData.role = parsedInput.data.role;
+    
+    // Gérer departmentId : null signifie "aucun département"
+    if (parsedInput.data.departmentId !== undefined) {
+      updateData.departmentId = parsedInput.data.departmentId === null ? null : parsedInput.data.departmentId;
+    }
+    
+    // Gérer managerId : null signifie "tous les validateurs"
+    if (parsedInput.data.managerId !== undefined) {
+      updateData.managerId = parsedInput.data.managerId === null ? null : parsedInput.data.managerId;
+    }
+
     const user = await prisma.user.update({
       where: { id: parsedInput.id },
-      data: parsedInput.data,
+      data: updateData,
     });
 
     // Créer un log d'audit

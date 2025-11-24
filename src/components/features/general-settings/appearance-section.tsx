@@ -26,6 +26,7 @@ const accentColors = [
   { value: "yellow-vibrant", label: "Jaune vif", class: "bg-[#F8E800]" },
   { value: "green-anis", label: "Vert anis", class: "bg-[#95C11F]" },
   { value: "green-teal", label: "Vert sarcelle", class: "bg-[#39837A]" },
+  { value: "dark", label: "Sombre", class: "bg-[#2C2C2C]" },
 ];
 
 // Mapping pour migrer les anciennes couleurs vers les nouvelles
@@ -41,7 +42,7 @@ const colorMigrationMap: Record<string, string> = {
   "sage-green": "green-anis",
 };
 
-const validAccentColors = accentColors.map((c) => c.value);
+const validAccentColors = accentColors.map((c) => c.value); // ["yellow-vibrant", "green-anis", "green-teal", "dark"]
 
 export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSectionProps) {
   const t = useTranslations("settings.appearance");
@@ -71,8 +72,12 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
 
   const handleAccentColorChange = (colorName: string) => {
     console.log("🎨 Changement couleur d'accentuation:", colorName);
+    // Appliquer immédiatement pour un feedback visuel
     document.documentElement.setAttribute("data-accent", colorName);
+    // Sauvegarder en base de données
     onUpdate("accentColor", colorName);
+    // Déclencher un événement pour synchroniser avec SettingsProvider
+    window.dispatchEvent(new CustomEvent("settings-updated"));
   };
 
   return (

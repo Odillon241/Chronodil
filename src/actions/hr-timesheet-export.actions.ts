@@ -48,12 +48,15 @@ export const exportHRTimesheetToExcel = authActionClient
       throw new Error("Utilisateur non trouvé");
     }
 
-    // Seul le propriétaire, son manager, HR ou Admin peuvent exporter
+    // Nouvelle logique : Les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN
+    // peuvent exporter toutes les feuilles de temps, sans avoir besoin qu'un manager
+    // particulier soit assigné à l'utilisateur
     const canExport =
       timesheet.userId === userId ||
       user.role === "ADMIN" ||
       user.role === "HR" ||
-      (user.role === "MANAGER" && timesheet.User_HRTimesheet_userIdToUser.managerId === userId);
+      user.role === "MANAGER" ||
+      user.role === "DIRECTEUR";
 
     if (!canExport) {
       throw new Error("Vous n'êtes pas autorisé à exporter ce timesheet");

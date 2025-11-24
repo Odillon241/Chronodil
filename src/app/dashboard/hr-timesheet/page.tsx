@@ -53,6 +53,7 @@ import {
   submitHRTimesheet,
   cancelHRTimesheetSubmission,
   getHRTimesheetsForApproval,
+  getHRTimesheetsValidatedByMe,
   updateHRTimesheetStatus,
   getHRTimesheet,
   revertHRTimesheetStatus,
@@ -61,12 +62,7 @@ import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions"
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { useRealtimeHRTimesheets } from "@/hooks/use-realtime-hr-timesheets";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
-import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
+import { StatusTabs, type StatusTabOption } from "@/components/ui/status-tabs";
 import {
   CalendarBody,
   CalendarDate,
@@ -171,9 +167,10 @@ export default function HRTimesheetPage() {
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [myTimesheets, setMyTimesheets] = useState<HRTimesheet[]>([]);
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
+  const [validatedTimesheets, setValidatedTimesheets] = useState<HRTimesheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentView, setCurrentView] = useState<string>("table");
-  const [dataView, setDataView] = useState<"my" | "pending">("my");
+  const [dataView, setDataView] = useState<"my" | "pending" | "validated">("my");
   const [selectedTimesheet, setSelectedTimesheet] = useState<HRTimesheet | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewTimesheet, setPreviewTimesheet] = useState<any>(null);
@@ -257,7 +254,13 @@ export default function HRTimesheetPage() {
         status: selectedStatus?.id || "all",
       });
     }
-    loadMyTimesheets();
+    
+    // Recharger selon la vue actuelle
+    if (dataView === "my") {
+      loadMyTimesheets();
+    } else if (dataView === "validated") {
+      loadValidatedTimesheets();
+    }
   };
 
   const resetFilters = () => {
@@ -280,7 +283,13 @@ export default function HRTimesheetPage() {
       startDate: undefined,
       endDate: undefined,
     });
-    loadMyTimesheets();
+    
+    // Recharger selon la vue actuelle
+    if (dataView === "my") {
+      loadMyTimesheets();
+    } else if (dataView === "validated") {
+      loadValidatedTimesheets();
+    }
   };
 
   const loadMyTimesheets = useCallback(async () => {
@@ -319,6 +328,26 @@ export default function HRTimesheetPage() {
     }
   }, []);
 
+  const loadValidatedTimesheets = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const result = await getHRTimesheetsValidatedByMe({
+        ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
+        ...(filters.startDate && { weekStartDate: filters.startDate }),
+        ...(filters.endDate && { weekEndDate: filters.endDate }),
+      });
+
+      if (result?.data) {
+        setValidatedTimesheets(result.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement:", error);
+      toast.error("Erreur lors du chargement des feuilles validées");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters]);
+
   // Rediriger vers "my" si l'utilisateur est sur "pending" mais n'a pas les droits
   useEffect(() => {
     if (dataView === "pending" && !canViewPendingTab) {
@@ -331,32 +360,42 @@ export default function HRTimesheetPage() {
       loadMyTimesheets();
     } else if (dataView === "pending" && canViewPendingTab) {
       loadPendingTimesheets();
+    } else if (dataView === "validated" && canViewPendingTab) {
+      loadValidatedTimesheets();
     }
-  }, [dataView, loadMyTimesheets, loadPendingTimesheets, canViewPendingTab]);
+  }, [dataView, loadMyTimesheets, loadPendingTimesheets, loadValidatedTimesheets, canViewPendingTab]);
 
-  // Filtrer les liens de navigation selon les droits de l'utilisateur
-  const navigationLinks = useMemo<Navbar18NavItem[]>(() => {
-    const links: Navbar18NavItem[] = [
+  // Options pour les onglets de statut selon les droits de l'utilisateur
+  const statusTabOptions = useMemo<StatusTabOption[]>(() => {
+    const options: StatusTabOption[] = [
       {
-        href: "#my",
+        id: "my",
         label: "Mes timesheets",
-        active: dataView === "my",
+        value: "my",
+        count: myTimesheets.length,
       },
     ];
 
     // Ajouter l'onglet "À valider" uniquement si l'utilisateur a les droits
     if (canViewPendingTab) {
-      links.push({
-        href: "#pending",
+      options.push({
+        id: "pending",
         label: "À valider",
-        active: dataView === "pending",
-        badge: pendingTimesheets.length > 0 ? pendingTimesheets.length : undefined,
-        badgeVariant: "destructive",
+        value: "pending",
+        count: pendingTimesheets.length,
+      });
+      
+      // Ajouter l'onglet "Validées par moi" pour les validateurs
+      options.push({
+        id: "validated",
+        label: "Validées par moi",
+        value: "validated",
+        count: validatedTimesheets.length,
       });
     }
 
-    return links;
-  }, [canViewPendingTab, dataView, pendingTimesheets.length]);
+    return options;
+  }, [canViewPendingTab, myTimesheets.length, pendingTimesheets.length, validatedTimesheets.length]);
 
   // Real-time updates pour HR Timesheets
   useRealtimeHRTimesheets({
@@ -364,8 +403,10 @@ export default function HRTimesheetPage() {
       // Rafraîchir les données selon la vue actuelle
       if (dataView === "my") {
         loadMyTimesheets();
-      } else {
+      } else if (dataView === "pending") {
         loadPendingTimesheets();
+      } else if (dataView === "validated") {
+        loadValidatedTimesheets();
       }
     },
     userId: session?.user?.id,
@@ -470,9 +511,12 @@ export default function HRTimesheetPage() {
         setRevertTimesheetId(null);
         setRevertTargetStatus(null);
         setRevertReason("");
-        loadMyTimesheets();
-        if (dataView === "pending") {
+        if (dataView === "my") {
+          loadMyTimesheets();
+        } else if (dataView === "pending") {
           loadPendingTimesheets();
+        } else if (dataView === "validated") {
+          loadValidatedTimesheets();
         }
       } else {
         toast.error(result?.serverError || "Erreur lors de la rétrogradation");
@@ -503,7 +547,11 @@ export default function HRTimesheetPage() {
   };
 
   // Conversion des timesheets en features pour les vues roadmap
-  const baseTimesheets = dataView === "my" ? myTimesheets : pendingTimesheets;
+  const baseTimesheets = dataView === "my" 
+    ? myTimesheets 
+    : dataView === "pending" 
+    ? pendingTimesheets 
+    : validatedTimesheets;
   
   // Filtrage par recherche
   const currentTimesheets = useMemo(() => {
@@ -669,7 +717,7 @@ export default function HRTimesheetPage() {
     [allFeatures]
   );
 
-  const TimesheetCard = ({ timesheet, isPending = false }: { timesheet: HRTimesheet, isPending?: boolean }) => (
+  const TimesheetCard = ({ timesheet, isPending = false, isValidated = false }: { timesheet: HRTimesheet, isPending?: boolean, isValidated?: boolean }) => (
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <Card className="hover:shadow-md transition-shadow cursor-context-menu">
@@ -681,7 +729,7 @@ export default function HRTimesheetPage() {
               {" "}-{" "}
               {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
             </CardTitle>
-            {isPending && timesheet.User && (
+            {(isPending || isValidated) && timesheet.User && (
               <CardDescription className="mt-1">
                 {timesheet.User.name} - {timesheet.User.email}
               </CardDescription>
@@ -1978,6 +2026,18 @@ export default function HRTimesheetPage() {
     { id: 'kanban', label: 'Kanban', icon: KanbanSquareIcon },
   ];
 
+  // Options pour les onglets de vue avec compteurs
+  const viewTabOptions = useMemo<StatusTabOption[]>(() => {
+    const count = currentTimesheets.length;
+    return [
+      { id: 'table', label: 'Tableau', value: 'table', count },
+      { id: 'gantt', label: 'Gantt', value: 'gantt', count },
+      { id: 'calendar', label: 'Calendrier', value: 'calendar', count },
+      { id: 'list', label: 'Liste', value: 'list', count },
+      { id: 'kanban', label: 'Kanban', value: 'kanban', count },
+    ];
+  }, [currentTimesheets.length]);
+
   const renderCurrentView = () => {
     const commonEmptyState = (
       <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -2034,38 +2094,28 @@ export default function HRTimesheetPage() {
         <Separator />
 
         {/* Sélecteur de données */}
-        <Navbar18
-          navigationLinks={navigationLinks}
-          onNavItemClick={(href) => {
-            if (href === "#my") {
-              setDataView("my");
-            } else if (href === "#pending") {
-              setDataView("pending");
+        <StatusTabs
+          options={statusTabOptions}
+          selectedValue={dataView}
+          onValueChange={(value) => {
+            if (value === "my" || value === "pending" || value === "validated") {
+              setDataView(value);
             }
           }}
-          statusIndicators={[]}
-          className="border-0 px-0 h-auto"
         />
 
 
-        {/* Menubar pour sélection de vues */}
+        {/* Sélection de vues */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <Menubar className="w-auto border-0">
-            {views.map((view) => (
-              <MenubarMenu key={view.id}>
-                <MenubarTrigger
-                  className={cn(
-                    "flex items-center gap-2 cursor-pointer",
-                    currentView === view.id && "bg-accent"
-                  )}
-                  onClick={() => setCurrentView(view.id)}
-                >
-                  <view.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{view.label}</span>
-                </MenubarTrigger>
-              </MenubarMenu>
-            ))}
-          </Menubar>
+          <StatusTabs
+            options={viewTabOptions}
+            selectedValue={currentView}
+            onValueChange={(value) => {
+              if (value === 'table' || value === 'gantt' || value === 'calendar' || value === 'list' || value === 'kanban') {
+                setCurrentView(value);
+              }
+            }}
+          />
           
           {/* Barre de recherche et filtres */}
           <div className="flex items-center gap-2">
@@ -2075,22 +2125,60 @@ export default function HRTimesheetPage() {
                 placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9"
+                className={cn(
+                  "h-9",
+                  searchQuery && (dataView === "my" || dataView === "validated") ? "pr-20" : 
+                  (dataView === "my" || dataView === "validated") ? "pr-10" : 
+                  searchQuery ? "pr-10" : ""
+                )}
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              {(dataView === "my" || dataView === "validated") && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7",
+                        searchQuery && "right-9"
+                      )}
+                    >
+                      <Filter className="h-4 w-4" />
+                      {(filters.status !== "all" || filters.startDate || filters.endDate) && (
+                        <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80" align="end">
+                    <Filters
+                      filterGroups={filterGroups}
+                      onFilterChange={handleFilterOptionChange}
+                      onClearFilters={resetFilters}
+                      startDate={filters.startDate}
+                      endDate={filters.endDate}
+                      onDateChange={(start, end) => {
+                        setFilters({ ...filters, startDate: start, endDate: end });
+                        if (dataView === "my") {
+                          loadMyTimesheets();
+                        } else if (dataView === "validated") {
+                          loadValidatedTimesheets();
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
-            {dataView === "my" && (
-              <Filters
-                filterGroups={filterGroups}
-                onFilterChange={handleFilterOptionChange}
-                onClearFilters={resetFilters}
-                startDate={filters.startDate}
-                endDate={filters.endDate}
-                onDateChange={(start, end) => {
-                  setFilters({ ...filters, startDate: start, endDate: end });
-                  loadMyTimesheets();
-                }}
-              />
-            )}
           </div>
         </div>
       </div>
@@ -2360,7 +2448,6 @@ export default function HRTimesheetPage() {
             <Button
               onClick={confirmRevertStatus}
               disabled={!revertTargetStatus || !revertReason.trim()}
-              className="bg-orange-600 hover:bg-orange-700"
             >
               Confirmer la rétrogradation
             </Button>

@@ -77,7 +77,7 @@ import { useSession } from "@/lib/auth-client";
 import { ProjectHealthIndicator } from "@/components/features/project-health-indicator";
 import { useRealtimeProjects } from "@/hooks/use-realtime-projects";
 import { FilterButtonGroup } from "@/components/ui/filter-button-group";
-import { StatusTabs } from "@/components/ui/status-menubar";
+import { StatusTabs } from "@/components/ui/status-tabs";
 import {
   Table,
   TableBody,

@@ -63,38 +63,69 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
   const [userFilter, setUserFilter] = useState<"my" | "all">("my"); // Par défaut, afficher mes tâches
   const [viewMode, setViewMode] = useState<ViewMode>("table");
 
-  // Fonction pour charger les tâches
+  // Fonction pour charger les tâches (optimisée : charge uniquement ce qui est nécessaire)
   const loadTasks = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Charger les tâches de l'utilisateur (pour tableau et kanban)
-      const userTasksResult = await getMyTasks({
-        projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
-      });
+      // Charger les tâches selon la vue active pour optimiser les performances
+      // Pour tableau et kanban : charger uniquement userTasks
+      // Pour calendrier et gantt : charger uniquement allTasks
       
-      // Charger toutes les tâches (pour calendrier et gantt)
-      const allTasksResult = await getAllTasks({
-        projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
-      });
+      const needsUserTasks = viewMode === "table" || viewMode === "kanban";
+      const needsAllTasks = viewMode === "calendar" || viewMode === "gantt";
 
-      if (userTasksResult?.data) {
-        setUserTasks(userTasksResult.data);
-      } else {
-        toast.error(userTasksResult?.serverError || "Erreur lors du chargement des tâches utilisateur");
+      const promises: Promise<any>[] = [];
+
+      // Charger userTasks si nécessaire pour la vue active
+      if (needsUserTasks) {
+        promises.push(
+          getMyTasks({
+            projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
+          }).then((result) => {
+            if (result?.data) {
+              setUserTasks(result.data);
+            } else {
+              toast.error(result?.serverError || "Erreur lors du chargement des tâches utilisateur");
+            }
+          }).catch((error) => {
+            console.error("Erreur lors du chargement des tâches utilisateur:", error);
+            toast.error("Erreur lors du chargement des tâches utilisateur");
+          })
+        );
       }
 
-      if (allTasksResult?.data) {
-        setAllTasks(allTasksResult.data);
-      } else {
-        toast.error(allTasksResult?.serverError || "Erreur lors du chargement de toutes les tâches");
+      // Charger allTasks si nécessaire pour la vue active
+      if (needsAllTasks) {
+        promises.push(
+          getAllTasks({
+            projectId: selectedProject === "all" ? undefined : selectedProject || undefined,
+          }).then((result) => {
+            if (result?.data) {
+              setAllTasks(result.data);
+            } else {
+              toast.error(result?.serverError || "Erreur lors du chargement de toutes les tâches");
+            }
+          }).catch((error) => {
+            console.error("Erreur lors du chargement de toutes les tâches:", error);
+            toast.error("Erreur lors du chargement de toutes les tâches");
+          })
+        );
       }
+
+      // Si aucune vue ne nécessite de chargement, on a déjà les données
+      if (promises.length === 0) {
+        setIsLoading(false);
+        return;
+      }
+
+      await Promise.allSettled(promises);
     } catch (error) {
       console.error("Erreur lors du chargement des tâches:", error);
       toast.error("Erreur lors du chargement");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedProject]);
+  }, [selectedProject, viewMode]);
 
   // Fonction pour rafraîchir les tâches (alias de loadTasks)
   const refreshTasks = useCallback(async () => {

@@ -12,7 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Plus, Trash2, Building2, Bell, Volume2, Mail, Monitor, Settings2, RotateCcw, CheckCircle2 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isSameDay, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +69,9 @@ export default function SettingsPage() {
   const [isHolidayDialogOpen, setIsHolidayDialogOpen] = useState(false);
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
   const [isInitializingHolidays, setIsInitializingHolidays] = useState(false);
+  
+  // Calendar state for holidays
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
   // Form states
   const [holidayForm, setHolidayForm] = useState({
@@ -205,7 +208,7 @@ export default function SettingsPage() {
     "sage-green": "green-anis",
   };
 
-  const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal"];
+  const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal", "dark"];
 
   // Fonction pour normaliser la couleur d'accentuation
   const normalizeAccentColor = (accentColor: string | null | undefined): string => {
@@ -236,9 +239,13 @@ export default function SettingsPage() {
     }
 
     // Appliquer la densité d'affichage
-    document.documentElement.setAttribute("data-density", settings.viewDensity);
+    if (settings.viewDensity) {
+      document.documentElement.setAttribute("data-density", settings.viewDensity);
+    } else {
+      document.documentElement.setAttribute("data-density", "normal");
+    }
 
-    // Appliquer la couleur d'accentuation (normalisée)
+    // Appliquer la couleur d'accentuation (normalisée) - TOUJOURS appliquer une valeur
     const normalizedColor = normalizeAccentColor(settings.accentColor);
     document.documentElement.setAttribute("data-accent", normalizedColor);
     // Note: La migration automatique sera gérée par AppearanceSection via useEffect
@@ -486,7 +493,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {isSelected && (
-                <Badge variant="default" className="text-xs bg-blue-600">
+                <Badge variant="default" className="text-xs">
                   Par défaut
                 </Badge>
               )}
@@ -554,6 +561,8 @@ export default function SettingsPage() {
         console.log("✅ Mise à jour réussie:", result.data);
         setGeneralSettings(result.data);
         applySettingsToUI(result.data);
+        // Déclencher un événement pour que SettingsProvider réapplique les paramètres
+        window.dispatchEvent(new CustomEvent("settings-updated"));
         toast.success("Paramètre enregistré");
       } else if (result?.serverError) {
         console.error("❌ Erreur serveur:", result.serverError);
@@ -583,6 +592,8 @@ export default function SettingsPage() {
           if (result?.data) {
             setGeneralSettings(result.data);
             applySettingsToUI(result.data);
+            // Déclencher un événement pour que SettingsProvider réapplique les paramètres
+            window.dispatchEvent(new CustomEvent("settings-updated"));
             toast.success("Paramètres réinitialisés");
           } else if (result?.serverError) {
             toast.error(result.serverError);
@@ -1220,18 +1231,24 @@ export default function SettingsPage() {
 
   // Section Jours fériés
   function renderHolidaysSection() {
+    // Convertir les jours fériés en dates pour le calendrier
+    const holidayDates = holidays.map((holiday) => startOfDay(new Date(holiday.date)));
+    
+    // Fonction pour vérifier si une date est un jour férié
+    const isHoliday = (date: Date) => {
+      return holidayDates.some((holidayDate) => isSameDay(date, holidayDate));
+    };
+    
+    // Obtenir le nom du jour férié pour une date donnée
+    const getHolidayName = (date: Date) => {
+      const holiday = holidays.find((h) => isSameDay(new Date(h.date), date));
+      return holiday?.name || null;
+    };
+
     return (
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg sm:text-xl">Jours fériés</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Gérez les jours fériés pour le calcul des temps (Gabon)
-                </CardDescription>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -1335,10 +1352,9 @@ export default function SettingsPage() {
                     </form>
                     </DialogContent>
                   </Dialog>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
+          </div>
+        </div>
+        <div>
               {holidays.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground mb-4">Aucun jour férié défini</p>
@@ -1379,79 +1395,114 @@ export default function SettingsPage() {
                   </Popover>
                 </div>
               ) : (
-                <>
-                  {/* Desktop table view */}
-                  <div className="hidden md:block border rounded-lg overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="text-left p-3 font-medium text-sm">Nom</th>
-                          <th className="text-left p-3 font-medium text-sm">Date</th>
-                          <th className="text-left p-3 font-medium text-sm">Description</th>
-                          <th className="text-right p-3 font-medium text-sm">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                <div className="space-y-6">
+                  {/* Calendrier avec jours fériés marqués */}
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="w-full lg:w-auto">
+                      <div className="flex flex-col items-center lg:items-start">
+                        <h3 className="text-sm font-medium mb-3">Calendrier des jours fériés</h3>
+                        <Calendar
+                          mode="single"
+                          selected={selectedCalendarDate}
+                          onSelect={setSelectedCalendarDate}
+                          locale={fr}
+                          modifiers={{
+                            holiday: (date) => isHoliday(date),
+                          }}
+                          modifiersClassNames={{
+                            holiday: "!bg-amber-100 dark:!bg-amber-900/30 !text-amber-900 dark:!text-amber-100 font-semibold border border-amber-300 dark:border-amber-700",
+                          }}
+                          className="rounded-md border"
+                        />
+                        <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700"></div>
+                          <span>Jour férié</span>
+                        </div>
+                        {selectedCalendarDate && isHoliday(selectedCalendarDate) && (
+                          <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
+                            <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
+                              {getHolidayName(selectedCalendarDate)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Liste des jours fériés */}
+                    <div className="flex-1">
+                      {/* Desktop table view */}
+                      <div className="hidden md:block border rounded-lg overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b bg-muted/50">
+                              <th className="text-left p-3 font-medium text-sm">Nom</th>
+                              <th className="text-left p-3 font-medium text-sm">Date</th>
+                              <th className="text-left p-3 font-medium text-sm">Description</th>
+                              <th className="text-right p-3 font-medium text-sm">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {holidays.map((holiday) => (
+                              <tr key={holiday.id} className="border-b last:border-0 hover:bg-muted/30">
+                                <td className="p-3 font-medium text-sm">{holiday.name}</td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {format(new Date(holiday.date), "dd/MM/yyyy")}
+                                </td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {holiday.description || "-"}
+                                </td>
+                                <td className="p-3 text-right">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteHoliday(holiday.id)}
+                                    className="text-red-600 hover:text-red-800"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile card view */}
+                      <div className="md:hidden space-y-2">
                         {holidays.map((holiday) => (
-                          <tr key={holiday.id} className="border-b last:border-0 hover:bg-muted/30">
-                            <td className="p-3 font-medium text-sm">{holiday.name}</td>
-                            <td className="p-3 text-sm text-muted-foreground">
-                              {format(new Date(holiday.date), "dd/MM/yyyy")}
-                            </td>
-                            <td className="p-3 text-sm text-muted-foreground">
-                              {holiday.description || "-"}
-                            </td>
-                            <td className="p-3 text-right">
+                          <div key={holiday.id} className="border rounded-lg p-3 space-y-2">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="font-medium text-sm">{holiday.name}</div>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {format(new Date(holiday.date), "dd/MM/yyyy")}
+                                </div>
+                              </div>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteHoliday(holiday.id)}
-                                className="text-red-600 hover:text-red-800"
+                                className="text-red-600 hover:text-red-800 -mt-1 -mr-2"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Mobile card view */}
-                  <div className="md:hidden space-y-2">
-                    {holidays.map((holiday) => (
-                      <div key={holiday.id} className="border rounded-lg p-3 space-y-2">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{holiday.name}</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {format(new Date(holiday.date), "dd/MM/yyyy")}
                             </div>
+                            {holiday.description && (
+                              <div className="text-xs text-muted-foreground border-t pt-2">
+                                {holiday.description}
+                              </div>
+                            )}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteHoliday(holiday.id)}
-                            className="text-red-600 hover:text-red-800 -mt-1 -mr-2"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {holiday.description && (
-                          <div className="text-xs text-muted-foreground border-t pt-2">
-                            {holiday.description}
-                          </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </>
+                </div>
               )}
-            </CardContent>
-          </Card>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
     // Section Départements
     function renderDepartmentsSection() {

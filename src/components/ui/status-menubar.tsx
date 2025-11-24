@@ -83,49 +83,5 @@ export function StatusMenubar({
   )
 }
 
-// Composant alternatif avec des boutons en style onglets
-interface StatusTabsProps {
-  options: StatusOption[]
-  selectedValue: string
-  onValueChange: (value: string) => void
-  className?: string
-}
-
-export function StatusTabs({
-  options,
-  selectedValue,
-  onValueChange,
-  className,
-}: StatusTabsProps) {
-  return (
-    <div className={cn("flex items-center gap-1 p-1 bg-muted rounded-lg", className)}>
-      {options.map((option) => (
-        <button
-          key={option.id}
-          onClick={() => onValueChange(option.value)}
-          className={cn(
-            "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
-            "hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
-            selectedValue === option.value
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <span>{option.label}</span>
-            {option.count !== undefined && (
-              <span className={cn(
-                "text-xs px-1.5 py-0.5 rounded-full",
-                selectedValue === option.value
-                  ? "bg-primary/10 text-primary"
-                  : "bg-muted-foreground/10 text-muted-foreground"
-              )}>
-                {option.count}
-              </span>
-            )}
-          </div>
-        </button>
-      ))}
-    </div>
-  )
-}
+// StatusTabs a été déplacé vers @/components/ui/status-tabs
+// Importez-le depuis : import { StatusTabs } from "@/components/ui/status-tabs"

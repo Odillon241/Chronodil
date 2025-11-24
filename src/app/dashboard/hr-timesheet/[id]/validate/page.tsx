@@ -431,7 +431,7 @@ export default function ValidateHRTimesheetPage() {
           <Button
             type="button"
             onClick={() => setShowApproveDialog(true)}
-            className="w-full sm:flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm"
+            className="w-full sm:flex-1 shadow-sm"
             size="lg"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
@@ -474,7 +474,7 @@ export default function ValidateHRTimesheetPage() {
             <AlertDialogCancel className="w-full sm:w-auto m-0">Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSubmit(handleApprove)}
-              className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+              className="w-full sm:w-auto"
             >
               Confirmer l'approbation
             </AlertDialogAction>

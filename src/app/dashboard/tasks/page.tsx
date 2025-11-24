@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,20 +48,62 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Legend
 import { useTaskReminders } from "@/hooks/use-task-reminders";
 import { TaskStatusBadge } from "@/components/features/task-status-badge";
 import { TaskPriorityBadge } from "@/components/features/task-priority-badge";
+import { StatusTabs, type StatusTabOption } from "@/components/ui/status-tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TaskComments } from "@/components/features/task-comments";
-import { TaskActivityTimeline } from "@/components/features/task-activity-timeline";
+// Lazy loading des composants d'onglets (chargés uniquement quand l'onglet est ouvert)
+const TaskComments = dynamic(() => import("@/components/features/task-comments").then(mod => ({ default: mod.TaskComments })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-8">
+      <Spinner className="h-6 w-6 text-primary" />
+    </div>
+  ),
+  ssr: false,
+});
+
+const TaskActivityTimeline = dynamic(() => import("@/components/features/task-activity-timeline").then(mod => ({ default: mod.TaskActivityTimeline })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-8">
+      <Spinner className="h-6 w-6 text-primary" />
+    </div>
+  ),
+  ssr: false,
+});
 import { useSession } from "@/lib/auth-client";
 import type { Session } from "@/lib/auth";
 import { TaskRoadmap } from "@/components/features/task-roadmap";
 import { useRealtimeTasksOptimized } from "@/hooks/use-realtime-tasks.optimized";
-import { TaskKanban } from "@/components/features/task-kanban";
-import { TaskGantt } from "@/components/features/task-gantt";
-import { TaskCalendar } from "@/components/features/task-calendar";
-import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
+import dynamic from "next/dynamic";
+
+// Lazy loading des composants lourds pour améliorer les performances
+const TaskKanban = dynamic(() => import("@/components/features/task-kanban").then(mod => ({ default: mod.TaskKanban })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-12 min-h-[400px]">
+      <Spinner className="h-8 w-8 text-primary" />
+    </div>
+  ),
+  ssr: false,
+});
+
+const TaskGantt = dynamic(() => import("@/components/features/task-gantt").then(mod => ({ default: mod.TaskGantt })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-12 min-h-[400px]">
+      <Spinner className="h-8 w-8 text-primary" />
+    </div>
+  ),
+  ssr: false,
+});
+
+const TaskCalendar = dynamic(() => import("@/components/features/task-calendar").then(mod => ({ default: mod.TaskCalendar })), {
+  loading: () => (
+    <div className="flex items-center justify-center py-12 min-h-[400px]">
+      <Spinner className="h-8 w-8 text-primary" />
+    </div>
+  ),
+  ssr: false,
+});
 import { useTasks, type ViewMode } from "@/contexts/tasks-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
@@ -166,13 +208,27 @@ export default function TasksPage() {
     periodicity: "WEEKLY",
   });
 
+  // Charger les données nécessaires au montage (en parallèle mais avec gestion d'erreur)
   useEffect(() => {
-    loadProjects();
-    loadAvailableTimesheets();
-    loadActivityCatalog();
+    // Charger uniquement les données nécessaires pour le formulaire
+    // Ces données ne sont nécessaires que quand le dialog est ouvert
+    const loadInitialData = async () => {
+      try {
+        // Charger en parallèle mais ne pas bloquer le rendu
+        await Promise.allSettled([
+          loadProjects(),
+          loadAvailableTimesheets(),
+          loadActivityCatalog(),
+        ]);
+      } catch (error) {
+        console.error("Erreur lors du chargement des données initiales:", error);
+      }
+    };
+    
+    loadInitialData();
   }, []);
 
-  const loadActivityCatalog = async () => {
+  const loadActivityCatalog = useCallback(async () => {
     try {
       const [catalogResult, categoriesResult] = await Promise.all([
         getActivityCatalog({}),
@@ -187,19 +243,21 @@ export default function TasksPage() {
     } catch (error) {
       console.error("Erreur lors du chargement du catalogue d'activités:", error);
     }
-  };
+  }, []);
 
   // Déterminer le type à partir de la catégorie
   const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
     return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
   };
 
-  // Filtrer les activités du catalogue selon la catégorie
-  const filteredCatalogActivities = selectedCategory
-    ? catalog.filter((item: any) => item.category === selectedCategory)
-    : [];
+  // Filtrer les activités du catalogue selon la catégorie (mémoïsé)
+  const filteredCatalogActivities = useMemo(() => {
+    return selectedCategory
+      ? catalog.filter((item: any) => item.category === selectedCategory)
+      : [];
+  }, [selectedCategory, catalog]);
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       const result = await getMyProjects({});
       if (result?.data) {
@@ -208,9 +266,9 @@ export default function TasksPage() {
     } catch (error) {
       console.error("Erreur lors du chargement des projets:", error);
     }
-  };
+  }, []);
 
-  const loadAvailableTimesheets = async () => {
+  const loadAvailableTimesheets = useCallback(async () => {
     try {
       const result = await getAvailableHRTimesheetsForTask();
       if (result?.data) {
@@ -219,10 +277,10 @@ export default function TasksPage() {
     } catch (error) {
       console.error("Erreur lors du chargement des timesheets:", error);
     }
-  };
+  }, []);
 
 
-  const loadAvailableUsers = async (projectId?: string) => {
+  const loadAvailableUsers = useCallback(async (projectId?: string) => {
     try {
       const result = await getAvailableUsersForSharing({
         projectId: projectId === "no-project" ? undefined : projectId,
@@ -233,7 +291,7 @@ export default function TasksPage() {
     } catch (error) {
       console.error("Erreur lors du chargement des utilisateurs:", error);
     }
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -543,15 +601,50 @@ export default function TasksPage() {
     }
   };
 
-  // Trier les tâches par projet puis par nom
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    const projectA = a.Project?.name || "Sans projet";
-    const projectB = b.Project?.name || "Sans projet";
-    if (projectA !== projectB) {
-      return projectA.localeCompare(projectB);
-    }
-    return a.name.localeCompare(b.name);
-  });
+  // Trier les tâches par projet puis par nom (mémoïsé pour éviter les recalculs)
+  const sortedTasks = useMemo(() => {
+    return [...filteredTasks].sort((a, b) => {
+      const projectA = a.Project?.name || "Sans projet";
+      const projectB = b.Project?.name || "Sans projet";
+      if (projectA !== projectB) {
+        return projectA.localeCompare(projectB);
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [filteredTasks]);
+
+  // Calculer les compteurs de statut pour les onglets
+  const statusTabOptions = useMemo<StatusTabOption[]>(() => {
+    const tasksToCount = userFilter === "my" ? userTasks : allTasks;
+    const counts = {
+      all: tasksToCount.length,
+      TODO: tasksToCount.filter(t => t.status === "TODO").length,
+      IN_PROGRESS: tasksToCount.filter(t => t.status === "IN_PROGRESS").length,
+      REVIEW: tasksToCount.filter(t => t.status === "REVIEW").length,
+      DONE: tasksToCount.filter(t => t.status === "DONE").length,
+      BLOCKED: tasksToCount.filter(t => t.status === "BLOCKED").length,
+    };
+
+    return [
+      { id: "all", label: "Tous", value: "all", count: counts.all },
+      { id: "TODO", label: "À faire", value: "TODO", count: counts.TODO },
+      { id: "IN_PROGRESS", label: "En cours", value: "IN_PROGRESS", count: counts.IN_PROGRESS },
+      { id: "REVIEW", label: "En revue", value: "REVIEW", count: counts.REVIEW },
+      { id: "DONE", label: "Terminé", value: "DONE", count: counts.DONE },
+      { id: "BLOCKED", label: "Bloqué", value: "BLOCKED", count: counts.BLOCKED },
+    ];
+  }, [userTasks, allTasks, userFilter]);
+
+  // Options pour les onglets de vue
+  const viewTabOptions = useMemo<StatusTabOption[]>(() => {
+    const tasksToCount = userFilter === "my" ? userTasks : allTasks;
+    return [
+      { id: "table", label: "Tableau", value: "table", count: tasksToCount.length },
+      { id: "calendar", label: "Calendrier", value: "calendar", count: tasksToCount.length },
+      { id: "kanban", label: "Kanban", value: "kanban", count: tasksToCount.length },
+      { id: "gantt", label: "Gantt", value: "gantt", count: tasksToCount.length },
+    ];
+  }, [userTasks, allTasks, userFilter]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -1015,19 +1108,14 @@ export default function TasksPage() {
       {showCalendar && (
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full min-w-0">
               <div className="mb-4 -mx-6 px-6">
-                <Navbar18
-                  navigationLinks={[
-                    { href: "#table", label: "Tableau", active: viewMode === "table" },
-                    { href: "#calendar", label: "Calendrier", active: viewMode === "calendar" },
-                    { href: "#kanban", label: "Kanban", active: viewMode === "kanban" },
-                    { href: "#gantt", label: "Gantt", active: viewMode === "gantt" },
-                  ] as Navbar18NavItem[]}
-                  onNavItemClick={(href) => {
-                    const mode = href.replace("#", "") as ViewMode;
-                    setViewMode(mode);
+                <StatusTabs
+                  options={viewTabOptions}
+                  selectedValue={viewMode}
+                  onValueChange={(value) => {
+                    if (value === "table" || value === "calendar" || value === "kanban" || value === "gantt") {
+                      setViewMode(value);
+                    }
                   }}
-                  statusIndicators={[]}
-                  className="border-b border-border/40 px-0 h-auto"
                 />
               </div>
 
@@ -1148,19 +1236,12 @@ export default function TasksPage() {
 
                           <div className="space-y-2">
                             <Label>Statut</Label>
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Tous les statuts" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">Tous les statuts</SelectItem>
-                                <SelectItem value="TODO">À faire</SelectItem>
-                                <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                                <SelectItem value="REVIEW">En revue</SelectItem>
-                                <SelectItem value="DONE">Terminé</SelectItem>
-                                <SelectItem value="BLOCKED">Bloqué</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <StatusTabs
+                              options={statusTabOptions}
+                              selectedValue={statusFilter}
+                              onValueChange={setStatusFilter}
+                              variant="compact"
+                            />
                           </div>
 
                           <div className="space-y-2">
@@ -1280,19 +1361,12 @@ export default function TasksPage() {
 
                           <div className="space-y-2">
                             <Label>Statut</Label>
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Tous les statuts" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">Tous les statuts</SelectItem>
-                                <SelectItem value="TODO">À faire</SelectItem>
-                                <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                                <SelectItem value="REVIEW">En revue</SelectItem>
-                                <SelectItem value="DONE">Terminé</SelectItem>
-                                <SelectItem value="BLOCKED">Bloqué</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <StatusTabs
+                              options={statusTabOptions}
+                              selectedValue={statusFilter}
+                              onValueChange={setStatusFilter}
+                              variant="compact"
+                            />
                           </div>
 
                           <div className="space-y-2">
@@ -1399,7 +1473,7 @@ export default function TasksPage() {
                                   </TableCell>
                                   <TableCell className="px-4 py-3">
                                     {(() => {
-                                      const isCreator = task.Creator?.id === session?.user?.id;
+                                      const isCreator = task.User_Task_createdByToUser?.id === session?.user?.id;
                                       const isAdmin = session?.user?.role === "ADMIN";
                                       const canModify = isCreator || isAdmin;
                                       
@@ -1485,7 +1559,7 @@ export default function TasksPage() {
                                   </TableCell>
                                   <TableCell className="px-4 py-3">
                                     {(() => {
-                                      const isCreator = task.Creator?.id === session?.user?.id;
+                                      const isCreator = task.User_Task_createdByToUser?.id === session?.user?.id;
                                       const isAdmin = session?.user?.role === "ADMIN";
                                       const canModify = isCreator || isAdmin;
                                       
@@ -1619,7 +1693,7 @@ export default function TasksPage() {
                                   </TableCell>
                                   <TableCell className="px-4 py-3">
                                     {(() => {
-                                      const isCreator = task.Creator?.id === session?.user?.id;
+                                      const isCreator = task.User_Task_createdByToUser?.id === session?.user?.id;
                                       const isAdmin = session?.user?.role === "ADMIN";
                                       const canModify = isCreator || isAdmin;
                                       
@@ -1659,7 +1733,7 @@ export default function TasksPage() {
                               </ContextMenuTrigger>
                               <ContextMenuContent>
                                 {(() => {
-                                  const isCreator = task.Creator?.id === session?.user?.id;
+                                  const isCreator = task.User_Task_createdByToUser?.id === session?.user?.id;
                                   const isAdmin = session?.user?.role === "ADMIN";
                                   const canModify = isCreator || isAdmin;
                                   

@@ -1078,7 +1078,6 @@ export default function EditHRTimesheetPage() {
             <div className="flex gap-2 pt-4">
               <Button
                 onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}`)}
-                className="bg-green-600 hover:bg-green-700"
               >
                 <Save className="mr-2 h-4 w-4" />
                 Terminer l'édition
