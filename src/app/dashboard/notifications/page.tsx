@@ -39,6 +39,9 @@ import {
   markAllAsRead,
   deleteNotification,
 } from "@/actions/notification.actions";
+import { QuietHoursSettings } from "@/components/features/quiet-hours-settings";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings } from "lucide-react";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -212,15 +215,39 @@ export default function NotificationsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Notifications</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            {selectedIds.length > 0 ? (
-              `${selectedIds.length} notification${selectedIds.length > 1 ? "s" : ""} sélectionnée${selectedIds.length > 1 ? "s" : ""}`
-            ) : unreadCount > 0 ? (
-              `${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`
-            ) : (
-              "Aucune notification non lue"
-            )}
+            Gérez vos notifications et configurez vos préférences
           </p>
         </div>
+      </div>
+
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList>
+          <TabsTrigger value="list" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            <span className="hidden sm:inline">Notifications</span>
+            {unreadCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {unreadCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Heures calmes</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="list" className="mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <p className="text-sm text-muted-foreground">
+              {selectedIds.length > 0 ? (
+                `${selectedIds.length} notification${selectedIds.length > 1 ? "s" : ""} sélectionnée${selectedIds.length > 1 ? "s" : ""}`
+              ) : unreadCount > 0 ? (
+                `${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`
+              ) : (
+                "Aucune notification non lue"
+              )}
+            </p>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
           {selectedIds.length > 0 ? (
             <>
@@ -555,6 +582,12 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-4">
+          <QuietHoursSettings />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

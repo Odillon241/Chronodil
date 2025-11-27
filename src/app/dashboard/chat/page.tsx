@@ -257,6 +257,7 @@ export default function ChatPage() {
             <ChatMessageList
               conversation={selectedConversation}
               currentUserId={currentUser.id}
+              currentUserName={currentUser.name || "Utilisateur"}
               onUpdate={handleRefreshConversation}
             />
           ) : (

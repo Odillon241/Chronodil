@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
   Send,
@@ -49,6 +54,7 @@ import {
   Info,
   Pin,
   PinOff,
+  AtSign,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
@@ -65,8 +71,10 @@ import {
   unpinMessage,
 } from "@/actions/chat.actions";
 import { useRealtimePresence } from "@/hooks/use-realtime-presence";
+import { useRealtimeTyping } from "@/hooks/use-realtime-typing";
 import { formatLastSeen, getPresenceLabel } from "@/lib/utils/presence";
 import { LinkPreview } from "./link-preview";
+import { EmojiPicker, QuickEmojiPicker } from "@/components/ui/emoji-picker";
 
 interface Message {
   id: string;
@@ -120,12 +128,14 @@ interface Conversation {
 interface ChatMessageListProps {
   conversation: Conversation;
   currentUserId: string;
+  currentUserName?: string;
   onUpdate: () => void;
 }
 
 export function ChatMessageList({
   conversation,
   currentUserId,
+  currentUserName = "Utilisateur",
   onUpdate,
 }: ChatMessageListProps) {
   const [message, setMessage] = useState("");
@@ -133,7 +143,6 @@ export function ChatMessageList({
   const [editingContent, setEditingContent] = useState("");
   const [sending, setSending] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [mentionQuery, setMentionQuery] = useState<string>("");
@@ -143,7 +152,6 @@ export function ChatMessageList({
   const [isMuted, setIsMuted] = useState(false);
   const [showConversationInfo, setShowConversationInfo] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +159,32 @@ export function ChatMessageList({
 
   // Hook de présence en temps réel
   const { isUserOnline, getLastSeenAt } = useRealtimePresence();
+
+  // Hook d'indicateur de frappe en temps réel
+  const { typingUsers, onTyping, stopTyping } = useRealtimeTyping({
+    conversationId: conversation.id,
+    currentUserId,
+    currentUserName,
+  });
+
+  // Liste des membres pour les mentions
+  const conversationMembers = useMemo(() => {
+    return conversation.ConversationMember.filter(
+      (m) => m.User.id !== currentUserId
+    ).map((m) => ({
+      id: m.User.id,
+      name: m.User.name,
+      avatar: m.User.avatar || m.User.image,
+    }));
+  }, [conversation.ConversationMember, currentUserId]);
+
+  // Filtrer les membres pour les mentions
+  const filteredMentions = useMemo(() => {
+    if (!mentionQuery) return conversationMembers;
+    return conversationMembers.filter((m) =>
+      m.name.toLowerCase().includes(mentionQuery.toLowerCase())
+    );
+  }, [conversationMembers, mentionQuery]);
 
   // Fonction pour formater la taille du fichier
   const formatFileSize = (bytes: number): string => {
@@ -220,34 +254,6 @@ export function ChatMessageList({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [conversation.Message]);
-
-  // Cleanup du timeout de typing à la fermeture
-  useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Simuler la réception d'événements de frappe d'autres utilisateurs
-  // Dans une vraie app, cela viendrait d'un WebSocket
-  useEffect(() => {
-    // Pour la démo, simuler aléatoirement qu'un utilisateur tape
-    const simulateTyping = () => {
-      if (Math.random() > 0.95 && conversation.ConversationMember.length > 1) {
-        const otherMember = conversation.ConversationMember.find(m => m.User.id !== currentUserId);
-        if (otherMember) {
-          setTypingUsers([otherMember.User.name]);
-          setTimeout(() => setTypingUsers([]), 3000);
-        }
-      }
-    };
-
-    // Vérifier toutes les 10 secondes (juste pour la démo)
-    const interval = setInterval(simulateTyping, 10000);
-    return () => clearInterval(interval);
-  }, [conversation.ConversationMember, currentUserId]);
 
   // Marquer comme lu quand on ouvre la conversation
   useEffect(() => {
@@ -363,8 +369,56 @@ export function ChatMessageList({
     }
   };
 
-  // Emojis populaires
-  const popularEmojis = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+  // Gérer l'insertion d'une mention
+  const handleInsertMention = useCallback((userId: string, userName: string) => {
+    if (!inputRef.current) return;
+
+    const input = inputRef.current;
+    const cursorPos = input.selectionStart || 0;
+    const textBefore = message.substring(0, mentionCursorPosition);
+    const textAfter = message.substring(cursorPos);
+
+    // Insérer la mention au format @[userId:userName]
+    const mention = `@[${userId}:${userName}] `;
+    const newMessage = textBefore + mention + textAfter;
+
+    setMessage(newMessage);
+    setShowMentions(false);
+    setMentionQuery("");
+
+    // Replacer le curseur après la mention
+    setTimeout(() => {
+      const newCursorPos = textBefore.length + mention.length;
+      input.focus();
+      input.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  }, [message, mentionCursorPosition]);
+
+  // Détecter quand l'utilisateur tape @ pour les mentions
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setMessage(value);
+    onTyping(); // Notifier qu'on est en train d'écrire
+
+    // Détecter les mentions
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      // Vérifier qu'il n'y a pas d'espace après @
+      if (!textAfterAt.includes(" ") && !textAfterAt.includes("[")) {
+        setShowMentions(true);
+        setMentionQuery(textAfterAt);
+        setMentionCursorPosition(lastAtIndex);
+        return;
+      }
+    }
+
+    setShowMentions(false);
+    setMentionQuery("");
+  }, [onTyping]);
 
   // Fonction pour rendre le contenu avec les mentions
   const renderMessageContent = (content: string) => {
@@ -394,26 +448,6 @@ export function ChatMessageList({
     }
     
     return result.length > 0 ? result : content;
-  };
-
-  // Simuler l'indicateur de frappe (dans une vraie app, utiliser WebSockets)
-  const handleTyping = () => {
-    // Dans une vraie application, on enverrait un événement via WebSocket
-    // Pour cette simulation, on va juste afficher un message temporaire
-    // en utilisant le localStorage pour simuler la communication entre utilisateurs
-    
-    // Clear le timeout précédent
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Simuler l'envoi de l'événement "typing"
-    // Dans une vraie app: socket.emit('typing', { conversationId, userId, userName })
-    
-    // Définir un nouveau timeout pour arrêter l'indication après 3 secondes
-    typingTimeoutRef.current = setTimeout(() => {
-      // Dans une vraie app: socket.emit('stop-typing', { conversationId, userId })
-    }, 3000);
   };
 
   const getConversationTitle = () => {
@@ -942,43 +976,43 @@ export function ChatMessageList({
                           isCurrentUser && "justify-end"
                         )}>
                           {Object.entries(msg.reactions).map(([emoji, userIds]) => (
-                            <Button
-                              key={emoji}
-                              variant="outline"
-                              size="sm"
-                              className={cn(
-                                "h-6 px-2 text-xs",
-                                userIds.includes(currentUserId) && "bg-accent"
-                              )}
-                              onClick={() => handleToggleReaction(msg.id, emoji)}
-                            >
-                              <span>{emoji}</span>
-                              <span className="ml-1">{userIds.length}</span>
-                            </Button>
+                            <TooltipProvider key={emoji}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={cn(
+                                      "h-6 px-2 text-xs",
+                                      userIds.includes(currentUserId) && "bg-accent border-primary"
+                                    )}
+                                    onClick={() => handleToggleReaction(msg.id, emoji)}
+                                  >
+                                    <span>{emoji}</span>
+                                    <span className="ml-1">{userIds.length}</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">
+                                    {userIds.includes(currentUserId) ? "Cliquez pour retirer" : "Cliquez pour réagir"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           ))}
-                          {/* Add reaction button */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                          {/* Add reaction button with emoji picker */}
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button variant="outline" size="sm" className="h-6 px-2">
                                 <Smile className="h-3 w-3" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <div className="grid grid-cols-3 gap-1 p-2">
-                                {popularEmojis.map((emoji) => (
-                                  <Button
-                                    key={emoji}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xl"
-                                    onClick={() => handleToggleReaction(msg.id, emoji)}
-                                  >
-                                    {emoji}
-                                  </Button>
-                                ))}
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2" align="start">
+                              <QuickEmojiPicker
+                                onEmojiSelect={(emoji) => handleToggleReaction(msg.id, emoji)}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       )}
 
@@ -988,28 +1022,18 @@ export function ChatMessageList({
                           "mt-1 opacity-0 group-hover:opacity-100 transition-opacity",
                           isCurrentUser && "flex justify-end"
                         )}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-6 px-2">
                                 <Smile className="h-3 w-3" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <div className="grid grid-cols-3 gap-1 p-2">
-                                {popularEmojis.map((emoji) => (
-                                  <Button
-                                    key={emoji}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xl"
-                                    onClick={() => handleToggleReaction(msg.id, emoji)}
-                                  >
-                                    {emoji}
-                                  </Button>
-                                ))}
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2" align="start">
+                              <QuickEmojiPicker
+                                onEmojiSelect={(emoji) => handleToggleReaction(msg.id, emoji)}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       )}
                     </div>
@@ -1098,6 +1122,28 @@ export function ChatMessageList({
 
       {/* Input */}
       <div className="p-2 sm:p-4 border-t">
+        {/* Popup de suggestions de mentions */}
+        {showMentions && filteredMentions.length > 0 && (
+          <div className="mb-2 bg-popover border rounded-lg shadow-lg p-1 max-h-40 overflow-y-auto">
+            <p className="px-2 py-1 text-xs text-muted-foreground">Mentionner un membre</p>
+            {filteredMentions.map((member) => (
+              <button
+                key={member.id}
+                onClick={() => handleInsertMention(member.id, member.name)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-muted rounded text-left"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={member.avatar || undefined} />
+                  <AvatarFallback className="text-xs">
+                    {member.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm">{member.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-1 sm:gap-2">
           <input
             ref={fileInputRef}
@@ -1119,27 +1165,82 @@ export function ChatMessageList({
           >
             <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
+          {/* Bouton pour ouvrir les mentions */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              const cursorPos = inputRef.current?.selectionStart || message.length;
+              const newMessage = message.slice(0, cursorPos) + "@" + message.slice(cursorPos);
+              setMessage(newMessage);
+              setMentionCursorPosition(cursorPos);
+              setShowMentions(true);
+              setMentionQuery("");
+              inputRef.current?.focus();
+            }}
+            disabled={sending}
+            className="h-8 w-8 sm:h-10 sm:w-10"
+            title="Mentionner quelqu'un (@)"
+          >
+            <AtSign className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+          {/* Emoji Picker pour l'input */}
+          <EmojiPicker
+            onEmojiSelect={(emoji) => {
+              const cursorPos = inputRef.current?.selectionStart || message.length;
+              const newMessage = message.slice(0, cursorPos) + emoji + message.slice(cursorPos);
+              setMessage(newMessage);
+              onTyping();
+              setTimeout(() => {
+                inputRef.current?.focus();
+                inputRef.current?.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+              }, 0);
+            }}
+            className="h-8 w-8 sm:h-10 sm:w-10"
+          />
           <Input
             ref={inputRef}
-            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message..."}
+            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message... (@ pour mentionner)"}
             value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              handleTyping();
-            }}
+            onChange={handleInputChange}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
-              } else if (e.key === "Escape" && replyingTo) {
-                setReplyingTo(null);
+                if (showMentions && filteredMentions.length > 0) {
+                  // Sélectionner la première mention
+                  handleInsertMention(filteredMentions[0].id, filteredMentions[0].name);
+                } else {
+                  stopTyping();
+                  handleSendMessage();
+                }
+              } else if (e.key === "Escape") {
+                if (showMentions) {
+                  setShowMentions(false);
+                } else if (replyingTo) {
+                  setReplyingTo(null);
+                }
+              } else if (e.key === "ArrowDown" && showMentions) {
+                e.preventDefault();
+                // TODO: Navigation dans la liste des mentions
+              } else if (e.key === "ArrowUp" && showMentions) {
+                e.preventDefault();
+                // TODO: Navigation dans la liste des mentions
               }
             }}
+            onBlur={() => {
+              // Délai pour permettre le clic sur les mentions
+              setTimeout(() => {
+                stopTyping();
+              }, 200);
+            }}
             disabled={sending}
-            className="text-sm"
+            className="text-sm flex-1"
           />
           <Button
-            onClick={handleSendMessage}
+            onClick={() => {
+              stopTyping();
+              handleSendMessage();
+            }}
             disabled={(!message.trim() && attachments.length === 0) || sending}
             className="bg-primary hover:bg-primary h-8 w-8 sm:h-10 sm:w-10"
           >

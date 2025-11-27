@@ -6,7 +6,7 @@ const hrActivityBaseSchema = z.object({
   activityName: z.string().min(1, "Le nom de l'activité est requis"),
   description: z.string().optional(),
   periodicity: z.enum(["DAILY", "WEEKLY", "MONTHLY", "PUNCTUAL", "WEEKLY_MONTHLY"]),
-  weeklyQuantity: z.number().int().min(1).max(20).optional(),
+  weeklyQuantity: z.number().int().min(1).optional(),
   totalHours: z.number().min(0).optional(),
   startDate: z.date({
     required_error: "La date de début est requise",

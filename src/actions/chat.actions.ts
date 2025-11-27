@@ -1064,3 +1064,368 @@ export const getMessageReplies = authActionClient
     return { replies, totalReplies: replies.length };
   });
 
+// ========================================
+// RECHERCHE GLOBALE DE MESSAGES
+// ========================================
+
+const searchMessagesSchema = z.object({
+  query: z.string().min(1).max(200),
+  conversationId: z.string().optional(), // Si fourni, recherche uniquement dans cette conversation
+  limit: z.number().min(1).max(100).optional().default(50),
+});
+
+/**
+ * Rechercher des messages dans toutes les conversations de l'utilisateur
+ */
+export const searchMessages = authActionClient
+  .schema(searchMessagesSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { query, conversationId, limit } = parsedInput;
+    const userId = ctx.userId;
+
+    // Récupérer les IDs des conversations dont l'utilisateur est membre
+    const userConversations = await prisma.conversationMember.findMany({
+      where: { userId },
+      select: { conversationId: true },
+    });
+
+    const conversationIds = conversationId
+      ? [conversationId]
+      : userConversations.map((c) => c.conversationId);
+
+    if (conversationIds.length === 0) {
+      return { messages: [], total: 0 };
+    }
+
+    // Rechercher les messages
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId: { in: conversationIds },
+        isDeleted: false,
+        content: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            image: true,
+          },
+        },
+        Conversation: {
+          select: {
+            id: true,
+            type: true,
+            name: true,
+            Project: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+              },
+            },
+            ConversationMember: {
+              include: {
+                User: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
+
+    // Compter le total
+    const total = await prisma.message.count({
+      where: {
+        conversationId: { in: conversationIds },
+        isDeleted: false,
+        content: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    return { messages, total };
+  });
+
+// ========================================
+// ACCUSÉS DE LECTURE PAR MESSAGE
+// ========================================
+
+const markMessageAsReadSchema = z.object({
+  messageId: z.string(),
+});
+
+/**
+ * Marquer un message spécifique comme lu
+ * Crée ou met à jour un enregistrement MessageRead
+ */
+export const markMessageAsRead = authActionClient
+  .schema(markMessageAsReadSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { messageId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Vérifier que le message existe et que l'utilisateur est membre de la conversation
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        Conversation: {
+          include: {
+            ConversationMember: {
+              where: { userId },
+            },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new Error("Message introuvable");
+    }
+
+    if (message.Conversation.ConversationMember.length === 0) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Ne pas créer d'accusé de lecture pour ses propres messages
+    if (message.senderId === userId) {
+      return { success: true, isOwnMessage: true };
+    }
+
+    // Créer ou mettre à jour l'accusé de lecture
+    await prisma.messageRead.upsert({
+      where: {
+        messageId_userId: {
+          messageId,
+          userId,
+        },
+      },
+      create: {
+        messageId,
+        userId,
+        readAt: new Date(),
+      },
+      update: {
+        readAt: new Date(),
+      },
+    });
+
+    return { success: true };
+  });
+
+const getMessageReadReceiptsSchema = z.object({
+  messageId: z.string(),
+});
+
+/**
+ * Récupérer les accusés de lecture d'un message
+ */
+export const getMessageReadReceipts = authActionClient
+  .schema(getMessageReadReceiptsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { messageId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Vérifier que l'utilisateur a accès au message
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        Conversation: {
+          include: {
+            ConversationMember: {
+              where: { userId },
+            },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new Error("Message introuvable");
+    }
+
+    if (message.Conversation.ConversationMember.length === 0) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Récupérer les accusés de lecture
+    const readReceipts = await prisma.messageRead.findMany({
+      where: { messageId },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        readAt: "asc",
+      },
+    });
+
+    return { readReceipts };
+  });
+
+// ========================================
+// ARCHIVAGE DES CONVERSATIONS
+// ========================================
+
+const archiveConversationSchema = z.object({
+  conversationId: z.string(),
+});
+
+/**
+ * Archiver une conversation pour l'utilisateur
+ */
+export const archiveConversation = authActionClient
+  .schema(archiveConversationSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Vérifier que l'utilisateur est membre
+    const membership = await prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId,
+      },
+    });
+
+    if (!membership) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Archiver (mettre à jour isArchived sur le membership)
+    await prisma.conversationMember.update({
+      where: {
+        id: membership.id,
+      },
+      data: {
+        isArchived: true,
+        archivedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { success: true };
+  });
+
+/**
+ * Désarchiver une conversation pour l'utilisateur
+ */
+export const unarchiveConversation = authActionClient
+  .schema(archiveConversationSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Vérifier que l'utilisateur est membre
+    const membership = await prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId,
+      },
+    });
+
+    if (!membership) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    // Désarchiver
+    await prisma.conversationMember.update({
+      where: {
+        id: membership.id,
+      },
+      data: {
+        isArchived: false,
+        archivedAt: null,
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { success: true };
+  });
+
+/**
+ * Récupérer les conversations archivées de l'utilisateur
+ */
+export const getArchivedConversations = authActionClient
+  .schema(z.object({}))
+  .action(async ({ ctx }) => {
+    const userId = ctx.userId;
+
+    const archivedMemberships = await prisma.conversationMember.findMany({
+      where: {
+        userId,
+        isArchived: true,
+      },
+      include: {
+        Conversation: {
+          include: {
+            ConversationMember: {
+              include: {
+                User: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatar: true,
+                    image: true,
+                  },
+                },
+              },
+            },
+            Message: {
+              orderBy: { createdAt: "desc" },
+              take: 1,
+              include: {
+                User: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            Project: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                color: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        archivedAt: "desc",
+      },
+    });
+
+    const conversations = archivedMemberships.map((m) => ({
+      ...m.Conversation,
+      archivedAt: m.archivedAt,
+    }));
+
+    return { conversations };
+  });
+

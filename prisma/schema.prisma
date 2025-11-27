@@ -102,12 +102,15 @@ model ConversationMember {
   lastReadAt     DateTime?
   isAdmin        Boolean      @default(false)
   isMuted        Boolean      @default(false)
+  isArchived     Boolean      @default(false)
+  archivedAt     DateTime?
   Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@index([conversationId])
   @@index([userId])
+  @@index([userId, isArchived])
 }
 
 model Department {
@@ -205,23 +208,24 @@ model Holiday {
 }
 
 model Message {
-  id             String       @id
+  id             String        @id
   conversationId String
   senderId       String
   content        String
   attachments    Json?
-  isEdited       Boolean      @default(false)
-  isDeleted      Boolean      @default(false)
-  createdAt      DateTime     @default(now())
+  isEdited       Boolean       @default(false)
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
   updatedAt      DateTime
   replyToId      String?
   reactions      Json?
   pinnedAt       DateTime?
   pinnedById     String?
-  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  Message        Message?     @relation("MessageToMessage", fields: [replyToId], references: [id])
-  other_Message  Message[]    @relation("MessageToMessage")
-  User           User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  Conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  Message        Message?      @relation("MessageToMessage", fields: [replyToId], references: [id])
+  other_Message  Message[]     @relation("MessageToMessage")
+  User           User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  MessageRead    MessageRead[]
 
   @@index([conversationId])
   @@index([createdAt])
@@ -229,6 +233,19 @@ model Message {
   @@index([senderId])
   @@index([pinnedAt])
   @@index([conversationId, pinnedAt])
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  Message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
 }
 
 model Notification {
@@ -524,6 +541,10 @@ model User {
   reduceMotion                                    Boolean              @default(false)
   weeklyGoal                                      Float                @default(40)
   lastSeenAt                                      DateTime?
+  quietHoursEnabled                               Boolean              @default(false)
+  quietHoursStart                                 String               @default("22:00")
+  quietHoursEnd                                   String               @default("07:00")
+  quietHoursDays                                  String[]             @default([])
   Account                                         Account[]
   AuditLog                                        AuditLog[]
   Conversation                                    Conversation[]
@@ -544,6 +565,7 @@ model User {
   TaskActivity                                    TaskActivity[]
   TaskComment                                     TaskComment[]
   TaskMember                                      TaskMember[]
+  MessageRead                                     MessageRead[]
   Department                                      Department?          @relation(fields: [departmentId], references: [id])
   User                                            User?                @relation("UserToUser", fields: [managerId], references: [id])
   other_User                                      User[]               @relation("UserToUser")
