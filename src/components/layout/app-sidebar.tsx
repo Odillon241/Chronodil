@@ -148,11 +148,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+      <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center justify-center group-data-[collapsible=icon]:justify-center">
+        <SidebarMenu className="w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+          <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+            <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:!w-8 group-data-[collapsible=icon]:!justify-center">
+              <Link href="/dashboard" className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
                 <div className="flex aspect-square size-8 items-center justify-center">
                   <Image
                     src="/assets/media/icône du logoicône logo de chronodil.svg"
@@ -162,7 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     className="size-8"
                   />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">Chronodil</span>
                   <span className="truncate text-xs text-muted-foreground">
                     {t("navigation.timesheets")}

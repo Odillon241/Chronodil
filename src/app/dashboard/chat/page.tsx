@@ -200,7 +200,7 @@ export default function ChatPage() {
 
   if (!currentUser) {
     return (
-      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="text-center space-y-4">
           <Spinner className="size-6 mx-auto" />
           <p className="text-xs sm:text-sm text-muted-foreground">Chargement...</p>
@@ -211,7 +211,7 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 flex bg-background">
+      <div className="flex h-full min-h-[400px] -m-3 sm:-m-4 lg:-m-6">
         {/* Sidebar Skeleton */}
         <div className="w-full md:w-80 border-r p-3 md:p-4 space-y-3 md:space-y-4">
           <Skeleton className="h-9 md:h-10 w-full" />
@@ -236,10 +236,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="fixed inset-0 top-16 left-0 md:left-64 right-0 bg-background">
-      <div className="grid grid-cols-1 md:grid-cols-[350px,1fr] h-full">
+    <div className="flex h-full w-full bg-background overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-[350px,1fr] w-full h-full min-w-0">
         {/* Sidebar - Liste des conversations */}
-        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 bg-background ${selectedConversation ? 'hidden md:block' : 'block'}`}>
+        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
           <ChatConversationList
             conversations={conversations}
             currentUserId={currentUser.id}
@@ -252,7 +252,7 @@ export default function ChatPage() {
         </Card>
 
         {/* Main Content - Messages */}
-        <Card className={`rounded-none border-0 bg-background ${selectedConversation ? 'block' : 'hidden md:block'}`}>
+        <Card className={`rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
           {selectedConversation ? (
             <ChatMessageList
               conversation={selectedConversation}
