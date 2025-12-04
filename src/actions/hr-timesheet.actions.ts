@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
@@ -282,21 +282,29 @@ export const getHRTimesheetsValidatedByMe = authActionClient
 
     // Filtrer selon le rôle de l'utilisateur
     if (userRole === "MANAGER" || userRole === "DIRECTEUR") {
-      // Les managers et directeurs voient les feuilles qu'ils ont validées/rejetées
+      // Les managers et directeurs voient les feuilles qu'ils ont validées (pas les rejetées)
       whereConditions.managerSignedById = userId;
-      // Inclure uniquement les statuts validés ou rejetés par le manager/directeur (si aucun filtre spécifique)
+      // Inclure uniquement les statuts validés par le manager/directeur (exclure REJECTED)
       if (!status || status === "all") {
-        whereConditions.status = { in: ["MANAGER_APPROVED", "REJECTED", "APPROVED"] };
+        whereConditions.status = { in: ["MANAGER_APPROVED", "APPROVED"] };
+      } else if (status === "REJECTED") {
+        // Si REJECTED est demandé, ne rien retourner (les rejetés sont dans l'onglet "Rejeté")
+        // Utiliser une condition qui ne correspondra jamais
+        whereConditions.id = "NEVER_MATCH";
       } else {
         // Si un statut spécifique est demandé, l'utiliser
         whereConditions.status = status;
       }
     } else if (userRole === "ADMIN" || userRole === "HR") {
-      // Les admins/HR voient les feuilles qu'ils ont validées/rejetées (validation finale)
+      // Les admins/HR voient les feuilles qu'ils ont validées (pas les rejetées)
       whereConditions.odillonSignedById = userId;
-      // Inclure uniquement les statuts validés ou rejetés par Odillon (si aucun filtre spécifique)
+      // Inclure uniquement les statuts validés par Odillon (exclure REJECTED)
       if (!status || status === "all") {
-        whereConditions.status = { in: ["APPROVED", "REJECTED"] };
+        whereConditions.status = { in: ["APPROVED"] };
+      } else if (status === "REJECTED") {
+        // Si REJECTED est demandé, ne rien retourner (les rejetés sont dans l'onglet "Rejeté")
+        // Utiliser une condition qui ne correspondra jamais
+        whereConditions.id = "NEVER_MATCH";
       } else {
         // Si un statut spécifique est demandé, l'utiliser
         whereConditions.status = status;
@@ -857,8 +865,9 @@ export const submitHRTimesheet = authActionClient
       },
     });
 
+    const validatorNotifications = [];
     for (const validator of validators) {
-      await prisma.notification.create({
+      const notification = await prisma.notification.create({
         data: {
           id: nanoid(),
           userId: validator.id,
@@ -868,6 +877,22 @@ export const submitHRTimesheet = authActionClient
           link: `/dashboard/hr-timesheet/${timesheetId}`,
         },
       });
+      validatorNotifications.push(notification);
+    }
+
+    // Envoyer les push notifications (fire and forget)
+    if (validatorNotifications.length > 0) {
+      const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+      sendPushNotificationsForNotifications(
+        validatorNotifications.map((n) => ({
+          userId: n.userId,
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          link: n.link,
+        }))
+      ).catch(console.error);
     }
 
     revalidatePath("/dashboard/hr-timesheet");
@@ -1012,7 +1037,7 @@ export const managerApproveHRTimesheet = authActionClient
     });
 
     // Notifier l'employé
-    await prisma.notification.create({
+    const employeeNotification = await prisma.notification.create({
       data: {
         id: nanoid(),
         userId: timesheet.userId,
@@ -1041,8 +1066,9 @@ export const managerApproveHRTimesheet = authActionClient
         },
       });
 
+      const adminNotifications = [];
       for (const admin of admins) {
-        await prisma.notification.create({
+        const notification = await prisma.notification.create({
           data: {
             id: nanoid(),
             userId: admin.id,
@@ -1052,6 +1078,22 @@ export const managerApproveHRTimesheet = authActionClient
             link: `/dashboard/hr-timesheet/${timesheetId}`,
           },
         });
+        adminNotifications.push(notification);
+      }
+
+      // Envoyer les push notifications (fire and forget)
+      if (adminNotifications.length > 0) {
+        const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+        sendPushNotificationsForNotifications(
+          adminNotifications.map((n) => ({
+            userId: n.userId,
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            type: n.type,
+            link: n.link,
+          }))
+        ).catch(console.error);
       }
     }
 
@@ -1127,7 +1169,7 @@ export const odillonApproveHRTimesheet = authActionClient
     });
 
     // Notifier l'employé
-    await prisma.notification.create({
+    const finalEmployeeNotification = await prisma.notification.create({
       data: {
         id: nanoid(),
         userId: timesheet.userId,
@@ -1147,6 +1189,16 @@ export const odillonApproveHRTimesheet = authActionClient
         link: `/dashboard/hr-timesheet/${timesheetId}`,
       },
     });
+
+    // Envoyer la push notification (fire and forget)
+    const { sendPushNotificationForNotification: sendPush } = await import('@/lib/notification-helpers');
+    sendPush(timesheet.userId, {
+      id: finalEmployeeNotification.id,
+      title: finalEmployeeNotification.title,
+      message: finalEmployeeNotification.message,
+      type: finalEmployeeNotification.type,
+      link: finalEmployeeNotification.link,
+    }).catch(console.error);
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
@@ -1551,7 +1603,7 @@ export const revertHRTimesheetStatus = authActionClient
     });
 
     // Notifier l'employé concerné
-    await prisma.notification.create({
+    const statusNotification = await prisma.notification.create({
       data: {
         id: nanoid(),
         userId: timesheet.userId,
@@ -1561,6 +1613,16 @@ export const revertHRTimesheetStatus = authActionClient
         link: `/dashboard/hr-timesheet/${timesheetId}`,
       },
     });
+
+    // Envoyer la push notification (fire and forget)
+    const { sendPushNotificationForNotification } = await import('@/lib/notification-helpers');
+    sendPushNotificationForNotification(timesheet.userId, {
+      id: statusNotification.id,
+      title: statusNotification.title,
+      message: statusNotification.message,
+      type: statusNotification.type,
+      link: statusNotification.link,
+    }).catch(console.error);
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);

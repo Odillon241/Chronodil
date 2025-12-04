@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
 import { useNotificationWithSound } from "@/hooks/use-notification-with-sound";
+import { useDesktopNotifications } from "@/hooks/use-desktop-notifications";
 import {
   getMyNotifications,
   markAsRead,
@@ -45,8 +46,16 @@ export function NotificationDropdown() {
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Hook pour jouer les sons de notification
+  // Hooks pour les notifications
   const { playNotificationSound, soundEnabled } = useNotificationWithSound();
+  const desktop = useDesktopNotifications({ 
+    enabled: true,
+    onPlaySound: (soundType) => {
+      if (soundEnabled) {
+        playNotificationSound(soundType || 'info');
+      }
+    },
+  });
 
   // Éviter les erreurs d'hydratation en ne rendant le DropdownMenu qu'après le montage
   useEffect(() => {
@@ -86,13 +95,26 @@ export function NotificationDropdown() {
 
     // Jouer le son si activé
     if (soundEnabled) {
-      // Déterminer le type de son selon le type de notification
       let soundType: 'success' | 'error' | 'info' | 'warning' = 'info';
       if (notification.type === 'success') soundType = 'success';
       else if (notification.type === 'error') soundType = 'error';
       else if (notification.type === 'warning') soundType = 'warning';
-
       playNotificationSound(soundType);
+    }
+
+    // Afficher notification desktop si activé
+    if (desktop.hasPermission && desktop.desktopNotificationsEnabled) {
+      desktop.notifyNewNotification(
+        notification.title,
+        notification.message,
+        () => {
+          if (notification.link) {
+            router.push(notification.link);
+          } else {
+            router.push('/dashboard');
+          }
+        }
+      );
     }
 
     // Afficher un toast
@@ -106,7 +128,7 @@ export function NotificationDropdown() {
     if (isOpen) {
       loadNotifications();
     }
-  }, [soundEnabled, playNotificationSound, isOpen, loadUnreadCount, loadNotifications]);
+  }, [soundEnabled, playNotificationSound, desktop, router, isOpen, loadUnreadCount, loadNotifications]);
 
   // Hook realtime pour écouter les nouvelles notifications
   useRealtimeNotifications({

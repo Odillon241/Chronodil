@@ -43,6 +43,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotificationSound, useAvailableSounds, CATEGORY_LABELS, NOTIFICATION_SOUNDS, type SoundCategory } from "@/hooks/use-notification-sound";
+import { usePushSubscription } from "@/hooks/use-push-subscription";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "@/lib/auth-client";
@@ -92,6 +93,12 @@ export default function SettingsPage() {
   
   // État local pour le slider de volume (pour interaction fluide)
   const [localVolume, setLocalVolume] = useState<number>(50);
+
+  // Push notifications
+  const pushSubscription = usePushSubscription({
+    vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    autoSubscribe: false,
+  });
   
   // Hook de notification avec les préférences actuelles
   // Pour le test, on force toujours l'activation du son
@@ -779,7 +786,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <p className="text-xs md:text-sm text-muted-foreground max-w-2xl">
-                  Configurez vos notifications sonores, emails et bureau
+                  Configurez vos notifications sonores, emails, bureau et push
                 </p>
               </div>
             </div>
@@ -813,7 +820,7 @@ export default function SettingsPage() {
         ) : (
           <div className="space-y-6">
             {/* Grille des options principales */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Carte Sons */}
               <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
@@ -1059,6 +1066,111 @@ export default function SettingsPage() {
                           <span className="text-amber-600 dark:text-amber-400">⚠ Permission en attente - Cliquez sur "Tester" pour demander</span>
                         );
                       })()}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Carte Push Notifications */}
+              <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-300 dark:hover:border-purple-700 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+                <CardHeader className="relative z-10">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/25">
+                      <Bell className="h-6 w-6 text-white" />
+                    </div>
+                    <Switch
+                      checked={pushSubscription.isSubscribed}
+                      onCheckedChange={async (checked) => {
+                        if (checked) {
+                          const success = await pushSubscription.subscribe();
+                          if (success) {
+                            toast.success('Notifications push activées');
+                          } else {
+                            toast.error(pushSubscription.error || 'Erreur lors de l\'activation');
+                          }
+                        } else {
+                          const success = await pushSubscription.unsubscribe();
+                          if (success) {
+                            toast.success('Notifications push désactivées');
+                          } else {
+                            toast.error('Erreur lors de la désactivation');
+                          }
+                        }
+                      }}
+                      disabled={pushSubscription.isLoading || !pushSubscription.isSupported}
+                      className="relative z-10"
+                    />
+                  </div>
+                  <CardTitle className="text-lg font-semibold">Notifications push</CardTitle>
+                  <CardDescription className="text-sm">
+                    Recevez des alertes même si l'application est fermée
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10 space-y-4">
+                  <div className="flex items-center justify-between">
+                    {pushSubscription.isSubscribed ? (
+                      <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400">
+                        <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                        Abonné
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-muted/50">
+                        Non abonné
+                      </Badge>
+                    )}
+                    {pushSubscription.isSubscribed && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          // Tester en créant une notification de test
+                          try {
+                            const { sendPushNotification } = await import('@/actions/push-notification.actions');
+                            if (session?.user?.id) {
+                              const result = await sendPushNotification(session.user.id, {
+                                title: '🔔 Test de notification push',
+                                body: 'Si vous voyez cette notification, les push notifications fonctionnent correctement !',
+                                link: '/dashboard',
+                              });
+                              if (result.success > 0) {
+                                toast.success('Notification de test envoyée');
+                              } else {
+                                toast.error('Erreur lors de l\'envoi du test');
+                              }
+                            }
+                          } catch (error) {
+                            console.error('Test push error:', error);
+                            toast.error('Erreur lors du test');
+                          }
+                        }}
+                        disabled={pushSubscription.isLoading || !session?.user?.id}
+                        className="gap-2"
+                      >
+                        <Bell className="h-4 w-4" />
+                        Tester
+                      </Button>
+                    )}
+                  </div>
+                  {!pushSubscription.isSupported && (
+                    <div className="text-xs text-muted-foreground">
+                      <span className="text-amber-600 dark:text-amber-400">
+                        ⚠ Non supporté par ce navigateur
+                      </span>
+                    </div>
+                  )}
+                  {pushSubscription.isSupported && pushSubscription.permission === 'denied' && (
+                    <div className="text-xs text-muted-foreground">
+                      <span className="text-red-600 dark:text-red-400">
+                        ✗ Permission refusée - Activez dans les paramètres du navigateur
+                      </span>
+                    </div>
+                  )}
+                  {pushSubscription.isSupported && pushSubscription.permission === 'default' && !pushSubscription.isSubscribed && (
+                    <div className="text-xs text-muted-foreground">
+                      <span className="text-amber-600 dark:text-amber-400">
+                        ⚠ Activez pour recevoir des notifications même si l'application est fermée
+                      </span>
                     </div>
                   )}
                 </CardContent>

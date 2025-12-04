@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -154,7 +154,7 @@ export const createTask = actionClient
           select: { name: true },
         });
 
-        await tx.notification.createMany({
+        const notifications = await tx.notification.createMany({
           data: sharedWith.map((userId) => ({
             id: nanoid(),
             userId: userId,
@@ -165,6 +165,32 @@ export const createTask = actionClient
             isRead: false,
           })),
         });
+
+        // Envoyer les push notifications (fire and forget, après la transaction)
+        if (notifications.count > 0) {
+          const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+          // Récupérer les notifications créées pour envoyer les push
+          const createdNotifications = await tx.notification.findMany({
+            where: {
+              userId: { in: sharedWith },
+              title: "Nouvelle tâche partagée",
+            },
+            orderBy: { createdAt: 'desc' },
+            take: sharedWith.length,
+          });
+          
+          // Envoyer en arrière-plan (ne pas attendre)
+          sendPushNotificationsForNotifications(
+            createdNotifications.map((n) => ({
+              userId: n.userId,
+              id: n.id,
+              title: n.title,
+              message: n.message,
+              type: n.type,
+              link: n.link,
+            }))
+          ).catch(console.error);
+        }
       }
 
       return newTask;
@@ -678,7 +704,7 @@ export const updateTaskStatus = actionClient
       const otherMembers = task.TaskMember.filter(m => m.userId !== session.user.id);
       
       if (otherMembers.length > 0) {
-        await prisma.notification.createMany({
+        const statusNotifications = await prisma.notification.createMany({
           data: otherMembers.map(member => ({
             id: nanoid(),
             userId: member.userId,
@@ -689,6 +715,31 @@ export const updateTaskStatus = actionClient
             isRead: false,
           })),
         });
+
+        // Envoyer les push notifications (fire and forget)
+        if (statusNotifications.count > 0) {
+          const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+          // Récupérer les notifications créées
+          const createdStatusNotifications = await prisma.notification.findMany({
+            where: {
+              userId: { in: otherMembers.map(m => m.userId) },
+              title: "Statut de tâche modifié",
+            },
+            orderBy: { createdAt: 'desc' },
+            take: otherMembers.length,
+          });
+          
+          sendPushNotificationsForNotifications(
+            createdStatusNotifications.map((n) => ({
+              userId: n.userId,
+              id: n.id,
+              title: n.title,
+              message: n.message,
+              type: n.type,
+              link: n.link,
+            }))
+          ).catch(console.error);
+        }
       }
     }
 
