@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useT } from "@/lib/translations";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,7 +102,7 @@ export default function ProjectsPage() {
   const { data: session } = useSession();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const currentUser = session?.user;
-  const t = useTranslations("projects");
+  const t = useT("projects");
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);

@@ -44,6 +44,7 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotificationSound, useAvailableSounds, CATEGORY_LABELS, NOTIFICATION_SOUNDS, type SoundCategory } from "@/hooks/use-notification-sound";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { sendTestPushNotification } from "@/actions/push-subscription.actions";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSession } from "@/lib/auth-client";
@@ -93,6 +94,7 @@ export default function SettingsPage() {
   
   // État local pour le slider de volume (pour interaction fluide)
   const [localVolume, setLocalVolume] = useState<number>(50);
+  const [isTestingSound, setIsTestingSound] = useState(false);
 
   // Push notifications
   const pushSubscription = usePushSubscription({
@@ -117,9 +119,25 @@ export default function SettingsPage() {
   // Charger les sons disponibles depuis Supabase Storage
   const { availableSounds, soundsByCategory, isLoading: isLoadingSounds } = useAvailableSounds();
 
+  // Mapping des anciennes valeurs de son vers les nouvelles (migration)
+  const LEGACY_SOUND_MAPPING: Record<string, string> = {
+    'default': 'new-notification-3-398649',
+    'soft': 'notification-reussie',
+    'alert': 'notification',
+  };
+
   // Fonction de test améliorée qui utilise le son sélectionné avec le volume actuel
-  const testSound = (soundType?: string) => {
-    const typeToTest = soundType || preferences?.notificationSoundType || 'new-notification-3-398649';
+  const testSound = async (soundType?: string) => {
+    if (isTestingSound) return; // Éviter les tests multiples simultanés
+    
+    setIsTestingSound(true);
+    let typeToTest = soundType || preferences?.notificationSoundType || 'new-notification-3-398649';
+    
+    // Migration des anciennes valeurs vers les nouvelles
+    if (LEGACY_SOUND_MAPPING[typeToTest]) {
+      typeToTest = LEGACY_SOUND_MAPPING[typeToTest];
+    }
+    
     const currentVolume = localVolume / 100;
 
     console.log('[SettingsPage] Test du son:', typeToTest, {
@@ -128,49 +146,117 @@ export default function SettingsPage() {
       currentVolume,
     });
 
-    // Chercher d'abord dans les sons disponibles, puis dans tous les sons comme fallback
-    let sound = availableSounds.find(s => s.id === typeToTest);
-    if (!sound) {
-      sound = NOTIFICATION_SOUNDS.find(s => s.id === typeToTest);
-    }
+    try {
+      // Chercher d'abord dans les sons disponibles, puis dans tous les sons comme fallback
+      let sound = availableSounds.find(s => s.id === typeToTest);
+      
+      if (!sound) {
+        sound = NOTIFICATION_SOUNDS.find(s => s.id === typeToTest);
+      }
 
-    // Utiliser playSoundById directement avec le volume actuel pour s'assurer que le volume est à jour
-    if (sound) {
+      if (!sound) {
+        toast.error('Son introuvable');
+        console.error('[SettingsPage] Son introuvable:', typeToTest);
+        return;
+      }
+
       // Créer un élément audio temporaire avec le volume actuel
-      const audio = new Audio(sound.file);
+      const audio = new Audio();
       audio.volume = currentVolume;
+      audio.preload = 'auto';
 
-      audio.addEventListener('error', (e) => {
-        console.error('[SettingsPage] Erreur audio:', {
-          soundId: typeToTest,
-          url: sound.file,
-          error: e,
-          errorCode: audio.error?.code,
-          errorMessage: audio.error?.message,
-        });
-      });
+      // Promise pour gérer les événements audio
+      const playPromise = new Promise<void>((resolve, reject) => {
+        let hasResolved = false;
 
-      audio.addEventListener('canplay', () => {
-        console.log('[SettingsPage] Son prêt à être joué:', typeToTest);
-      });
+        const cleanup = () => {
+          audio.removeEventListener('canplaythrough', onCanPlay);
+          audio.removeEventListener('error', onError);
+          audio.removeEventListener('ended', onEnded);
+        };
 
-      audio.play()
-        .then(() => {
-          console.log('[SettingsPage] Son joué avec succès:', typeToTest);
-        })
-        .catch((error) => {
-          console.error('[SettingsPage] Erreur lors de la lecture:', {
-            soundId: typeToTest,
-            url: sound.file,
-            error: error.message,
-            errorName: error.name,
+        const onCanPlay = () => {
+          if (!hasResolved) {
+            console.log('[SettingsPage] Son prêt à être joué:', typeToTest);
+          }
+        };
+
+        const onError = (e: Event) => {
+          if (!hasResolved) {
+            hasResolved = true;
+            cleanup();
+            const errorMsg = audio.error 
+              ? `Erreur ${audio.error.code}: ${audio.error.message}` 
+              : 'Erreur de chargement';
+            reject(new Error(errorMsg));
+          }
+        };
+
+        const onEnded = () => {
+          if (!hasResolved) {
+            hasResolved = true;
+            cleanup();
+            resolve();
+          }
+        };
+
+        audio.addEventListener('canplaythrough', onCanPlay);
+        audio.addEventListener('error', onError);
+        audio.addEventListener('ended', onEnded);
+
+        // Définir la source et jouer
+        audio.src = sound!.file;
+        audio.play()
+          .then(() => {
+            console.log('[SettingsPage] Lecture du son lancée:', typeToTest);
+            // Si la lecture démarre, on considère que c'est un succès
+            if (!hasResolved) {
+              hasResolved = true;
+              toast.success('Test du son', {
+                description: `🔊 ${sound!.name}`,
+                duration: 2000,
+              });
+              // On laisse l'événement 'ended' gérer le cleanup
+            }
+          })
+          .catch((error) => {
+            if (!hasResolved) {
+              hasResolved = true;
+              cleanup();
+              reject(error);
+            }
           });
-          // Fallback vers testSoundFromHook si l'audio direct échoue
-          testSoundFromHook(typeToTest);
+      });
+
+      await playPromise;
+      console.log('[SettingsPage] Son joué avec succès:', typeToTest);
+
+    } catch (error: any) {
+      console.error('[SettingsPage] Erreur lors du test du son:', {
+        soundId: typeToTest,
+        error: error.message,
+        errorName: error.name,
+      });
+      
+      // Messages d'erreur plus explicites
+      if (error.name === 'NotAllowedError') {
+        toast.error('Permission audio requise', {
+          description: 'Cliquez à nouveau pour autoriser la lecture audio',
+          duration: 3000,
         });
-    } else {
-      // Fallback vers testSoundFromHook
-      testSoundFromHook(typeToTest);
+      } else if (error.name === 'NotSupportedError') {
+        toast.error('Format audio non supporté', {
+          description: 'Votre navigateur ne peut pas lire ce fichier',
+          duration: 3000,
+        });
+      } else {
+        toast.error('Erreur de lecture', {
+          description: error.message || 'Impossible de lire le son',
+          duration: 3000,
+        });
+      }
+    } finally {
+      setIsTestingSound(false);
     }
   };
   
@@ -180,6 +266,24 @@ export default function SettingsPage() {
       setLocalVolume(preferences.notificationSoundVolume * 100);
     }
   }, [preferences?.notificationSoundVolume]);
+
+  // Synchroniser les préférences de notification vers localStorage pour le hook useNotificationWithSound
+  useEffect(() => {
+    if (typeof window !== 'undefined' && preferences) {
+      // Synchroniser le son activé
+      if (preferences.notificationSoundEnabled !== undefined) {
+        localStorage.setItem('notification-sounds-enabled', preferences.notificationSoundEnabled.toString());
+      }
+      // Synchroniser le volume
+      if (preferences.notificationSoundVolume !== undefined) {
+        localStorage.setItem('notification-sounds-volume', preferences.notificationSoundVolume.toString());
+      }
+      // Synchroniser le son par défaut
+      if (preferences.notificationSoundType) {
+        localStorage.setItem('notification-sounds-default', preferences.notificationSoundType);
+      }
+    }
+  }, [preferences?.notificationSoundEnabled, preferences?.notificationSoundVolume, preferences?.notificationSoundType]);
 
   // Debounce de la valeur pour sauvegarder après un délai
   const debouncedVolume = useDebounce(localVolume, 500);
@@ -303,7 +407,23 @@ export default function SettingsPage() {
       }
 
       if (preferencesResult?.data) {
-        setPreferences(preferencesResult.data);
+        // Migration des anciennes valeurs de son vers les nouvelles
+        const legacySoundMapping: Record<string, string> = {
+          'default': 'new-notification-3-398649',
+          'soft': 'notification-reussie', 
+          'alert': 'notification',
+        };
+        
+        const prefs = { ...preferencesResult.data };
+        if (prefs.notificationSoundType && legacySoundMapping[prefs.notificationSoundType]) {
+          const newSoundType = legacySoundMapping[prefs.notificationSoundType];
+          console.log('[Settings] Migration du son:', prefs.notificationSoundType, '->', newSoundType);
+          prefs.notificationSoundType = newSoundType;
+          // Sauvegarder la migration en BD (en background)
+          updateUserPreferences({ notificationSoundType: newSoundType }).catch(console.error);
+        }
+        
+        setPreferences(prefs);
       }
 
       if (generalSettingsResult?.data) {
@@ -863,11 +983,20 @@ export default function SettingsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => testSound(preferences.notificationSoundType || 'new-notification-3-398649')}
-                          disabled={isSavingPreferences || !preferences.notificationSoundEnabled}
+                          disabled={isSavingPreferences || !preferences.notificationSoundEnabled || isTestingSound}
                           className="w-full hover:bg-blue-50 dark:hover:bg-blue-950/20"
                         >
-                          <Volume2 className="h-4 w-4 mr-2" />
-                          Tester le son
+                          {isTestingSound ? (
+                            <>
+                              <Spinner className="h-4 w-4 mr-2" />
+                              Lecture...
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="h-4 w-4 mr-2" />
+                              Tester le son
+                            </>
+                          )}
                         </Button>
                       </div>
                     </>
@@ -1124,24 +1253,16 @@ export default function SettingsPage() {
                         variant="outline"
                         size="sm"
                         onClick={async () => {
-                          // Tester en créant une notification de test
                           try {
-                            const { sendPushNotification } = await import('@/actions/push-notification.actions');
-                            if (session?.user?.id) {
-                              const result = await sendPushNotification(session.user.id, {
-                                title: '🔔 Test de notification push',
-                                body: 'Si vous voyez cette notification, les push notifications fonctionnent correctement !',
-                                link: '/dashboard',
-                              });
-                              if (result.success > 0) {
-                                toast.success('Notification de test envoyée');
-                              } else {
-                                toast.error('Erreur lors de l\'envoi du test');
-                              }
+                            const result = await sendTestPushNotification({});
+                            if (result?.data?.success) {
+                              toast.success(result.data.message || 'Notification de test envoyée !');
+                            } else {
+                              toast.error(result?.data?.message || result?.serverError || 'Erreur lors de l\'envoi');
                             }
                           } catch (error) {
-                            console.error('Test push error:', error);
-                            toast.error('Erreur lors du test');
+                            console.error('[Push Test] Erreur:', error);
+                            toast.error('Erreur lors de l\'envoi de la notification');
                           }
                         }}
                         disabled={pushSubscription.isLoading || !session?.user?.id}
@@ -1155,7 +1276,10 @@ export default function SettingsPage() {
                   {!pushSubscription.isSupported && (
                     <div className="text-xs text-muted-foreground">
                       <span className="text-amber-600 dark:text-amber-400">
-                        ⚠ Non supporté par ce navigateur
+                        {pushSubscription.error?.includes('VAPID') 
+                          ? '⚠ Configuration serveur requise (clés VAPID)'
+                          : '⚠ Non supporté par ce navigateur'
+                        }
                       </span>
                     </div>
                   )}
@@ -1222,6 +1346,10 @@ export default function SettingsPage() {
                         <RadioGroup
                           value={preferences?.notificationSoundType ?? 'new-notification-3-398649'}
                           onValueChange={(value) => {
+                            // Mise à jour optimiste du localStorage pour une réactivité immédiate
+                            if (typeof window !== 'undefined') {
+                              localStorage.setItem('notification-sounds-default', value);
+                            }
                             handleUpdatePreference("notificationSoundType", value);
                             toast.success("Son par défaut mis à jour");
                           }}
@@ -1261,6 +1389,10 @@ export default function SettingsPage() {
                             <RadioGroup
                               value={preferences?.notificationSoundType ?? 'new-notification-3-398649'}
                               onValueChange={(value) => {
+                                // Mise à jour optimiste du localStorage pour une réactivité immédiate
+                                if (typeof window !== 'undefined') {
+                                  localStorage.setItem('notification-sounds-default', value);
+                                }
                                 handleUpdatePreference("notificationSoundType", value);
                                 toast.success("Son par défaut mis à jour");
                               }}
@@ -1308,11 +1440,20 @@ export default function SettingsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => testSound(preferences.notificationSoundType || 'new-notification-3-398649')}
-                          disabled={isSavingPreferences || !preferences.notificationSoundEnabled}
+                          disabled={isSavingPreferences || !preferences.notificationSoundEnabled || isTestingSound}
                           className="gap-2"
                         >
-                          <Volume2 className="h-4 w-4" />
-                          Tester
+                          {isTestingSound ? (
+                            <>
+                              <Spinner className="h-4 w-4" />
+                              Test...
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="h-4 w-4" />
+                              Tester
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>

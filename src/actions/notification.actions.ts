@@ -3,8 +3,161 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { actionClient } from "@/lib/safe-action";
+import { actionClient, authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
+import { nanoid } from "nanoid";
+import {
+  sendPushNotificationForNotification,
+  sendPushNotificationsForNotifications,
+} from "@/lib/notification-helpers";
+
+// ========================================
+// CRÉATION DE NOTIFICATIONS
+// ========================================
+
+const createNotificationSchema = z.object({
+  userId: z.string(),
+  title: z.string().min(1),
+  message: z.string().min(1),
+  type: z.string().optional(),
+  link: z.string().optional(),
+  sendPush: z.boolean().optional(),
+});
+
+/**
+ * Créer une notification pour un utilisateur
+ * Peut être appelée depuis d'autres actions serveur
+ */
+export const createNotification = authActionClient
+  .schema(createNotificationSchema)
+  .action(async ({ parsedInput }) => {
+    const notification = await prisma.notification.create({
+      data: {
+        id: nanoid(),
+        userId: parsedInput.userId,
+        title: parsedInput.title,
+        message: parsedInput.message,
+        type: parsedInput.type || "info",
+        link: parsedInput.link || null,
+      },
+    });
+
+    // Envoyer la push notification si demandé (par défaut: oui)
+    if (parsedInput.sendPush !== false) {
+      // Fire and forget - ne pas bloquer la réponse
+      sendPushNotificationForNotification(parsedInput.userId, {
+        id: notification.id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        link: notification.link,
+      }).catch(console.error);
+    }
+
+    return notification;
+  });
+
+/**
+ * Créer des notifications pour plusieurs utilisateurs
+ * Optimisé pour les notifications de groupe
+ */
+export const createNotifications = authActionClient
+  .schema(
+    z.object({
+      notifications: z.array(
+        z.object({
+          userId: z.string(),
+          title: z.string().min(1),
+          message: z.string().min(1),
+          type: z.string().optional(),
+          link: z.string().optional(),
+        })
+      ),
+      sendPush: z.boolean().optional(),
+    })
+  )
+  .action(async ({ parsedInput }) => {
+    const { notifications, sendPush } = parsedInput;
+
+    // Créer toutes les notifications en batch
+    const result = await prisma.notification.createMany({
+      data: notifications.map((n) => ({
+        id: nanoid(),
+        userId: n.userId,
+        title: n.title,
+        message: n.message,
+        type: n.type || "info",
+        link: n.link || null,
+      })),
+    });
+
+    // Envoyer les push notifications si demandé
+    if (sendPush !== false && result.count > 0) {
+      // Récupérer les notifications créées
+      const createdNotifications = await prisma.notification.findMany({
+        where: {
+          userId: { in: notifications.map((n) => n.userId) },
+        },
+        orderBy: { createdAt: "desc" },
+        take: result.count,
+      });
+
+      // Fire and forget
+      sendPushNotificationsForNotifications(
+        createdNotifications.map((n) => ({
+          id: n.id,
+          userId: n.userId,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          link: n.link,
+        }))
+      ).catch(console.error);
+    }
+
+    return { count: result.count };
+  });
+
+/**
+ * Fonction utilitaire pour créer une notification depuis le code serveur
+ * (sans passer par safe-action)
+ */
+export async function createNotificationDirect(params: {
+  userId: string;
+  title: string;
+  message: string;
+  type?: string;
+  link?: string | null;
+  sendPush?: boolean;
+}) {
+  const notification = await prisma.notification.create({
+    data: {
+      id: nanoid(),
+      userId: params.userId,
+      title: params.title,
+      message: params.message,
+      type: params.type || "info",
+      link: params.link || null,
+    },
+  });
+
+  // Envoyer la push notification
+  if (params.sendPush !== false) {
+    sendPushNotificationForNotification(params.userId, {
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      link: notification.link,
+    }).catch(console.error);
+  }
+
+  return notification;
+}
+
+// ========================================
+// LECTURE DES NOTIFICATIONS
+// ========================================
 
 export const getMyNotifications = actionClient
   .schema(z.object({ limit: z.number().optional() }))

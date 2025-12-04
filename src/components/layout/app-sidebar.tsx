@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useT } from "@/lib/translations";
 import {
   LayoutDashboard,
   Clock,
@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = React.useState<string[]>([]);
   const [mounted, setMounted] = React.useState(false);
-  const t = useTranslations();
+  const t = useT();
 
   React.useEffect(() => {
     setMounted(true);
@@ -160,6 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     width={32}
                     height={32}
                     className="size-8"
+                    priority
                   />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
@@ -244,6 +245,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         <SidebarGroup>
+          <SidebarGroupLabel>{t("navigation.chatReports")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu suppressHydrationWarning>
               {navSecondary.map((item) => {

@@ -2,12 +2,12 @@
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useTranslations } from "next-intl";
+import { useT } from "@/lib/translations";
+import { Eye, Zap, Info } from "lucide-react";
 
 interface AccessibilitySectionProps {
   settings: {
     highContrast: boolean;
-    screenReaderMode: boolean;
     reduceMotion: boolean;
   };
   onUpdate: (key: string, value: any) => void;
@@ -15,7 +15,7 @@ interface AccessibilitySectionProps {
 }
 
 export function AccessibilitySection({ settings, onUpdate, isSaving }: AccessibilitySectionProps) {
-  const t = useTranslations("settings.accessibility");
+  const t = useT("settings.accessibility");
 
   return (
     <div className="space-y-6">
@@ -24,63 +24,56 @@ export function AccessibilitySection({ settings, onUpdate, isSaving }: Accessibi
         <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* High Contrast */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="high-contrast">{t("highContrast")}</Label>
+        <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-md bg-primary/10 text-primary">
+              <Eye className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="high-contrast" className="font-medium cursor-pointer">
+                {t("highContrast")}
+              </Label>
               <p className="text-sm text-muted-foreground">
                 {t("highContrastDesc")}
               </p>
             </div>
-            <Switch
-              id="high-contrast"
-              checked={settings.highContrast}
-              onCheckedChange={(checked) => onUpdate("highContrast", checked)}
-              disabled={isSaving}
-            />
           </div>
-        </div>
-
-        {/* Screen Reader Mode */}
-        <div className="space-y-3 border-t pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="screen-reader">{t("screenReader")}</Label>
-              <p className="text-sm text-muted-foreground">
-                {t("screenReaderDesc")}
-              </p>
-            </div>
-            <Switch
-              id="screen-reader"
-              checked={settings.screenReaderMode}
-              onCheckedChange={(checked) => onUpdate("screenReaderMode", checked)}
-              disabled={isSaving}
-            />
-          </div>
+          <Switch
+            id="high-contrast"
+            checked={settings.highContrast}
+            onCheckedChange={(checked) => onUpdate("highContrast", checked)}
+            disabled={isSaving}
+          />
         </div>
 
         {/* Reduce Motion */}
-        <div className="space-y-3 border-t pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="reduce-motion">{t("reduceMotion")}</Label>
+        <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-md bg-primary/10 text-primary">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="reduce-motion" className="font-medium cursor-pointer">
+                {t("reduceMotion")}
+              </Label>
               <p className="text-sm text-muted-foreground">
                 {t("reduceMotionDesc")}
               </p>
             </div>
-            <Switch
-              id="reduce-motion"
-              checked={settings.reduceMotion}
-              onCheckedChange={(checked) => onUpdate("reduceMotion", checked)}
-              disabled={isSaving}
-            />
           </div>
+          <Switch
+            id="reduce-motion"
+            checked={settings.reduceMotion}
+            onCheckedChange={(checked) => onUpdate("reduceMotion", checked)}
+            disabled={isSaving}
+          />
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">
+        <div className="flex gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900 dark:text-blue-100">
             {t("tip")}
           </p>

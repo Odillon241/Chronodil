@@ -1,9 +1,23 @@
 import { serve } from "inngest/next";
 import { inngest } from "@/lib/inngest/client";
-import { inngestFunctions } from "@/lib/inngest/functions";
+import {
+  sendEmailNotification,
+  sendTimesheetReminders,
+} from "@/lib/inngest/functions";
+// TODO: Implémenter les fonctions chat (module functions-chat manquant)
+// import {
+//   sendScheduledMessages,
+//   sendMessageReminders,
+// } from "@/lib/inngest/functions-chat";
 
-// Create an API that serves zero or more Inngest functions
+// Créer le handler Inngest avec toutes les fonctions
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: inngestFunctions,
+  functions: [
+    sendEmailNotification,
+    sendTimesheetReminders,
+    // TODO: Ajouter les fonctions chat quand elles seront implémentées
+    // sendScheduledMessages,
+    // sendMessageReminders,
+  ],
 });

@@ -8,13 +8,14 @@ import { toast } from "sonner";
 interface UseRealtimeNotificationsProps {
   onNewNotification: (notification: any) => void;
   userId: string;
+  enabled?: boolean;
 }
 
 /**
  * Hook optimisé pour écouter les nouvelles notifications en temps réel
  * Surveille la table Notification pour détecter les nouvelles notifications
  */
-export function useRealtimeNotifications({ onNewNotification, userId }: UseRealtimeNotificationsProps) {
+export function useRealtimeNotifications({ onNewNotification, userId, enabled = true }: UseRealtimeNotificationsProps) {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const retryCountRef = useRef(0);
   const maxRetries = 5;
@@ -23,8 +24,12 @@ export function useRealtimeNotifications({ onNewNotification, userId }: UseRealt
   const stableOnNewNotification = useCallback(onNewNotification, [onNewNotification]);
 
   useEffect(() => {
-    if (!userId) {
-      console.warn('[Realtime Notifications] userId non fourni, skip subscription');
+    if (!enabled || !userId) {
+      if (!enabled) {
+        console.log('[Realtime Notifications] Désactivé');
+      }
+      // Ne plus afficher de warning quand userId est vide - c'est un comportement attendu
+      // Le hook est désactivé via enabled=false depuis le composant parent
       return;
     }
 
@@ -110,5 +115,5 @@ export function useRealtimeNotifications({ onNewNotification, userId }: UseRealt
         isSubscribedRef.current = false;
       }
     };
-  }, [stableOnNewNotification, userId]);
+  }, [stableOnNewNotification, userId, enabled]);
 }

@@ -15,7 +15,8 @@ const updatePreferencesSchema = z.object({
   reminderDays: z.array(z.string()).optional(),
   weeklyGoal: z.number().min(1).max(168).optional(), // 1h minimum, 168h maximum (24h*7 jours)
   notificationSoundEnabled: z.boolean().optional(),
-  notificationSoundType: z.enum(["default", "soft", "alert"]).optional(),
+  // notificationSoundType accepte n'importe quel ID de son (ex: 'new-notification-3-398649')
+  notificationSoundType: z.string().optional(),
   notificationSoundVolume: z.number().min(0).max(1).optional(),
   emailNotificationsEnabled: z.boolean().optional(),
   desktopNotificationsEnabled: z.boolean().optional(),

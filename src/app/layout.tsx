@@ -1,49 +1,37 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "@/lib/i18n";
-import { QueryProvider } from "@/providers/query-provider";
+import { Toaster } from "@/components/ui/sonner";
+import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
 
 export const metadata: Metadata = {
-  title: "Chronodil - Gestion des temps",
-  description: "Application de gestion des feuilles de temps",
-  icons: {
-    icon: "/assets/media/icône du logoicône logo de chronodil.svg",
-  },
+  title: "Chronodil - Gestion de temps et projets",
+  description: "Plateforme de gestion de temps et projets",
 };
 
-// Force dynamic rendering pour tout le site (évite les erreurs de prerendering avec next-intl)
-export const dynamic = 'force-dynamic';
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const locale = 'fr' as const;
-  const messages = await getMessages(locale);
-
+}) {
   return (
-    <html lang={locale} suppressHydrationWarning className="dark">
+    <html lang="fr" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <QueryProvider>
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <Toaster />
-            </ThemeProvider>
-          </NextIntlClientProvider>
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

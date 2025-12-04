@@ -1,12 +1,14 @@
 "use client";
 
-import { use, useEffect, useState, useTransition } from "react";
-import { useLocale as useNextIntlLocale } from "next-intl";
+import { useTransition } from "react";
 import { updateGeneralSettings } from "@/actions/general-settings.actions";
 import { useRouter } from "next/navigation";
 
+/**
+ * Hook simplifié pour la gestion de la locale
+ * Note: Actuellement l'application utilise uniquement le français
+ */
 export function useLocale() {
-  const currentLocale = useNextIntlLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -25,9 +27,8 @@ export function useLocale() {
   };
 
   return {
-    locale: currentLocale,
+    locale: "fr" as const,
     changeLocale,
     isPending,
   };
 }
-

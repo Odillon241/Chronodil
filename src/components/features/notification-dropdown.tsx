@@ -45,6 +45,7 @@ export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
 
   // Hooks pour les notifications
   const { playNotificationSound, soundEnabled } = useNotificationWithSound();
@@ -93,6 +94,13 @@ export function NotificationDropdown() {
   const handleNewNotification = useCallback((notification: any) => {
     console.log('🔔 Nouvelle notification reçue dans le dropdown:', notification);
 
+    // ⚡ MISE À JOUR INSTANTANÉE du compteur (optimistic update)
+    setUnreadCount(prev => prev + 1);
+    
+    // ⚡ Animation du badge
+    setHasNewNotification(true);
+    setTimeout(() => setHasNewNotification(false), 2000);
+
     // Jouer le son si activé
     if (soundEnabled) {
       let soundType: 'success' | 'error' | 'info' | 'warning' = 'info';
@@ -123,7 +131,7 @@ export function NotificationDropdown() {
       duration: 5000,
     });
 
-    // Recharger le compteur et les notifications
+    // Vérifier avec le serveur (pour garder la sync)
     loadUnreadCount();
     if (isOpen) {
       loadNotifications();
@@ -131,9 +139,11 @@ export function NotificationDropdown() {
   }, [soundEnabled, playNotificationSound, desktop, router, isOpen, loadUnreadCount, loadNotifications]);
 
   // Hook realtime pour écouter les nouvelles notifications
+  // Désactivé tant que la session n'est pas chargée pour éviter les warnings inutiles
   useRealtimeNotifications({
     onNewNotification: handleNewNotification,
     userId: session?.user?.id || '',
+    enabled: !!session?.user?.id, // Désactiver tant que userId n'est pas disponible
   });
 
   useEffect(() => {
@@ -214,11 +224,13 @@ export function NotificationDropdown() {
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-8 w-8">
-          <Bell className="h-4 w-4" />
+          <Bell className={`h-4 w-4 transition-transform ${hasNewNotification ? 'animate-bounce' : ''}`} />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary"
+              className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary transition-all ${
+                hasNewNotification ? 'animate-pulse scale-110' : ''
+              }`}
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>

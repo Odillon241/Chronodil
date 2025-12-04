@@ -10,36 +10,87 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState, type ReactNode } from "react";
 
+// ⚡ Instance singleton du QueryClient pour un accès global
+// Utilisé par les hooks real-time pour invalider le cache
+let _queryClientInstance: QueryClient | null = null;
+
+// ⚡ Durées de cache optimisées par type de données
+export const CACHE_TIMES = {
+  // Données qui changent peu
+  STATIC: {
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 heure
+  },
+  // Données utilisateur (projets, utilisateurs)
+  USER_DATA: {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+  },
+  // Données dynamiques (tâches, timesheets, notifications)
+  DYNAMIC: {
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  },
+  // Données temps réel (chat, notifications non lues)
+  REALTIME: {
+    staleTime: 30 * 1000, // 30 secondes
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  },
+} as const;
+
+function createQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        // ⚡ Par défaut: cache données dynamiques
+        staleTime: CACHE_TIMES.DYNAMIC.staleTime,
+        gcTime: CACHE_TIMES.DYNAMIC.gcTime,
+        // ⚡ Retry 3 fois en cas d'erreur avec backoff exponentiel
+        retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        // ⚡ Refetch automatiquement quand la fenêtre reprend le focus
+        refetchOnWindowFocus: true,
+        // ⚡ Refetch quand la connexion est rétablie
+        refetchOnReconnect: true,
+        // ⚡ Ne pas refetch automatiquement au mount (économise des requêtes)
+        refetchOnMount: false,
+        // ⚡ Refetch en arrière-plan quand les données sont stale
+        refetchIntervalInBackground: false,
+      },
+      mutations: {
+        // ⚡ Retry 2 fois pour les mutations
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      },
+    },
+  });
+}
+
+// ⚡ Getter pour l'instance globale (utilisé par les hooks real-time)
+// Fonction qui retourne l'instance singleton côté client, null côté serveur
+export function getQueryClient(): QueryClient | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  if (!_queryClientInstance) {
+    _queryClientInstance = createQueryClient();
+  }
+  return _queryClientInstance;
+}
+
 export function QueryProvider({ children }: { children: ReactNode }) {
-  // ⚡ OPTIMISATION: Créer une instance unique de QueryClient
-  // Ne pas créer de nouveau QueryClient à chaque render!
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // ⚡ Cache les données pendant 5 minutes
-            staleTime: 5 * 60 * 1000, // 5 minutes
-            // ⚡ Garde les données inactives pendant 10 minutes
-            gcTime: 10 * 60 * 1000, // 10 minutes (ancien cacheTime)
-            // ⚡ Retry 3 fois en cas d'erreur avec backoff exponentiel
-            retry: 3,
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-            // ⚡ Refetch automatiquement quand la fenêtre reprend le focus
-            refetchOnWindowFocus: true,
-            // ⚡ Refetch quand la connexion est rétablie
-            refetchOnReconnect: true,
-            // ⚡ Ne pas refetch automatiquement au mount (économise des requêtes)
-            refetchOnMount: false,
-          },
-          mutations: {
-            // ⚡ Retry 2 fois pour les mutations
-            retry: 2,
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-          },
-        },
-      })
-  );
+  // ⚡ OPTIMISATION: Utiliser l'instance singleton ou en créer une nouvelle
+  const [queryClient] = useState(() => {
+    if (typeof window !== 'undefined') {
+      // Côté client: utiliser/créer l'instance singleton
+      if (!_queryClientInstance) {
+        _queryClientInstance = createQueryClient();
+      }
+      return _queryClientInstance;
+    }
+    // Côté serveur: créer une nouvelle instance (ne sera pas utilisée)
+    return createQueryClient();
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -106,7 +157,69 @@ export const QUERY_KEYS = {
     list: (filters: Record<string, unknown>) =>
       [...QUERY_KEYS.notifications.all, "list", filters] as const,
   },
+  // Reports
+  reports: {
+    all: ["reports"] as const,
+    lists: () => [...QUERY_KEYS.reports.all, "list"] as const,
+    list: (filters: Record<string, unknown>) =>
+      [...QUERY_KEYS.reports.lists(), filters] as const,
+    details: () => [...QUERY_KEYS.reports.all, "detail"] as const,
+    detail: (id: string) => [...QUERY_KEYS.reports.details(), id] as const,
+  },
+  // Chat
+  chat: {
+    all: ["chat"] as const,
+    conversations: () => [...QUERY_KEYS.chat.all, "conversations"] as const,
+    conversation: (id: string) => [...QUERY_KEYS.chat.conversations(), id] as const,
+    messages: (conversationId: string) =>
+      [...QUERY_KEYS.chat.all, "messages", conversationId] as const,
+  },
+  // Departments
+  departments: {
+    all: ["departments"] as const,
+    list: () => [...QUERY_KEYS.departments.all, "list"] as const,
+  },
 } as const;
+
+// ============================================
+// PREFETCH HELPERS
+// ============================================
+// Fonctions pour prefetcher les données probables
+
+/**
+ * Prefetch des données pour une route spécifique
+ * Appeler lors de hover sur un lien ou anticipation de navigation
+ */
+export async function prefetchRoute(
+  queryClient: QueryClient,
+  route: "tasks" | "projects" | "hrTimesheets" | "reports",
+  queryFn: () => Promise<unknown>
+) {
+  await queryClient.prefetchQuery({
+    queryKey: QUERY_KEYS[route].all,
+    queryFn,
+    staleTime: CACHE_TIMES.DYNAMIC.staleTime,
+  });
+}
+
+/**
+ * Prefetch des données utilisateur (projets, profil)
+ * Appeler au chargement initial du dashboard
+ */
+export async function prefetchUserData(
+  queryClient: QueryClient,
+  queries: Array<{ key: readonly unknown[]; fn: () => Promise<unknown> }>
+) {
+  await Promise.all(
+    queries.map(({ key, fn }) =>
+      queryClient.prefetchQuery({
+        queryKey: key,
+        queryFn: fn,
+        staleTime: CACHE_TIMES.USER_DATA.staleTime,
+      })
+    )
+  );
+}
 
 // ============================================
 // NOTES D'UTILISATION

@@ -1,4 +1,42 @@
-<!-- 3885ac97-3cd8-4e8f-a876-e25c0e84e435 5bfe1f89-0c1e-455a-975f-8345712fe832 -->
+---
+name: "Plan : Compléter le système de chat Chronodil"
+overview: ""
+todos:
+  - id: 6efa5698-337a-479b-8466-d3d3d9b1a28b
+    content: Ajouter champ lastSeenAt au modèle User dans Prisma et créer migration
+    status: pending
+  - id: 79d5d428-79c2-4518-b3e9-1c7f540a40b2
+    content: Créer hook use-presence-tracker.tsx pour mettre à jour lastSeenAt automatiquement
+    status: pending
+  - id: 9aada09b-e97e-4c99-a3c2-ca7a5c16b92d
+    content: Créer route API /api/presence/update pour mettre à jour la présence
+    status: pending
+  - id: 6c89233b-48e7-4609-87f4-20c48739933a
+    content: Créer hook use-realtime-presence.tsx pour écouter les changements de présence en temps réel
+    status: pending
+  - id: 449a6aa9-857b-4e7b-a3f2-030791f35ad1
+    content: Ajouter badges de présence (en ligne/hors ligne) dans ChatConversationList et ChatMessageList
+    status: pending
+  - id: 245836a2-7a9c-450f-851a-6df6f10a94e8
+    content: Ajouter champ pinnedAt au modèle Message dans Prisma et créer migration
+    status: pending
+  - id: c6260574-b574-46e9-b797-ae4936c631f2
+    content: Créer actions pinMessage et unpinMessage dans chat.actions.ts
+    status: pending
+  - id: 242b1029-9e8f-4a3d-bb00-b09440801307
+    content: Afficher section 'Messages épinglés' en haut de ChatMessageList avec limite de 3
+    status: pending
+  - id: 0af27e1d-18c4-42b3-b9c0-196d30ba02e6
+    content: Implémenter sauvegarde/restauration de brouillons dans localStorage pour chaque conversation
+    status: pending
+  - id: 40e5c3f5-9f1e-4dd7-a83f-2ee84b97fac7
+    content: Créer route API /api/link-preview pour récupérer les meta tags OpenGraph
+    status: pending
+  - id: 24bb3b68-72c0-473d-902b-aab1bcd20e2b
+    content: Créer composant LinkPreview et l'intégrer dans ChatMessageList pour afficher les previews
+    status: pending
+---
+
 # Plan : Compléter le système de chat Chronodil
 
 ## Objectif
@@ -149,17 +187,3 @@ Ajouter les fonctionnalités manquantes pour rendre le chat complet, sans intég
 3. **Phase 3** : Brouillons de messages
 4. **Phase 4** : Preview de liens
 5. **Phase 5** (optionnel) : Compression d'images + Messages programmés
-
-### To-dos
-
-- [ ] Ajouter champ lastSeenAt au modèle User dans Prisma et créer migration
-- [ ] Créer hook use-presence-tracker.tsx pour mettre à jour lastSeenAt automatiquement
-- [ ] Créer route API /api/presence/update pour mettre à jour la présence
-- [ ] Créer hook use-realtime-presence.tsx pour écouter les changements de présence en temps réel
-- [ ] Ajouter badges de présence (en ligne/hors ligne) dans ChatConversationList et ChatMessageList
-- [ ] Ajouter champ pinnedAt au modèle Message dans Prisma et créer migration
-- [ ] Créer actions pinMessage et unpinMessage dans chat.actions.ts
-- [ ] Afficher section 'Messages épinglés' en haut de ChatMessageList avec limite de 3
-- [ ] Implémenter sauvegarde/restauration de brouillons dans localStorage pour chaque conversation
-- [ ] Créer route API /api/link-preview pour récupérer les meta tags OpenGraph
-- [ ] Créer composant LinkPreview et l'intégrer dans ChatMessageList pour afficher les previews

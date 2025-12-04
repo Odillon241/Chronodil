@@ -1,6 +1,69 @@
 # Chronodil App - Project Instructions
 
-## Corrections récentes (2025-11-08)
+## Corrections récentes (2025-12-04)
+
+### ✅ Système de Push Notifications - IMPLÉMENTÉ
+**Fonctionnalité** : Notifications push Web complètes pour alerter les utilisateurs même lorsqu'ils ne sont pas sur l'application.
+
+**Ce qui a été implémenté** :
+1. **Actions serveur push-subscription.actions.ts** :
+   - `savePushSubscription()` - Sauvegarder une subscription push en DB
+   - `deletePushSubscription()` - Supprimer une subscription
+   - `checkPushSubscription()` - Vérifier si l'utilisateur a une subscription active
+
+2. **Module notification-helpers.ts** :
+   - `sendPushNotificationForNotification()` - Envoyer une push à un utilisateur
+   - `sendPushNotificationsForNotifications()` - Envoyer des push en batch
+   - `createAndSendNotification()` - Créer notification + push (centralisé)
+   - `createAndSendNotifications()` - Création batch avec push
+
+3. **Hook usePushSubscription** (refactorisé) :
+   - Support complet du subscribe/unsubscribe
+   - Gestion des permissions du navigateur
+   - Conversion VAPID base64 → Uint8Array
+   - Intégration avec le Service Worker existant
+
+4. **Actions createNotification** dans notification.actions.ts :
+   - `createNotification()` - Créer une notification avec push automatique
+   - `createNotifications()` - Créer plusieurs notifications
+   - `createNotificationDirect()` - Fonction utilitaire serveur
+
+5. **Activation des push dans les modules existants** :
+   - `task.actions.ts` - Partage de tâche
+   - `chat.actions.ts` - Nouveaux messages
+   - `task-comment.actions.ts` - Nouveaux commentaires
+   - `inngest/functions.ts` - Rappels email et timesheet
+
+**Configuration requise** :
+Générer les clés VAPID avec :
+```bash
+pnpm tsx scripts/generate-vapid-keys.ts
+```
+
+Ajouter au fichier `.env` :
+```bash
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public_key>
+VAPID_PRIVATE_KEY=<private_key>
+VAPID_SUBJECT=mailto:admin@chronodil.com
+```
+
+**Fichiers créés/modifiés** :
+- [src/actions/push-subscription.actions.ts](src/actions/push-subscription.actions.ts) - Actions DB
+- [src/lib/notification-helpers.ts](src/lib/notification-helpers.ts) - Fonctions d'envoi push
+- [src/hooks/use-push-subscription.tsx](src/hooks/use-push-subscription.tsx) - Hook client
+- [src/actions/notification.actions.ts](src/actions/notification.actions.ts) - Actions centralisées
+- [scripts/generate-vapid-keys.ts](scripts/generate-vapid-keys.ts) - Générateur de clés
+- [docs/features/notifications/NOTIFICATION_SYSTEM.md](docs/features/notifications/NOTIFICATION_SYSTEM.md) - Documentation
+
+**Résultat** :
+- ✅ Push notifications fonctionnelles
+- ✅ Service Worker configuré pour recevoir les push
+- ✅ Intégration automatique dans les actions existantes
+- ✅ Documentation complète
+
+---
+
+## Corrections précédentes (2025-11-08)
 
 ### ✅ Synchronisation bidirectionnelle Task ↔ HR Activity - IMPLÉMENTÉE
 **Fonctionnalité** : Création automatique de tâches pour les activités RH créées en mode manuel.

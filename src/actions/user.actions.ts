@@ -6,7 +6,7 @@ type ActionContext = {
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { CacheTags } from "@/lib/cache";
 import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
@@ -82,7 +82,7 @@ export const updateMyProfile = authActionClient
 
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return user;
   });
 
@@ -106,8 +106,20 @@ export const getUsers = authActionClient
         ...(parsedInput.role && { role: parsedInput.role }),
         ...(parsedInput.departmentId && { departmentId: parsedInput.departmentId }),
       },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        departmentId: true,
+        managerId: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -240,7 +252,7 @@ export const createUser = authActionClient
 
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return user;
   });
 
@@ -326,7 +338,7 @@ export const updateUser = authActionClient
 
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return user;
   });
 
@@ -408,8 +420,19 @@ export const getMyTeam = authActionClient
       where: {
         managerId: userId,
       },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        position: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
           select: {
             Task_Task_createdByToUser: true,
@@ -529,7 +552,7 @@ export const deleteUser = authActionClient
     });
 
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return { success: true, message: "Utilisateur supprimé avec succès" };
   });
 
@@ -551,7 +574,16 @@ export const resetUserPassword = authActionClient
     // Vérifier que l'utilisateur existe
     const user = await prisma.user.findUnique({
       where: { id: parsedInput.id },
-      include: { Account: true },
+      select: {
+        id: true,
+        Account: {
+          select: {
+            id: true,
+            providerId: true,
+            password: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -582,7 +614,15 @@ export const resetUserPassword = authActionClient
     // 2. Récupérer le hash
     const tempUser = await prisma.user.findUnique({
       where: { email: tempEmail },
-      include: { Account: true },
+      select: {
+        id: true,
+        Account: {
+          select: {
+            id: true,
+            password: true,
+          },
+        },
+      },
     });
 
     if (!tempUser || !tempUser.Account || tempUser.Account.length === 0) {
@@ -621,7 +661,7 @@ export const resetUserPassword = authActionClient
     await prisma.user.delete({ where: { id: tempUser.id } });
 
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return {
       success: true,
       message: "Mot de passe réinitialisé avec succès",

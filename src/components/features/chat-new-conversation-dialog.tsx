@@ -18,9 +18,9 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Users, FolderKanban, X } from "lucide-react";
+import { MessageSquare, Users, FolderKanban, Hash, X } from "lucide-react";
 import { toast } from "sonner";
-import { createOrGetConversation } from "@/actions/chat.actions";
+import { createOrGetConversation, createChannel } from "@/actions/chat.actions";
 
 interface User {
   id: string;
@@ -58,6 +58,10 @@ export function ChatNewConversationDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
+  const [channelName, setChannelName] = useState("");
+  const [channelDescription, setChannelDescription] = useState("");
+  const [channelCategory, setChannelCategory] = useState("");
+  const [isPrivateChannel, setIsPrivateChannel] = useState(false);
   const [creating, setCreating] = useState(false);
 
   // Filtrer les utilisateurs (exclure l'utilisateur courant)
@@ -180,7 +184,7 @@ export function ChatNewConversationDialog({
         </DialogHeader>
 
         <Tabs defaultValue="direct" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="direct">
               <MessageSquare className="h-4 w-4 mr-2" />
               Direct
@@ -188,6 +192,10 @@ export function ChatNewConversationDialog({
             <TabsTrigger value="group">
               <Users className="h-4 w-4 mr-2" />
               Groupe
+            </TabsTrigger>
+            <TabsTrigger value="channel">
+              <Hash className="h-4 w-4 mr-2" />
+              Canal
             </TabsTrigger>
             <TabsTrigger value="project">
               <FolderKanban className="h-4 w-4 mr-2" />
@@ -371,6 +379,162 @@ export function ChatNewConversationDialog({
                 )}
               </div>
             </ScrollArea>
+          </TabsContent>
+
+          {/* Canaux */}
+          <TabsContent value="channel" className="space-y-4">
+            <div>
+              <Label htmlFor="channelName">Nom du canal *</Label>
+              <Input
+                id="channelName"
+                placeholder="Ex: # général"
+                value={channelName}
+                onChange={(e) => setChannelName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="channelDescription">Description (optionnel)</Label>
+              <Input
+                id="channelDescription"
+                placeholder="Description du canal..."
+                value={channelDescription}
+                onChange={(e) => setChannelDescription(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="channelCategory">Catégorie (optionnel)</Label>
+              <Input
+                id="channelCategory"
+                placeholder="Ex: Équipes, Projets, Général"
+                value={channelCategory}
+                onChange={(e) => setChannelCategory(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isPrivate"
+                checked={isPrivateChannel}
+                onCheckedChange={(checked) => setIsPrivateChannel(checked === true)}
+              />
+              <Label htmlFor="isPrivate" className="cursor-pointer">
+                Canal privé (sur invitation uniquement)
+              </Label>
+            </div>
+
+            {selectedUsers.length > 0 && (
+              <div>
+                <Label>Membres initiaux (optionnel)</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedUsers.map((userId) => {
+                    const user = availableUsers.find((u) => u.id === userId);
+                    if (!user) return null;
+                    return (
+                      <Badge key={userId} variant="secondary" className="gap-1">
+                        {user.name}
+                        <button
+                          onClick={() => removeSelectedUser(userId)}
+                          className="ml-1 hover:bg-muted rounded-full"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="relative w-auto max-w-xs">
+              <Input
+                placeholder="Rechercher des membres..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            <ScrollArea className="h-[200px] border rounded-lg bg-background">
+              <div className="divide-y">
+                {filteredUsers.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">Aucun utilisateur trouvé</p>
+                  </div>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <label
+                      key={user.id}
+                      className="flex items-center gap-3 p-3 hover:bg-accent cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedUsers.includes(user.id)}
+                        onCheckedChange={() => toggleUserSelection(user.id)}
+                      />
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar || user.image || undefined} />
+                        <AvatarFallback>
+                          {user.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{user.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+
+            <DialogFooter>
+              <Button
+                onClick={async () => {
+                  if (!channelName.trim()) {
+                    toast.error("Le nom du canal est requis");
+                    return;
+                  }
+
+                  setCreating(true);
+                  try {
+                    const result = await createChannel({
+                      name: channelName.trim(),
+                      description: channelDescription.trim() || undefined,
+                      category: channelCategory.trim() || undefined,
+                      isPrivate: isPrivateChannel,
+                      memberIds: selectedUsers,
+                    });
+
+                    if (result?.data?.conversation) {
+                      toast.success("Canal créé avec succès");
+                      onConversationCreated(result.data.conversation.id);
+                      onOpenChange(false);
+                      setSearchQuery("");
+                      setSelectedUsers([]);
+                      setChannelName("");
+                      setChannelDescription("");
+                      setChannelCategory("");
+                      setIsPrivateChannel(false);
+                    } else {
+                      toast.error(result?.serverError || "Erreur lors de la création");
+                    }
+                  } catch (error) {
+                    toast.error("Erreur lors de la création du canal");
+                  } finally {
+                    setCreating(false);
+                  }
+                }}
+                disabled={creating || !channelName.trim()}
+                className="bg-primary hover:bg-primary"
+              >
+                Créer le canal
+              </Button>
+            </DialogFooter>
           </TabsContent>
         </Tabs>
       </DialogContent>

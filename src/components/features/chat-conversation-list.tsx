@@ -37,7 +37,7 @@ import {
 
 interface Conversation {
   id: string;
-  type: "DIRECT" | "GROUP" | "PROJECT";
+  type: "DIRECT" | "GROUP" | "PROJECT" | "CHANNEL";
   name?: string | null;
   createdBy?: string | null;
   ConversationMember: {

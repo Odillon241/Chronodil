@@ -1,47 +1,41 @@
-  // ⚡ Plugin next-intl activé pour Next.js 16
-  import createNextIntlPlugin from 'next-intl/plugin';
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
 
-  // Pointer vers le fichier de configuration i18n
-  const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+  // Timeout pour la génération de pages statiques
+  staticPageGenerationTimeout: 120,
 
-  /** @type {import('next').NextConfig} */
-  const nextConfig = {
-    reactStrictMode: true,
+  // Externaliser les packages Node.js natifs qui ne fonctionnent pas avec Turbopack
+  serverExternalPackages: ['web-push', '@node-rs/bcrypt', 'bcrypt'],
 
-    // Ignorer les erreurs de prerendering
-    staticPageGenerationTimeout: 120,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
 
-    experimental: {
-      serverActions: {
-        bodySizeLimit: '2mb',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ipghppjjhjbkhuqzqzyq.supabase.co',
+        pathname: '/storage/v1/object/**',
       },
-      // Désactiver le PPR qui cause des problèmes
-      ppr: false,
-    },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/**',
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
 
-    images: {
-      remotePatterns: [
-        {
-          protocol: 'https',
-          hostname: 'ipghppjjhjbkhuqzqzyq.supabase.co',
-          pathname: '/storage/v1/object/**',
-        },
-        {
-          protocol: 'https',
-          hostname: '*.supabase.co',
-          pathname: '/storage/v1/object/**',
-        },
-      ],
-      formats: ['image/avif', 'image/webp'],
-      deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-      imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    },
+  // Optimisations de performance
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+}
 
-    // Optimisations de performance
-    compiler: {
-      removeConsole: process.env.NODE_ENV === 'production', // Retirer les console.log en production
-    },
-  }
-
-  // Exporter la configuration avec le plugin next-intl
-  export default withNextIntl(nextConfig);
+export default nextConfig;

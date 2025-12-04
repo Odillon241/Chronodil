@@ -2,7 +2,7 @@
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { CacheTags } from "@/lib/cache";
@@ -82,7 +82,7 @@ export const createProject = authActionClient
 
     // Invalider le cache des projets
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -100,8 +100,27 @@ export const getProjects = authActionClient
         ...(isActive !== undefined && { isActive }),
         ...(departmentId && { departmentId }),
       },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        color: true,
+        isActive: true,
+        budgetHours: true,
+        hourlyRate: true,
+        startDate: true,
+        endDate: true,
+        createdBy: true,
+        createdAt: true,
+        updatedAt: true,
+        departmentId: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -110,8 +129,18 @@ export const getProjects = authActionClient
           },
         },
         ProjectMember: {
-          include: {
-            User: true,
+          select: {
+            id: true,
+            userId: true,
+            role: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
           },
         },
         _count: {
@@ -140,8 +169,27 @@ export const getProjectById = authActionClient
   .action(async ({ parsedInput }) => {
     const project = await prisma.project.findUnique({
       where: { id: parsedInput.id },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        color: true,
+        isActive: true,
+        budgetHours: true,
+        hourlyRate: true,
+        startDate: true,
+        endDate: true,
+        createdBy: true,
+        createdAt: true,
+        updatedAt: true,
+        departmentId: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -150,13 +198,30 @@ export const getProjectById = authActionClient
           },
         },
         ProjectMember: {
-          include: {
-            User: true,
+          select: {
+            id: true,
+            userId: true,
+            role: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
           },
         },
         Task: {
           where: { isActive: true },
           orderBy: { name: "asc" },
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            priority: true,
+            dueDate: true,
+          },
         },
       },
     });
@@ -222,7 +287,7 @@ export const updateProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -270,7 +335,7 @@ export const archiveProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -312,8 +377,20 @@ export const addProjectMember = authActionClient
         role: parsedInput.role,
         createdAt: new Date(),
       },
-      include: {
-        User: true,
+      select: {
+        id: true,
+        projectId: true,
+        userId: true,
+        role: true,
+        createdAt: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
       },
     });
 
@@ -365,9 +442,19 @@ export const getMyProjects = authActionClient
 
     const projectMembers = await prisma.projectMember.findMany({
       where: { userId },
-      include: {
+      select: {
         Project: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            description: true,
+            color: true,
+            isActive: true,
+            budgetHours: true,
+            startDate: true,
+            endDate: true,
+            createdBy: true,
             _count: {
               select: {
                 ProjectMember: true,
@@ -394,8 +481,23 @@ export const cloneProject = authActionClient
     // Récupérer le projet original
     const originalProject = await prisma.project.findUnique({
       where: { id: parsedInput.id },
-      include: {
-        ProjectMember: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        color: true,
+        departmentId: true,
+        budgetHours: true,
+        hourlyRate: true,
+        startDate: true,
+        endDate: true,
+        ProjectMember: {
+          select: {
+            userId: true,
+            role: true,
+          },
+        },
       },
     });
 
@@ -491,6 +593,6 @@ export const deleteProject = authActionClient
     });
 
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return { success: true, projectName: project.name };
   });

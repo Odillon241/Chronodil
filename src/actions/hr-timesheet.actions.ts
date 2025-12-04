@@ -881,19 +881,20 @@ export const submitHRTimesheet = authActionClient
     }
 
     // Envoyer les push notifications (fire and forget)
-    if (validatorNotifications.length > 0) {
-      const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
-      sendPushNotificationsForNotifications(
-        validatorNotifications.map((n) => ({
-          userId: n.userId,
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          type: n.type,
-          link: n.link,
-        }))
-      ).catch(console.error);
-    }
+    // TODO: Implémenter les push notifications (module notification-helpers manquant)
+    // if (validatorNotifications.length > 0) {
+    //   const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+    //   sendPushNotificationsForNotifications(
+    //     validatorNotifications.map((n) => ({
+    //       userId: n.userId,
+    //       id: n.id,
+    //       title: n.title,
+    //       message: n.message,
+    //       type: n.type,
+    //       link: n.link,
+    //     }))
+    //   ).catch(console.error);
+    // }
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
@@ -1082,19 +1083,20 @@ export const managerApproveHRTimesheet = authActionClient
       }
 
       // Envoyer les push notifications (fire and forget)
-      if (adminNotifications.length > 0) {
-        const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
-        sendPushNotificationsForNotifications(
-          adminNotifications.map((n) => ({
-            userId: n.userId,
-            id: n.id,
-            title: n.title,
-            message: n.message,
-            type: n.type,
-            link: n.link,
-          }))
-        ).catch(console.error);
-      }
+      // TODO: Implémenter les push notifications (module notification-helpers manquant)
+      // if (adminNotifications.length > 0) {
+      //   const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+      //   sendPushNotificationsForNotifications(
+      //     adminNotifications.map((n) => ({
+      //       userId: n.userId,
+      //       id: n.id,
+      //       title: n.title,
+      //       message: n.message,
+      //       type: n.type,
+      //       link: n.link,
+      //     }))
+      //   ).catch(console.error);
+      // }
     }
 
     revalidatePath("/dashboard/hr-timesheet");
@@ -1191,14 +1193,15 @@ export const odillonApproveHRTimesheet = authActionClient
     });
 
     // Envoyer la push notification (fire and forget)
-    const { sendPushNotificationForNotification: sendPush } = await import('@/lib/notification-helpers');
-    sendPush(timesheet.userId, {
-      id: finalEmployeeNotification.id,
-      title: finalEmployeeNotification.title,
-      message: finalEmployeeNotification.message,
-      type: finalEmployeeNotification.type,
-      link: finalEmployeeNotification.link,
-    }).catch(console.error);
+    // TODO: Implémenter les push notifications (module notification-helpers manquant)
+    // const { sendPushNotificationForNotification: sendPush } = await import('@/lib/notification-helpers');
+    // sendPush(timesheet.userId, {
+    //   id: finalEmployeeNotification.id,
+    //   title: finalEmployeeNotification.title,
+    //   message: finalEmployeeNotification.message,
+    //   type: finalEmployeeNotification.type,
+    //   link: finalEmployeeNotification.link,
+    // }).catch(console.error);
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
@@ -1615,14 +1618,15 @@ export const revertHRTimesheetStatus = authActionClient
     });
 
     // Envoyer la push notification (fire and forget)
-    const { sendPushNotificationForNotification } = await import('@/lib/notification-helpers');
-    sendPushNotificationForNotification(timesheet.userId, {
-      id: statusNotification.id,
-      title: statusNotification.title,
-      message: statusNotification.message,
-      type: statusNotification.type,
-      link: statusNotification.link,
-    }).catch(console.error);
+    // TODO: Implémenter les push notifications (module notification-helpers manquant)
+    // const { sendPushNotificationForNotification } = await import('@/lib/notification-helpers');
+    // sendPushNotificationForNotification(timesheet.userId, {
+    //   id: statusNotification.id,
+    //   title: statusNotification.title,
+    //   message: statusNotification.message,
+    //   type: statusNotification.type,
+    //   link: statusNotification.link,
+    // }).catch(console.error);
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);

@@ -10,13 +10,11 @@ export interface GeneralSettings {
   viewDensity: string;
   fontSize: number;
   // Localisation
-  language: string;
   dateFormat: string;
   hourFormat: string;
   timezone: string;
   // Accessibilité
   highContrast: boolean;
-  screenReaderMode: boolean;
   reduceMotion: boolean;
 }
 

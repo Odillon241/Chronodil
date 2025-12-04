@@ -20,13 +20,34 @@ interface DesktopNotificationOptions {
   tag?: string;
   data?: Record<string, any>;
   onClick?: () => void;
+  playSound?: boolean;
+  soundType?: 'success' | 'error' | 'info' | 'warning';
 }
 
 interface UseDesktopNotificationsOptions {
   enabled?: boolean;
+  onPlaySound?: (soundType?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
 const ICON_URL = '/assets/media/icône du logoicône logo de chronodil.svg';
+
+// Mapper le type de notification desktop au type de son
+function mapTypeToSoundType(type: DesktopNotificationType): 'success' | 'error' | 'info' | 'warning' {
+  switch (type) {
+    case 'task-completed':
+    case 'new-notification':
+      return 'success';
+    case 'task-reminder':
+    case 'timesheet-reminder':
+      return 'warning';
+    case 'new-message':
+    case 'new-task':
+    case 'task-updated':
+    case 'project-updated':
+    default:
+      return 'info';
+  }
+}
 
 // Messages par défaut pour chaque type de notification
 const DEFAULT_MESSAGES: Record<DesktopNotificationType, { title: string; body: string }> = {
@@ -65,7 +86,7 @@ const DEFAULT_MESSAGES: Record<DesktopNotificationType, { title: string; body: s
 };
 
 export function useDesktopNotifications(options: UseDesktopNotificationsOptions = {}) {
-  const { enabled = true } = options;
+  const { enabled = true, onPlaySound } = options;
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [desktopNotificationsEnabled, setDesktopNotificationsEnabled] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);

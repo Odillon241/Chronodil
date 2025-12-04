@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -77,7 +77,7 @@ export const createTaskComment = actionClient
       const otherMembers = task.TaskMember.filter(m => m.userId !== session.user.id);
       
       if (otherMembers.length > 0) {
-        await prisma.notification.createMany({
+        const notifications = await prisma.notification.createMany({
           data: otherMembers.map(member => ({
             id: nanoid(),
             userId: member.userId,
@@ -88,6 +88,32 @@ export const createTaskComment = actionClient
             isRead: false,
           })),
         });
+
+        // Envoyer les push notifications (fire and forget)
+        if (notifications.count > 0) {
+          import('@/lib/notification-helpers').then(({ sendPushNotificationsForNotifications }) => {
+            // Récupérer les notifications créées
+            prisma.notification.findMany({
+              where: {
+                userId: { in: otherMembers.map(m => m.userId) },
+                title: "Nouveau commentaire",
+              },
+              orderBy: { createdAt: 'desc' },
+              take: otherMembers.length,
+            }).then((createdNotifications) => {
+              sendPushNotificationsForNotifications(
+                createdNotifications.map((n) => ({
+                  userId: n.userId,
+                  id: n.id,
+                  title: n.title,
+                  message: n.message,
+                  type: n.type,
+                  link: n.link,
+                }))
+              ).catch(console.error);
+            });
+          }).catch(console.error);
+        }
       }
     }
 

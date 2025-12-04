@@ -132,8 +132,8 @@ export const NOTIFICATION_SOUNDS: NotificationSound[] = [
 ];
 
 /**
- * Hook pour charger les sons disponibles depuis /public/sounds
- * Scanne dynamiquement le répertoire des sons et retourne ceux qui existent
+ * Hook pour charger les sons disponibles depuis le bucket Supabase Storage
+ * Liste directement les fichiers du bucket 'notification-sounds'
  */
 export function useAvailableSounds() {
   const [availableSounds, setAvailableSounds] = useState<NotificationSound[]>([]);
@@ -149,42 +149,77 @@ export function useAvailableSounds() {
 
     async function loadAvailableSounds() {
       try {
-        // Appeler l'API pour obtenir la liste des fichiers disponibles
-        const response = await fetch('/api/sounds');
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const bucketName = 'notification-sounds';
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.statusText}`);
+        if (!supabaseUrl || !supabaseKey) {
+          console.warn('[useAvailableSounds] Supabase non configuré, utilisation des sons par défaut');
+          setAvailableSounds(NOTIFICATION_SOUNDS);
+          return;
         }
 
-        const availableFiles: Array<{ id: string; filename: string; url: string }> = await response.json();
+        // Créer un client Supabase pour lister les fichiers du bucket
+        const { createClient } = await import('@/lib/supabase-client');
+        const supabase = createClient();
 
-        // Créer une map pour accéder rapidement aux fichiers disponibles
-        const availableFileMap = new Map<string, string>();
-        availableFiles.forEach(file => {
-          const normalizedId = normalizeSoundId(file.id);
-          availableFileMap.set(normalizedId, file.url);
+        // Lister les fichiers du bucket notification-sounds
+        const { data: files, error } = await supabase.storage
+          .from(bucketName)
+          .list('', {
+            limit: 100,
+            sortBy: { column: 'name', order: 'asc' }
+          });
+
+        if (error) {
+          console.error('[useAvailableSounds] Erreur Supabase Storage:', error);
+          setAvailableSounds(NOTIFICATION_SOUNDS);
+          return;
+        }
+
+        if (!files || files.length === 0) {
+          console.warn('[useAvailableSounds] Aucun fichier dans le bucket');
+          setAvailableSounds([]);
+          return;
+        }
+
+        // Filtrer pour ne garder que les fichiers audio (exclure les placeholders et fichiers système)
+        const audioFiles = files.filter(file => {
+          // Exclure les fichiers cachés et placeholders
+          if (file.name.startsWith('.')) return false;
+          
+          const ext = file.name.split('.').pop()?.toLowerCase();
+          return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext || '');
         });
 
-        // Filtrer NOTIFICATION_SOUNDS pour inclure seulement les sons qui existent
-        const soundsToUse = NOTIFICATION_SOUNDS.filter(sound => {
-          const normalizedId = normalizeSoundId(sound.id);
-          return availableFileMap.has(normalizedId);
-        }).map(sound => {
-          const normalizedId = normalizeSoundId(sound.id);
-          const localUrl = availableFileMap.get(normalizedId);
+        console.log(`[useAvailableSounds] ${audioFiles.length} fichiers audio trouvés dans Supabase:`, audioFiles.map(f => f.name));
 
+        // Créer les objets NotificationSound à partir des fichiers du bucket
+        const soundsFromBucket: NotificationSound[] = audioFiles.map(file => {
+          const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+          const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${file.name}`;
+          
+          // Chercher si ce son existe dans NOTIFICATION_SOUNDS pour récupérer ses métadonnées
+          const existingSound = NOTIFICATION_SOUNDS.find(s => 
+            normalizeSoundId(s.id) === normalizeSoundId(nameWithoutExt)
+          );
+
+          const formattedName = existingSound?.name || formatSoundName(nameWithoutExt);
+          
           return {
-            ...sound,
-            // Utiliser l'URL locale du fichier trouvé, ou Supabase en fallback
-            file: localUrl || getSoundUrl(sound.id, 'mp3'),
+            id: nameWithoutExt,
+            name: formattedName,
+            description: existingSound?.description || `Son de notification: ${formattedName}`,
+            file: publicUrl,
+            category: existingSound?.category || 'classic',
           };
         });
 
-        console.log(`[useAvailableSounds] ${soundsToUse.length}/${NOTIFICATION_SOUNDS.length} sons disponibles`);
-        setAvailableSounds(soundsToUse);
+        console.log(`[useAvailableSounds] ${soundsFromBucket.length} sons chargés depuis Supabase Storage`);
+        setAvailableSounds(soundsFromBucket);
       } catch (error) {
         console.warn('[useAvailableSounds] Erreur lors du chargement:', error);
-        // En cas d'erreur, utiliser tous les sons par défaut comme fallback
+        // En cas d'erreur, utiliser les sons par défaut comme fallback
         setAvailableSounds(NOTIFICATION_SOUNDS);
       } finally {
         setIsLoading(false);
@@ -193,6 +228,31 @@ export function useAvailableSounds() {
 
     loadAvailableSounds();
   }, [mounted]);
+
+  // Fonction helper pour formater le nom du son de manière conviviale
+  function formatSoundName(id: string): string {
+    // Supprimer les suffixes numériques communs (ex: -372475, _123456)
+    let cleanName = id.replace(/[-_]\d{4,}$/, '');
+    
+    // Supprimer les préfixes courants
+    cleanName = cleanName
+      .replace(/^notification[-_]?/i, '')
+      .replace(/^sound[-_]?/i, '')
+      .replace(/^new[-_]?/i, '');
+    
+    // Si le nom est vide après nettoyage, utiliser l'ID original
+    if (!cleanName.trim()) {
+      cleanName = id;
+    }
+    
+    // Formater : remplacer tirets/underscores par espaces et capitaliser
+    return cleanName
+      .replace(/[-_]/g, ' ')
+      .split(' ')
+      .filter(word => word.length > 0)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ') || 'Son personnalisé';
+  }
 
   // Grouper les sons disponibles par catégorie
   const soundsByCategory: Record<SoundCategory, NotificationSound[]> = {
@@ -280,11 +340,13 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
 
   // Chargement paresseux : les sons ne sont chargés qu'après la première interaction utilisateur
   // Utiliser un chemin vide au début pour éviter le chargement automatique au refresh
+  // L'option 'format' indique à Howler.js le format attendu même avec un chemin vide
   const [playNotification] = useSound(
     soundsReady ? SOUND_FILES.notification : '', 
     { 
       volume, 
       interrupt: false,
+      format: ['mp3'], // Évite le warning "No file extension was found"
     }
   );
   const [playTaskAssigned] = useSound(
@@ -292,6 +354,7 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
     { 
       volume, 
       interrupt: false,
+      format: ['mp3'],
     }
   );
   const [playTaskCompleted] = useSound(
@@ -299,6 +362,7 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
     { 
       volume, 
       interrupt: false,
+      format: ['mp3'],
     }
   );
   const [playTaskUpdated] = useSound(
@@ -306,6 +370,7 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
     { 
       volume, 
       interrupt: false,
+      format: ['mp3'],
     }
   );
   const [playError] = useSound(
@@ -313,6 +378,7 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
     { 
       volume, 
       interrupt: false,
+      format: ['wav', 'mp3'], // error utilise .wav
     }
   );
   const [playSuccess] = useSound(
@@ -320,6 +386,7 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
     { 
       volume, 
       interrupt: false,
+      format: ['mp3'],
     }
   );
 

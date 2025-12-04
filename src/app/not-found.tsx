@@ -1,36 +1,18 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      padding: '20px',
-      fontFamily: 'system-ui, sans-serif',
-      textAlign: 'center'
-    }}>
-      <h1 style={{ fontSize: '72px', margin: '0', fontWeight: 'bold' }}>404</h1>
-      <h2 style={{ fontSize: '24px', marginTop: '16px', marginBottom: '16px' }}>
-        Page non trouvée
-      </h2>
-      <p style={{ color: '#666', marginBottom: '24px', maxWidth: '400px' }}>
-        La page que vous recherchez n'existe pas ou a été déplacée.
+    <div className="flex flex-col items-center justify-center min-h-screen p-5 text-center">
+      <h1 className="text-7xl font-bold mb-4">404</h1>
+      <h2 className="text-2xl font-semibold mb-4">Page non trouvée</h2>
+      <p className="text-muted-foreground mb-6 max-w-md">
+        La page que vous recherchez n&apos;existe pas ou a été déplacée.
       </p>
       <Link
         href="/"
-        style={{
-          padding: '12px 24px',
-          backgroundColor: '#0070f3',
-          color: 'white',
-          textDecoration: 'none',
-          borderRadius: '5px',
-          fontSize: '16px'
-        }}
+        className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
       >
-        Retour à l'accueil
+        Retour à l&apos;accueil
       </Link>
     </div>
   );

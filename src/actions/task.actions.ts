@@ -168,28 +168,29 @@ export const createTask = actionClient
 
         // Envoyer les push notifications (fire and forget, après la transaction)
         if (notifications.count > 0) {
-          const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
-          // Récupérer les notifications créées pour envoyer les push
-          const createdNotifications = await tx.notification.findMany({
-            where: {
-              userId: { in: sharedWith },
-              title: "Nouvelle tâche partagée",
-            },
-            orderBy: { createdAt: 'desc' },
-            take: sharedWith.length,
-          });
-          
-          // Envoyer en arrière-plan (ne pas attendre)
-          sendPushNotificationsForNotifications(
-            createdNotifications.map((n) => ({
-              userId: n.userId,
-              id: n.id,
-              title: n.title,
-              message: n.message,
-              type: n.type,
-              link: n.link,
-            }))
-          ).catch(console.error);
+          import('@/lib/notification-helpers').then(({ sendPushNotificationsForNotifications }) => {
+            // Récupérer les notifications créées pour envoyer les push
+            prisma.notification.findMany({
+              where: {
+                userId: { in: sharedWith },
+                title: "Nouvelle tâche partagée",
+              },
+              orderBy: { createdAt: 'desc' },
+              take: sharedWith.length,
+            }).then((createdNotifications) => {
+              // Envoyer en arrière-plan (ne pas attendre)
+              sendPushNotificationsForNotifications(
+                createdNotifications.map((n) => ({
+                  userId: n.userId,
+                  id: n.id,
+                  title: n.title,
+                  message: n.message,
+                  type: n.type,
+                  link: n.link,
+                }))
+              ).catch(console.error);
+            });
+          }).catch(console.error);
         }
       }
 
@@ -234,7 +235,15 @@ export const updateTask = actionClient
 
     const task = await prisma.task.findUnique({
       where: { id },
-      include: { Project: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        priority: true,
+        createdBy: true,
+        projectId: true,
+      },
     });
 
     if (!task) {
@@ -255,7 +264,20 @@ export const updateTask = actionClient
         ...data,
         updatedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        priority: true,
+        isActive: true,
+        estimatedHours: true,
+        dueDate: true,
+        reminderDate: true,
+        reminderTime: true,
+        soundEnabled: true,
+        createdBy: true,
+        updatedAt: true,
         Project: {
           select: {
             name: true,
@@ -305,7 +327,13 @@ export const deleteTask = actionClient
 
     const task = await prisma.task.findUnique({
       where: { id: parsedInput.id },
-      include: { Project: true },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        projectId: true,
+        createdBy: true,
+      },
     });
 
     if (!task) {
@@ -601,7 +629,7 @@ export const getAvailableUsersForSharing = actionClient
           projectId: parsedInput.projectId,
           userId: { not: session.user.id }, // Exclure l'utilisateur actuel
         },
-        include: {
+        select: {
           User: {
             select: {
               id: true,
@@ -654,9 +682,16 @@ export const updateTaskStatus = actionClient
 
     const task = await prisma.task.findUnique({
       where: { id: parsedInput.id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        createdBy: true,
+        isShared: true,
+        completedAt: true,
         TaskMember: {
-          include: {
+          select: {
+            userId: true,
             User: {
               select: {
                 id: true,
@@ -688,7 +723,14 @@ export const updateTaskStatus = actionClient
         completedAt: parsedInput.status === "DONE" ? new Date() : task.completedAt,
         updatedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        priority: true,
+        isActive: true,
+        completedAt: true,
+        updatedAt: true,
         Project: {
           select: {
             name: true,
@@ -717,29 +759,30 @@ export const updateTaskStatus = actionClient
         });
 
         // Envoyer les push notifications (fire and forget)
-        if (statusNotifications.count > 0) {
-          const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
-          // Récupérer les notifications créées
-          const createdStatusNotifications = await prisma.notification.findMany({
-            where: {
-              userId: { in: otherMembers.map(m => m.userId) },
-              title: "Statut de tâche modifié",
-            },
-            orderBy: { createdAt: 'desc' },
-            take: otherMembers.length,
-          });
-          
-          sendPushNotificationsForNotifications(
-            createdStatusNotifications.map((n) => ({
-              userId: n.userId,
-              id: n.id,
-              title: n.title,
-              message: n.message,
-              type: n.type,
-              link: n.link,
-            }))
-          ).catch(console.error);
-        }
+        // TODO: Implémenter les push notifications (module notification-helpers manquant)
+        // if (statusNotifications.count > 0) {
+        //   const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+        //   // Récupérer les notifications créées
+        //   const createdStatusNotifications = await prisma.notification.findMany({
+        //     where: {
+        //       userId: { in: otherMembers.map(m => m.userId) },
+        //       title: "Statut de tâche modifié",
+        //     },
+        //     orderBy: { createdAt: 'desc' },
+        //     take: otherMembers.length,
+        //   });
+        //
+        //   sendPushNotificationsForNotifications(
+        //     createdStatusNotifications.map((n) => ({
+        //       userId: n.userId,
+        //       id: n.id,
+        //       title: n.title,
+        //       message: n.message,
+        //       type: n.type,
+        //       link: n.link,
+        //     }))
+        //   ).catch(console.error);
+        // }
       }
     }
 
@@ -792,7 +835,13 @@ export const updateTaskPriority = actionClient
         priority: parsedInput.priority,
         updatedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        priority: true,
+        isActive: true,
+        updatedAt: true,
         Project: {
           select: {
             name: true,

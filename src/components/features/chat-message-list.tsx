@@ -55,6 +55,10 @@ import {
   Pin,
   PinOff,
   AtSign,
+  MessageSquare,
+  Video,
+  Star,
+  StarOff,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
@@ -63,6 +67,7 @@ import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import {
   sendMessage,
+  sendMessageWithThread,
   updateMessage,
   deleteMessage,
   markAsRead,
@@ -86,6 +91,9 @@ interface Message {
   reactions?: Record<string, string[]> | null;
   pinnedAt?: Date | null;
   pinnedById?: string | null;
+  threadId?: string | null;
+  threadCount?: number;
+  isThreadRoot?: boolean;
   User: {
     id: string;
     name: string;
@@ -105,7 +113,7 @@ interface Message {
 
 interface Conversation {
   id: string;
-  type: "DIRECT" | "GROUP" | "PROJECT";
+  type: "DIRECT" | "GROUP" | "PROJECT" | "CHANNEL";
   name?: string | null;
   ConversationMember: {
     User: {
@@ -130,6 +138,8 @@ interface ChatMessageListProps {
   currentUserId: string;
   currentUserName?: string;
   onUpdate: () => void;
+  onThreadClick?: (threadId: string) => void;
+  onVideoCall?: () => void;
 }
 
 export function ChatMessageList({
@@ -137,6 +147,8 @@ export function ChatMessageList({
   currentUserId,
   currentUserName = "Utilisateur",
   onUpdate,
+  onThreadClick,
+  onVideoCall,
 }: ChatMessageListProps) {
   const [message, setMessage] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -156,6 +168,9 @@ export function ChatMessageList({
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // TODO: Implémenter useFavoriteMessages (hook manquant)
+  const toggleFavorite = (messageId: string) => console.warn('useFavoriteMessages not implemented');
+  const isFavorite = (messageId: string) => false;
 
   // Hook de présence en temps réel
   const { isUserOnline, getLastSeenAt } = useRealtimePresence();
@@ -290,12 +305,21 @@ export function ChatMessageList({
       }
 
       console.log("💬 Envoi du message avec attachments:", attachmentsData);
-      const result = await sendMessage({
-        conversationId: conversation.id,
-        content: message.trim() || "(Fichier joint)",
-        replyToId: replyingTo?.id,
-        attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
-      });
+      
+      // Utiliser sendMessageWithThread si on répond à un message (pour gérer les threads)
+      const result = replyingTo
+        ? await sendMessageWithThread({
+            conversationId: conversation.id,
+            content: message.trim() || "(Fichier joint)",
+            replyToId: replyingTo.id,
+            attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
+          })
+        : await sendMessage({
+            conversationId: conversation.id,
+            content: message.trim() || "(Fichier joint)",
+            replyToId: undefined,
+            attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
+          });
 
       if (result?.data) {
         setMessage("");
@@ -634,6 +658,17 @@ export function ChatMessageList({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {onVideoCall && conversation.type === "DIRECT" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onVideoCall}
+              className="h-8 w-8 sm:h-10 sm:w-10"
+              title="Appel vidéo"
+            >
+              <Video className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -860,9 +895,9 @@ export function ChatMessageList({
                                 </div>
                               )}
 
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
+                              <div className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                                 {renderMessageContent(msg.content)}
-                              </p>
+                              </div>
 
                               {/* Attachments */}
                               {msg.attachments && Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
@@ -931,6 +966,21 @@ export function ChatMessageList({
                                         Épingler
                                       </DropdownMenuItem>
                                     )}
+                                    <DropdownMenuItem
+                                      onClick={() => toggleFavorite(msg.id)}
+                                    >
+                                      {isFavorite(msg.id) ? (
+                                        <>
+                                          <StarOff className="mr-2 h-4 w-4" />
+                                          Retirer des favoris
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Star className="mr-2 h-4 w-4" />
+                                          Ajouter aux favoris
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
                                     {isCurrentUser && (
                                       <>
                                         <DropdownMenuItem
@@ -967,6 +1017,17 @@ export function ChatMessageList({
                       >
                         <span>{formatMessageDate(new Date(msg.createdAt))}</span>
                         {msg.isEdited && <span>• modifié</span>}
+                        
+                        {/* Thread indicator */}
+                        {msg.isThreadRoot && msg.threadCount !== undefined && msg.threadCount > 0 && (
+                          <button
+                            onClick={() => onThreadClick?.(msg.id)}
+                            className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                          >
+                            <MessageSquare className="h-3 w-3" />
+                            <span>{msg.threadCount} réponse{msg.threadCount > 1 ? "s" : ""}</span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Reactions */}
@@ -1200,9 +1261,23 @@ export function ChatMessageList({
           />
           <Input
             ref={inputRef}
-            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message... (@ pour mentionner)"}
+            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message... (@ pour mentionner, / pour commandes)"}
             value={message}
             onChange={handleInputChange}
+            onFocus={async () => {
+              // TODO: Implémenter les suggestions AI (module chat-ai.actions manquant)
+              // if (!message.trim() && process.env.NEXT_PUBLIC_ENABLE_AI === "true") {
+              //   try {
+              //     const { suggestReplyAction } = await import("@/actions/chat-ai.actions");
+              //     const result = await suggestReplyAction({ conversationId: conversation.id });
+              //     if (result?.data?.suggestions && result.data.suggestions.length > 0) {
+              //       console.log("Suggestions AI:", result.data.suggestions);
+              //     }
+              //   } catch (error) {
+              //     // Ignorer les erreurs AI
+              //   }
+              // }
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();

@@ -1,6 +1,6 @@
 # ✅ Rapport d'Activation Row Level Security (RLS)
 
-**Date**: 2025-11-13
+**Date**: 2025-11-13 (Mise à jour: 2025-01-XX)
 **Statut**: ✅ **COMPLÉTÉ AVEC SUCCÈS**
 
 ---
@@ -10,9 +10,9 @@
 Row Level Security (RLS) a été **activé avec succès** sur toutes les tables de la base de données Supabase.
 
 ### Statistiques:
-- **26 tables** avec RLS activé (rls_enabled = true)
-- **38 politiques RLS** créées
-- **6 migrations** appliquées avec succès
+- **32 tables** avec RLS activé (rls_enabled = true)
+- **62 politiques RLS** créées
+- **7 migrations** appliquées avec succès
 
 ---
 
@@ -43,6 +43,14 @@ Row Level Security (RLS) a été **activé avec succès** sur toutes les tables 
 - ✅ **Holiday** (1 politique: SELECT - lecture publique)
 - ✅ **Department** (1 politique: SELECT - lecture publique)
 
+### Tables du système de chat (2025-01-XX):
+- ✅ **ChannelPermission** (4 politiques: SELECT, INSERT, UPDATE, DELETE)
+- ✅ **ScheduledMessage** (4 politiques: SELECT, INSERT, UPDATE, DELETE)
+- ✅ **MessageReminder** (4 politiques: SELECT, INSERT, UPDATE, DELETE)
+- ✅ **ChatAuditLog** (2 politiques: SELECT, INSERT - immutables)
+- ✅ **MessageRead** (4 politiques: SELECT, INSERT, UPDATE, DELETE)
+- ✅ **PushSubscription** (4 politiques: SELECT, INSERT, UPDATE, DELETE)
+
 ### Tables avec RLS activé (sans politiques spécifiques):
 - ✅ **ReportRecipient**
 - ✅ **AuditLog**
@@ -71,6 +79,15 @@ Politiques pour Notification, Project, User, TaskComment, TaskActivity (13 polit
 
 ### Migration 6: `create_rls_policies_secondary_tables`
 Politiques pour Account, Session, Conversation, Message, etc. (11 politiques).
+
+### Migration 7: `enable_rls_chat_tables` (2025-01-XX)
+Politiques pour les tables du système de chat (24 politiques):
+- ChannelPermission (4 politiques)
+- ScheduledMessage (4 politiques)
+- MessageReminder (4 politiques)
+- ChatAuditLog (2 politiques)
+- MessageRead (4 politiques)
+- PushSubscription (4 politiques)
 
 ---
 
@@ -145,6 +162,52 @@ Politiques pour Account, Session, Conversation, Message, etc. (11 politiques).
 ### Conversation & Message
 - **SELECT** et **INSERT** pour les conversations dont on est membre
 - Les messages sont filtrés par conversation
+
+### Tables du système de chat (2025-01-XX)
+
+#### ChannelPermission (4 politiques)
+1. **Users can view permissions of their conversations** (SELECT)
+   - Voir les permissions des canaux auxquels on appartient
+2. **Admins can create channel permissions** (INSERT)
+   - Seuls les admins de canal peuvent créer des permissions
+3. **Admins can update channel permissions** (UPDATE)
+   - Seuls les admins peuvent modifier les permissions
+4. **Admins can delete channel permissions** (DELETE)
+   - Seuls les admins peuvent supprimer les permissions
+
+#### ScheduledMessage (4 politiques)
+1. **Users can view their own scheduled messages** (SELECT)
+2. **Users can create their own scheduled messages** (INSERT)
+   - Uniquement pour les conversations dont on est membre
+3. **Users can update their own scheduled messages** (UPDATE)
+4. **Users can delete their own scheduled messages** (DELETE)
+
+#### MessageReminder (4 politiques)
+1. **Users can view their own message reminders** (SELECT)
+2. **Users can create their own message reminders** (INSERT)
+   - Uniquement pour les messages des conversations dont on est membre
+3. **Users can update their own message reminders** (UPDATE)
+4. **Users can delete their own message reminders** (DELETE)
+
+#### ChatAuditLog (2 politiques - immutables)
+1. **Users can view relevant audit logs** (SELECT)
+   - Voir ses propres actions ou les logs des conversations dont on est membre
+2. **Users can create audit logs for their actions** (INSERT)
+   - Créer des logs pour ses propres actions
+   - **Pas de UPDATE/DELETE** pour maintenir l'intégrité des logs
+
+#### MessageRead (4 politiques)
+1. **Users can view their own read statuses** (SELECT)
+2. **Users can create their own read statuses** (INSERT)
+   - Uniquement pour les messages des conversations dont on est membre
+3. **Users can update their own read statuses** (UPDATE)
+4. **Users can delete their own read statuses** (DELETE)
+
+#### PushSubscription (4 politiques)
+1. **Users can view their own push subscriptions** (SELECT)
+2. **Users can create their own push subscriptions** (INSERT)
+3. **Users can update their own push subscriptions** (UPDATE)
+4. **Users can delete their own push subscriptions** (DELETE)
 
 ### Tables de référence (lecture publique)
 - **ActivityCatalog**, **ReportType**, **Holiday**, **Department**
@@ -341,9 +404,10 @@ RESET ROLE;
 
 ## ✅ Checklist de Validation
 
-- [x] RLS activé sur toutes les tables (26/26)
-- [x] Politiques créées pour les tables principales (38 politiques)
-- [x] Migrations appliquées avec succès (6/6)
+- [x] RLS activé sur toutes les tables (32/32)
+- [x] Politiques créées pour les tables principales (62 politiques)
+- [x] Migrations appliquées avec succès (7/7)
+- [x] Tables du système de chat sécurisées (6/6)
 - [ ] Tests utilisateur effectués
 - [ ] Configuration Better Auth vérifiée
 - [ ] Logs Supabase vérifiés (pas d'erreurs)
@@ -359,4 +423,5 @@ RESET ROLE;
 ---
 
 **Rapport généré le**: 2025-11-13
+**Dernière mise à jour**: 2025-01-XX
 **Par**: Claude Code (Optimisation Performance)

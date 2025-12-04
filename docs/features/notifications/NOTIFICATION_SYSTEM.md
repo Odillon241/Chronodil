@@ -321,15 +321,119 @@ Fichier : `src/__tests__/integration/notification-system.integration.test.ts`
    ```
 4. **Vérifier** que le son se joue et le toast s'affiche
 
+## Web Push Notifications
+
+### Configuration VAPID
+
+Les notifications push Web nécessitent des clés VAPID. Pour les générer :
+
+```bash
+pnpm tsx scripts/generate-vapid-keys.ts
+```
+
+Ajoutez ensuite les clés au fichier `.env` :
+
+```bash
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public_key>
+VAPID_PRIVATE_KEY=<private_key>
+VAPID_SUBJECT=mailto:admin@chronodil.com
+```
+
+### Architecture Push Notifications
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Client (Browser)                         │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ usePushSubscription hook                              │   │
+│  │ - S'abonne aux push via Service Worker               │   │
+│  │ - Enregistre la subscription côté serveur            │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Server Actions                           │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ push-subscription.actions.ts                          │   │
+│  │ - savePushSubscription()                              │   │
+│  │ - deletePushSubscription()                            │   │
+│  │ - checkPushSubscription()                             │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  notification-helpers.ts                     │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ - sendPushNotificationForNotification()               │   │
+│  │ - sendPushNotificationsForNotifications()             │   │
+│  │ - createAndSendNotification() (centralisée)           │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Push Service (FCM/APNs)                     │
+│  - Google Firebase Cloud Messaging (Chrome, Firefox)         │
+│  - Apple Push Notification service (Safari)                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Utilisation
+
+```typescript
+// Dans un composant React
+import { usePushSubscription } from '@/hooks/use-push-subscription';
+
+function NotificationSettings() {
+  const { isSubscribed, isSupported, subscribe, unsubscribe } = usePushSubscription();
+
+  if (!isSupported) {
+    return <p>Push notifications non supportées</p>;
+  }
+
+  return (
+    <button onClick={isSubscribed ? unsubscribe : subscribe}>
+      {isSubscribed ? 'Désactiver' : 'Activer'} les notifications push
+    </button>
+  );
+}
+```
+
+### Envoi de Push depuis le Code Serveur
+
+```typescript
+import { createAndSendNotification } from '@/lib/notification-helpers';
+
+// Créer une notification avec push automatique
+await createAndSendNotification({
+  userId: targetUserId,
+  title: 'Nouvelle tâche',
+  message: 'Une tâche vous a été assignée',
+  type: 'task_assigned',
+  link: '/dashboard/tasks',
+  sendPush: true, // true par défaut
+});
+```
+
+### Où les Push sont Envoyés
+
+Les notifications push sont automatiquement envoyées depuis :
+- **task.actions.ts** : Partage de tâche
+- **chat.actions.ts** : Nouveaux messages
+- **task-comment.actions.ts** : Nouveaux commentaires
+- **inngest/functions.ts** : Rappels email et timesheet
+
 ## Améliorations Futures
 
-- [ ] Support des notifications push (Service Worker)
+- [x] ~~Support des notifications push (Service Worker)~~
 - [ ] Groupement des notifications similaires
 - [ ] Snooze de notifications
 - [ ] Plus de sons personnalisables
 - [ ] Sons différents par type de notification (tâche, projet, message, etc.)
 - [ ] Vibration sur mobile
-- [ ] Notification desktop même si l'onglet est en arrière-plan
+- [x] ~~Notification desktop même si l'onglet est en arrière-plan~~
 
 ## Références
 

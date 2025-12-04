@@ -2,6 +2,10 @@ import { inngest } from "./client";
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 
+// Import des fonctions chat
+// TODO: Implémenter les fonctions chat (module functions-chat manquant)
+// export * from "./functions-chat";
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email notification function
@@ -27,7 +31,7 @@ export const sendEmailNotification = inngest.createFunction(
     }
 
     // Step 2: Create in-app notification
-    await step.run("create-notification", async () => {
+    const notification = await step.run("create-notification", async () => {
       const { nanoid } = require("nanoid");
       return await prisma.notification.create({
         data: {
@@ -39,6 +43,19 @@ export const sendEmailNotification = inngest.createFunction(
           link: link || null,
         },
       });
+    });
+
+    // Step 2.5: Send push notification
+    await step.run("send-push-notification", async () => {
+      const { sendPushNotificationForNotification } = await import('@/lib/notification-helpers');
+      const result = await sendPushNotificationForNotification(userId, {
+        id: notification.id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        link: notification.link,
+      });
+      return result;
     });
 
     // Step 3: Send email if Resend is configured
@@ -214,7 +231,7 @@ export const sendTimesheetReminders = inngest.createFunction(
         const link = "/dashboard/hr-timesheet/new";
 
         // Create in-app notification
-        await prisma.notification.create({
+        const notification = await prisma.notification.create({
           data: {
             id: nanoid(),
             userId: user.id,
@@ -224,6 +241,17 @@ export const sendTimesheetReminders = inngest.createFunction(
             link,
           },
         });
+
+        // Send push notification (fire and forget)
+        import('@/lib/notification-helpers').then(({ sendPushNotificationForNotification }) => {
+          sendPushNotificationForNotification(user.id, {
+            id: notification.id,
+            title: notification.title,
+            message: notification.message,
+            type: notification.type,
+            link: notification.link,
+          }).catch(console.error);
+        }).catch(console.error);
 
         // Send email notification if enabled
         if (user.emailNotificationsEnabled && process.env.RESEND_API_KEY) {

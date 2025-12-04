@@ -9,8 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslations } from "next-intl";
+import { useT } from "@/lib/translations";
 import { SettingsSlider } from "./settings-slider";
+import { Palette, LayoutGrid, Type, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AppearanceSectionProps {
   settings: {
@@ -29,7 +31,9 @@ const accentColors = [
   { value: "dark", label: "Sombre", class: "bg-[#2C2C2C]" },
 ];
 
-// Mapping pour migrer les anciennes couleurs vers les nouvelles
+const validAccentColors = accentColors.map((c) => c.value);
+
+// Migration des anciennes couleurs
 const colorMigrationMap: Record<string, string> = {
   "rusty-red": "green-anis",
   "ou-crimson": "green-teal",
@@ -37,33 +41,28 @@ const colorMigrationMap: Record<string, string> = {
   "golden-orange": "yellow-vibrant",
   "green": "green-anis",
   "dark-green": "green-teal",
-  "light-green": "green-anis",
-  "forest-green": "green-teal",
-  "sage-green": "green-anis",
 };
 
-const validAccentColors = accentColors.map((c) => c.value); // ["yellow-vibrant", "green-anis", "green-teal", "dark"]
-
 export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSectionProps) {
-  const t = useTranslations("settings.appearance");
+  const t = useT("settings.appearance");
 
   const viewDensityOptions = [
-    { value: "compact", label: t("density.compact") },
-    { value: "normal", label: t("density.normal") },
-    { value: "comfortable", label: t("density.comfortable") },
+    { value: "compact", label: t("density.compact"), description: "Moins d'espace" },
+    { value: "normal", label: t("density.normal"), description: "Par défaut" },
+    { value: "comfortable", label: t("density.comfortable"), description: "Plus d'espace" },
   ];
 
   // Migration automatique des anciennes couleurs
   useEffect(() => {
     if (settings?.accentColor && !validAccentColors.includes(settings.accentColor)) {
-      const migratedColor = colorMigrationMap[settings.accentColor] || "green";
-      console.log(`🔄 Migration de la couleur: ${settings.accentColor} → ${migratedColor}`);
+      const migratedColor = colorMigrationMap[settings.accentColor] || "green-anis";
+      console.log(`🔄 Migration couleur: ${settings.accentColor} → ${migratedColor}`);
       onUpdate("accentColor", migratedColor);
       document.documentElement.setAttribute("data-accent", migratedColor);
     }
   }, [settings?.accentColor, onUpdate]);
 
-  // Normaliser la couleur actuelle pour l'affichage
+  // Normaliser la couleur actuelle
   const currentAccentColor = settings?.accentColor 
     ? (validAccentColors.includes(settings.accentColor) 
         ? settings.accentColor 
@@ -71,12 +70,8 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
     : "green-anis";
 
   const handleAccentColorChange = (colorName: string) => {
-    console.log("🎨 Changement couleur d'accentuation:", colorName);
-    // Appliquer immédiatement pour un feedback visuel
     document.documentElement.setAttribute("data-accent", colorName);
-    // Sauvegarder en base de données
     onUpdate("accentColor", colorName);
-    // Déclencher un événement pour synchroniser avec SettingsProvider
     window.dispatchEvent(new CustomEvent("settings-updated"));
   };
 
@@ -89,9 +84,12 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
 
       <div className="space-y-6">
         {/* Accent Color */}
-        <div className="space-y-3 border-t pt-6">
-          <Label>{t("accentColor")}</Label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="p-4 rounded-lg border bg-card space-y-4">
+          <div className="flex items-center gap-2">
+            <Palette className="h-4 w-4 text-muted-foreground" />
+            <Label className="font-medium">{t("accentColor")}</Label>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {accentColors.map((color) => {
               const isSelected = currentAccentColor === color.value;
               return (
@@ -99,14 +97,27 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
                   key={color.value}
                   onClick={() => handleAccentColorChange(color.value)}
                   disabled={isSaving}
-                  className={`relative p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 hover:bg-muted/50 ${
+                  className={cn(
+                    "relative p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2",
+                    "hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
                     isSelected
-                      ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background"
-                      : "border-border"
-                  }`}
+                      ? "border-primary ring-2 ring-primary/30 bg-primary/5"
+                      : "border-border hover:border-muted-foreground/50"
+                  )}
                 >
-                  <div className={`h-8 w-8 rounded-full ${color.class}`} />
-                  <p className="text-xs font-medium text-center">{color.label}</p>
+                  <div className={cn("h-10 w-10 rounded-full shadow-inner", color.class)}>
+                    {isSelected && (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <Check className={cn(
+                          "h-5 w-5",
+                          color.value === "yellow-vibrant" || color.value === "green-anis" 
+                            ? "text-gray-900" 
+                            : "text-white"
+                        )} />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">{color.label}</span>
                 </button>
               );
             })}
@@ -114,14 +125,16 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
         </div>
 
         {/* View Density & Font Size */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* View Density */}
-          <div className="space-y-3">
-            <Label htmlFor="view-density">{t("viewDensity")}</Label>
+          <div className="p-4 rounded-lg border bg-card space-y-3">
+            <div className="flex items-center gap-2">
+              <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="view-density" className="font-medium">{t("viewDensity")}</Label>
+            </div>
             <Select
               value={settings.viewDensity}
               onValueChange={(value) => {
-                // Appliquer immédiatement la densité d'affichage pour un feedback visuel instantané
                 document.documentElement.setAttribute("data-density", value);
                 onUpdate("viewDensity", value);
               }}
@@ -132,7 +145,10 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
               <SelectContent>
                 {viewDensityOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-muted-foreground">{option.description}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -140,22 +156,28 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
           </div>
 
           {/* Font Size */}
-          <SettingsSlider
-            id="font-size"
-            label={t("fontSize")}
-            value={settings.fontSize}
-            min={12}
-            max={24}
-            step={1}
-            unit="px"
-            description={t("fontSizeDesc")}
-            onValueChange={(value) => onUpdate("fontSize", value)}
-            onValueChangeImmediate={(value) => {
-              // Appliquer immédiatement la taille de police pour un feedback visuel instantané
-              document.documentElement.style.fontSize = `${value}px`;
-            }}
-            disabled={isSaving}
-          />
+          <div className="p-4 rounded-lg border bg-card space-y-3">
+            <div className="flex items-center gap-2">
+              <Type className="h-4 w-4 text-muted-foreground" />
+              <Label className="font-medium">{t("fontSize")}</Label>
+            </div>
+            <SettingsSlider
+              id="font-size"
+              label=""
+              value={settings.fontSize}
+              min={10}
+              max={20}
+              step={1}
+              unit="px"
+              description={t("fontSizeDesc")}
+              onValueChange={(value) => onUpdate("fontSize", value)}
+              onValueChangeImmediate={(value) => {
+                document.documentElement.style.fontSize = `${value}px`;
+              }}
+              disabled={isSaving}
+              formatValue={(v) => `${v}px`}
+            />
+          </div>
         </div>
       </div>
     </div>

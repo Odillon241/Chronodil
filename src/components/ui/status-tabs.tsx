@@ -72,7 +72,7 @@ export const StatusTabs = React.forwardRef<HTMLDivElement, StatusTabsProps>(
     }
 
     const containerClasses = cn(
-      "flex items-center gap-1 p-1 bg-muted rounded-lg",
+      "inline-flex items-center gap-1 p-1 bg-muted rounded-lg",
       {
         "gap-0.5 p-0.5": variant === "compact",
         "gap-2 p-2": variant === "pills",

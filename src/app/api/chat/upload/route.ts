@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { nanoid } from "nanoid";
+
+const BUCKET_NAME = "chat-files";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,20 +24,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Aucun fichier fourni" }, { status: 400 });
     }
 
-    const uploadDir = join(process.cwd(), "public", "uploads", "chat");
-    
-    // Créer le répertoire s'il n'existe pas
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
+    const supabase = await createSupabaseServerClient();
     const uploadedFiles = [];
 
     for (const file of files) {
-      // Vérifier la taille du fichier (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
+      // Vérifier la taille du fichier (max 50MB pour Supabase Storage)
+      if (file.size > 50 * 1024 * 1024) {
         return NextResponse.json(
-          { error: `Le fichier ${file.name} est trop volumineux (max 10MB)` },
+          { error: `Le fichier ${file.name} est trop volumineux (max 50MB)` },
           { status: 400 }
         );
       }
@@ -71,13 +65,33 @@ export async function POST(request: NextRequest) {
       // Générer un nom de fichier unique
       const fileExtension = file.name.split(".").pop();
       const uniqueId = nanoid();
-      const fileName = `${uniqueId}.${fileExtension}`;
-      const filePath = join(uploadDir, fileName);
+      const fileName = `${session.user.id}/${uniqueId}.${fileExtension}`;
+      const filePath = `chat/${fileName}`;
 
-      // Écrire le fichier
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      await writeFile(filePath, buffer);
+      // Convertir le File en ArrayBuffer puis en Blob
+      const arrayBuffer = await file.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: file.type });
+
+      // Uploader dans Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, blob, {
+          contentType: file.type,
+          upsert: false, // Ne pas remplacer si existe déjà
+        });
+
+      if (uploadError) {
+        console.error("Erreur upload Supabase:", uploadError);
+        return NextResponse.json(
+          { error: `Erreur lors de l'upload: ${uploadError.message}` },
+          { status: 500 }
+        );
+      }
+
+      // Obtenir l'URL publique du fichier
+      const { data: urlData } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
 
       // Retourner les informations du fichier
       uploadedFiles.push({
@@ -85,7 +99,8 @@ export async function POST(request: NextRequest) {
         name: file.name,
         type: file.type,
         size: file.size,
-        url: `/uploads/chat/${fileName}`,
+        url: urlData.publicUrl,
+        path: filePath,
         uploadedAt: new Date().toISOString(),
         uploadedBy: session.user.id,
       });

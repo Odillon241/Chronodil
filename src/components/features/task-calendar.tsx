@@ -164,14 +164,41 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
             <div className="flex items-center gap-1 flex-shrink-0">
               {task.isShared && <Users className="h-3 w-3" />}
               {task.reminderDate && <Bell className="h-3 w-3" />}
-              {task.Creator && task.Creator.id !== currentUserId && (
-                <Avatar className="h-4 w-4 border border-white/30">
-                  <AvatarImage src={task.Creator.avatar || undefined} />
-                  <AvatarFallback className="text-[8px] bg-white/20 text-white">
-                    {task.Creator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
-              )}
+              {/* Afficher le créateur et les membres assignés */}
+              <div className="flex -space-x-1.5">
+                {task.Creator && (
+                  <Avatar
+                    className="h-4 w-4 border border-white/30"
+                    title={`${task.Creator.name} (Créateur)`}
+                  >
+                    <AvatarImage src={task.Creator.avatar || undefined} />
+                    <AvatarFallback className="text-[8px] bg-white/20 text-white">
+                      {task.Creator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                {/* Afficher les membres assignés (max 2 membres supplémentaires) */}
+                {task.TaskMember?.filter((member) => member.User.id !== task.Creator?.id).slice(0, 2).map((member) => (
+                  <Avatar
+                    key={member.id}
+                    className="h-4 w-4 border border-white/30"
+                    title={member.User.name}
+                  >
+                    <AvatarImage src={member.User.avatar || undefined} />
+                    <AvatarFallback className="text-[8px] bg-white/20 text-white">
+                      {member.User.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {/* Indicateur "+N" si plus de 2 membres */}
+                {task.TaskMember && task.TaskMember.filter((m) => m.User.id !== task.Creator?.id).length > 2 && (
+                  <div className="h-4 w-4 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
+                    <span className="text-[7px] font-bold text-white">
+                      +{task.TaskMember.filter((m) => m.User.id !== task.Creator?.id).length - 2}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           {task.Project && (
