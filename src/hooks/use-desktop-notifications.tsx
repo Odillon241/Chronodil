@@ -29,7 +29,7 @@ interface UseDesktopNotificationsOptions {
   onPlaySound?: (soundType?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
-const ICON_URL = '/assets/media/icône du logoicône logo de chronodil.svg';
+const ICON_URL = '/assets/media/chronodil-icon.svg';
 
 // Mapper le type de notification desktop au type de son
 function mapTypeToSoundType(type: DesktopNotificationType): 'success' | 'error' | 'info' | 'warning' {

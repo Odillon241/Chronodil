@@ -67,11 +67,11 @@ function getSoundUrl(soundId: string, extension: string = 'mp3'): string {
 // Les sons sont maintenant stockés dans Supabase Storage
 export const NOTIFICATION_SOUNDS: NotificationSound[] = [
   // Catégorie : Classique
-  { 
-    id: 'new-notification-3-398649', 
-    name: 'Notification par défaut', 
-    description: 'Son de notification moderne et agréable (par défaut)', 
-    file: getSoundUrl('new-notification-3-398649', 'mp3'),
+  {
+    id: 'new-notification-info',
+    name: 'Notification par défaut',
+    description: 'Son de notification moderne et agréable (par défaut)',
+    file: getSoundUrl('new-notification-info', 'mp3'),
     category: 'classic'
   },
   { 
@@ -81,43 +81,43 @@ export const NOTIFICATION_SOUNDS: NotificationSound[] = [
     file: getSoundUrl('notification', 'wav'),
     category: 'classic'
   },
-  { 
-    id: 'new-notification-réussi', 
-    name: 'Notification réussie', 
-    description: 'Son de notification pour les opérations réussies', 
-    file: getSoundUrl('new-notification-réussi', 'mp3'), // Utiliser le nom exact du fichier
+  {
+    id: 'new-notification-success',
+    name: 'Notification réussie',
+    description: 'Son de notification pour les opérations réussies',
+    file: getSoundUrl('new-notification-success', 'mp3'),
     category: 'success'
   },
   // Note: Les sons suivants n'existent pas encore dans public/sounds/
   // Ils utilisent le son par défaut en fallback
-  { 
-    id: 'taskAssigned', 
-    name: 'Tâche assignée', 
-    description: 'Son pour une nouvelle tâche assignée', 
-    file: getSoundUrl('new-notification-3-398649', 'mp3'), // Fallback vers le son par défaut
+  {
+    id: 'taskAssigned',
+    name: 'Tâche assignée',
+    description: 'Son pour une nouvelle tâche assignée',
+    file: getSoundUrl('new-notification-info', 'mp3'), // Fallback vers le son par défaut
     category: 'classic'
   },
-  { 
-    id: 'taskUpdated', 
-    name: 'Tâche mise à jour', 
-    description: 'Son pour une mise à jour de tâche', 
-    file: getSoundUrl('new-notification-3-398649', 'mp3'), // Fallback vers le son par défaut
+  {
+    id: 'taskUpdated',
+    name: 'Tâche mise à jour',
+    description: 'Son pour une mise à jour de tâche',
+    file: getSoundUrl('new-notification-info', 'mp3'), // Fallback vers le son par défaut
     category: 'classic'
   },
   
   // Catégorie : Succès
-  { 
-    id: 'taskCompleted', 
-    name: 'Tâche terminée', 
-    description: 'Son de confirmation de tâche terminée', 
-    file: getSoundUrl('new-notification-réussi', 'mp3'), // Utiliser le son de succès
+  {
+    id: 'taskCompleted',
+    name: 'Tâche terminée',
+    description: 'Son de confirmation de tâche terminée',
+    file: getSoundUrl('new-notification-success', 'mp3'), // Utiliser le son de succès
     category: 'success'
   },
-  { 
-    id: 'success', 
-    name: 'Succès', 
-    description: 'Son de confirmation de succès', 
-    file: getSoundUrl('new-notification-réussi', 'mp3'), // Utiliser le son de succès
+  {
+    id: 'success',
+    name: 'Succès',
+    description: 'Son de confirmation de succès',
+    file: getSoundUrl('new-notification-success', 'mp3'), // Utiliser le son de succès
     category: 'success'
   },
   
@@ -294,12 +294,12 @@ export const CATEGORY_LABELS: Record<SoundCategory, string> = {
 // Mapping des IDs de sons vers leurs fichiers
 // Utilise les fichiers locaux disponibles, avec fallback vers les sons existants
 const SOUND_FILES: SoundFiles = {
-  notification: getSoundUrl('new-notification-3-398649', 'mp3'), // Nouveau son par défaut
-  taskAssigned: getSoundUrl('new-notification-3-398649', 'mp3'), // Fallback vers le son par défaut
-  taskCompleted: getSoundUrl('new-notification-réussi', 'mp3'), // Utiliser le son de succès
-  taskUpdated: getSoundUrl('new-notification-3-398649', 'mp3'), // Fallback vers le son par défaut
+  notification: getSoundUrl('new-notification-info', 'mp3'), // Nouveau son par défaut
+  taskAssigned: getSoundUrl('new-notification-info', 'mp3'), // Fallback vers le son par défaut
+  taskCompleted: getSoundUrl('new-notification-success', 'mp3'), // Utiliser le son de succès
+  taskUpdated: getSoundUrl('new-notification-info', 'mp3'), // Fallback vers le son par défaut
   error: getSoundUrl('notification', 'wav'), // Utiliser le son classique
-  success: getSoundUrl('new-notification-réussi', 'mp3'), // Utiliser le son de succès
+  success: getSoundUrl('new-notification-success', 'mp3'), // Utiliser le son de succès
 };
 
 export function useNotificationSound(options?: NotificationSoundOptions) {
@@ -643,10 +643,10 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
 
   const testSound = useCallback((soundType?: keyof SoundFiles | string) => {
     console.log('[testSound] Test du son:', soundType);
-    
+
     if (!soundType) {
       // Par défaut, utiliser le son par défaut
-      playSoundById('new-notification-3-398649', true);
+      playSoundById('new-notification-info', true);
       return;
     }
 

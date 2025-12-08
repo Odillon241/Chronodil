@@ -7,8 +7,8 @@ const CACHE_NAME = 'chronodil-v1';
 
 // Fichiers à mettre en cache pour le mode offline
 const STATIC_ASSETS = [
-  '/sounds/new-notification-3-398649.mp3',
-  '/sounds/new-notification-réussi.mp3',
+  '/sounds/new-notification-info.mp3',
+  '/sounds/new-notification-success.mp3',
 ];
 
 // Installation du Service Worker
@@ -63,8 +63,8 @@ self.addEventListener('push', (event) => {
   let data = {
     title: 'Chronodil',
     body: 'Vous avez une nouvelle notification',
-    icon: '/assets/media/logo-icon.svg',
-    badge: '/assets/media/logo-icon.svg',
+    icon: '/assets/media/chronodil-icon.svg',
+    badge: '/assets/media/chronodil-icon.svg',
     tag: 'chronodil-notification',
     data: {
       url: '/dashboard/notifications',
@@ -197,6 +197,8 @@ self.addEventListener('message', (event) => {
 });
 
 console.log('[Service Worker] Script chargé');
+
+
 
 
 

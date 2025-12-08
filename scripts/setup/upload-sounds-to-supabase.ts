@@ -40,8 +40,8 @@ function normalizeFileName(name: string): string {
 
 // Liste des fichiers à uploader
 const SOUNDS_TO_UPLOAD = [
-  { filename: 'new-notification-3-398649.mp3', name: 'new-notification-3-398649' },
-  { filename: 'new-notification-réussi.mp3', name: 'new-notification-reussi' }, // Normalisé sans accent
+  { filename: 'new-notification-info.mp3', name: 'new-notification-info' },
+  { filename: 'new-notification-success.mp3', name: 'new-notification-success' },
   { filename: 'notification.wav', name: 'notification' },
 ];
 
