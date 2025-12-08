@@ -26,13 +26,26 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const { notifyNewMessage } = useDesktopNotifications();
+  const conversationChangeRef = useRef(onConversationChange);
+  const messageChangeRef = useRef(onMessageChange);
+  const notifyNewMessageRef = useRef(notifyNewMessage);
   
   // Créer le client une seule fois
   const supabase = useMemo(() => createClient(), []);
   const channelName = useMemo(() => `chat-realtime`, []);
 
-  const stableOnConversationChange = useCallback(onConversationChange, [onConversationChange]);
-  const stableOnMessageChange = useCallback(onMessageChange, [onMessageChange]);
+  // Conserver les handlers les plus récents sans redémarrer la souscription
+  useEffect(() => {
+    conversationChangeRef.current = onConversationChange;
+  }, [onConversationChange]);
+
+  useEffect(() => {
+    messageChangeRef.current = onMessageChange;
+  }, [onMessageChange]);
+
+  useEffect(() => {
+    notifyNewMessageRef.current = notifyNewMessage;
+  }, [notifyNewMessage]);
 
   // Fonction pour nettoyer le channel proprement
   const cleanupChannel = useCallback(async () => {
@@ -88,7 +101,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
             const conversationId = (payload as any)?.payload?.conversationId;
             const senderId = (payload as any)?.payload?.senderId;
             if (senderId === userId) return;
-            stableOnMessageChange('INSERT', messageId, conversationId);
+            messageChangeRef.current?.('INSERT', messageId, conversationId);
           }
         )
         // Écouter les changements sur la table Conversation
@@ -117,7 +130,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
               });
             }
 
-            stableOnConversationChange(eventType, conversationId);
+            conversationChangeRef.current?.(eventType, conversationId);
           }
         )
         // Écouter les changements sur ConversationMember
@@ -143,7 +156,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
               });
             }
 
-            stableOnConversationChange('UPDATE', conversationId);
+            conversationChangeRef.current?.('UPDATE', conversationId);
           }
         )
         // Écouter les changements sur Message
@@ -172,7 +185,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
               });
 
               // Afficher la notification de bureau (tag = conversationId pour dédoublonner)
-              notifyNewMessage(
+              notifyNewMessageRef.current?.(
                 senderName,
                 undefined, // conversationName non disponible dans le payload
                 () => {
@@ -185,7 +198,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
               );
             }
 
-            stableOnMessageChange(eventType, messageId, conversationId);
+            messageChangeRef.current?.(eventType, messageId, conversationId);
           }
         )
         .subscribe((status) => {
@@ -297,7 +310,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
         isSubscribedRef.current = false;
       }
     };
-  }, [channelName, stableOnConversationChange, stableOnMessageChange, supabase, userId, cleanupChannel, notifyNewMessage]);
+  }, [channelName, supabase, userId, cleanupChannel]);
 
   return { isConnected, reconnect };
 }
