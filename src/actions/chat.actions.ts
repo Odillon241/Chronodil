@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { authActionClient } from "@/lib/safe-action";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 // TODO: Implémenter l'audit de chat (module chat-audit manquant)
 // import { createChatAuditLog } from "@/lib/audit/chat-audit";
 
@@ -529,6 +530,28 @@ export const sendMessage = authActionClient
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
+
+    // Broadcast realtime (faible latence) pour informer immédiatement les clients
+    // On n'attend pas le résultat pour ne pas bloquer la réponse.
+    createSupabaseServerClient()
+      .then((supabase) =>
+        supabase
+          .channel("chat-realtime")
+          .send({
+            type: "broadcast",
+            event: "message:new",
+            payload: {
+              conversationId,
+              messageId: message.id,
+              senderId: userId,
+              createdAt: message.createdAt,
+            },
+            // ack true pour garantir l'envoi côté serveur
+            opts: { ack: true },
+          })
+          .catch((err) => console.warn("[Chat] Broadcast realtime échoué", err))
+      )
+      .catch((err) => console.warn("[Chat] Init supabase broadcast échouée", err));
 
     // Log d'audit
     // TODO: Implémenter l'audit de chat (module chat-audit manquant)

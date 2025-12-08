@@ -272,7 +272,7 @@ export default function ChatPage() {
   );
 
   // Real-time updates pour le chat
-  useRealtimeChat({
+  const { isConnected: isRealtimeConnected, reconnect: reconnectRealtime } = useRealtimeChat({
     onConversationChange: handleRealtimeConversationChange,
     onMessageChange: handleRealtimeMessageChange,
     userId: currentUser?.id,
@@ -375,6 +375,20 @@ export default function ChatPage() {
         <div className={`grid w-full h-full min-w-0 max-w-full ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[minmax(0,350px),1fr,minmax(0,350px)]' : 'grid-cols-1 md:grid-cols-[minmax(0,350px),1fr]'}`} suppressHydrationWarning>
         {/* Sidebar - Liste des conversations/canaux */}
         <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
+          {/* Indicateur de connexion real-time */}
+          {!isRealtimeConnected && (
+            <div 
+              className="px-3 py-1.5 bg-destructive/10 border-b border-destructive/20 flex items-center justify-between gap-2 cursor-pointer hover:bg-destructive/20 transition-colors"
+              onClick={reconnectRealtime}
+              title="Cliquez pour reconnecter"
+            >
+              <div className="flex items-center gap-2 text-xs text-destructive">
+                <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                <span>Connexion perdue</span>
+              </div>
+              <span className="text-xs text-destructive/70 underline">Reconnecter</span>
+            </div>
+          )}
           {/* Toggle view mode */}
           <div className="p-2 border-b flex gap-2">
             <Button
