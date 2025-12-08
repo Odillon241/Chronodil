@@ -40,6 +40,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession, signOut } from "@/lib/auth-client";
+import { useChatUnreadCount } from "@/hooks/use-chat-unread-count";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
@@ -57,6 +59,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [openMenus, setOpenMenus] = React.useState<string[]>([]);
   const [mounted, setMounted] = React.useState(false);
   const t = useT();
+  const { unreadCount: chatUnread } = useChatUnreadCount();
 
   React.useEffect(() => {
     setMounted(true);
@@ -258,9 +261,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       tooltip={item.title}
                       isActive={isActive}
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} className="flex items-center gap-2">
                         {item.icon && <item.icon />}
-                        <span>{item.title}</span>
+                        <span className="flex w-full items-center gap-2">
+                          <span className="truncate">{item.title}</span>
+                          {item.url === "/dashboard/chat" && chatUnread > 0 && (
+                            <Badge
+                              variant="outline"
+                              className="ml-auto min-w-[1.75rem] justify-center rounded-full border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary"
+                            >
+                              {chatUnread > 99 ? "99+" : chatUnread}
+                            </Badge>
+                          )}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getUserPreferences } from '@/actions/preferences.actions';
 
 export type DesktopNotificationType = 
@@ -30,6 +30,7 @@ interface UseDesktopNotificationsOptions {
 }
 
 const ICON_URL = '/assets/media/chronodil-icon.svg';
+const DEDUPE_WINDOW_MS = 2500;
 
 // Mapper le type de notification desktop au type de son
 function mapTypeToSoundType(type: DesktopNotificationType): 'success' | 'error' | 'info' | 'warning' {
@@ -90,6 +91,14 @@ export function useDesktopNotifications(options: UseDesktopNotificationsOptions 
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [desktopNotificationsEnabled, setDesktopNotificationsEnabled] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+  const lastShownRef = useRef<Map<string, number>>(new Map());
+  const statsRef = useRef({
+    shown: 0,
+    blockedPermission: 0,
+    disabled: 0,
+    errors: 0,
+    deduped: 0,
+  });
 
   // Charger les préférences utilisateur
   useEffect(() => {
@@ -151,12 +160,14 @@ export function useDesktopNotifications(options: UseDesktopNotificationsOptions 
     (type: DesktopNotificationType, customOptions?: Partial<DesktopNotificationOptions>) => {
       // Vérifier si les notifications sont activées
       if (!desktopNotificationsEnabled || !enabled) {
+        statsRef.current.disabled += 1;
         console.log('[Desktop Notifications] Desktop notifications disabled');
         return null;
       }
 
       // Vérifier la permission
       if (permission !== 'granted') {
+        statsRef.current.blockedPermission += 1;
         console.log('[Desktop Notifications] Permission not granted:', permission);
         return null;
       }
@@ -173,10 +184,21 @@ export function useDesktopNotifications(options: UseDesktopNotificationsOptions 
         title: customOptions?.title || defaultMessage.title,
         body: customOptions?.body || defaultMessage.body,
         icon: customOptions?.icon || ICON_URL,
-        tag: customOptions?.tag || `notification-${type}-${Date.now()}`,
+        tag: customOptions?.tag || `notification-${type}`,
         data: customOptions?.data,
         onClick: customOptions?.onClick,
+        playSound: customOptions?.playSound ?? true,
+        soundType: customOptions?.soundType || mapTypeToSoundType(type),
       };
+
+      // Dédoublonner pendant une courte fenêtre (par tag)
+      const now = Date.now();
+      const last = lastShownRef.current.get(options.tag || options.title);
+      if (last && now - last < DEDUPE_WINDOW_MS) {
+        statsRef.current.deduped += 1;
+        return null;
+      }
+      lastShownRef.current.set(options.tag || options.title, now);
 
       try {
         const notification = new Notification(options.title, {
@@ -188,6 +210,11 @@ export function useDesktopNotifications(options: UseDesktopNotificationsOptions 
           requireInteraction: false,
           silent: false,
         } as any);
+
+        // Son optionnel si fourni par le parent
+        if (options.playSound && onPlaySound) {
+          onPlaySound(options.soundType);
+        }
 
         // Gérer le clic sur la notification
         if (options.onClick) {
@@ -210,25 +237,36 @@ export function useDesktopNotifications(options: UseDesktopNotificationsOptions 
           }
         }, 10000);
 
+        statsRef.current.shown += 1;
         console.log('[Desktop Notifications] Notification shown:', { type, title: options.title });
         return notification;
       } catch (error) {
+        statsRef.current.errors += 1;
         console.error('[Desktop Notifications] Error showing notification:', error);
         return null;
       }
     },
-    [desktopNotificationsEnabled, permission, enabled]
+    [desktopNotificationsEnabled, permission, enabled, onPlaySound]
   );
 
   // Méthodes spécifiques pour chaque type d'événement
   const notifyNewMessage = useCallback(
-    (senderName: string, conversationName?: string, onClick?: () => void) => {
+    (
+      senderName: string,
+      conversationName?: string,
+      onClick?: () => void,
+      extra?: Partial<DesktopNotificationOptions>
+    ) => {
       return showNotification('new-message', {
         title: '💬 Nouveau message',
         body: conversationName 
           ? `${senderName} vous a envoyé un message dans "${conversationName}"`
           : `${senderName} vous a envoyé un message`,
         onClick,
+        tag: extra?.tag,
+        data: extra?.data,
+        playSound: extra?.playSound,
+        soundType: extra?.soundType,
       });
     },
     [showNotification]
@@ -318,6 +356,7 @@ export function useDesktopNotifications(options: UseDesktopNotificationsOptions 
     isLoading,
     requestPermission,
     showNotification,
+    metrics: statsRef.current,
     // Méthodes spécifiques
     notifyNewMessage,
     notifyTaskReminder,

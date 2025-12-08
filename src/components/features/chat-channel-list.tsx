@@ -39,7 +39,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { leaveConversation, deleteConversation } from "@/actions/chat.actions";
+import { leaveConversation, deleteConversation, toggleMuteConversation } from "@/actions/chat.actions";
 
 interface Channel {
   id: string;
@@ -83,6 +83,7 @@ interface ChatChannelListProps {
   onCreateChannel: () => void;
   onManageMembers?: (channelId: string) => void;
   onChannelInfo?: (channelId: string) => void;
+  onUpdate?: () => void;
 }
 
 // Catégories par défaut
@@ -96,6 +97,7 @@ export function ChatChannelList({
   onCreateChannel,
   onManageMembers,
   onChannelInfo,
+  onUpdate,
 }: ChatChannelListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(
@@ -149,6 +151,27 @@ export function ChatChannelList({
     });
   };
 
+  const handleToggleMute = async (channelId: string) => {
+    try {
+      const result = await toggleMuteConversation({ conversationId: channelId });
+      if (result?.data) {
+        toast.success(
+          result.data.isMuted
+            ? "Notifications désactivées pour ce canal"
+            : "Notifications activées pour ce canal"
+        );
+        // Rafraîchir la liste des canaux
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+         toast.error(result?.serverError || "Erreur lors de la modification des notifications");
+      }
+    } catch (error) {
+      toast.error("Erreur lors de la modification des notifications");
+    }
+  };
+
   const handleLeaveChannel = async (channelId: string, channelName: string) => {
     const confirmed = confirm(
       `Êtes-vous sûr de vouloir quitter le canal "${channelName}" ?\n\n` +
@@ -159,6 +182,10 @@ export function ChatChannelList({
       try {
         await leaveConversation({ conversationId: channelId });
         toast.success(`Vous avez quitté #${channelName}`);
+        // Rafraîchir la liste des canaux
+        if (onUpdate) {
+          onUpdate();
+        }
       } catch (error) {
         toast.error("Erreur lors de la sortie du canal");
       }
@@ -179,6 +206,10 @@ export function ChatChannelList({
       try {
         await deleteConversation({ conversationId: channelId });
         toast.success(`Canal #${channelName} supprimé définitivement`);
+        // Rafraîchir la liste des canaux
+        if (onUpdate) {
+          onUpdate();
+        }
       } catch (error: any) {
         toast.error(error?.message || "Erreur lors de la suppression du canal");
       }
@@ -307,12 +338,12 @@ export function ChatChannelList({
             <DropdownMenuContent align="end">
               {/* Informations du canal */}
               <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
+                onSelect={() => {
                   if (onChannelInfo) {
                     onChannelInfo(channel.id);
                   } else {
-                    toast.info("Fonctionnalité à venir");
+                    // Si pas de handler, sélectionner le canal pour afficher les infos dans le header
+                    onSelectChannel(channel.id);
                   }
                 }}
               >
@@ -326,12 +357,12 @@ export function ChatChannelList({
               {canManageMembers(channel) && (
                 <>
                   <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onSelect={() => {
                       if (onManageMembers) {
                         onManageMembers(channel.id);
                       } else {
-                        toast.info("Fonctionnalité à venir");
+                        // Si pas de handler, sélectionner le canal pour gérer les membres depuis le header
+                        onSelectChannel(channel.id);
                       }
                     }}
                   >
@@ -344,9 +375,8 @@ export function ChatChannelList({
 
               {/* Notifications */}
               <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toast.info("Fonctionnalité à venir");
+                onSelect={() => {
+                  handleToggleMute(channel.id);
                 }}
               >
                 {isMuted ? (
@@ -367,9 +397,10 @@ export function ChatChannelList({
               {/* Quitter le canal (tous les membres) */}
               {!canDeleteChannel(channel) && (
                 <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLeaveChannel(channel.id, channel.name);
+                  onSelect={() => {
+                    setTimeout(() => {
+                      handleLeaveChannel(channel.id, channel.name);
+                    }, 100);
                   }}
                   className="text-orange-600"
                 >
@@ -381,9 +412,10 @@ export function ChatChannelList({
               {/* Supprimer le canal (créateur/admin uniquement) */}
               {canDeleteChannel(channel) && (
                 <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteChannel(channel.id, channel.name);
+                  onSelect={() => {
+                    setTimeout(() => {
+                      handleDeleteChannel(channel.id, channel.name);
+                    }, 100);
                   }}
                   className="text-destructive"
                 >

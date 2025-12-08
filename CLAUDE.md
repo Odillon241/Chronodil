@@ -1,6 +1,57 @@
 # Chronodil App - Project Instructions
 
-## Corrections récentes (2025-12-04)
+## Corrections récentes (2025-12-08)
+
+### ✅ Supabase Realtime pour Chat - CONFIGURÉ ET ACTIVÉ
+**Fonctionnalité** : Communication en temps réel pour le système de chat via Supabase Realtime.
+
+**Configuration effectuée** :
+1. **Tables ajoutées à la publication `supabase_realtime`** :
+   - `Conversation` ✅ (déjà présent)
+   - `ConversationMember` ✅ (déjà présent)
+   - `Message` ✅ (déjà présent)
+   - `MessageRead` ✅ (ajouté)
+   - `ChannelPermission` ✅ (ajouté)
+   - `ScheduledMessage` ✅ (ajouté)
+   - `MessageReminder` ✅ (ajouté)
+   - `ChatAuditLog` ✅ (ajouté)
+   - `PushSubscription` ✅ (ajouté)
+
+2. **Politiques RLS créées pour Realtime** :
+   - `Enable realtime for conversations` - SELECT sur `Conversation` pour anon/authenticated
+   - `Enable realtime for conversation members` - SELECT sur `ConversationMember` pour anon/authenticated
+   - `Enable realtime for messages` - SELECT sur `Message` pour anon/authenticated
+   - `Enable realtime for message reads` - SELECT sur `MessageRead` pour anon/authenticated
+
+3. **Hook `useRealtimeChat`** (existant) :
+   - Écoute les changements sur `Conversation`, `ConversationMember`, `Message`
+   - Backoff exponentiel pour les reconnexions
+   - Notifications toast et desktop pour les nouveaux messages
+   - Fichier : `src/hooks/use-realtime-chat.tsx`
+
+**Pourquoi ces politiques RLS ?** :
+Le projet utilise **Better Auth** (et non Supabase Auth), donc `auth.uid()` ne fonctionne pas pour identifier les utilisateurs. Les politiques RLS permissives permettent à Supabase Realtime de diffuser les événements à tous les clients connectés. Le filtrage des conversations se fait côté application (dans le hook `useRealtimeChat`).
+
+**Migration SQL** : `prisma/migrations/enable_realtime_for_chat.sql`
+
+**Lien Supabase Realtime Inspector** :
+- https://supabase.com/dashboard/project/ipghppjjhjbkhuqzqzyq/realtime/inspector
+
+**Test du Realtime** :
+1. Ouvrir le chat dans deux navigateurs/onglets différents
+2. Se connecter avec deux utilisateurs différents
+3. Envoyer un message depuis un navigateur
+4. Vérifier que l'autre reçoit le message en temps réel (sans rafraîchir)
+
+**Résultat** :
+- ✅ Supabase Realtime configuré pour toutes les tables du chat
+- ✅ Politiques RLS permissives pour la diffusion des événements
+- ✅ Hook `useRealtimeChat` fonctionnel avec reconnexion automatique
+- ✅ Notifications en temps réel pour les nouveaux messages
+
+---
+
+## Corrections précédentes (2025-12-04)
 
 ### ✅ Système de Push Notifications - IMPLÉMENTÉ
 **Fonctionnalité** : Notifications push Web complètes pour alerter les utilisateurs même lorsqu'ils ne sont pas sur l'application.

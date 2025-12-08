@@ -18,12 +18,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Popover,
@@ -37,10 +42,8 @@ import {
   Edit2,
   Trash2,
   Check,
-  CheckCheck,
   Users,
   FolderKanban,
-  Settings,
   Reply,
   X,
   Search,
@@ -48,7 +51,6 @@ import {
   Paperclip,
   File,
   Image as ImageIcon,
-  Download,
   Bell,
   BellOff,
   Info,
@@ -59,6 +61,17 @@ import {
   Video,
   Star,
   StarOff,
+  UserPlus,
+  LogOut,
+  Archive,
+  Settings,
+  Calendar,
+  Hash,
+  Lock,
+  Globe,
+  BarChart3,
+  Clock,
+  Shield,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
@@ -74,12 +87,15 @@ import {
   toggleReaction,
   pinMessage,
   unpinMessage,
+  toggleMuteConversation,
+  updateChannel,
 } from "@/actions/chat.actions";
 import { useRealtimePresence } from "@/hooks/use-realtime-presence";
 import { useRealtimeTyping } from "@/hooks/use-realtime-typing";
 import { formatLastSeen, getPresenceLabel } from "@/lib/utils/presence";
 import { LinkPreview } from "./link-preview";
 import { EmojiPicker, QuickEmojiPicker } from "@/components/ui/emoji-picker";
+import { ChatManageMembersDialog } from "./chat-manage-members-dialog";
 
 interface Message {
   id: string;
@@ -115,13 +131,31 @@ interface Conversation {
   id: string;
   type: "DIRECT" | "GROUP" | "PROJECT" | "CHANNEL";
   name?: string | null;
+  description?: string | null;
+  topic?: string | null;
+  purpose?: string | null;
+  category?: string | null;
+  isPrivate?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string | null;
+  User?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+    image?: string | null;
+  } | null;
   ConversationMember: {
+    isAdmin: boolean;
+    isMuted?: boolean;
     User: {
       id: string;
       name: string;
       email: string;
       avatar?: string | null;
       image?: string | null;
+      role?: string | null;
     };
   }[];
   Project?: {
@@ -131,6 +165,10 @@ interface Conversation {
     color: string;
   } | null;
   Message: Message[];
+  _count?: {
+    Message: number;
+    ConversationMember: number;
+  };
 }
 
 interface ChatMessageListProps {
@@ -140,6 +178,12 @@ interface ChatMessageListProps {
   onUpdate: () => void;
   onThreadClick?: (threadId: string) => void;
   onVideoCall?: () => void;
+  onDeleteConversation?: (conversationId: string) => void;
+  onLeaveConversation?: (conversationId: string) => void;
+  openInfoOnMount?: boolean;
+  openManageMembersOnMount?: boolean;
+  onInfoOpened?: () => void;
+  onManageMembersOpened?: () => void;
 }
 
 export function ChatMessageList({
@@ -149,6 +193,12 @@ export function ChatMessageList({
   onUpdate,
   onThreadClick,
   onVideoCall,
+  onDeleteConversation,
+  onLeaveConversation,
+  openInfoOnMount = false,
+  openManageMembersOnMount = false,
+  onInfoOpened,
+  onManageMembersOpened,
 }: ChatMessageListProps) {
   const [message, setMessage] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -161,9 +211,20 @@ export function ChatMessageList({
   const [showMentions, setShowMentions] = useState(false);
   const [mentionCursorPosition, setMentionCursorPosition] = useState<number>(0);
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => {
+    const member = conversation.ConversationMember.find(m => m.User.id === currentUserId);
+    return member?.isMuted || false;
+  });
   const [showConversationInfo, setShowConversationInfo] = useState(false);
+  const [showManageMembers, setShowManageMembers] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [isEditingChannel, setIsEditingChannel] = useState(false);
+  const [editChannelName, setEditChannelName] = useState("");
+  const [editChannelDescription, setEditChannelDescription] = useState("");
+  const [editChannelTopic, setEditChannelTopic] = useState("");
+  const [editChannelPurpose, setEditChannelPurpose] = useState("");
+  const [editChannelCategory, setEditChannelCategory] = useState("");
+  const [savingChannel, setSavingChannel] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -171,6 +232,11 @@ export function ChatMessageList({
   // TODO: Implémenter useFavoriteMessages (hook manquant)
   const toggleFavorite = (messageId: string) => console.warn('useFavoriteMessages not implemented');
   const isFavorite = (messageId: string) => false;
+
+  // Vérifier si l'utilisateur actuel est admin de la conversation
+  const isCurrentUserAdmin = conversation.ConversationMember.find(
+    (m) => m.User.id === currentUserId
+  )?.isAdmin;
 
   // Hook de présence en temps réel
   const { isUserOnline, getLastSeenAt } = useRealtimePresence();
@@ -274,6 +340,22 @@ export function ChatMessageList({
   useEffect(() => {
     markAsRead({ conversationId: conversation.id });
   }, [conversation.id]);
+
+  // Ouvrir le dialogue d'infos si demandé depuis l'extérieur
+  useEffect(() => {
+    if (openInfoOnMount) {
+      setShowConversationInfo(true);
+      onInfoOpened?.();
+    }
+  }, [openInfoOnMount, onInfoOpened]);
+
+  // Ouvrir le dialogue de gestion des membres si demandé depuis l'extérieur
+  useEffect(() => {
+    if (openManageMembersOnMount) {
+      setShowManageMembers(true);
+      onManageMembersOpened?.();
+    }
+  }, [openManageMembersOnMount, onManageMembersOpened]);
 
   const handleSendMessage = async () => {
     if ((!message.trim() && attachments.length === 0) || sending) return;
@@ -390,6 +472,25 @@ export function ChatMessageList({
       }
     } catch (error) {
       toast.error("Erreur lors de l'ajout de la réaction");
+    }
+  };
+
+  const handleToggleMute = async () => {
+    try {
+      const result = await toggleMuteConversation({ conversationId: conversation.id });
+      if (result?.data) {
+        setIsMuted(result.data.isMuted);
+        toast.success(
+          result.data.isMuted
+            ? "Notifications désactivées pour cette conversation"
+            : "Notifications activées pour cette conversation"
+        );
+        onUpdate();
+      } else {
+         toast.error(result?.serverError || "Erreur lors de la modification des notifications");
+      }
+    } catch (error) {
+      toast.error("Erreur lors de la modification des notifications");
     }
   };
 
@@ -580,7 +681,10 @@ export function ChatMessageList({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-3 sm:p-4 border-b flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div 
+          className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 cursor-pointer hover:bg-muted/50 p-1 -ml-1 rounded-md transition-colors"
+          onClick={() => setShowConversationInfo(true)}
+        >
           {conversation.type === "PROJECT" && conversation.Project ? (
             <div
               className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
@@ -684,15 +788,29 @@ export function ChatMessageList({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Paramètres de la conversation</DropdownMenuLabel>
+              <DropdownMenuLabel>Paramètres du canal</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => {
-                  setIsMuted(!isMuted);
-                  toast.success(
-                    isMuted 
-                      ? "Notifications activées pour cette conversation" 
-                      : "Notifications désactivées pour cette conversation"
-                  );
+                onSelect={() => setShowConversationInfo(true)}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {conversation.type === "CHANNEL" ? "Informations du canal" : "Informations de la conversation"}
+              </DropdownMenuItem>
+              
+              {isCurrentUserAdmin && (conversation.type === "GROUP" || conversation.type === "CHANNEL" || conversation.type === "PROJECT") && (
+                <DropdownMenuItem
+                  onSelect={() => setShowManageMembers(true)}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Gérer les membres
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault(); // Empêcher la fermeture immédiate pour voir le toast
+                  handleToggleMute();
                 }}
               >
                 {isMuted ? (
@@ -707,12 +825,43 @@ export function ChatMessageList({
                   </>
                 )}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setShowConversationInfo(true)}
-              >
-                <Info className="mr-2 h-4 w-4" />
-                Informations sur la conversation
-              </DropdownMenuItem>
+
+              {(conversation.type === "CHANNEL" || conversation.type === "GROUP") && (
+                 <>
+                   <DropdownMenuSeparator />
+                   {!isCurrentUserAdmin && onLeaveConversation && (
+                     <DropdownMenuItem
+                       className="text-destructive focus:text-destructive"
+                       onSelect={() => {
+                         setTimeout(() => {
+                           if (confirm("Voulez-vous vraiment quitter ce canal ?")) {
+                             onLeaveConversation(conversation.id);
+                           }
+                         }, 100);
+                       }}
+                     >
+                       <Reply className="mr-2 h-4 w-4 rotate-180" />
+                       Quitter le canal
+                     </DropdownMenuItem>
+                   )}
+                   
+                   {isCurrentUserAdmin && onDeleteConversation && (
+                     <DropdownMenuItem
+                       className="text-destructive focus:text-destructive"
+                       onSelect={() => {
+                         setTimeout(() => {
+                           if (confirm("Voulez-vous vraiment supprimer ce canal ? Cette action est irréversible.")) {
+                             onDeleteConversation(conversation.id);
+                           }
+                         }, 100);
+                       }}
+                     >
+                       <Trash2 className="mr-2 h-4 w-4" />
+                       Supprimer le canal
+                     </DropdownMenuItem>
+                   )}
+                 </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -1336,90 +1485,539 @@ export function ChatMessageList({
         )}
       </div>
 
-      {/* Dialog d'informations de la conversation */}
+      {/* Dialog d'informations de la conversation - Version enrichie */}
       <Dialog open={showConversationInfo} onOpenChange={setShowConversationInfo}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Informations sur la conversation</DialogTitle>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              {conversation.type === "CHANNEL" ? (
+                <>
+                  <Hash className="h-5 w-5" />
+                  Informations sur le canal
+                </>
+              ) : (
+                <>
+                  <Info className="h-5 w-5" />
+                  Informations sur la conversation
+                </>
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Détails et paramètres de cette conversation
+              {conversation.type === "CHANNEL" 
+                ? "Gérez les paramètres et les détails de ce canal"
+                : "Détails et paramètres de cette conversation"
+              }
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            {/* Type de conversation */}
-            <div className="flex items-center gap-3">
-              {conversation.type === "DIRECT" && <Users className="h-5 w-5 text-blue-500" />}
-              {conversation.type === "GROUP" && <Users className="h-5 w-5 text-green-500" />}
-              {conversation.type === "PROJECT" && <FolderKanban className="h-5 w-5 text-purple-500" />}
-              <div>
-                <p className="font-medium">
-                  {conversation.type === "DIRECT" && "Conversation directe"}
-                  {conversation.type === "GROUP" && "Groupe"}
-                  {conversation.type === "PROJECT" && "Conversation de projet"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {conversation.type === "PROJECT" && conversation.name}
-                </p>
-              </div>
-            </div>
+          <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
+              <TabsTrigger value="details">Détails</TabsTrigger>
+              <TabsTrigger value="members">Membres</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="actions">Actions</TabsTrigger>
+            </TabsList>
 
-            {/* Nom de la conversation */}
-            {conversation.name && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Nom</p>
-                <p className="text-lg">{conversation.name}</p>
-              </div>
-            )}
+            <div className="flex-1 overflow-y-auto mt-4">
+              {/* Onglet Détails */}
+              <TabsContent value="details" className="space-y-6 mt-0">
+                {/* En-tête avec nom et type */}
+                <div className="flex items-start gap-4 pb-4 border-b">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-muted">
+                    {conversation.type === "DIRECT" && <Users className="h-6 w-6 text-blue-500" />}
+                    {conversation.type === "GROUP" && <Users className="h-6 w-6 text-green-500" />}
+                    {conversation.type === "PROJECT" && <FolderKanban className="h-6 w-6 text-purple-500" />}
+                    {conversation.type === "CHANNEL" && <MessageSquare className="h-6 w-6 text-orange-500" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-semibold truncate">
+                        {conversation.name || "Sans nom"}
+                      </h3>
+                      {conversation.type === "CHANNEL" && (
+                        <>
+                          {conversation.isPrivate ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <Lock className="h-3 w-3" />
+                              Privé
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="gap-1">
+                              <Globe className="h-3 w-3" />
+                              Public
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {conversation.type === "DIRECT" && "Conversation directe"}
+                      {conversation.type === "GROUP" && "Groupe de discussion"}
+                      {conversation.type === "PROJECT" && "Conversation de projet"}
+                      {conversation.type === "CHANNEL" && "Canal de discussion"}
+                    </p>
+                  </div>
+                  {conversation.type === "CHANNEL" && isCurrentUserAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingChannel(true);
+                        setEditChannelName(conversation.name || "");
+                        setEditChannelDescription(conversation.description || "");
+                        setEditChannelTopic(conversation.topic || "");
+                        setEditChannelPurpose(conversation.purpose || "");
+                        setEditChannelCategory(conversation.category || "");
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Modifier
+                    </Button>
+                  )}
+                </div>
 
-            {/* Membres */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                Membres ({conversation.ConversationMember.length})
-              </p>
-              <div className="space-y-2">
-                {conversation.ConversationMember.map((member: any) => (
-                  <div key={member.User.id} className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={member.User.avatar || member.User.image || ""} />
-                      <AvatarFallback>
-                        {member.User.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "?"}
-                      </AvatarFallback>
-                    </Avatar>
+                {/* Édition du canal */}
+                {isEditingChannel && conversation.type === "CHANNEL" ? (
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
                     <div>
-                      <p className="text-sm font-medium">{member.User.name}</p>
+                      <Label htmlFor="channelName">Nom du canal *</Label>
+                      <Input
+                        id="channelName"
+                        value={editChannelName}
+                        onChange={(e) => setEditChannelName(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelDescription">Description</Label>
+                      <Textarea
+                        id="channelDescription"
+                        value={editChannelDescription}
+                        onChange={(e) => setEditChannelDescription(e.target.value)}
+                        placeholder="Décrivez le but de ce canal..."
+                        className="mt-1"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelTopic">Sujet actuel</Label>
+                      <Input
+                        id="channelTopic"
+                        value={editChannelTopic}
+                        onChange={(e) => setEditChannelTopic(e.target.value)}
+                        placeholder="Ex: Discussion sur le sprint actuel"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelPurpose">Objectif</Label>
+                      <Textarea
+                        id="channelPurpose"
+                        value={editChannelPurpose}
+                        onChange={(e) => setEditChannelPurpose(e.target.value)}
+                        placeholder="Quel est l'objectif de ce canal ?"
+                        className="mt-1"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelCategory">Catégorie</Label>
+                      <Input
+                        id="channelCategory"
+                        value={editChannelCategory}
+                        onChange={(e) => setEditChannelCategory(e.target.value)}
+                        placeholder="Ex: Équipes, Projets, Général"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          setSavingChannel(true);
+                          try {
+                            const result = await updateChannel({
+                              conversationId: conversation.id,
+                              name: editChannelName,
+                              description: editChannelDescription || undefined,
+                              topic: editChannelTopic || undefined,
+                              purpose: editChannelPurpose || undefined,
+                              category: editChannelCategory || undefined,
+                            });
+                            if (result?.data) {
+                              toast.success("Canal mis à jour avec succès");
+                              setIsEditingChannel(false);
+                              onUpdate();
+                            } else {
+                              throw new Error(result?.serverError || "Erreur lors de la mise à jour");
+                            }
+                          } catch (error: any) {
+                            toast.error(error.message || "Erreur lors de la mise à jour du canal");
+                          } finally {
+                            setSavingChannel(false);
+                          }
+                        }}
+                        disabled={!editChannelName.trim() || savingChannel}
+                      >
+                        {savingChannel ? (
+                          <>
+                            <Spinner className="h-4 w-4 mr-2" />
+                            Enregistrement...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 mr-2" />
+                            Enregistrer
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditingChannel(false);
+                          setEditChannelName("");
+                          setEditChannelDescription("");
+                          setEditChannelTopic("");
+                          setEditChannelPurpose("");
+                          setEditChannelCategory("");
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Description */}
+                    {conversation.description && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                        <p className="text-sm mt-1">{conversation.description}</p>
+                      </div>
+                    )}
+
+                    {/* Sujet */}
+                    {conversation.topic && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Sujet actuel</Label>
+                        <p className="text-sm italic mt-1">{conversation.topic}</p>
+                      </div>
+                    )}
+
+                    {/* Objectif */}
+                    {conversation.purpose && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Objectif</Label>
+                        <p className="text-sm mt-1">{conversation.purpose}</p>
+                      </div>
+                    )}
+
+                    {/* Catégorie */}
+                    {conversation.category && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Catégorie</Label>
+                        <Badge variant="outline" className="mt-1">
+                          {conversation.category}
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Statistiques */}
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {conversation._count?.Message || conversation.Message?.length || 0} messages
+                          </p>
+                          <p className="text-xs text-muted-foreground">Total</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {conversation._count?.ConversationMember || conversation.ConversationMember.length} membres
+                          </p>
+                          <p className="text-xs text-muted-foreground">Total</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Informations de création */}
+                    <div className="space-y-3 pt-4 border-t">
+                      {conversation.User && (
+                        <div className="flex items-center gap-3">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Créé par</p>
+                            <p className="text-sm font-medium">{conversation.User.name}</p>
+                          </div>
+                        </div>
+                      )}
+                      {conversation.createdAt && (
+                        <div className="flex items-center gap-3">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Créé le</p>
+                            <p className="text-sm font-medium">
+                              {format(new Date(conversation.createdAt), "PPP", { locale: fr })}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {conversation.updatedAt && (
+                        <div className="flex items-center gap-3">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Dernière activité</p>
+                            <p className="text-sm font-medium">
+                              {format(new Date(conversation.updatedAt), "PPP 'à' HH:mm", { locale: fr })}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+
+              {/* Onglet Membres */}
+              <TabsContent value="members" className="mt-0 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold">
+                      Membres ({conversation.ConversationMember.length})
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {conversation._count?.ConversationMember || conversation.ConversationMember.length} membre{conversation.ConversationMember.length > 1 ? "s" : ""} dans ce {conversation.type === "CHANNEL" ? "canal" : "conversation"}
+                    </p>
+                  </div>
+                  {isCurrentUserAdmin && (conversation.type === "GROUP" || conversation.type === "CHANNEL" || conversation.type === "PROJECT") && (
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => {
+                        setShowConversationInfo(false);
+                        setShowManageMembers(true);
+                      }}
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Gérer les membres
+                    </Button>
+                  )}
+                </div>
+                <ScrollArea className="h-[400px] rounded-md border p-4">
+                  <div className="space-y-3">
+                    {conversation.ConversationMember.map((member: any) => (
+                      <div key={member.User.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={member.User.avatar || member.User.image || ""} />
+                          <AvatarFallback>
+                            {member.User.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium truncate">{member.User.name}</p>
+                            {member.isAdmin && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Shield className="h-3 w-3 mr-1" />
+                                Admin
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{member.User.email}</p>
+                          {member.User.role && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{member.User.role}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              {/* Onglet Notifications */}
+              <TabsContent value="notifications" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-4">Paramètres de notifications</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4 p-4 border rounded-lg">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {isMuted ? (
+                          <BellOff className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <Bell className="h-5 w-5 text-green-500" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {isMuted ? "Notifications désactivées" : "Notifications activées"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {isMuted 
+                                ? "Vous ne recevrez pas de notifications pour cette conversation"
+                                : "Vous recevrez des notifications pour tous les nouveaux messages"
+                              }
+                            </p>
+                          </div>
+                          <Button
+                            variant={isMuted ? "default" : "outline"}
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                const result = await toggleMuteConversation({
+                                  conversationId: conversation.id,
+                                });
+                                if (result?.data) {
+                                  setIsMuted(!isMuted);
+                                  toast.success(
+                                    !isMuted 
+                                      ? "Notifications désactivées" 
+                                      : "Notifications activées"
+                                  );
+                                  onUpdate();
+                                }
+                              } catch (error: any) {
+                                toast.error(error.message || "Erreur lors de la modification des notifications");
+                              }
+                            }}
+                          >
+                            {isMuted ? "Activer" : "Désactiver"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
                       <p className="text-xs text-muted-foreground">
-                        {member.isAdmin ? "Administrateur" : "Membre"}
+                        💡 <strong>Astuce :</strong> Vous pouvez personnaliser vos notifications pour recevoir uniquement les mentions (@vous) ou désactiver complètement les notifications pour cette conversation.
                       </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              </TabsContent>
 
-            {/* Statut des notifications */}
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              {isMuted ? (
-                <BellOff className="h-5 w-5 text-red-500" />
-              ) : (
-                <Bell className="h-5 w-5 text-green-500" />
-              )}
-              <div>
-                <p className="text-sm font-medium">
-                  {isMuted ? "Notifications désactivées" : "Notifications activées"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isMuted 
-                    ? "Vous ne recevrez pas de notifications pour cette conversation"
-                    : "Vous recevrez des notifications pour cette conversation"
-                  }
-                </p>
-              </div>
+              {/* Onglet Actions */}
+              <TabsContent value="actions" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-4">Actions disponibles</h3>
+                  <div className="space-y-2">
+                    {/* Quitter le canal */}
+                    {conversation.type === "CHANNEL" && !isCurrentUserAdmin && conversation.createdBy !== currentUserId && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        onClick={async () => {
+                          if (confirm("Êtes-vous sûr de vouloir quitter ce canal ?")) {
+                            try {
+                              if (onLeaveConversation) {
+                                await onLeaveConversation(conversation.id);
+                                setShowConversationInfo(false);
+                                toast.success("Vous avez quitté le canal");
+                              }
+                            } catch (error: any) {
+                              toast.error(error.message || "Erreur lors de la sortie du canal");
+                            }
+                          }
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Quitter le canal
+                      </Button>
+                    )}
+
+                    {/* Archiver (placeholder) */}
+                    {conversation.type === "CHANNEL" && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          toast.info("Fonctionnalité d'archivage à venir");
+                        }}
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archiver le canal
+                      </Button>
+                    )}
+
+                    {/* Messages épinglés */}
+                    {conversation.type === "CHANNEL" && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          toast.info("Voir les messages épinglés (à implémenter)");
+                        }}
+                      >
+                        <Pin className="h-4 w-4 mr-2" />
+                        Voir les messages épinglés
+                      </Button>
+                    )}
+
+                    {/* Actions admin */}
+                    {isCurrentUserAdmin && (conversation.type === "CHANNEL" || conversation.type === "GROUP") && (
+                      <>
+                        <div className="pt-2 border-t">
+                          <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase">Actions administrateur</p>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              setShowConversationInfo(false);
+                              setShowManageMembers(true);
+                            }}
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Gérer les membres
+                          </Button>
+                          {conversation.type === "CHANNEL" && (
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={async () => {
+                                if (confirm("Êtes-vous sûr de vouloir supprimer ce canal ? Cette action est irréversible.")) {
+                                  if (confirm("⚠️ ATTENTION : Cette action supprimera définitivement le canal et tous ses messages. Continuer ?")) {
+                                    try {
+                                      if (onDeleteConversation) {
+                                        await onDeleteConversation(conversation.id);
+                                        setShowConversationInfo(false);
+                                        toast.success("Canal supprimé");
+                                      }
+                                    } catch (error: any) {
+                                      toast.error(error.message || "Erreur lors de la suppression du canal");
+                                    }
+                                  }
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Supprimer le canal
+                            </Button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
             </div>
-          </div>
+          </Tabs>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de gestion des membres */}
+      <ChatManageMembersDialog
+        open={showManageMembers}
+        onOpenChange={setShowManageMembers}
+        conversationId={conversation.id}
+        members={conversation.ConversationMember}
+        currentUserId={currentUserId}
+        onUpdate={onUpdate}
+      />
     </div>
   );
 }
-

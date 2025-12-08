@@ -409,6 +409,16 @@ export const getConversationById = authActionClient
         },
       },
       include: {
+        User: {
+          // Créateur du canal
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            image: true,
+          },
+        },
         ConversationMember: {
           include: {
             User: {
@@ -448,6 +458,12 @@ export const getConversationById = authActionClient
                 },
               },
             },
+          },
+        },
+        _count: {
+          select: {
+            Message: true,
+            ConversationMember: true,
           },
         },
       },
@@ -861,6 +877,43 @@ export const leaveConversation = authActionClient
 
     revalidatePath("/dashboard/chat");
     return { success: true };
+  });
+
+const toggleMuteSchema = z.object({
+  conversationId: z.string(),
+});
+
+/**
+ * Activer/Désactiver les notifications pour une conversation
+ */
+export const toggleMuteConversation = authActionClient
+  .schema(toggleMuteSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    const membership = await prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId,
+      },
+    });
+
+    if (!membership) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    await prisma.conversationMember.update({
+      where: {
+        id: membership.id,
+      },
+      data: {
+        isMuted: !membership.isMuted,
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { success: true, isMuted: !membership.isMuted };
   });
 
 /**

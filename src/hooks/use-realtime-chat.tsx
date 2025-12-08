@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase-client";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -19,12 +19,13 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
   const maxRetries = 5;
   const isSubscribedRef = useRef(false);
   const { notifyNewMessage } = useDesktopNotifications();
+  const supabase = useMemo(() => createClient(), []);
+  const channelName = useMemo(() => `chat-realtime-channel-${userId || "anonymous"}`, [userId]);
 
   const stableOnConversationChange = useCallback(onConversationChange, [onConversationChange]);
   const stableOnMessageChange = useCallback(onMessageChange, [onMessageChange]);
 
   useEffect(() => {
-    const supabase = createClient();
     let reconnectTimeout: NodeJS.Timeout;
 
     const setupChannel = () => {
@@ -32,10 +33,10 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
         return;
       }
 
-      console.log('🔄 Configuration du real-time Supabase pour le chat...');
+      console.log('🔄 Configuration du real-time Supabase pour le chat...', channelName);
 
       channelRef.current = supabase
-        .channel('chat-realtime-channel', {
+        .channel(channelName, {
           config: {
             broadcast: { self: false },
             presence: { key: userId || 'anonymous' }
@@ -115,22 +116,22 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
 
             // Notifier seulement si ce n'est pas notre propre message
             if (eventType === 'INSERT' && senderId !== userId) {
-              // Les données User et Conversation ne sont pas incluses dans le payload realtime
-              // On utilise des valeurs par défaut et on peut améliorer avec une requête si nécessaire
               const senderName = 'Quelqu\'un'; // Peut être amélioré avec une requête séparée
-              const messageContent = (payload.new as any)?.content || '';
-              
+
               toast.info('Nouveau message reçu', {
                 duration: 2000,
               });
 
-              // Afficher la notification de bureau
+              // Afficher la notification de bureau (tag = conversationId pour dédoublonner)
               notifyNewMessage(
                 senderName,
                 undefined, // conversationName non disponible dans le payload
                 () => {
-                  // Rediriger vers la conversation
                   window.location.href = `/dashboard/chat?conversation=${conversationId}`;
+                },
+                {
+                  tag: conversationId,
+                  data: { conversationId },
                 }
               );
             }
@@ -145,7 +146,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
             isSubscribedRef.current = true;
             retryCountRef.current = 0;
             console.log('✅ Subscription real-time active pour le chat');
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
             isSubscribedRef.current = false;
             console.warn('⚠️ Erreur de connexion real-time, tentative de reconnexion...');
 
@@ -184,5 +185,5 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
         isSubscribedRef.current = false;
       }
     };
-  }, [stableOnConversationChange, stableOnMessageChange, userId]);
+  }, [channelName, stableOnConversationChange, stableOnMessageChange, supabase, userId]);
 }

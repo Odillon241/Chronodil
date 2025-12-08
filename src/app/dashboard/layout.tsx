@@ -12,6 +12,7 @@ import { SettingsProvider } from "@/components/providers/settings-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { Input } from "@/components/ui/input";
 import { registerServiceWorker } from "@/lib/service-worker-registration";
+import { usePresenceTracker } from "@/hooks/use-presence-tracker";
 
 function SearchBar() {
   const [isMac, setIsMac] = useState(false);
@@ -56,6 +57,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Tracker la présence de l'utilisateur (met à jour lastSeenAt en DB)
+  usePresenceTracker();
+
   // Enregistrer le service worker au chargement du dashboard
   useEffect(() => {
     registerServiceWorker({

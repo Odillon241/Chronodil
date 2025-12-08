@@ -22,14 +22,29 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
-import { Hash, Lock } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Hash, Lock, Users, X, Search } from "lucide-react";
 import { toast } from "sonner";
 import { createChannel } from "@/actions/chat.actions";
+import { cn } from "@/lib/utils";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  image?: string | null;
+  role?: string;
+}
 
 interface ChatCreateChannelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChannelCreated?: (channelId: string) => void;
+  users?: User[];
+  currentUserId?: string;
 }
 
 const CATEGORIES = [
@@ -43,8 +58,12 @@ export function ChatCreateChannelDialog({
   open,
   onOpenChange,
   onChannelCreated,
+  users = [],
+  currentUserId,
 }: ChatCreateChannelDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -52,6 +71,21 @@ export function ChatCreateChannelDialog({
     purpose: "",
     isPrivate: false,
   });
+
+  // Filtrer les utilisateurs disponibles (exclure l'utilisateur courant)
+  const availableUsers = users.filter((u) => u.id !== currentUserId);
+
+  // Filtrer les utilisateurs selon la recherche
+  const filteredUsers = availableUsers.filter(
+    (user) =>
+      user.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(memberSearchQuery.toLowerCase())
+  );
+
+  // Obtenir les utilisateurs sélectionnés
+  const selectedMembers = availableUsers.filter((u) =>
+    selectedMemberIds.includes(u.id)
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +113,7 @@ export function ChatCreateChannelDialog({
         category: formData.category,
         purpose: formData.purpose || undefined,
         isPrivate: formData.isPrivate,
-        memberIds: [], // Pas de membres additionnels à la création
+        memberIds: selectedMemberIds, // Membres sélectionnés
       });
 
       if (result?.data?.conversation) {
@@ -109,7 +143,17 @@ export function ChatCreateChannelDialog({
       purpose: "",
       isPrivate: false,
     });
+    setSelectedMemberIds([]);
+    setMemberSearchQuery("");
     onOpenChange(false);
+  };
+
+  const toggleMember = (userId: string) => {
+    setSelectedMemberIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
   };
 
   return (
@@ -219,6 +263,110 @@ export function ChatCreateChannelDialog({
               maxLength={500}
               disabled={loading}
             />
+          </div>
+
+          {/* Ajout de membres */}
+          <div className="space-y-3">
+            <Label>Ajouter des membres</Label>
+            
+            {/* Membres sélectionnés */}
+            {selectedMembers.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-muted/50">
+                {selectedMembers.map((member) => (
+                  <Badge
+                    key={member.id}
+                    variant="secondary"
+                    className="flex items-center gap-1.5 pr-1"
+                  >
+                    <Avatar className="h-4 w-4">
+                      <AvatarImage src={member.avatar || member.image || undefined} />
+                      <AvatarFallback className="text-[8px]">
+                        {member.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs">{member.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleMember(member.id)}
+                      className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                      disabled={loading}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Recherche et sélection de membres */}
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher des membres..."
+                  value={memberSearchQuery}
+                  onChange={(e) => setMemberSearchQuery(e.target.value)}
+                  className="pl-9"
+                  disabled={loading}
+                />
+              </div>
+              
+              {filteredUsers.length > 0 && (
+                <ScrollArea className="h-[200px] border rounded-md">
+                  <div className="p-2 space-y-1">
+                    {filteredUsers.map((user) => {
+                      const isSelected = selectedMemberIds.includes(user.id);
+                      return (
+                        <div
+                          key={user.id}
+                          className={cn(
+                            "flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted transition-colors",
+                            isSelected && "bg-muted"
+                          )}
+                          onClick={() => toggleMember(user.id)}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleMember(user.id)}
+                            disabled={loading}
+                          />
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.avatar || user.image || undefined} />
+                            <AvatarFallback>
+                              {user.name.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{user.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              )}
+              
+              {filteredUsers.length === 0 && memberSearchQuery && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>Aucun membre trouvé</p>
+                </div>
+              )}
+              
+              {availableUsers.length === 0 && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>Aucun membre disponible</p>
+                </div>
+              )}
+            </div>
+            
+            <p className="text-xs text-muted-foreground">
+              {selectedMembers.length > 0
+                ? `${selectedMembers.length} membre${selectedMembers.length > 1 ? "s" : ""} sélectionné${selectedMembers.length > 1 ? "s" : ""}`
+                : "Sélectionnez les membres à ajouter au canal (optionnel)"}
+            </p>
           </div>
 
           {/* Type de canal */}
