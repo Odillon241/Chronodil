@@ -342,10 +342,11 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-full w-full bg-background overflow-hidden">
-      <div className={`grid w-full h-full min-w-0 ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[350px,1fr,350px]' : 'grid-cols-1 md:grid-cols-[350px,1fr]'}`}>
+    <div className="-m-3 sm:-m-4 lg:-m-6 overflow-x-hidden w-full">
+      <div className="flex h-full w-full bg-background overflow-hidden max-w-full">
+        <div className={`grid w-full h-full min-w-0 max-w-full ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[minmax(0,350px),1fr,minmax(0,350px)]' : 'grid-cols-1 md:grid-cols-[minmax(0,350px),1fr]'}`}>
         {/* Sidebar - Liste des conversations/canaux */}
-        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
+        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
           {/* Toggle view mode */}
           <div className="p-2 border-b flex gap-2">
             <Button
@@ -388,7 +389,7 @@ export default function ChatPage() {
         </Card>
 
         {/* Main Content - Messages */}
-        <Card className={`rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
+        <Card className={`rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
           {selectedConversation ? (
             <ChatMessageList
               conversation={selectedConversation}
@@ -498,6 +499,7 @@ export default function ChatPage() {
           }
         />
       )} */}
+      </div>
     </div>
   );
 }
