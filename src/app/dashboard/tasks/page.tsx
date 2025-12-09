@@ -94,12 +94,16 @@ export default function TasksPage() {
     priorityFilter,
     selectedProject,
     userFilter,
+    startDateFilter,
+    endDateFilter,
     viewMode,
     setSearchQuery,
     setStatusFilter,
     setPriorityFilter,
     setSelectedProject,
     setUserFilter,
+    setStartDateFilter,
+    setEndDateFilter,
     setViewMode,
     refreshTasks,
   } = useTasks();
@@ -1117,13 +1121,13 @@ export default function TasksPage() {
                     </div>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
+                        <Button
+                          variant="outline"
+                          size="icon"
                           className="shrink-0 relative"
                         >
                           <Filter className="h-4 w-4" />
-                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my" || startDateFilter || endDateFilter) && (
                             <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
                           )}
                         </Button>
@@ -1176,7 +1180,55 @@ export default function TasksPage() {
                             </Select>
                           </div>
 
-                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                          <Separator />
+
+                          <div className="space-y-2">
+                            <Label htmlFor="start-date-kanban">Date d'échéance - Début</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="start-date-kanban"
+                                type="date"
+                                value={startDateFilter || ""}
+                                onChange={(e) => setStartDateFilter(e.target.value || undefined)}
+                                className="text-sm"
+                              />
+                              {startDateFilter && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setStartDateFilter(undefined)}
+                                  className="h-9 w-9 shrink-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="end-date-kanban">Date d'échéance - Fin</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="end-date-kanban"
+                                type="date"
+                                value={endDateFilter || ""}
+                                onChange={(e) => setEndDateFilter(e.target.value || undefined)}
+                                className="text-sm"
+                              />
+                              {endDateFilter && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEndDateFilter(undefined)}
+                                  className="h-9 w-9 shrink-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my" || startDateFilter || endDateFilter) && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -1185,6 +1237,8 @@ export default function TasksPage() {
                                 setStatusFilter("all");
                                 setPriorityFilter("all");
                                 setUserFilter("my");
+                                setStartDateFilter(undefined);
+                                setEndDateFilter(undefined);
                               }}
                             >
                               Réinitialiser les filtres
@@ -1251,13 +1305,13 @@ export default function TasksPage() {
                     </div>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
+                        <Button
+                          variant="outline"
+                          size="icon"
                           className="shrink-0 relative"
                         >
                           <Filter className="h-4 w-4" />
-                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my" || startDateFilter || endDateFilter) && (
                             <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
                           )}
                         </Button>
@@ -1310,7 +1364,55 @@ export default function TasksPage() {
                             </Select>
                           </div>
 
-                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my") && (
+                          <Separator />
+
+                          <div className="space-y-2">
+                            <Label htmlFor="start-date-table">Date d'échéance - Début</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="start-date-table"
+                                type="date"
+                                value={startDateFilter || ""}
+                                onChange={(e) => setStartDateFilter(e.target.value || undefined)}
+                                className="text-sm"
+                              />
+                              {startDateFilter && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setStartDateFilter(undefined)}
+                                  className="h-9 w-9 shrink-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="end-date-table">Date d'échéance - Fin</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="end-date-table"
+                                type="date"
+                                value={endDateFilter || ""}
+                                onChange={(e) => setEndDateFilter(e.target.value || undefined)}
+                                className="text-sm"
+                              />
+                              {endDateFilter && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEndDateFilter(undefined)}
+                                  className="h-9 w-9 shrink-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          {(statusFilter !== "all" || priorityFilter !== "all" || userFilter !== "my" || startDateFilter || endDateFilter) && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -1319,6 +1421,8 @@ export default function TasksPage() {
                                 setStatusFilter("all");
                                 setPriorityFilter("all");
                                 setUserFilter("my");
+                                setStartDateFilter(undefined);
+                                setEndDateFilter(undefined);
                               }}
                             >
                               Réinitialiser les filtres
