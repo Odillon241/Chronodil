@@ -36,16 +36,16 @@ export function NotificationButton({
   onNotificationClick,
   onMarkAllRead,
 }: NotificationButtonProps) {
-  const { playSound, isEnabled } = useNotificationSound();
+  const { playSound, soundEnabled } = useNotificationSound();
   const previousUnreadCountRef = useRef(unreadCount);
 
   // Jouer un son lorsqu'une nouvelle notification arrive
   useEffect(() => {
-    if (unreadCount > previousUnreadCountRef.current && isEnabled) {
-      playSound();
+    if (unreadCount > previousUnreadCountRef.current && soundEnabled) {
+      playSound('notification');
     }
     previousUnreadCountRef.current = unreadCount;
-  }, [unreadCount, isEnabled, playSound]);
+  }, [unreadCount, soundEnabled, playSound]);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

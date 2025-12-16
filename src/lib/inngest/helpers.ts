@@ -33,3 +33,25 @@ export async function sendNotification({
   }
 }
 
+/**
+ * Trigger timesheet reminders manually (useful for testing)
+ * This will immediately check and send reminders to users who should receive them
+ * without waiting for the cron schedule.
+ */
+export async function triggerTimesheetReminders() {
+  try {
+    // Send an event that will trigger the reminder function immediately
+    // The function will check current time and day, so it will only send to users
+    // who match the current time/day configuration
+    await inngest.send({
+      name: "reminder/timesheet.trigger",
+      data: {
+        triggeredAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Error triggering timesheet reminders:", error);
+    throw error;
+  }
+}
+

@@ -6,7 +6,7 @@ import "react-advanced-cropper/dist/style.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ImageCropperProps {
   src: string;
@@ -59,10 +59,10 @@ export function ImageCropper({ src, onCropComplete, onCancel }: ImageCropperProp
               className="bg-primary hover:bg-primary"
             >
               {isProcessing ? (
-                <>
-                  <SpinnerCustom />
+                <span className="flex items-center gap-2">
+                  <Spinner />
                   Recadrage...
-                </>
+                </span>
               ) : (
                 <>
                   <Check className="h-4 w-4 mr-2" />

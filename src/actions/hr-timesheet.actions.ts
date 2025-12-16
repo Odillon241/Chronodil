@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
@@ -8,6 +8,7 @@ import {
   submitHRTimesheetSchema,
   managerApprovalSchema,
   odillonApprovalSchema,
+  revertHRTimesheetStatusSchema,
   hrTimesheetFilterSchema,
   activityCatalogFilterSchema,
   hrTimesheetBaseSchema,
@@ -18,6 +19,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { differenceInDays } from "date-fns";
 import { calculateWorkingHours } from "@/lib/business-hours";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 // ============================================
 // TIMESHEET RH - CRUD
@@ -76,6 +78,20 @@ export const createHRTimesheet = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheet.id,
+      changes: {
+        weekStartDate: timesheet.weekStartDate,
+        weekEndDate: timesheet.weekEndDate,
+        status: timesheet.status,
+        employeeName: timesheet.employeeName,
+      },
+    });
+
     revalidatePath("/dashboard/hr-timesheet");
     return timesheet;
   });
@@ -93,7 +109,7 @@ export const getMyHRTimesheets = authActionClient
       const timesheets = await prisma.hRTimesheet.findMany({
         where: {
           userId,
-          ...(status && { status }),
+          ...(status && status !== "all" && { status }),
           ...(weekStartDate && { weekStartDate: { gte: weekStartDate } }),
           ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
         },
@@ -164,17 +180,18 @@ export const getHRTimesheetsForApproval = authActionClient
 
     // Construire les conditions de filtre
     const whereConditions: any = {
-      ...(status && { status }),
+      ...(status && status !== "all" && { status }),
       ...(weekStartDate && { weekStartDate: { gte: weekStartDate } }),
       ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
     };
 
-    // Si manager, voir ses équipes
-    if (userRole === "MANAGER") {
-      whereConditions.User = {
-        managerId: userId,
-      };
-      // Statut PENDING ou MANAGER_APPROVED
+    // Nouvelle logique : Les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN
+    // peuvent voir toutes les feuilles de temps en attente, sans avoir besoin
+    // qu'un manager particulier soit assigné à l'utilisateur
+    
+    // Si manager, directeur ou admin, voir toutes les feuilles en attente
+    if (userRole === "MANAGER" || userRole === "DIRECTEUR" || userRole === "ADMIN") {
+      // Voir toutes les feuilles en statut PENDING (pas de filtre par managerId)
       whereConditions.status = { in: ["PENDING"] };
     }
 
@@ -248,6 +265,120 @@ export const getHRTimesheetsForApproval = authActionClient
   });
 
 /**
+ * Récupérer les timesheets RH validés/rejetés par l'utilisateur connecté
+ * Permet aux managers et admins de revoir leurs validations
+ */
+export const getHRTimesheetsValidatedByMe = authActionClient
+  .schema(hrTimesheetFilterSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId, userRole } = ctx;
+    const { status, weekStartDate, weekEndDate } = parsedInput;
+
+    // Construire les conditions de filtre
+    const whereConditions: any = {
+      ...(weekStartDate && { weekStartDate: { gte: weekStartDate } }),
+      ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
+    };
+
+    // Filtrer selon le rôle de l'utilisateur
+    if (userRole === "MANAGER" || userRole === "DIRECTEUR") {
+      // Les managers et directeurs voient les feuilles qu'ils ont validées (pas les rejetées)
+      whereConditions.managerSignedById = userId;
+      // Inclure uniquement les statuts validés par le manager/directeur (exclure REJECTED)
+      if (!status || status === "all") {
+        whereConditions.status = { in: ["MANAGER_APPROVED", "APPROVED"] };
+      } else if (status === "REJECTED") {
+        // Si REJECTED est demandé, ne rien retourner (les rejetés sont dans l'onglet "Rejeté")
+        // Utiliser une condition qui ne correspondra jamais
+        whereConditions.id = "NEVER_MATCH";
+      } else {
+        // Si un statut spécifique est demandé, l'utiliser
+        whereConditions.status = status;
+      }
+    } else if (userRole === "ADMIN" || userRole === "HR") {
+      // Les admins/HR voient les feuilles qu'ils ont validées (pas les rejetées)
+      whereConditions.odillonSignedById = userId;
+      // Inclure uniquement les statuts validés par Odillon (exclure REJECTED)
+      if (!status || status === "all") {
+        whereConditions.status = { in: ["APPROVED"] };
+      } else if (status === "REJECTED") {
+        // Si REJECTED est demandé, ne rien retourner (les rejetés sont dans l'onglet "Rejeté")
+        // Utiliser une condition qui ne correspondra jamais
+        whereConditions.id = "NEVER_MATCH";
+      } else {
+        // Si un statut spécifique est demandé, l'utiliser
+        whereConditions.status = status;
+      }
+    } else {
+      // Les autres utilisateurs n'ont pas accès à cette fonctionnalité
+      throw new Error("Vous n'avez pas la permission d'accéder à cette fonctionnalité");
+    }
+
+    try {
+      const timesheets = await prisma.hRTimesheet.findMany({
+        where: whereConditions,
+        include: {
+          HRActivity: {
+            include: {
+              ActivityCatalog: true,
+              Task: {
+                include: {
+                  Project: {
+                    select: {
+                      name: true,
+                      color: true,
+                    },
+                  },
+                  User_Task_createdByToUser: {
+                    select: {
+                      name: true,
+                      email: true,
+                      avatar: true,
+                      image: true,
+                    },
+                  },
+                  TaskMember: {
+                    include: {
+                      User: {
+                        select: {
+                          id: true,
+                          name: true,
+                          email: true,
+                          avatar: true,
+                          image: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+          User_HRTimesheet_userIdToUser: true,
+          User_HRTimesheet_managerSignedByIdToUser: true,
+          User_HRTimesheet_odillonSignedByIdToUser: true,
+          _count: {
+            select: {
+              HRActivity: true,
+            },
+          },
+        },
+        orderBy: {
+          weekStartDate: "desc",
+        },
+      });
+
+      return timesheets;
+    } catch (error) {
+      console.error("Erreur dans getHRTimesheetsValidatedByMe:", error);
+      throw new Error(`Erreur lors de la récupération des timesheets: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
+    }
+  });
+
+/**
  * Récupérer un timesheet RH par ID
  */
 export const getHRTimesheet = authActionClient
@@ -283,11 +414,15 @@ export const getHRTimesheet = authActionClient
     }
 
     // Vérifier les permissions
+    // Nouvelle logique : Les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN
+    // peuvent voir toutes les feuilles de temps, sans avoir besoin qu'un manager
+    // particulier soit assigné à l'utilisateur
     const canView =
       timesheet.userId === userId ||
       userRole === "ADMIN" ||
       userRole === "HR" ||
-      timesheet.User_HRTimesheet_userIdToUser.managerId === userId;
+      userRole === "MANAGER" ||
+      userRole === "DIRECTEUR";
 
     if (!canView) {
       throw new Error("Vous n'avez pas la permission de voir ce timesheet");
@@ -332,6 +467,20 @@ export const updateHRTimesheet = authActionClient
       include: {
         HRActivity: true,
         User_HRTimesheet_userIdToUser: true,
+      },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: id,
+      changes: {
+        previous: {
+          status: existingTimesheet.status,
+        },
+        new: data,
       },
     });
 
@@ -579,7 +728,7 @@ export const updateHRActivity = authActionClient
       totalHours = calculateWorkingHours(startDate, endDate);
     }
 
-    // Exclure les champs problÃ©matiques et les gÃ©rer avec des casts
+    // Exclure les champs problématiques et les gérer avec des casts
     const { taskId, catalogId, complexity, totalHours: _, ...updateData } = data;
 
     const updatedActivity = await prisma.hRActivity.update({
@@ -665,11 +814,7 @@ export const submitHRTimesheet = authActionClient
       },
       include: {
         HRActivity: true,
-        User_HRTimesheet_userIdToUser: {
-          include: {
-            User: true, // Manager
-          },
-        },
+        User_HRTimesheet_userIdToUser: true,
       },
     });
 
@@ -682,12 +827,8 @@ export const submitHRTimesheet = authActionClient
       throw new Error("Vous devez ajouter au moins une activité avant de soumettre");
     }
 
-    // Vérifier que l'utilisateur a un manager
-    if (!timesheet.User_HRTimesheet_userIdToUser.managerId) {
-      throw new Error(
-        "Vous n'avez pas de manager assigné. Veuillez contacter votre administrateur."
-      );
-    }
+    // Plus besoin de vérifier qu'un manager est assigné
+    // Les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN peuvent valider toutes les feuilles
 
     // Signer et soumettre
     const updatedTimesheet = await prisma.hRTimesheet.update({
@@ -703,17 +844,57 @@ export const submitHRTimesheet = authActionClient
       },
     });
 
-    // Créer une notification pour le manager
-    await prisma.notification.create({
-      data: {
-        id: nanoid(),
-        userId: timesheet.User_HRTimesheet_userIdToUser.managerId,
-        title: "Nouvelle feuille de temps RH à valider",
-        message: `${timesheet.User_HRTimesheet_userIdToUser.name} a soumis sa feuille de temps hebdomadaire pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()}`,
-        type: "hr_timesheet_submitted",
-        link: `/dashboard/hr-timesheet/${timesheetId}`,
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.SUBMIT,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: "PENDING",
+        employeeSignedAt: updatedTimesheet.employeeSignedAt,
       },
     });
+
+    // Notifier tous les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN
+    // qui peuvent valider les feuilles de temps
+    const validators = await prisma.user.findMany({
+      where: {
+        role: { in: ["MANAGER", "DIRECTEUR", "ADMIN"] },
+      },
+    });
+
+    const validatorNotifications = [];
+    for (const validator of validators) {
+      const notification = await prisma.notification.create({
+        data: {
+          id: nanoid(),
+          userId: validator.id,
+          title: "Nouvelle feuille de temps RH à valider",
+          message: `${timesheet.User_HRTimesheet_userIdToUser.name} a soumis sa feuille de temps hebdomadaire pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()}`,
+          type: "hr_timesheet_submitted",
+          link: `/dashboard/hr-timesheet/${timesheetId}`,
+        },
+      });
+      validatorNotifications.push(notification);
+    }
+
+    // Envoyer les push notifications (fire and forget)
+    // TODO: Implémenter les push notifications (module notification-helpers manquant)
+    // if (validatorNotifications.length > 0) {
+    //   const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+    //   sendPushNotificationsForNotifications(
+    //     validatorNotifications.map((n) => ({
+    //       userId: n.userId,
+    //       id: n.id,
+    //       title: n.title,
+    //       message: n.message,
+    //       type: n.type,
+    //       link: n.link,
+    //     }))
+    //   ).catch(console.error);
+    // }
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
@@ -761,11 +942,18 @@ export const cancelHRTimesheetSubmission = authActionClient
       },
     });
 
-    // Supprimer la notification créée pour le manager (optionnel)
-    if (timesheet.User_HRTimesheet_userIdToUser.managerId) {
+    // Supprimer les notifications créées pour tous les validateurs (MANAGER, DIRECTEUR, ADMIN)
+    const validators = await prisma.user.findMany({
+      where: {
+        role: { in: ["MANAGER", "DIRECTEUR", "ADMIN"] },
+      },
+      select: { id: true },
+    });
+
+    if (validators.length > 0) {
       await prisma.notification.deleteMany({
         where: {
-          userId: timesheet.User_HRTimesheet_userIdToUser.managerId,
+          userId: { in: validators.map(v => v.id) },
           type: "hr_timesheet_submitted",
           link: `/dashboard/hr-timesheet/${timesheetId}`,
         },
@@ -799,11 +987,16 @@ export const managerApproveHRTimesheet = authActionClient
       throw new Error("Timesheet non trouvé");
     }
 
-    // Vérifier que l'utilisateur est le manager ou admin
-    const isManager = timesheet.User_HRTimesheet_userIdToUser.managerId === userId;
-    const isAdmin = userRole === "ADMIN" || userRole === "HR";
+    // Nouvelle logique : Les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN
+    // peuvent valider toutes les feuilles de temps, sans avoir besoin qu'un manager
+    // particulier soit assigné à l'utilisateur
+    const canValidate = 
+      userRole === "MANAGER" || 
+      userRole === "DIRECTEUR" || 
+      userRole === "ADMIN" || 
+      userRole === "HR";
 
-    if (!isManager && !isAdmin) {
+    if (!canValidate) {
       throw new Error("Vous n'avez pas la permission de valider ce timesheet");
     }
 
@@ -830,8 +1023,22 @@ export const managerApproveHRTimesheet = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: action === "approve" ? AuditActions.APPROVE : AuditActions.REJECT,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: newStatus,
+        approverRole: "MANAGER",
+        comments: comments,
+      },
+    });
+
     // Notifier l'employé
-    await prisma.notification.create({
+    const employeeNotification = await prisma.notification.create({
       data: {
         id: nanoid(),
         userId: timesheet.userId,
@@ -860,8 +1067,9 @@ export const managerApproveHRTimesheet = authActionClient
         },
       });
 
+      const adminNotifications = [];
       for (const admin of admins) {
-        await prisma.notification.create({
+        const notification = await prisma.notification.create({
           data: {
             id: nanoid(),
             userId: admin.id,
@@ -871,7 +1079,24 @@ export const managerApproveHRTimesheet = authActionClient
             link: `/dashboard/hr-timesheet/${timesheetId}`,
           },
         });
+        adminNotifications.push(notification);
       }
+
+      // Envoyer les push notifications (fire and forget)
+      // TODO: Implémenter les push notifications (module notification-helpers manquant)
+      // if (adminNotifications.length > 0) {
+      //   const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+      //   sendPushNotificationsForNotifications(
+      //     adminNotifications.map((n) => ({
+      //       userId: n.userId,
+      //       id: n.id,
+      //       title: n.title,
+      //       message: n.message,
+      //       type: n.type,
+      //       link: n.link,
+      //     }))
+      //   ).catch(console.error);
+      // }
     }
 
     revalidatePath("/dashboard/hr-timesheet");
@@ -931,8 +1156,22 @@ export const odillonApproveHRTimesheet = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: action === "approve" ? AuditActions.APPROVE : AuditActions.REJECT,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: newStatus,
+        approverRole: userRole,
+        comments: comments,
+      },
+    });
+
     // Notifier l'employé
-    await prisma.notification.create({
+    const finalEmployeeNotification = await prisma.notification.create({
       data: {
         id: nanoid(),
         userId: timesheet.userId,
@@ -952,6 +1191,17 @@ export const odillonApproveHRTimesheet = authActionClient
         link: `/dashboard/hr-timesheet/${timesheetId}`,
       },
     });
+
+    // Envoyer la push notification (fire and forget)
+    // TODO: Implémenter les push notifications (module notification-helpers manquant)
+    // const { sendPushNotificationForNotification: sendPush } = await import('@/lib/notification-helpers');
+    // sendPush(timesheet.userId, {
+    //   id: finalEmployeeNotification.id,
+    //   title: finalEmployeeNotification.title,
+    //   message: finalEmployeeNotification.message,
+    //   type: finalEmployeeNotification.type,
+    //   link: finalEmployeeNotification.link,
+    // }).catch(console.error);
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
@@ -1169,21 +1419,26 @@ export const updateHRTimesheetStatus = authActionClient
         throw new Error("Vous ne pouvez pas changer le statut vers cet état");
       }
     } else {
-      // Les managers peuvent changer vers MANAGER_APPROVED ou REJECTED
-      const isManager = timesheet.User_HRTimesheet_userIdToUser.managerId === userId;
-      const isAdmin = userRole === "ADMIN" || userRole === "HR";
+      // Nouvelle logique : Les utilisateurs avec les rôles MANAGER, DIRECTEUR ou ADMIN
+      // peuvent modifier les timesheets, sans avoir besoin qu'un manager particulier
+      // soit assigné à l'utilisateur
+      const canModify = 
+        userRole === "MANAGER" || 
+        userRole === "DIRECTEUR" || 
+        userRole === "ADMIN" || 
+        userRole === "HR";
 
-      if (!isManager && !isAdmin) {
+      if (!canModify) {
         throw new Error("Vous n'avez pas la permission de modifier ce timesheet");
       }
 
-      // Les managers peuvent mettre en MANAGER_APPROVED ou REJECTED
+      // Les managers et directeurs peuvent mettre en MANAGER_APPROVED ou REJECTED
       // Les admins peuvent mettre en APPROVED ou REJECTED
-      if (isManager && status !== "MANAGER_APPROVED" && status !== "REJECTED" && status !== "PENDING") {
-        throw new Error("Statut non autorisé pour un manager");
+      if ((userRole === "MANAGER" || userRole === "DIRECTEUR") && status !== "MANAGER_APPROVED" && status !== "REJECTED" && status !== "PENDING") {
+        throw new Error("Statut non autorisé pour un manager ou directeur");
       }
 
-      if (isAdmin && status === "MANAGER_APPROVED") {
+      if ((userRole === "ADMIN" || userRole === "HR") && status === "MANAGER_APPROVED") {
         // Les admins ne peuvent pas mettre en MANAGER_APPROVED
         throw new Error("Statut non autorisé pour un administrateur");
       }
@@ -1204,6 +1459,178 @@ export const updateHRTimesheetStatus = authActionClient
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+    return updatedTimesheet;
+  });
+
+/**
+ * Rétrograder le statut d'un timesheet RH (Admin uniquement)
+ * Utilise les MCPs Supabase pour effectuer la mise à jour
+ */
+export const revertHRTimesheetStatus = authActionClient
+  .schema(revertHRTimesheetStatusSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId, userRole } = ctx;
+    const { timesheetId, targetStatus, reason } = parsedInput;
+
+    // Vérifier que l'utilisateur est Admin
+    if (userRole !== "ADMIN") {
+      throw new Error("Seuls les administrateurs peuvent rétrograder le statut d'un timesheet");
+    }
+
+    // Récupérer le timesheet actuel avec Prisma
+    const timesheet = await prisma.hRTimesheet.findUnique({
+      where: { id: timesheetId },
+      include: {
+        User_HRTimesheet_userIdToUser: true,
+      },
+    });
+
+    if (!timesheet) {
+      throw new Error("Timesheet non trouvé");
+    }
+
+    // Vérifier que le timesheet est dans un état validé
+    const validatedStatuses = ["MANAGER_APPROVED", "APPROVED"];
+    if (!validatedStatuses.includes(timesheet.status)) {
+      throw new Error("Seuls les timesheets validés peuvent être rétrogradés");
+    }
+
+    // Vérifier que le statut cible est antérieur au statut actuel
+    const statusHierarchy = {
+      DRAFT: 0,
+      PENDING: 1,
+      MANAGER_APPROVED: 2,
+      APPROVED: 3,
+      REJECTED: 3,
+    };
+
+    const currentLevel = statusHierarchy[timesheet.status as keyof typeof statusHierarchy] ?? 3;
+    const targetLevel = statusHierarchy[targetStatus];
+
+    if (targetLevel >= currentLevel) {
+      throw new Error("Le statut cible doit être antérieur au statut actuel");
+    }
+
+    // Préparer les données de mise à jour
+    const updateData: any = {
+      status: targetStatus,
+      updatedAt: new Date(),
+    };
+
+    // Nettoyer les champs de signature selon le statut cible
+    if (targetStatus === "DRAFT") {
+      updateData.employeeSignedAt = null;
+      updateData.managerSignedAt = null;
+      updateData.managerSignedById = null;
+      updateData.odillonSignedAt = null;
+      updateData.odillonSignedById = null;
+      updateData.managerComments = null;
+      updateData.odillonComments = null;
+    } else if (targetStatus === "PENDING") {
+      // Garder employeeSignedAt, mais nettoyer les autres
+      updateData.managerSignedAt = null;
+      updateData.managerSignedById = null;
+      updateData.odillonSignedAt = null;
+      updateData.odillonSignedById = null;
+      updateData.managerComments = null;
+      updateData.odillonComments = null;
+    } else if (targetStatus === "MANAGER_APPROVED") {
+      // Garder employeeSignedAt et managerSignedAt, mais nettoyer odillon
+      updateData.odillonSignedAt = null;
+      updateData.odillonSignedById = null;
+      updateData.odillonComments = null;
+    }
+
+    // Utiliser les MCPs Supabase pour mettre à jour le timesheet
+    // Construire la requête SQL dynamique
+    const setClauses: string[] = [`status = '${targetStatus}'`, `"updatedAt" = NOW()`];
+    
+    if (targetStatus === "DRAFT") {
+      setClauses.push(`"employeeSignedAt" = NULL`);
+      setClauses.push(`"managerSignedAt" = NULL`);
+      setClauses.push(`"managerSignedById" = NULL`);
+      setClauses.push(`"odillonSignedAt" = NULL`);
+      setClauses.push(`"odillonSignedById" = NULL`);
+      setClauses.push(`"managerComments" = NULL`);
+      setClauses.push(`"odillonComments" = NULL`);
+    } else if (targetStatus === "PENDING") {
+      setClauses.push(`"managerSignedAt" = NULL`);
+      setClauses.push(`"managerSignedById" = NULL`);
+      setClauses.push(`"odillonSignedAt" = NULL`);
+      setClauses.push(`"odillonSignedById" = NULL`);
+      setClauses.push(`"managerComments" = NULL`);
+      setClauses.push(`"odillonComments" = NULL`);
+    } else if (targetStatus === "MANAGER_APPROVED") {
+      setClauses.push(`"odillonSignedAt" = NULL`);
+      setClauses.push(`"odillonSignedById" = NULL`);
+      setClauses.push(`"odillonComments" = NULL`);
+    }
+
+    const updateQuery = `
+      UPDATE "HRTimesheet"
+      SET ${setClauses.join(', ')}
+      WHERE id = '${timesheetId}'
+      RETURNING *;
+    `;
+
+    // Exécuter la requête via MCP Supabase
+    // Note: On utilise Prisma pour récupérer le résultat car execute_sql ne retourne pas les relations
+    await prisma.$executeRawUnsafe(updateQuery);
+
+    // Récupérer le timesheet mis à jour avec toutes les relations
+    const updatedTimesheet = await prisma.hRTimesheet.findUnique({
+      where: { id: timesheetId },
+      include: {
+        HRActivity: true,
+        User_HRTimesheet_userIdToUser: true,
+        User_HRTimesheet_managerSignedByIdToUser: true,
+        User_HRTimesheet_odillonSignedByIdToUser: true,
+      },
+    });
+
+    if (!updatedTimesheet) {
+      throw new Error("Erreur lors de la mise à jour du timesheet");
+    }
+
+    // Créer un log d'audit pour tracer la rétrogradation
+    await createAuditLog({
+      userId,
+      action: AuditActions.REVERT_TIMESHEET_STATUS,
+      entity: AuditEntities.HRTIMESHEET,
+      entityId: timesheetId,
+      changes: {
+        previousStatus: timesheet.status,
+        newStatus: targetStatus,
+        reason,
+      },
+    });
+
+    // Notifier l'employé concerné
+    const statusNotification = await prisma.notification.create({
+      data: {
+        id: nanoid(),
+        userId: timesheet.userId,
+        title: "Statut de feuille de temps modifié",
+        message: `Votre feuille de temps pour la semaine du ${timesheet.weekStartDate.toLocaleDateString()} a été rétrogradée de "${timesheet.status}" à "${targetStatus}". Raison: ${reason}`,
+        type: "warning",
+        link: `/dashboard/hr-timesheet/${timesheetId}`,
+      },
+    });
+
+    // Envoyer la push notification (fire and forget)
+    // TODO: Implémenter les push notifications (module notification-helpers manquant)
+    // const { sendPushNotificationForNotification } = await import('@/lib/notification-helpers');
+    // sendPushNotificationForNotification(timesheet.userId, {
+    //   id: statusNotification.id,
+    //   title: statusNotification.title,
+    //   message: statusNotification.message,
+    //   type: statusNotification.type,
+    //   link: statusNotification.link,
+    // }).catch(console.error);
+
+    revalidatePath("/dashboard/hr-timesheet");
+    revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+
     return updatedTimesheet;
   });
 
@@ -1229,6 +1656,244 @@ async function updateTimesheetTotalHours(timesheetId: string) {
 
   return totalHours;
 }
+
+/**
+ * Récupérer les timesheets validés/rejetés par un administrateur Odillon
+ * Utilise l'index HRTimesheet_odillonSignedById_idx pour des performances optimales
+ */
+export const getHRTimesheetsValidatedByOdillon = authActionClient
+  .schema(z.object({
+    odillonUserId: z.string().optional(), // Si non fourni, utilise l'utilisateur connecté
+    status: z.enum(["APPROVED", "REJECTED"]).optional(),
+    weekStartDate: z.date().optional(),
+    weekEndDate: z.date().optional(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId, userRole } = ctx;
+    const { odillonUserId, status, weekStartDate, weekEndDate } = parsedInput;
+
+    // Vérifier que l'utilisateur est Admin ou HR
+    if (userRole !== "ADMIN" && userRole !== "HR") {
+      throw new Error("Seuls les administrateurs et RH peuvent voir ces informations");
+    }
+
+    // Si odillonUserId n'est pas fourni, utiliser l'utilisateur connecté
+    const validatorId = odillonUserId || userId;
+
+    // Construire les conditions de filtre
+    const whereConditions: any = {
+      odillonSignedById: validatorId,
+      ...(weekStartDate && { weekStartDate: { gte: weekStartDate } }),
+      ...(weekEndDate && { weekEndDate: { lte: weekEndDate } }),
+    };
+
+    // Ajouter le filtre de statut si spécifié
+    if (status) {
+      whereConditions.status = status;
+    } else {
+      // Par défaut, montrer uniquement les statuts validés/rejetés
+      whereConditions.status = { in: ["APPROVED", "REJECTED"] };
+    }
+
+    // Cette requête utilise l'index HRTimesheet_odillonSignedById_idx
+    const timesheets = await prisma.hRTimesheet.findMany({
+      where: whereConditions,
+      include: {
+        User_HRTimesheet_userIdToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            position: true,
+            Department: true,
+          },
+        },
+        User_HRTimesheet_managerSignedByIdToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        HRActivity: {
+          select: {
+            id: true,
+            activityName: true,
+            activityType: true,
+            totalHours: true,
+            status: true,
+          },
+        },
+        _count: {
+          select: {
+            HRActivity: true,
+          },
+        },
+      },
+      orderBy: [
+        { odillonSignedAt: "desc" },
+        { weekStartDate: "desc" },
+      ],
+    });
+
+    // Calculer les statistiques
+    const stats = {
+      total: timesheets.length,
+      approved: timesheets.filter(t => t.status === "APPROVED").length,
+      rejected: timesheets.filter(t => t.status === "REJECTED").length,
+      totalHours: timesheets.reduce((sum, t) => sum + t.totalHours, 0),
+    };
+
+    return { timesheets, stats };
+  });
+
+/**
+ * Récupérer les activités RH par catalogue
+ * Utilise l'index HRActivity_catalogId_idx pour des performances optimales
+ */
+export const getHRActivitiesByCatalog = authActionClient
+  .schema(z.object({
+    catalogId: z.string(),
+    startDate: z.date().optional(),
+    endDate: z.date().optional(),
+    status: z.enum(["IN_PROGRESS", "COMPLETED"]).optional(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { catalogId, startDate, endDate, status } = parsedInput;
+    const { userRole } = ctx;
+
+    // Vérifier les permissions (managers et admins peuvent voir toutes les activités)
+    if (!["MANAGER", "DIRECTEUR", "ADMIN", "HR"].includes(userRole)) {
+      throw new Error("Vous n'avez pas la permission de voir ces informations");
+    }
+
+    // Construire les conditions de filtre
+    const whereConditions: any = {
+      catalogId,
+      ...(startDate && { startDate: { gte: startDate } }),
+      ...(endDate && { endDate: { lte: endDate } }),
+      ...(status && { status }),
+    };
+
+    // Cette requête utilise l'index HRActivity_catalogId_idx
+    const activities = await prisma.hRActivity.findMany({
+      where: whereConditions,
+      include: {
+        HRTimesheet: {
+          include: {
+            User_HRTimesheet_userIdToUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                position: true,
+              },
+            },
+          },
+        },
+        ActivityCatalog: true,
+        Task: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            priority: true,
+          },
+        },
+      },
+      orderBy: [
+        { startDate: "desc" },
+        { totalHours: "desc" },
+      ],
+    });
+
+    // Calculer les statistiques
+    const stats = {
+      total: activities.length,
+      inProgress: activities.filter(a => a.status === "IN_PROGRESS").length,
+      completed: activities.filter(a => a.status === "COMPLETED").length,
+      totalHours: activities.reduce((sum, a) => sum + a.totalHours, 0),
+      avgHours: activities.length > 0 ? activities.reduce((sum, a) => sum + a.totalHours, 0) / activities.length : 0,
+    };
+
+    return { activities, stats };
+  });
+
+/**
+ * Récupérer les activités RH liées à une tâche
+ * Utilise l'index HRActivity_taskId_idx pour des performances optimales
+ */
+export const getHRActivitiesByTask = authActionClient
+  .schema(z.object({
+    taskId: z.string(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { taskId } = parsedInput;
+
+    // Vérifier que la tâche existe et que l'utilisateur y a accès
+    const task = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        OR: [
+          { createdBy: ctx.userId },
+          {
+            TaskMember: {
+              some: {
+                userId: ctx.userId,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    if (!task && !["MANAGER", "DIRECTEUR", "ADMIN", "HR"].includes(ctx.userRole)) {
+      throw new Error("Tâche non trouvée ou accès non autorisé");
+    }
+
+    // Cette requête utilise l'index HRActivity_taskId_idx
+    const activities = await prisma.hRActivity.findMany({
+      where: {
+        taskId,
+      },
+      include: {
+        HRTimesheet: {
+          include: {
+            User_HRTimesheet_userIdToUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                position: true,
+              },
+            },
+          },
+        },
+        ActivityCatalog: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            type: true,
+          },
+        },
+      },
+      orderBy: [
+        { startDate: "desc" },
+      ],
+    });
+
+    // Calculer les statistiques
+    const stats = {
+      total: activities.length,
+      inProgress: activities.filter(a => a.status === "IN_PROGRESS").length,
+      completed: activities.filter(a => a.status === "COMPLETED").length,
+      totalHours: activities.reduce((sum, a) => sum + a.totalHours, 0),
+      timesheetsInvolved: new Set(activities.map(a => a.hrTimesheetId)).size,
+    };
+
+    return { activities, stats };
+  });
 
 
 

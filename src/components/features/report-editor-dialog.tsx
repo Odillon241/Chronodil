@@ -24,6 +24,7 @@ import { createReport, updateReport } from "@/actions/report.actions";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 import { Save, FileText } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Report {
@@ -222,12 +223,17 @@ export function ReportEditorDialog({
               Annuler
             </Button>
             <Button type="submit" disabled={isSaving}>
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving
-                ? "Enregistrement..."
-                : isEditing
-                ? "Enregistrer les modifications"
-                : "Créer le rapport"}
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Enregistrement...
+                </span>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isEditing ? "Enregistrer les modifications" : "Créer le rapport"}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

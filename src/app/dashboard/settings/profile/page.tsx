@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateProfileSchema, type UpdateProfileInput } from "@/lib/validations/user";
-import { getMyProfile, updateMyProfile } from "@/actions/user.actions";
+import { updateProfileSchema, type UpdateProfileInput, changePasswordSchema, type ChangePasswordInput } from "@/lib/validations/user";
+import { getMyProfile, updateMyProfile, changeMyPassword } from "@/actions/user.actions";
 import { uploadAvatar } from "@/actions/upload.actions";
 import { ImageCropper } from "@/components/features/image-cropper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,8 +42,12 @@ import {
   Camera,
   Smile,
   Upload,
+  Briefcase,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/lib/auth-client";
@@ -54,6 +58,7 @@ interface UserProfile {
   email: string;
   role: string;
   avatar: string | null;
+  position: string | null;
   department: {
     id: string;
     name: string;
@@ -82,6 +87,11 @@ export default function ProfilePage() {
   const [croppedImageUrl, setCroppedImageUrl] = useState<string>('');
   const [showCropper, setShowCropper] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -90,6 +100,15 @@ export default function ProfilePage() {
     formState: { errors },
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
+  });
+
+  const {
+    register: registerPassword,
+    handleSubmit: handleSubmitPassword,
+    reset: resetPassword,
+    formState: { errors: passwordErrors },
+  } = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
   });
 
   useEffect(() => {
@@ -101,11 +120,13 @@ export default function ProfilePage() {
     try {
       const result = await getMyProfile({});
       if (result?.data) {
-        setUser(result.data as any);
+        const userData = result.data as any;
+        setUser(userData);
         reset({
-          name: result.data.name || "",
-          email: result.data.email,
-          avatar: result.data.avatar || "",
+          name: userData.name || "",
+          email: userData.email,
+          avatar: userData.avatar || "",
+          position: userData.position || "",
         });
       }
     } catch (error) {
@@ -142,6 +163,7 @@ export default function ProfilePage() {
       name: user?.name || "",
       email: user?.email || "",
       avatar: user?.avatar || "",
+      position: user?.position || "",
     });
     setIsEditing(false);
   };
@@ -280,6 +302,7 @@ export default function ProfilePage() {
         name: user?.name || '',
         email: user?.email || '',
         avatar: avatarUrl,
+        position: user?.position || '',
       });
 
       if (result?.data) {
@@ -316,6 +339,29 @@ export default function ProfilePage() {
     }
   };
 
+  const handlePasswordChange = async (data: ChangePasswordInput) => {
+    setIsChangingPassword(true);
+    try {
+      const result = await changeMyPassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+
+      if (result?.data?.success) {
+        toast.success("Mot de passe modifié avec succès !");
+        setIsPasswordDialogOpen(false);
+        resetPassword();
+      } else {
+        toast.error(result?.serverError || "Erreur lors du changement de mot de passe");
+      }
+    } catch (error) {
+      toast.error("Une erreur s'est produite");
+      console.error(error);
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   const popularEmojis = [
     '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃',
     '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙',
@@ -329,9 +375,9 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <div className="text-center">
-          <SpinnerCustom />
-          <p className="text-muted-foreground mt-4">Chargement du profil...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Chargement du profil...</p>
         </div>
       </div>
     );
@@ -348,94 +394,58 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* En-tête */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Gérez vos informations personnelles et vos préférences
-        </p>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Gérez vos informations personnelles et vos préférences
+          </p>
+        </div>
+        <Separator />
       </div>
 
       {/* Carte principale */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
         {/* Colonne gauche - Avatar et infos rapides */}
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Photo de profil</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <Avatar className="h-32 w-32">
-                  <AvatarImage 
-                    src={
-                      user.avatar?.startsWith('/uploads') || user.avatar?.startsWith('http') 
-                        ? user.avatar 
-                        : undefined
-                    } 
-                    alt={user.name || "User"}
-                  />
-                  <AvatarFallback className="bg-primary text-white text-2xl">
-                    {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <Button
-                  onClick={openAvatarDialog}
-                  size="sm"
-                  variant="outline"
-                  className="absolute -bottom-2 -right-2 bg-white shadow-md hover:bg-gray-50"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="text-center space-y-1">
-                <h3 className="font-semibold text-lg">{user.name || "Utilisateur"}</h3>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </div>
+        <div className="md:col-span-1 flex flex-col items-center space-y-5">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Avatar className="h-36 w-36 relative z-0 ring-4 ring-background shadow-lg">
+              <AvatarImage 
+                src={
+                  user.avatar?.startsWith('/uploads') || user.avatar?.startsWith('http') 
+                    ? user.avatar 
+                    : undefined
+                } 
+                alt={user.name || "User"}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white text-3xl font-semibold">
+                {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              onClick={openAvatarDialog}
+              size="icon"
+              variant="default"
+              className="absolute bottom-0 right-0 h-11 w-11 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-slate-700 hover:bg-slate-800 text-white border-2 border-background z-50"
+              title="Modifier la photo de profil"
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="text-center space-y-2 w-full">
+            <h3 className="font-bold text-xl text-foreground">{user.name || "Utilisateur"}</h3>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Mail className="h-3.5 w-3.5" />
+              <p className="text-sm truncate max-w-[200px]" title={user.email}>{user.email}</p>
             </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Rôle</span>
-                <Badge className={`${getRoleBadgeColor(user.role)} text-xs`}>
-                  {getRoleLabel(user.role)}
-                </Badge>
-              </div>
-
-              {user.department && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">Département</span>
-                  <span className="text-xs sm:text-sm font-medium">{user.department.name}</span>
-                </div>
-              )}
-
-              {user.manager && (
-                <div className="space-y-1">
-                  <span className="text-xs sm:text-sm text-muted-foreground">Manager</span>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="bg-primary text-white text-xs">
-                        {getInitials(user.manager.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs sm:text-sm font-medium">{user.manager.name}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Membre depuis</span>
-                <span className="text-xs sm:text-sm font-medium">
-                  {new Date(user.createdAt).toLocaleDateString("fr-FR", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Badge className={`${getRoleBadgeColor(user.role)} text-xs font-semibold px-2.5 py-1 mt-2`}>
+              {getRoleLabel(user.role)}
+            </Badge>
+          </div>
+        </div>
 
         {/* Colonne droite - Informations détaillées */}
         <Card className="md:col-span-2">
@@ -456,6 +466,7 @@ export default function ProfilePage() {
                 </Button>
               )}
             </div>
+            <Separator className="mt-4" />
           </CardHeader>
           <CardContent>
             {isEditing ? (
@@ -499,6 +510,22 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="position">Poste</Label>
+                    <div className="relative">
+                      <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="position"
+                        className="pl-10"
+                        placeholder="Ex: Développeur Full-Stack, Chef de projet..."
+                        {...register("position")}
+                      />
+                    </div>
+                    {errors.position && (
+                      <p className="text-sm text-destructive">{errors.position.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="avatar">URL photo de profil</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -522,10 +549,10 @@ export default function ProfilePage() {
                     disabled={isSaving}
                   >
                     {isSaving ? (
-                      <>
-                        <SpinnerCustom />
+                      <span className="flex items-center gap-2">
+                        <Spinner />
                         Enregistrement...
-                      </>
+                      </span>
                     ) : (
                       <>
                         <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -571,6 +598,14 @@ export default function ProfilePage() {
                       Rôle
                     </div>
                     <p className="text-sm font-medium pl-6">{getRoleLabel(user.role)}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Briefcase className="h-4 w-4" />
+                      Poste
+                    </div>
+                    <p className="text-sm font-medium pl-6">{user.position || "Non renseigné"}</p>
                   </div>
 
                   {user.department && (
@@ -642,6 +677,169 @@ export default function ProfilePage() {
                   <p className="text-xs text-muted-foreground italic">
                     Ces informations seront disponibles dans une prochaine mise à jour
                   </p>
+                </div>
+
+                {/* Section changement de mot de passe */}
+                <Separator />
+
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold text-sm sm:text-base">Sécurité</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        Gérez votre mot de passe pour sécuriser votre compte
+                      </p>
+                    </div>
+                    <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                          <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                          Changer le mot de passe
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Changer le mot de passe</DialogTitle>
+                          <DialogDescription>
+                            Entrez votre mot de passe actuel et choisissez un nouveau mot de passe sécurisé
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmitPassword(handlePasswordChange)} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="currentPassword">Mot de passe actuel *</Label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                id="currentPassword"
+                                type={showCurrentPassword ? "text" : "password"}
+                                className="pl-10 pr-10"
+                                placeholder="••••••••"
+                                {...registerPassword("currentPassword")}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              >
+                                {showCurrentPassword ? (
+                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </Button>
+                            </div>
+                            {passwordErrors.currentPassword && (
+                              <p className="text-sm text-destructive">
+                                {passwordErrors.currentPassword.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="newPassword">Nouveau mot de passe *</Label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                id="newPassword"
+                                type={showNewPassword ? "text" : "password"}
+                                className="pl-10 pr-10"
+                                placeholder="••••••••"
+                                {...registerPassword("newPassword")}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                              >
+                                {showNewPassword ? (
+                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </Button>
+                            </div>
+                            {passwordErrors.newPassword && (
+                              <p className="text-sm text-destructive">
+                                {passwordErrors.newPassword.message}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Le mot de passe doit contenir au moins 6 caractères
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">Confirmer le nouveau mot de passe *</Label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                id="confirmPassword"
+                                type={showConfirmPassword ? "text" : "password"}
+                                className="pl-10 pr-10"
+                                placeholder="••••••••"
+                                {...registerPassword("confirmPassword")}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </Button>
+                            </div>
+                            {passwordErrors.confirmPassword && (
+                              <p className="text-sm text-destructive">
+                                {passwordErrors.confirmPassword.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                            <Button
+                              type="submit"
+                              className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
+                              disabled={isChangingPassword}
+                            >
+                              {isChangingPassword ? (
+                                <span className="flex items-center gap-2">
+                                  <Spinner />
+                                  Modification...
+                                </span>
+                              ) : (
+                                <>
+                                  <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                  Modifier le mot de passe
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setIsPasswordDialogOpen(false);
+                                resetPassword();
+                              }}
+                              disabled={isChangingPassword}
+                              className="w-full sm:w-auto text-xs sm:text-sm"
+                            >
+                              <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                              Annuler
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
               </div>
             )}
@@ -782,10 +980,10 @@ export default function ProfilePage() {
                 disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
               >
                 {isUpdatingAvatar ? (
-                  <>
-                    <SpinnerCustom />
+                  <span className="flex items-center gap-2">
+                    <Spinner />
                     Mise à jour...
-                  </>
+                  </span>
                 ) : (
                   <>
                     <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />

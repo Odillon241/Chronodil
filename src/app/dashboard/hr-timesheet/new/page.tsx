@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Plus, Trash2, Save, ArrowLeft, Clock, CalendarDays } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -31,6 +32,7 @@ import {
   getActivityCategories,
 } from "@/actions/hr-timesheet.actions";
 import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
+import { getMyProfile } from "@/actions/user.actions";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -131,6 +133,23 @@ export default function NewHRTimesheetPage() {
       status: "IN_PROGRESS",
     },
   });
+
+  // Charger le profil utilisateur et pré-remplir les champs
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const profileResult = await getMyProfile({});
+        if (profileResult?.data) {
+          const userData = profileResult.data as any;
+          setTimesheetValue("employeeName", userData.name || "");
+          setTimesheetValue("position", userData.position || "");
+        }
+      } catch (error) {
+        console.error("Erreur chargement profil utilisateur:", error);
+      }
+    };
+    loadUserProfile();
+  }, [setTimesheetValue]);
 
   // Charger les tâches et le catalogue
   useEffect(() => {
@@ -363,14 +382,13 @@ export default function NewHRTimesheetPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nouvelle feuille de temps RH</h1>
-          <p className="text-muted-foreground">Créez un nouveau timesheet hebdomadaire</p>
-        </div>
+      <Button variant="ghost" onClick={() => router.back()} className="w-fit">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Retour
+      </Button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Nouvelle feuille de temps RH</h1>
+        <p className="text-muted-foreground">Créez un nouveau timesheet hebdomadaire</p>
       </div>
 
       {/* Informations générales du timesheet */}
@@ -860,11 +878,19 @@ export default function NewHRTimesheetPage() {
           <div className="flex gap-2">
             <Button
               onClick={handleSubmitTimesheet(onSubmitFinal)}
-              className="bg-green-600 hover:bg-green-700"
               disabled={isLoading || activities.length === 0}
             >
-              <Save className="mr-2 h-4 w-4" />
-              {isLoading ? "Création en cours..." : "Créer la feuille de temps"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Création en cours...
+                </span>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Créer la feuille de temps
+                </>
+              )}
             </Button>
             <Button
               variant="outline"

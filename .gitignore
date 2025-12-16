@@ -52,3 +52,16 @@ SUPABASE_CREDENTIALS.md
 *.credentials
 *.secret
 
+# Build artifacts and temporary files
+*.log
+build-log.txt
+build-output.log
+vercel-env.txt
+FOLDER_STRUCTURE.txt
+RAPPORT_*.txt
+
+# Test pages (uncomment to exclude from version control)
+# src/app/dashboard/test/
+
+# Claude AI local settings (machine-specific)
+.claude/settings.local.json

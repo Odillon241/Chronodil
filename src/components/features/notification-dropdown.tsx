@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,11 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Bell, CheckCheck, Info, AlertCircle, CheckCircle, XCircle, ArrowRight } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
+import { useNotificationWithSound } from "@/hooks/use-notification-with-sound";
+import { useDesktopNotifications } from "@/hooks/use-desktop-notifications";
 import {
   getMyNotifications,
   markAsRead,
@@ -35,25 +39,32 @@ interface Notification {
 
 export function NotificationDropdown() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
 
+  // Hooks pour les notifications
+  const { playNotificationSound, soundEnabled } = useNotificationWithSound();
+  const desktop = useDesktopNotifications({ 
+    enabled: true,
+    onPlaySound: (soundType) => {
+      if (soundEnabled) {
+        playNotificationSound(soundType || 'info');
+      }
+    },
+  });
+
+  // Éviter les erreurs d'hydratation en ne rendant le DropdownMenu qu'après le montage
   useEffect(() => {
-    loadUnreadCount();
-    // Refresh every 30 seconds
-    const interval = setInterval(loadUnreadCount, 30000);
-    return () => clearInterval(interval);
+    setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadNotifications();
-    }
-  }, [isOpen]);
-
-  const loadUnreadCount = async () => {
+  // Fonctions de chargement avec useCallback pour éviter les dépendances cycliques
+  const loadUnreadCount = useCallback(async () => {
     try {
       const result = await getUnreadCount({});
       if (result?.data !== undefined) {
@@ -62,9 +73,9 @@ export function NotificationDropdown() {
     } catch (error) {
       console.error("Error loading unread count:", error);
     }
-  };
+  }, []);
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await getMyNotifications({ limit: 5 });
@@ -77,7 +88,78 @@ export function NotificationDropdown() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Callback pour gérer les nouvelles notifications en temps réel
+  const handleNewNotification = useCallback((notification: any) => {
+    console.log('🔔 Nouvelle notification reçue dans le dropdown:', notification);
+
+    // ⚡ MISE À JOUR INSTANTANÉE du compteur (optimistic update)
+    setUnreadCount(prev => prev + 1);
+    
+    // ⚡ Animation du badge
+    setHasNewNotification(true);
+    setTimeout(() => setHasNewNotification(false), 2000);
+
+    // Jouer le son si activé
+    if (soundEnabled) {
+      let soundType: 'success' | 'error' | 'info' | 'warning' = 'info';
+      if (notification.type === 'success') soundType = 'success';
+      else if (notification.type === 'error') soundType = 'error';
+      else if (notification.type === 'warning') soundType = 'warning';
+      playNotificationSound(soundType);
+    }
+
+    // Afficher notification desktop si activé
+    if (desktop.hasPermission && desktop.desktopNotificationsEnabled) {
+      desktop.notifyNewNotification(
+        notification.title,
+        notification.message,
+        () => {
+          if (notification.link) {
+            router.push(notification.link);
+          } else {
+            router.push('/dashboard');
+          }
+        }
+      );
+    }
+
+    // Afficher un toast
+    toast.info(notification.title, {
+      description: notification.message,
+      duration: 5000,
+    });
+
+    // Vérifier avec le serveur (pour garder la sync)
+    loadUnreadCount();
+    if (isOpen) {
+      loadNotifications();
+    }
+  }, [soundEnabled, playNotificationSound, desktop, router, isOpen, loadUnreadCount, loadNotifications]);
+
+  // Hook realtime pour écouter les nouvelles notifications
+  // Désactivé tant que la session n'est pas chargée pour éviter les warnings inutiles
+  useRealtimeNotifications({
+    onNewNotification: handleNewNotification,
+    userId: session?.user?.id || '',
+    enabled: !!session?.user?.id, // Désactiver tant que userId n'est pas disponible
+  });
+
+  useEffect(() => {
+    if (mounted) {
+    loadUnreadCount();
+    // Refresh every 30 seconds (fallback si realtime ne fonctionne pas)
+    const interval = setInterval(loadUnreadCount, 30000);
+    return () => clearInterval(interval);
+    }
+  }, [mounted, loadUnreadCount]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadNotifications();
+    }
+  }, [isOpen, loadNotifications]);
 
   const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -128,15 +210,27 @@ export function NotificationDropdown() {
     }
   };
 
+  // Pendant l'hydratation, rendre uniquement le bouton sans le DropdownMenu
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative h-8 w-8" disabled>
+        <Bell className="h-4 w-4" />
+        <span className="sr-only">Notifications</span>
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-8 w-8">
-          <Bell className="h-4 w-4" />
+          <Bell className={`h-4 w-4 transition-transform ${hasNewNotification ? 'animate-bounce' : ''}`} />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary"
+              className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary transition-all ${
+                hasNewNotification ? 'animate-pulse scale-110' : ''
+              }`}
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
@@ -163,7 +257,7 @@ export function NotificationDropdown() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <SpinnerCustom />
+            <Spinner className="size-5" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">

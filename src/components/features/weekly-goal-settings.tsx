@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { updateUserPreferences } from "@/actions/preferences.actions";
 
@@ -86,7 +87,12 @@ export function WeeklyGoalSettings({ currentGoal, onGoalUpdated }: WeeklyGoalSet
             Annuler
           </Button>
           <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary">
-            {isLoading ? "Enregistrement..." : "Enregistrer"}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Spinner />
+                Enregistrement...
+              </span>
+            ) : "Enregistrer"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -4,6 +4,28 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { getGeneralSettings } from "@/actions/general-settings.actions";
 
+// Mapping pour migrer les anciennes couleurs vers les nouvelles
+const colorMigrationMap: Record<string, string> = {
+  "rusty-red": "green-anis",
+  "ou-crimson": "green-teal",
+  "powder-blue": "green-anis",
+  "golden-orange": "yellow-vibrant",
+  "green": "green-anis",
+  "dark-green": "green-teal",
+  "light-green": "green-anis",
+  "forest-green": "green-teal",
+  "sage-green": "green-anis",
+};
+
+const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal", "dark"];
+
+// Fonction pour normaliser la couleur d'accentuation
+const normalizeAccentColor = (accentColor: string | null | undefined): string => {
+  if (!accentColor) return "green-anis";
+  if (validAccentColors.includes(accentColor)) return accentColor;
+  return colorMigrationMap[accentColor] || "green-anis";
+};
+
 /**
  * Provider qui charge les paramètres généraux de l'utilisateur au démarrage du dashboard
  * et les applique une seule fois pour éviter les conflits avec next-themes
@@ -21,16 +43,65 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const result = await getGeneralSettings({});
         if (result?.data) {
           applySettings(result.data);
-          setIsInitialized(true);
+        } else {
+          // Appliquer les valeurs par défaut si aucun paramètre n'est trouvé
+          applySettings({
+            accentColor: "green-anis",
+            viewDensity: "normal",
+            fontSize: 12,
+            highContrast: false,
+            reduceMotion: false,
+          });
         }
+        setIsInitialized(true);
       } catch (error) {
         console.error("Erreur lors du chargement des paramètres:", error);
+        // Appliquer les valeurs par défaut en cas d'erreur
+        applySettings({
+          accentColor: "green-anis",
+          viewDensity: "normal",
+          fontSize: 12,
+          highContrast: false,
+          reduceMotion: false,
+        });
         setIsInitialized(true);
       }
     };
 
     loadAndApplySettings();
   }, [session?.user, isInitialized]);
+
+  // Écouter les événements de mise à jour des paramètres
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const handleSettingsUpdate = async () => {
+      try {
+        const result = await getGeneralSettings({});
+        if (result?.data) {
+          applySettings(result.data);
+        } else {
+          // Appliquer les valeurs par défaut si aucun paramètre n'est trouvé
+          applySettings({
+            accentColor: "green-anis",
+            viewDensity: "normal",
+            fontSize: 12,
+            highContrast: false,
+            reduceMotion: false,
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors du rechargement des paramètres:", error);
+      }
+    };
+
+    // Écouter l'événement personnalisé de mise à jour des paramètres
+    window.addEventListener("settings-updated", handleSettingsUpdate);
+
+    return () => {
+      window.removeEventListener("settings-updated", handleSettingsUpdate);
+    };
+  }, [session?.user]);
 
   const applySettings = (settings: any) => {
     if (!settings) return;
@@ -57,12 +128,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     // Appliquer la densité d'affichage
     if (settings.viewDensity) {
       document.documentElement.setAttribute("data-density", settings.viewDensity);
+    } else {
+      // Valeur par défaut si non définie
+      document.documentElement.setAttribute("data-density", "normal");
     }
 
-    // Appliquer la couleur d'accentuation
-    if (settings.accentColor) {
-      document.documentElement.setAttribute("data-accent", settings.accentColor);
-    }
+    // Appliquer la couleur d'accentuation (normalisée) - TOUJOURS appliquer une valeur
+    const normalizedColor = normalizeAccentColor(settings.accentColor);
+    document.documentElement.setAttribute("data-accent", normalizedColor);
   };
 
   return <>{children}</>;

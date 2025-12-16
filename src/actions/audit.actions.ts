@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
+import { getClientIP } from "@/lib/utils";
 
 const getAuditLogsSchema = z.object({
   limit: z.number().optional(),
@@ -20,10 +21,12 @@ export const getAuditLogs = actionClient
     const session = await getSession(await headers());
     const userRole = getUserRole(session);
 
-    if (!session || (userRole !== "ADMIN" && userRole !== "HR")) {
-      throw new Error("Accès non autorisé");
+    // Seul l'administrateur peut voir les audits
+    if (!session || userRole !== "ADMIN") {
+      throw new Error("Accès non autorisé - Rôle ADMIN requis");
     }
 
+    // Récupérer TOUS les audits (tous les utilisateurs), pas seulement ceux de l'admin
     const logs = await prisma.auditLog.findMany({
       where: {
         ...(parsedInput.entity && { entity: parsedInput.entity }),
@@ -54,8 +57,9 @@ export const getAuditStats = actionClient
     const session = await getSession(await headers());
     const userRole = getUserRole(session);
 
-    if (!session || (getUserRole(session) !== "ADMIN" && getUserRole(session) !== "HR")) {
-      throw new Error("Accès non autorisé");
+    // Seul l'administrateur peut voir les statistiques d'audit
+    if (!session || userRole !== "ADMIN") {
+      throw new Error("Accès non autorisé - Rôle ADMIN requis");
     }
 
     const total = await prisma.auditLog.count();

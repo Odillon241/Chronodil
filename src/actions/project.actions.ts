@@ -2,10 +2,11 @@
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { CacheTags } from "@/lib/cache";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 const projectSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -65,9 +66,23 @@ export const createProject = authActionClient
       )
     );
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.PROJECT,
+      entityId: project.id,
+      changes: {
+        name: project.name,
+        code: project.code,
+        departmentId: project.departmentId,
+        createdBy: project.createdBy,
+      },
+    });
+
     // Invalider le cache des projets
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -85,8 +100,27 @@ export const getProjects = authActionClient
         ...(isActive !== undefined && { isActive }),
         ...(departmentId && { departmentId }),
       },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        color: true,
+        isActive: true,
+        budgetHours: true,
+        hourlyRate: true,
+        startDate: true,
+        endDate: true,
+        createdBy: true,
+        createdAt: true,
+        updatedAt: true,
+        departmentId: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -95,8 +129,18 @@ export const getProjects = authActionClient
           },
         },
         ProjectMember: {
-          include: {
-            User: true,
+          select: {
+            id: true,
+            userId: true,
+            role: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
           },
         },
         _count: {
@@ -125,8 +169,27 @@ export const getProjectById = authActionClient
   .action(async ({ parsedInput }) => {
     const project = await prisma.project.findUnique({
       where: { id: parsedInput.id },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        color: true,
+        isActive: true,
+        budgetHours: true,
+        hourlyRate: true,
+        startDate: true,
+        endDate: true,
+        createdBy: true,
+        createdAt: true,
+        updatedAt: true,
+        departmentId: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -135,13 +198,30 @@ export const getProjectById = authActionClient
           },
         },
         ProjectMember: {
-          include: {
-            User: true,
+          select: {
+            id: true,
+            userId: true,
+            role: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
           },
         },
         Task: {
           where: { isActive: true },
           orderBy: { name: "asc" },
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            priority: true,
+            dueDate: true,
+          },
         },
       },
     });
@@ -169,10 +249,9 @@ export const updateProject = authActionClient
     const { userRole, userId } = ctx;
     const { id, data } = parsedInput;
 
-    // Récupérer le projet avec son créateur
+    // Récupérer le projet avec son créateur et ses données complètes
     const existingProject = await prisma.project.findUnique({
       where: { id },
-      select: { id: true, createdBy: true },
     });
 
     if (!existingProject) {
@@ -192,8 +271,23 @@ export const updateProject = authActionClient
       data,
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.PROJECT,
+      entityId: id,
+      changes: {
+        previous: {
+          name: existingProject.name,
+          code: existingProject.code,
+        },
+        new: data,
+      },
+    });
+
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -227,8 +321,21 @@ export const archiveProject = authActionClient
       data: { isActive: !existingProject.isActive },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.PROJECT,
+      entityId: parsedInput.id,
+      changes: {
+        previous: { isActive: existingProject.isActive },
+        new: { isActive: project.isActive },
+        action: project.isActive ? "Réactivation" : "Archivage",
+      },
+    });
+
     revalidatePath("/dashboard/projects");
-    revalidateTag(CacheTags.PROJECTS, 'max');
+    updateTag(CacheTags.PROJECTS);
     return project;
   });
 
@@ -270,8 +377,20 @@ export const addProjectMember = authActionClient
         role: parsedInput.role,
         createdAt: new Date(),
       },
-      include: {
-        User: true,
+      select: {
+        id: true,
+        projectId: true,
+        userId: true,
+        role: true,
+        createdAt: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
       },
     });
 
@@ -323,9 +442,19 @@ export const getMyProjects = authActionClient
 
     const projectMembers = await prisma.projectMember.findMany({
       where: { userId },
-      include: {
+      select: {
         Project: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            description: true,
+            color: true,
+            isActive: true,
+            budgetHours: true,
+            startDate: true,
+            endDate: true,
+            createdBy: true,
             _count: {
               select: {
                 ProjectMember: true,
@@ -352,8 +481,23 @@ export const cloneProject = authActionClient
     // Récupérer le projet original
     const originalProject = await prisma.project.findUnique({
       where: { id: parsedInput.id },
-      include: {
-        ProjectMember: true,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        color: true,
+        departmentId: true,
+        budgetHours: true,
+        hourlyRate: true,
+        startDate: true,
+        endDate: true,
+        ProjectMember: {
+          select: {
+            userId: true,
+            role: true,
+          },
+        },
       },
     });
 
@@ -410,7 +554,7 @@ export const deleteProject = authActionClient
     // Récupérer le projet avec son créateur
     const project = await prisma.project.findUnique({
       where: { id: parsedInput.id },
-      select: { id: true, name: true, createdBy: true },
+      select: { id: true, name: true, code: true, createdBy: true },
     });
 
     if (!project) {
@@ -427,11 +571,28 @@ export const deleteProject = authActionClient
       throw new Error("Vous n'avez pas la permission de supprimer ce projet. Seul le créateur ou un administrateur peut supprimer un projet.");
     }
 
+    // Sauvegarder les informations du projet avant suppression pour l'audit
+    const projectData = {
+      name: project.name,
+      code: project.code || null,
+      createdBy: project.createdBy,
+    };
+
     // Supprimer le projet (cascade deletion pour les membres et entrées de timesheet)
     await prisma.project.delete({
       where: { id: parsedInput.id },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.DELETE,
+      entity: AuditEntities.PROJECT,
+      entityId: parsedInput.id,
+      changes: projectData,
+    });
+
     revalidatePath("/dashboard/projects");
+    updateTag(CacheTags.PROJECTS);
     return { success: true, projectName: project.name };
   });

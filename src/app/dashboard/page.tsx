@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { format, startOfWeek, subWeeks } from "date-fns";
+import { fr } from "date-fns/locale";
 import { StatCardWithComparison } from "@/components/features/stat-card-with-comparison";
 import { getTranslations } from "@/lib/i18n";
 import {
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { FolderKanban, Users, CheckSquare2, Calendar, Clock, ListTodo, Plus, FileText } from "lucide-react";
 import Link from "next/link";
 import { DashboardRealtimeWrapper } from "@/components/features/dashboard-realtime-wrapper";
+import { TaskStatsChart } from "@/components/features/task-stats-chart";
 
 export const metadata = {
   title: 'Tableau de bord | Chronodil',
@@ -35,6 +37,7 @@ async function getDashboardData(userId: string) {
   let taskStats: any[] = [];
   let recentTasks: any[] = [];
   let recentHRTimesheets: any[] = [];
+  let taskWeeklyData: any[] = [];
 
   try {
     // 1. Projets actifs
@@ -130,6 +133,65 @@ async function getDashboardData(userId: string) {
     console.error("Error fetching recentHRTimesheets:", error);
   }
 
+  try {
+    // 6. Données historiques des tâches par semaine (4 dernières semaines)
+    const now = new Date();
+    const weeks = [];
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      
+      weeks.push({
+        weekStart,
+        weekEnd,
+        weekLabel: format(weekStart, "dd MMM", { locale: fr }),
+      });
+    }
+
+    // Récupérer toutes les tâches actives créées avant ou pendant les 4 dernières semaines
+    const allTasks = await prisma.task.findMany({
+      where: {
+        createdBy: userId,
+        isActive: true,
+        createdAt: {
+          lte: weeks[weeks.length - 1].weekEnd,
+        },
+      },
+      select: {
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Grouper par semaine et par statut
+    // Pour chaque semaine, on compte les tâches qui existaient à la fin de cette semaine
+    taskWeeklyData = weeks.map((week) => {
+      // Tâches qui existaient à la fin de cette semaine (créées avant ou pendant la semaine)
+      const weekTasks = allTasks.filter((task) => {
+        const taskDate = new Date(task.createdAt);
+        return taskDate <= week.weekEnd;
+      });
+
+      // Compter les tâches par statut
+      // Note: On utilise le statut actuel, idéalement on devrait utiliser le statut historique
+      // mais pour simplifier, on utilise le statut actuel
+      const todo = weekTasks.filter((t) => t.status === "TODO").length;
+      const inProgress = weekTasks.filter((t) => t.status === "IN_PROGRESS").length;
+      const done = weekTasks.filter((t) => t.status === "DONE").length;
+
+      return {
+        week: week.weekLabel,
+        todo,
+        inProgress,
+        done,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching taskWeeklyData:", error);
+  }
+
   const todoCount = taskStats.find((s: { status: string }) => s.status === "TODO")?._count || 0;
   const inProgressCount = taskStats.find((s: { status: string }) => s.status === "IN_PROGRESS")?._count || 0;
   const doneCount = taskStats.find((s: { status: string }) => s.status === "DONE")?._count || 0;
@@ -142,6 +204,7 @@ async function getDashboardData(userId: string) {
     todoCount,
     inProgressCount,
     doneCount,
+    taskWeeklyData,
   };
 }
 
@@ -198,6 +261,13 @@ export default async function DashboardPage() {
         />
       </div>
 
+      <TaskStatsChart
+        todo={data.todoCount}
+        inProgress={data.inProgressCount}
+        done={data.doneCount}
+        weeklyData={data.taskWeeklyData}
+      />
+
       {/* Sections avec onglets */}
       <Tabs defaultValue="hr-timesheets" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto">
@@ -239,7 +309,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-hidden rounded-b-lg border">
+              <div className="overflow-hidden rounded-b-lg">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -387,7 +457,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-hidden rounded-b-lg border">
+              <div className="overflow-hidden rounded-b-lg">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -533,7 +603,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-hidden rounded-b-lg border">
+              <div className="overflow-hidden rounded-b-lg">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50 hover:bg-muted/50">

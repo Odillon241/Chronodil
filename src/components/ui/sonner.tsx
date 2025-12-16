@@ -29,15 +29,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast bg-background text-foreground border border-border shadow-lg",
+            "group toast bg-popover text-popover-foreground border border-border shadow-lg",
           success:
-            "group toast bg-background text-foreground border border-border shadow-lg",
+            "group toast bg-popover text-popover-foreground border border-green-500/50 shadow-lg",
           error:
-            "group toast bg-background text-foreground border border-destructive shadow-lg",
+            "group toast bg-popover text-popover-foreground border border-destructive shadow-lg",
           warning:
-            "group toast bg-background text-foreground border border-amber-500 shadow-lg",
+            "group toast bg-popover text-popover-foreground border border-amber-500 shadow-lg",
           info:
-            "group toast bg-background text-foreground border border-blue-500 shadow-lg",
+            "group toast bg-popover text-popover-foreground border border-blue-500 shadow-lg",
           description: "text-muted-foreground",
           actionButton:
             "bg-primary text-primary-foreground",

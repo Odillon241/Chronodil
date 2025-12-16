@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useT } from "@/lib/translations";
 import {
   LayoutDashboard,
   Clock,
@@ -40,6 +40,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,13 +51,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession, signOut } from "@/lib/auth-client";
+import { useChatUnreadCount } from "@/hooks/use-chat-unread-count";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = React.useState<string[]>([]);
   const [mounted, setMounted] = React.useState(false);
-  const t = useTranslations();
+  const t = useT();
+  const { unreadCount: chatUnread } = useChatUnreadCount();
 
   React.useEffect(() => {
     setMounted(true);
@@ -84,6 +87,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/dashboard/tasks",
       icon: ListTodo,
     },
+  ], [t]);
+
+  const navSecondary = React.useMemo(() => [
     {
       title: t("navigation.chat"),
       url: "/dashboard/chat",
@@ -106,7 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Audit",
       url: "/dashboard/audit",
       icon: Shield,
-      roles: ["ADMIN", "HR"],
+      roles: ["ADMIN"],
     },
   ], [t]);
 
@@ -145,21 +151,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+      <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center justify-center group-data-[collapsible=icon]:justify-center">
+        <SidebarMenu className="w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+          <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+            <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:!w-8 group-data-[collapsible=icon]:!justify-center">
+              <Link href="/dashboard" className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
                 <div className="flex aspect-square size-8 items-center justify-center">
                   <Image
-                    src="/assets/media/logo-icon.svg"
+                    src="/assets/media/chronodil-icon.svg"
                     alt="Chronodil"
                     width={32}
                     height={32}
                     className="size-8"
+                    priority
                   />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">Chronodil</span>
                   <span className="truncate text-xs text-muted-foreground">
                     {t("navigation.timesheets")}
@@ -240,6 +247,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarGroup>
+          <SidebarGroupLabel>{t("navigation.chatReports")}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu suppressHydrationWarning>
+              {navSecondary.map((item) => {
+                const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={isActive}
+                    >
+                      <Link href={item.url} className="flex items-center gap-2">
+                        {item.icon && <item.icon />}
+                        <span className="flex w-full items-center gap-2">
+                          <span className="truncate">{item.title}</span>
+                          {item.url === "/dashboard/chat" && chatUnread > 0 && (
+                            <Badge
+                              variant="outline"
+                              className="ml-auto min-w-[1.75rem] justify-center rounded-full border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary"
+                            >
+                              {chatUnread > 99 ? "99+" : chatUnread}
+                            </Badge>
+                          )}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu suppressHydrationWarning>
@@ -271,60 +314,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <SidebarMenu>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarMenu suppressHydrationWarning>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="size-8">
-                    <AvatarImage
-                      src={
-                        mounted && (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                        mounted && (session?.user as any)?.avatar?.startsWith('http')
-                          ? (session?.user as any)?.avatar
-                          : undefined
-                      }
-                      alt={(session?.user as any)?.name || "User"}
-                    />
-                    <AvatarFallback className="bg-primary text-white text-xs" suppressHydrationWarning>
-                      {mounted ? ((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U') : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold" suppressHydrationWarning>
-                      {mounted ? (session?.user?.name || t("common.name")) : t("common.name")}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground" suppressHydrationWarning>
-                      {mounted ? session?.user?.email : ""}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            {mounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  >
                     <Avatar className="size-8">
                       <AvatarImage
                         src={
-                          mounted && (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                          mounted && (session?.user as any)?.avatar?.startsWith('http')
+                          (session?.user as any)?.avatar?.startsWith('/uploads') ||
+                          (session?.user as any)?.avatar?.startsWith('http')
                             ? (session?.user as any)?.avatar
                             : undefined
                         }
                         alt={(session?.user as any)?.name || "User"}
                       />
-                      <AvatarFallback className="bg-primary text-white text-xs" suppressHydrationWarning>
-                        {mounted ? ((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U') : 'U'}
+                      <AvatarFallback className="bg-primary text-white text-xs">
+                        {((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
@@ -335,28 +346,76 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         {session?.user?.email}
                       </span>
                     </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    {t("navigation.profile")}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    {t("navigation.settings")}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t("navigation.logout")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <ChevronsUpDown className="ml-auto size-4" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                      <Avatar className="size-8">
+                        <AvatarImage
+                          src={
+                            (session?.user as any)?.avatar?.startsWith('/uploads') ||
+                            (session?.user as any)?.avatar?.startsWith('http')
+                              ? (session?.user as any)?.avatar
+                              : undefined
+                          }
+                          alt={(session?.user as any)?.name || "User"}
+                        />
+                        <AvatarFallback className="bg-primary text-white text-xs">
+                          {((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">
+                          {session?.user?.name || t("common.name")}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {session?.user?.email}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      {t("navigation.profile")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("navigation.logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                suppressHydrationWarning
+              >
+                <Avatar className="size-8">
+                  <AvatarFallback className="bg-primary text-white text-xs">
+                    U
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold" suppressHydrationWarning>
+                    {t("common.name")}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground" suppressHydrationWarning>
+                    {""}
+                  </span>
+                </div>
+                <ChevronsUpDown className="ml-auto size-4" />
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

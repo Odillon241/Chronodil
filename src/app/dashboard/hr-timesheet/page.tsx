@@ -12,14 +12,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, Search } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, X, Plus, Eye, Edit, FileText, CheckCircle, XCircle, Clock, GanttChartSquareIcon, KanbanSquareIcon, ListIcon, TableIcon, Trash2, Send, Copy, Share, Download, Heart, CalendarDays, User, Briefcase, MapPin, MoreVertical } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Filters } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import type { FilterGroup, FilterOption } from "@/components/ui/shadcn-io/navbar-15/Filters";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -34,6 +35,13 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -44,18 +52,18 @@ import {
   submitHRTimesheet,
   cancelHRTimesheetSubmission,
   getHRTimesheetsForApproval,
+  getHRTimesheetsValidatedByMe,
   updateHRTimesheetStatus,
   getHRTimesheet,
+  revertHRTimesheetStatus,
+  managerApproveHRTimesheet,
+  odillonApproveHRTimesheet,
 } from "@/actions/hr-timesheet.actions";
 import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { useRealtimeHRTimesheets } from "@/hooks/use-realtime-hr-timesheets";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
+import { StatusTabs, type StatusTabOption } from "@/components/ui/status-tabs";
 import { Navbar18, type Navbar18NavItem } from "@/components/ui/shadcn-io/navbar-18";
 import {
   CalendarBody,
@@ -156,15 +164,27 @@ export default function HRTimesheetPage() {
   const { data: session } = useSession() as any;
   const userRole = session?.user?.role;
   const isAdmin = userRole === "ADMIN";
+  // Vérifier si l'utilisateur peut voir l'onglet "À valider" (MANAGER, DIRECTEUR, ADMIN uniquement)
+  const canViewPendingTab = userRole === "MANAGER" || userRole === "DIRECTEUR" || userRole === "ADMIN";
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [myTimesheets, setMyTimesheets] = useState<HRTimesheet[]>([]);
   const [pendingTimesheets, setPendingTimesheets] = useState<HRTimesheet[]>([]);
+  const [validatedTimesheets, setValidatedTimesheets] = useState<HRTimesheet[]>([]);
+  const [rejectedTimesheets, setRejectedTimesheets] = useState<HRTimesheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentView, setCurrentView] = useState<string>("table");
-  const [dataView, setDataView] = useState<"my" | "pending">("my");
+  const [dataView, setDataView] = useState<"my" | "pending" | "validated" | "rejected">("my");
   const [selectedTimesheet, setSelectedTimesheet] = useState<HRTimesheet | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewTimesheet, setPreviewTimesheet] = useState<any>(null);
+  const [revertDialogOpen, setRevertDialogOpen] = useState(false);
+  const [revertTargetStatus, setRevertTargetStatus] = useState<"DRAFT" | "PENDING" | "MANAGER_APPROVED" | null>(null);
+  const [revertReason, setRevertReason] = useState("");
+  const [revertTimesheetId, setRevertTimesheetId] = useState<string | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectTimesheetId, setRejectTimesheetId] = useState<string | null>(null);
+  const [rejectComments, setRejectComments] = useState("");
+  const [rejectTimesheetStatus, setRejectTimesheetStatus] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     status: "all",
@@ -241,7 +261,15 @@ export default function HRTimesheetPage() {
         status: selectedStatus?.id || "all",
       });
     }
-    loadMyTimesheets();
+    
+    // Recharger selon la vue actuelle
+    if (dataView === "my") {
+      loadMyTimesheets();
+    } else if (dataView === "validated") {
+      loadValidatedTimesheets();
+    } else if (dataView === "rejected") {
+      loadRejectedTimesheets();
+    }
   };
 
   const resetFilters = () => {
@@ -264,7 +292,15 @@ export default function HRTimesheetPage() {
       startDate: undefined,
       endDate: undefined,
     });
-    loadMyTimesheets();
+    
+    // Recharger selon la vue actuelle
+    if (dataView === "my") {
+      loadMyTimesheets();
+    } else if (dataView === "validated") {
+      loadValidatedTimesheets();
+    } else if (dataView === "rejected") {
+      loadRejectedTimesheets();
+    }
   };
 
   const loadMyTimesheets = useCallback(async () => {
@@ -303,13 +339,108 @@ export default function HRTimesheetPage() {
     }
   }, []);
 
+  const loadValidatedTimesheets = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const result = await getHRTimesheetsValidatedByMe({
+        ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
+        ...(filters.startDate && { weekStartDate: filters.startDate }),
+        ...(filters.endDate && { weekEndDate: filters.endDate }),
+      });
+
+      if (result?.data) {
+        setValidatedTimesheets(result.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement:", error);
+      toast.error("Erreur lors du chargement des feuilles validées");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters]);
+
+  const loadRejectedTimesheets = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const result = await getMyHRTimesheets({
+        status: "REJECTED" as any,
+        ...(filters.startDate && { weekStartDate: filters.startDate }),
+        ...(filters.endDate && { weekEndDate: filters.endDate }),
+      });
+
+      if (result?.data) {
+        setRejectedTimesheets(result.data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement:", error);
+      toast.error("Erreur lors du chargement des feuilles rejetées");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters]);
+
+  // Rediriger vers "my" si l'utilisateur est sur "pending" mais n'a pas les droits
+  useEffect(() => {
+    if (dataView === "pending" && !canViewPendingTab) {
+      setDataView("my");
+    }
+  }, [dataView, canViewPendingTab]);
+
   useEffect(() => {
     if (dataView === "my") {
       loadMyTimesheets();
-    } else {
+    } else if (dataView === "pending" && canViewPendingTab) {
       loadPendingTimesheets();
+    } else if (dataView === "validated" && canViewPendingTab) {
+      loadValidatedTimesheets();
+    } else if (dataView === "rejected") {
+      loadRejectedTimesheets();
     }
-  }, [dataView, loadMyTimesheets, loadPendingTimesheets]);
+  }, [dataView, loadMyTimesheets, loadPendingTimesheets, loadValidatedTimesheets, loadRejectedTimesheets, canViewPendingTab]);
+
+  // Options pour les onglets de statut selon les droits de l'utilisateur
+  const statusTabOptions = useMemo<Navbar18NavItem[]>(() => {
+    const options: Navbar18NavItem[] = [
+      {
+        href: "#my",
+        label: "Mes timesheets",
+        active: dataView === "my",
+        badge: myTimesheets.length,
+        badgeVariant: "secondary",
+      },
+    ];
+
+    // Ajouter l'onglet "À valider" uniquement si l'utilisateur a les droits
+    if (canViewPendingTab) {
+      options.push({
+        href: "#pending",
+        label: "À valider",
+        active: dataView === "pending",
+        badge: pendingTimesheets.length,
+        badgeVariant: "secondary",
+      });
+      
+      // Ajouter l'onglet "Validées par moi" pour les validateurs
+      options.push({
+        href: "#validated",
+        label: "Validées par moi",
+        active: dataView === "validated",
+        badge: validatedTimesheets.length,
+        badgeVariant: "secondary",
+      });
+    }
+
+    // Ajouter l'onglet "Rejeté" pour tous les utilisateurs
+    options.push({
+      href: "#rejected",
+      label: "Rejeté",
+      active: dataView === "rejected",
+      badge: rejectedTimesheets.length,
+      badgeVariant: "secondary",
+    });
+
+    return options;
+  }, [canViewPendingTab, myTimesheets.length, pendingTimesheets.length, validatedTimesheets.length, rejectedTimesheets.length, dataView]);
 
   // Real-time updates pour HR Timesheets
   useRealtimeHRTimesheets({
@@ -317,8 +448,12 @@ export default function HRTimesheetPage() {
       // Rafraîchir les données selon la vue actuelle
       if (dataView === "my") {
         loadMyTimesheets();
-      } else {
+      } else if (dataView === "pending") {
         loadPendingTimesheets();
+      } else if (dataView === "validated") {
+        loadValidatedTimesheets();
+      } else if (dataView === "rejected") {
+        loadRejectedTimesheets();
       }
     },
     userId: session?.user?.id,
@@ -395,6 +530,114 @@ export default function HRTimesheetPage() {
     applyFiltersFromGroups();
   };
 
+  const handleRevertStatus = (timesheetId: string, currentStatus: string) => {
+    setRevertTimesheetId(timesheetId);
+    setRevertTargetStatus(null);
+    setRevertReason("");
+    setRevertDialogOpen(true);
+  };
+
+  const confirmRevertStatus = async () => {
+    if (!revertTimesheetId || !revertTargetStatus || !revertReason.trim()) {
+      toast.error("Veuillez remplir tous les champs");
+      return;
+    }
+
+    try {
+      const result = await revertHRTimesheetStatus({
+        timesheetId: revertTimesheetId,
+        targetStatus: revertTargetStatus,
+        reason: revertReason,
+      });
+
+      if (result?.data) {
+        toast.success("Statut rétrogradé avec succès", {
+          description: `Le timesheet a été rétrogradé vers "${STATUS_CONFIG[revertTargetStatus]?.name || revertTargetStatus}"`,
+        });
+        setRevertDialogOpen(false);
+        setRevertTimesheetId(null);
+        setRevertTargetStatus(null);
+        setRevertReason("");
+        if (dataView === "my") {
+          loadMyTimesheets();
+        } else if (dataView === "pending") {
+          loadPendingTimesheets();
+        } else if (dataView === "validated") {
+          loadValidatedTimesheets();
+        } else if (dataView === "rejected") {
+          loadRejectedTimesheets();
+        }
+      } else {
+        toast.error(result?.serverError || "Erreur lors de la rétrogradation");
+      }
+    } catch (error: any) {
+      toast.error(error.message || String(error) || "Erreur lors de la rétrogradation");
+    }
+  };
+
+  const handleReject = (timesheetId: string, status: string) => {
+    setRejectTimesheetId(timesheetId);
+    setRejectTimesheetStatus(status);
+    setRejectComments("");
+    setRejectDialogOpen(true);
+  };
+
+  const confirmReject = async () => {
+    if (!rejectTimesheetId || !rejectComments.trim()) {
+      toast.error("Veuillez fournir un commentaire pour le rejet");
+      return;
+    }
+
+    try {
+      let result;
+
+      // Déterminer quelle action utiliser selon le statut
+      if (rejectTimesheetStatus === "PENDING") {
+        // Rejet manager
+        result = await managerApproveHRTimesheet({
+          timesheetId: rejectTimesheetId,
+          action: "reject",
+          comments: rejectComments,
+        });
+      } else if (rejectTimesheetStatus === "MANAGER_APPROVED") {
+        // Rejet Odillon/Admin
+        result = await odillonApproveHRTimesheet({
+          timesheetId: rejectTimesheetId,
+          action: "reject",
+          comments: rejectComments,
+        });
+      } else {
+        toast.error("Ce timesheet ne peut pas être rejeté dans son état actuel");
+        return;
+      }
+
+      if (result?.data) {
+        toast.success("Timesheet rejeté", {
+          description: "La feuille de temps a été rejetée avec succès",
+        });
+        setRejectDialogOpen(false);
+        setRejectTimesheetId(null);
+        setRejectTimesheetStatus(null);
+        setRejectComments("");
+        if (dataView === "my") {
+          loadMyTimesheets();
+        } else if (dataView === "pending") {
+          loadPendingTimesheets();
+        } else if (dataView === "validated") {
+          loadValidatedTimesheets();
+        } else if (dataView === "rejected") {
+          loadRejectedTimesheets();
+        }
+        // Toujours recharger la vue "rejected" après un rejet
+        loadRejectedTimesheets();
+      } else {
+        toast.error(result?.serverError || "Erreur lors du rejet");
+      }
+    } catch (error: any) {
+      toast.error(error.message || String(error) || "Erreur lors du rejet");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.DRAFT;
     const Icon = config.icon;
@@ -416,7 +659,13 @@ export default function HRTimesheetPage() {
   };
 
   // Conversion des timesheets en features pour les vues roadmap
-  const baseTimesheets = dataView === "my" ? myTimesheets : pendingTimesheets;
+  const baseTimesheets = dataView === "my" 
+    ? myTimesheets 
+    : dataView === "pending" 
+    ? pendingTimesheets 
+    : dataView === "validated"
+    ? validatedTimesheets
+    : rejectedTimesheets;
   
   // Filtrage par recherche
   const currentTimesheets = useMemo(() => {
@@ -582,7 +831,7 @@ export default function HRTimesheetPage() {
     [allFeatures]
   );
 
-  const TimesheetCard = ({ timesheet, isPending = false }: { timesheet: HRTimesheet, isPending?: boolean }) => (
+  const TimesheetCard = ({ timesheet, isPending = false, isValidated = false }: { timesheet: HRTimesheet, isPending?: boolean, isValidated?: boolean }) => (
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <Card className="hover:shadow-md transition-shadow cursor-context-menu">
@@ -594,7 +843,7 @@ export default function HRTimesheetPage() {
               {" "}-{" "}
               {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
             </CardTitle>
-            {isPending && timesheet.User && (
+            {(isPending || isValidated) && timesheet.User && (
               <CardDescription className="mt-1">
                 {timesheet.User.name} - {timesheet.User.email}
               </CardDescription>
@@ -707,6 +956,18 @@ export default function HRTimesheetPage() {
               Valider
             </Button>
           )}
+
+          {isAdmin && (timesheet.status === "MANAGER_APPROVED" || timesheet.status === "APPROVED") && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-orange-600 border-orange-600 hover:bg-orange-50"
+              onClick={() => handleRevertStatus(timesheet.id, timesheet.status)}
+            >
+              <Clock className="h-4 w-4 mr-1" />
+              Rétrograder
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -733,6 +994,18 @@ export default function HRTimesheetPage() {
             <Trash2 className="h-4 w-4" />
             Supprimer
           </ContextMenuItem>
+        )}
+        {isAdmin && (timesheet.status === "MANAGER_APPROVED" || timesheet.status === "APPROVED") && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onClick={() => handleRevertStatus(timesheet.id, timesheet.status)}
+              className="flex items-center gap-2 text-orange-600"
+            >
+              <Clock className="h-4 w-4" />
+              Rétrograder le statut
+            </ContextMenuItem>
+          </>
         )}
       </ContextMenuContent>
     </ContextMenu>
@@ -1052,6 +1325,21 @@ export default function HRTimesheetPage() {
                             <ContextMenuItem onClick={() => handleSubmit(feature.id)} className="flex items-center gap-2">
                               <Send className="h-4 w-4" />
                               Soumettre
+                            </ContextMenuItem>
+                          </>
+                        )}
+                        {canViewPendingTab && (timesheet?.status === "PENDING" || timesheet?.status === "MANAGER_APPROVED") && (
+                          <>
+                            <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${feature.id}/validate`)} className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4" />
+                              Valider
+                            </ContextMenuItem>
+                            <ContextMenuItem 
+                              onClick={() => handleReject(feature.id, timesheet?.status || "")}
+                              className="flex items-center gap-2 text-destructive"
+                            >
+                              <XCircle className="h-4 w-4" />
+                              Rejeter
                             </ContextMenuItem>
                           </>
                         )}
@@ -1475,6 +1763,7 @@ export default function HRTimesheetPage() {
     const handleExport = async (id: string) => {
       try {
         const result = await exportHRTimesheetToExcel({ timesheetId: id });
+
         if (result && 'data' in result && result.data && 'fileData' in result.data) {
           // Type assertion pour les données
           const data = result.data as unknown as {
@@ -1500,7 +1789,7 @@ export default function HRTimesheetPage() {
           link.click();
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
-          
+
           toast.success("Timesheet exporté avec succès");
         } else {
           toast.error(result?.serverError || "Erreur lors de l'export");
@@ -1635,6 +1924,108 @@ export default function HRTimesheetPage() {
           </div>
         ),
       },
+      {
+        id: 'actions',
+        header: () => (
+          <div className="flex items-center justify-center">
+            <span className="text-sm font-medium">Actions</span>
+          </div>
+        ),
+        cell: ({ row }) => {
+          const timesheetId = (row.original as { id: string }).id;
+          const timesheet = currentTimesheets.find(t => t.id === timesheetId);
+          const isDraft = timesheet?.status === 'DRAFT';
+          
+          return (
+            <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="sr-only">Ouvrir le menu</span>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleRowClick(timesheetId)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Voir détails
+                  </DropdownMenuItem>
+                  {isDraft && dataView === "my" && (
+                    <>
+                      <DropdownMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSubmit(timesheetId)}>
+                        <Send className="mr-2 h-4 w-4" />
+                        Soumettre
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {dataView === "pending" && (timesheet?.status === "PENDING" || timesheet?.status === "MANAGER_APPROVED") && (
+                    <>
+                      <DropdownMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/validate`)}>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Valider
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleReject(timesheetId, timesheet?.status || "")}
+                        className="text-destructive"
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Rejeter
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleExport(timesheetId)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCopyId(timesheetId)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copier l'ID
+                  </DropdownMenuItem>
+                  {isAdmin && (timesheet?.status === "MANAGER_APPROVED" || timesheet?.status === "APPROVED") && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleRevertStatus(timesheetId, timesheet?.status || "")}
+                        className="text-orange-600"
+                      >
+                        <Clock className="mr-2 h-4 w-4" />
+                        Rétrograder le statut
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-destructive"
+                    onClick={() => {
+                      if ((isDraft && dataView === "my") || isAdmin) {
+                        handleDelete(timesheetId);
+                      } else {
+                        toast.error("Seuls les brouillons peuvent être supprimés");
+                      }
+                    }}
+                    disabled={!isDraft && !isAdmin && dataView !== "my"}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+      },
     ];
 
     return (
@@ -1642,11 +2033,14 @@ export default function HRTimesheetPage() {
         {/* Tableau */}
         <div className="flex-1 overflow-auto border rounded-lg">
           {isLoading ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              Chargement...
+            <div className="flex h-full items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <Spinner className="size-6" />
+                <p className="text-muted-foreground">Chargement...</p>
+              </div>
             </div>
           ) : timesheetsAsFeatures.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg bg-muted/30">
+            <div className="text-center py-12 bg-muted/30">
               <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground">Aucun timesheet trouvé</p>
               {dataView === "my" && (
@@ -1709,10 +2103,19 @@ export default function HRTimesheetPage() {
                           </>
                         )}
                         {dataView === "pending" && (timesheet?.status === "PENDING" || timesheet?.status === "MANAGER_APPROVED") && (
-                          <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/validate`)}>
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Valider
-                          </ContextMenuItem>
+                          <>
+                            <ContextMenuItem onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/validate`)}>
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Valider
+                            </ContextMenuItem>
+                            <ContextMenuItem 
+                              onClick={() => handleReject(timesheetId, timesheet?.status || "")}
+                              className="text-destructive"
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Rejeter
+                            </ContextMenuItem>
+                          </>
                         )}
                         <ContextMenuSeparator />
                         <ContextMenuItem onClick={() => handleExport(timesheetId)}>
@@ -1723,6 +2126,18 @@ export default function HRTimesheetPage() {
                           <Copy className="mr-2 h-4 w-4" />
                           Copier l'ID
                         </ContextMenuItem>
+                        {isAdmin && (timesheet?.status === "MANAGER_APPROVED" || timesheet?.status === "APPROVED") && (
+                          <>
+                            <ContextMenuSeparator />
+                            <ContextMenuItem
+                              onClick={() => handleRevertStatus(timesheetId, timesheet?.status || "")}
+                              className="text-orange-600"
+                            >
+                              <Clock className="mr-2 h-4 w-4" />
+                              Rétrograder le statut
+                            </ContextMenuItem>
+                          </>
+                        )}
                         <ContextMenuSeparator />
                         <ContextMenuItem 
                           className="text-destructive"
@@ -1758,6 +2173,18 @@ export default function HRTimesheetPage() {
     { id: 'kanban', label: 'Kanban', icon: KanbanSquareIcon },
   ];
 
+  // Options pour les onglets de vue avec compteurs
+  const viewTabOptions = useMemo<StatusTabOption[]>(() => {
+    const count = currentTimesheets.length;
+    return [
+      { id: 'table', label: 'Tableau', value: 'table', count },
+      { id: 'gantt', label: 'Gantt', value: 'gantt', count },
+      { id: 'calendar', label: 'Calendrier', value: 'calendar', count },
+      { id: 'list', label: 'Liste', value: 'list', count },
+      { id: 'kanban', label: 'Kanban', value: 'kanban', count },
+    ];
+  }, [currentTimesheets.length]);
+
   const renderCurrentView = () => {
     const commonEmptyState = (
       <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -1766,8 +2193,11 @@ export default function HRTimesheetPage() {
     );
 
     const commonLoadingState = (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
-        Chargement...
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
       </div>
     );
 
@@ -1811,65 +2241,57 @@ export default function HRTimesheetPage() {
         <Separator />
 
         {/* Sélecteur de données */}
-        <Navbar18
-          navigationLinks={[
-            {
-              href: "#my",
-              label: "Mes timesheets",
-              active: dataView === "my",
-            },
-            {
-              href: "#pending",
-              label: "À valider",
-              active: dataView === "pending",
-              badge: pendingTimesheets.length > 0 ? pendingTimesheets.length : undefined,
-              badgeVariant: "destructive",
-            },
-          ] as Navbar18NavItem[]}
-          onNavItemClick={(href) => {
-            if (href === "#my") {
-              setDataView("my");
-            } else if (href === "#pending") {
-              setDataView("pending");
-            }
-          }}
-          statusIndicators={[]}
-          className="border-0 px-0 h-auto"
-        />
+        <div className="border-b">
+          <Navbar18
+            navigationLinks={statusTabOptions}
+            onNavItemClick={(href) => {
+              const value = href.replace("#", "");
+              if (value === "my" || value === "pending" || value === "validated" || value === "rejected") {
+                setDataView(value);
+              }
+            }}
+            className="border-0 px-0"
+          />
+        </div>
 
 
-        {/* Menubar pour sélection de vues */}
+        {/* Sélection de vues */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <Menubar className="w-auto border-0">
-            {views.map((view) => (
-              <MenubarMenu key={view.id}>
-                <MenubarTrigger
-                  className={cn(
-                    "flex items-center gap-2 cursor-pointer",
-                    currentView === view.id && "bg-accent"
-                  )}
-                  onClick={() => setCurrentView(view.id)}
-                >
-                  <view.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{view.label}</span>
-                </MenubarTrigger>
-              </MenubarMenu>
-            ))}
-          </Menubar>
+          <StatusTabs
+            options={viewTabOptions}
+            selectedValue={currentView}
+            onValueChange={(value) => {
+              if (value === 'table' || value === 'gantt' || value === 'calendar' || value === 'list' || value === 'kanban') {
+                setCurrentView(value);
+              }
+            }}
+          />
           
           {/* Barre de recherche et filtres */}
           <div className="flex items-center gap-2">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9"
+                className={cn(
+                  "h-9",
+                  searchQuery ? "pr-10" : ""
+                )}
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-            {dataView === "my" && (
+            {(dataView === "my" || dataView === "validated" || dataView === "rejected") && (
               <Filters
                 filterGroups={filterGroups}
                 onFilterChange={handleFilterOptionChange}
@@ -1878,7 +2300,13 @@ export default function HRTimesheetPage() {
                 endDate={filters.endDate}
                 onDateChange={(start, end) => {
                   setFilters({ ...filters, startDate: start, endDate: end });
-                  loadMyTimesheets();
+                  if (dataView === "my") {
+                    loadMyTimesheets();
+                  } else if (dataView === "validated") {
+                    loadValidatedTimesheets();
+                  } else if (dataView === "rejected") {
+                    loadRejectedTimesheets();
+                  }
                 }}
               />
             )}
@@ -1907,7 +2335,10 @@ export default function HRTimesheetPage() {
 
           {isLoadingPreview ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Chargement...</p>
+              <div className="flex flex-col items-center gap-4">
+                <Spinner className="size-5" />
+                <p className="text-muted-foreground">Chargement...</p>
+              </div>
             </div>
           ) : previewTimesheet ? (
             <div className="space-y-4">
@@ -2103,6 +2534,95 @@ export default function HRTimesheetPage() {
           ) : null}
         </DialogContent>
       </Dialog>
+
+      {/* Dialogue de rétrogradation de statut */}
+      <Dialog open={revertDialogOpen} onOpenChange={setRevertDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Rétrograder le statut de la feuille de temps</DialogTitle>
+            <DialogDescription>
+              Sélectionnez le statut vers lequel vous souhaitez rétrograder cette feuille de temps et indiquez la raison.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="target-status">Nouveau statut</Label>
+              <Select
+                value={revertTargetStatus || ""}
+                onValueChange={(value) => setRevertTargetStatus(value as "DRAFT" | "PENDING" | "MANAGER_APPROVED")}
+              >
+                <SelectTrigger id="target-status">
+                  <SelectValue placeholder="Sélectionner un statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DRAFT">Brouillon</SelectItem>
+                  <SelectItem value="PENDING">En attente</SelectItem>
+                  <SelectItem value="MANAGER_APPROVED">Validé Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="revert-reason">Raison de la rétrogradation *</Label>
+              <Textarea
+                id="revert-reason"
+                placeholder="Expliquez pourquoi vous rétrogradez ce statut..."
+                value={revertReason}
+                onChange={(e) => setRevertReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setRevertDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={confirmRevertStatus}
+              disabled={!revertTargetStatus || !revertReason.trim()}
+            >
+              Confirmer la rétrogradation
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialogue de rejet */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Rejeter la feuille de temps</DialogTitle>
+            <DialogDescription>
+              Veuillez indiquer la raison du rejet. Cette information sera communiquée à l'employé.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reject-comments">Commentaire de rejet *</Label>
+              <Textarea
+                id="reject-comments"
+                placeholder="Expliquez pourquoi vous rejetez cette feuille de temps..."
+                value={rejectComments}
+                onChange={(e) => setRejectComments(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={confirmReject}
+              disabled={!rejectComments.trim()}
+              variant="destructive"
+            >
+              Confirmer le rejet
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmationDialog />
     </div>
   );
 }

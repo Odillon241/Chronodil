@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { toast } from "sonner";
 
@@ -190,7 +191,12 @@ export default function RegisterPage() {
               className="w-full bg-primary hover:bg-primary"
               disabled={isLoading}
             >
-              {isLoading ? "Inscription..." : "S'inscrire"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Inscription...
+                </span>
+              ) : "S'inscrire"}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Vous avez déjà un compte ?{" "}
@@ -205,13 +211,7 @@ export default function RegisterPage() {
       {/* Pied de page avec copyright */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
         <span>&copy; 2025 by </span>
-        <Image
-          src="/assets/media/logo d'odillon corrigé.png"
-          alt="ODILLON Logo"
-          width={250}
-          height={80}
-          className="h-12 w-auto"
-        />
+        <span className="font-semibold">ODILLON</span>
       </footer>
     </div>
   );

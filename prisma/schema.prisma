@@ -79,19 +79,30 @@ model Conversation {
   id                 String               @id
   type               ConversationType
   name               String?
+  description        String?              // Description du canal
   projectId          String?
   createdBy          String?
+  isPrivate          Boolean              @default(false) // Canal privé (sur invitation)
+  isShared           Boolean              @default(false) // Canal partagé (multi-organisations)
+  category           String?              // Catégorie pour organisation
+  topic              String?              // Sujet actuel du canal
+  purpose            String?              // Objectif du canal
   createdAt          DateTime             @default(now())
   updatedAt          DateTime
   User               User?                @relation(fields: [createdBy], references: [id])
   Project            Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   ConversationMember ConversationMember[]
   Message            Message[]
+  ChannelPermission  ChannelPermission[]  // Permissions spécifiques au canal
+  ScheduledMessage   ScheduledMessage[]    @relation("ScheduledMessageConversation")
+  ChatAuditLog       ChatAuditLog[]       @relation("ChatAuditLogConversation")
 
   @@index([createdAt])
   @@index([createdBy])
   @@index([projectId])
   @@index([type])
+  @@index([isPrivate])
+  @@index([category])
 }
 
 model ConversationMember {
@@ -102,12 +113,15 @@ model ConversationMember {
   lastReadAt     DateTime?
   isAdmin        Boolean      @default(false)
   isMuted        Boolean      @default(false)
+  isArchived     Boolean      @default(false)
+  archivedAt     DateTime?
   Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@index([conversationId])
   @@index([userId])
+  @@index([userId, isArchived])
 }
 
 model Department {
@@ -205,26 +219,132 @@ model Holiday {
 }
 
 model Message {
-  id             String       @id
+  id             String        @id
   conversationId String
   senderId       String
   content        String
   attachments    Json?
-  isEdited       Boolean      @default(false)
-  isDeleted      Boolean      @default(false)
-  createdAt      DateTime     @default(now())
+  isEdited       Boolean       @default(false)
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
   updatedAt      DateTime
   replyToId      String?
+  threadId       String?       // ID du thread parent (null si message principal)
+  threadCount    Int           @default(0) // Nombre de réponses dans le thread
+  isThreadRoot   Boolean       @default(false) // Si c'est la racine d'un thread
   reactions      Json?
-  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  Message        Message?     @relation("MessageToMessage", fields: [replyToId], references: [id])
-  other_Message  Message[]    @relation("MessageToMessage")
-  User           User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  pinnedAt       DateTime?
+  pinnedById     String?
+  Conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  Message        Message?      @relation("MessageToMessage", fields: [replyToId], references: [id])
+  other_Message  Message[]     @relation("MessageToMessage")
+  ThreadParent   Message?      @relation("ThreadMessages", fields: [threadId], references: [id])
+  ThreadReplies  Message[]     @relation("ThreadMessages")
+  User           User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  MessageRead    MessageRead[]
+  MessageReminder MessageReminder[] @relation("MessageReminderMessage")
 
   @@index([conversationId])
   @@index([createdAt])
   @@index([replyToId])
   @@index([senderId])
+  @@index([pinnedAt])
+  @@index([conversationId, pinnedAt])
+  @@index([threadId])
+  @@index([conversationId, threadId])
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  Message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model ChannelPermission {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String?       // null = permission pour tous
+  role           String?      // OWNER, ADMIN, MEMBER, GUEST
+  canPost        Boolean      @default(true)
+  canEdit        Boolean      @default(false)
+  canDelete      Boolean      @default(false)
+  canAddMembers  Boolean      @default(false)
+  canRemoveMembers Boolean    @default(false)
+  canPinMessages Boolean      @default(false)
+  canMentionAll  Boolean      @default(false) // @channel, @here
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User           User?        @relation("ChannelPermissionUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model ChatAuditLog {
+  id             String       @id @default(cuid())
+  userId         String?
+  action         String       // CREATE_CHANNEL, DELETE_MESSAGE, ADD_MEMBER, etc.
+  entityType     String       // CONVERSATION, MESSAGE, MEMBER, etc.
+  entityId       String
+  conversationId String?
+  changes        Json?        // Changements effectués
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime     @default(now())
+  User           User?        @relation("ChatAuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+  Conversation   Conversation? @relation("ChatAuditLogConversation", fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model ScheduledMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  attachments    Json?
+  scheduledFor   DateTime     // Date/heure d'envoi
+  sentAt         DateTime?    // null si pas encore envoyé
+  isRecurring    Boolean      @default(false)
+  recurrenceRule String?      // Cron expression ou règle de récurrence
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime
+  Conversation   Conversation @relation("ScheduledMessageConversation", fields: [conversationId], references: [id], onDelete: Cascade)
+  User           User         @relation("ScheduledMessageUser", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([scheduledFor])
+  @@index([sentAt])
+}
+
+model MessageReminder {
+  id             String       @id @default(cuid())
+  messageId      String
+  userId         String
+  remindAt       DateTime     // Date/heure du rappel
+  remindedAt     DateTime?    // null si pas encore rappelé
+  createdAt      DateTime     @default(now())
+  Message        Message      @relation("MessageReminderMessage", fields: [messageId], references: [id], onDelete: Cascade)
+  User           User         @relation("MessageReminderUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, remindAt])
+  @@index([messageId])
+  @@index([userId])
+  @@index([remindAt])
+  @@index([remindedAt])
 }
 
 model Notification {
@@ -241,6 +361,20 @@ model Notification {
   @@index([createdAt])
   @@index([isRead])
   @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([endpoint])
 }
 
 model Project {
@@ -494,6 +628,7 @@ model User {
   avatar                                          String?
   departmentId                                    String?
   managerId                                       String?
+  position                                        String?
   createdAt                                       DateTime             @default(now())
   updatedAt                                       DateTime
   emailVerified                                   Boolean              @default(false)
@@ -518,6 +653,11 @@ model User {
   screenReaderMode                                Boolean              @default(false)
   reduceMotion                                    Boolean              @default(false)
   weeklyGoal                                      Float                @default(40)
+  lastSeenAt                                      DateTime?
+  quietHoursEnabled                               Boolean              @default(false)
+  quietHoursStart                                 String               @default("22:00")
+  quietHoursEnd                                   String               @default("07:00")
+  quietHoursDays                                  String[]             @default([])
   Account                                         Account[]
   AuditLog                                        AuditLog[]
   Conversation                                    Conversation[]
@@ -527,6 +667,7 @@ model User {
   HRTimesheet_HRTimesheet_userIdToUser            HRTimesheet[]        @relation("HRTimesheet_userIdToUser")
   Message                                         Message[]
   Notification                                    Notification[]
+  PushSubscription                                PushSubscription[]
   Project                                         Project[]
   ProjectMember                                   ProjectMember[]
   Report                                          Report[]
@@ -538,6 +679,11 @@ model User {
   TaskActivity                                    TaskActivity[]
   TaskComment                                     TaskComment[]
   TaskMember                                      TaskMember[]
+  MessageRead                                     MessageRead[]
+  ChannelPermission                               ChannelPermission[]  @relation("ChannelPermissionUser")
+  ScheduledMessage                                ScheduledMessage[]   @relation("ScheduledMessageUser")
+  MessageReminder                                 MessageReminder[]    @relation("MessageReminderUser")
+  ChatAuditLog                                    ChatAuditLog[]       @relation("ChatAuditLogUser")
   Department                                      Department?          @relation(fields: [departmentId], references: [id])
   User                                            User?                @relation("UserToUser", fields: [managerId], references: [id])
   other_User                                      User[]               @relation("UserToUser")
@@ -545,6 +691,7 @@ model User {
   @@index([departmentId])
   @@index([email])
   @@index([managerId])
+  @@index([lastSeenAt])
 }
 
 model Verification {
@@ -562,6 +709,7 @@ enum ConversationType {
   DIRECT
   GROUP
   PROJECT
+  CHANNEL  // Canal public/privé organisé
 }
 
 enum HRActivityStatus {

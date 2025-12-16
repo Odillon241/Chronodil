@@ -7,6 +7,19 @@ export interface TaskOwner {
   image?: string;
 }
 
+export interface TaskMemberWithUser {
+  id: string;
+  taskId: string;
+  userId: string;
+  role: string;
+  User: {
+    id: string;
+    name: string;
+    email?: string;
+    avatar?: string;
+  };
+}
+
 export interface Task {
   id: string;
   name: string;
@@ -39,6 +52,7 @@ export interface Task {
     email?: string;
     avatar?: string;
   };
+  TaskMember?: TaskMemberWithUser[];
 }
 
 export const STATUS_COLORS = {

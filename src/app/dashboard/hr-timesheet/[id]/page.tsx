@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -146,21 +147,21 @@ export default function HRTimesheetDetailPage() {
 
       const result = await exportHRTimesheetToExcel({ timesheetId });
 
-      if (result?.data?.data) {
+      if (result?.data) {
         // Convertir base64 en blob
-        const byteCharacters = atob(result.data.data.fileData);
+        const byteCharacters = atob(result.data.fileData);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
           byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: result.data.data.mimeType });
+        const blob = new Blob([byteArray], { type: result.data.mimeType });
 
         // Créer un lien de téléchargement
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = result.data.data.fileName;
+        link.download = result.data.fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -196,7 +197,10 @@ export default function HRTimesheetDetailPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Chargement...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
       </div>
     );
   }

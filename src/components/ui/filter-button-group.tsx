@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Filter, Calendar } from "lucide-react"
+import { Filter, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Input } from "@/components/ui/input"
@@ -37,6 +37,12 @@ interface FilterButtonGroupProps {
   onDateChange?: (startDate: string, endDate: string) => void
   placeholder?: string
   className?: string
+  // Support pour un deuxième filtre (optionnel)
+  secondFilterOptions?: FilterOption[]
+  selectedSecondFilter?: string
+  onSecondFilterChange?: (value: string) => void
+  firstFilterLabel?: string
+  secondFilterLabel?: string
 }
 
 export function FilterButtonGroup({
@@ -50,20 +56,36 @@ export function FilterButtonGroup({
   onDateChange,
   placeholder = "Rechercher...",
   className,
+  secondFilterOptions,
+  selectedSecondFilter,
+  onSecondFilterChange,
+  firstFilterLabel = "Filtrer par",
+  secondFilterLabel = "Action",
 }: FilterButtonGroupProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+
+  const handleClear = () => {
+    onSearchChange("")
+    onFilterChange("")
+    if (onSecondFilterChange && selectedSecondFilter) {
+      onSecondFilterChange("all")
+    }
+    if (onDateChange) {
+      onDateChange("", "")
+    }
+    setIsFilterOpen(false)
+  }
 
   return (
     <div className={cn("flex flex-col sm:flex-row gap-2", className)}>
       <ButtonGroup className="w-auto border border-input rounded-md">
         {/* Champ de recherche */}
         <div className="relative w-auto max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={placeholder}
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 w-full border-0"
+            className="pr-4 w-full border-0"
           />
         </div>
 
@@ -77,7 +99,7 @@ export function FilterButtonGroup({
           <PopoverContent className="w-80" align="end">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="filter-select">Filtrer par</Label>
+                <Label htmlFor="filter-select">{firstFilterLabel}</Label>
                 <Select value={selectedFilter} onValueChange={onFilterChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner un filtre" />
@@ -91,6 +113,25 @@ export function FilterButtonGroup({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Deuxième filtre si fourni */}
+              {secondFilterOptions && onSecondFilterChange && (
+                <div className="space-y-2">
+                  <Label htmlFor="second-filter-select">Action</Label>
+                  <Select value={selectedSecondFilter || "all"} onValueChange={onSecondFilterChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes les actions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {secondFilterOptions.map((option) => (
+                        <SelectItem key={option.id} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Filtres de date si fournis */}
               {onDateChange && (
@@ -135,14 +176,7 @@ export function FilterButtonGroup({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    onSearchChange("")
-                    onFilterChange("")
-                    if (onDateChange) {
-                      onDateChange("", "")
-                    }
-                    setIsFilterOpen(false)
-                  }}
+                  onClick={handleClear}
                 >
                   Effacer
                 </Button>

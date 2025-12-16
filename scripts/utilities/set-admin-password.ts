@@ -1,18 +1,17 @@
 // Script pour définir le mot de passe de l'admin
 import { PrismaClient } from "@prisma/client";
-import { createHash } from "crypto";
+import { hash } from "@node-rs/bcrypt";
+import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = "admin@chronodil.com";
+const ADMIN_EMAIL = "finaladmin@chronodil.com";
 const ADMIN_PASSWORD = "Admin2025!";
 
-// Fonction de hashage simple compatible avec Better Auth
-// Better Auth utilise bcrypt par défaut, mais nous allons créer un hash temporaire
-function hashPassword(password: string): string {
-  // Hash SHA-256 pour un hash basique
-  // Note: Better Auth devrait ré-hasher ceci avec bcrypt lors de la première connexion
-  return createHash("sha256").update(password).digest("hex");
+// Fonction de hashage bcrypt compatible avec Better Auth
+// IMPORTANT: Doit utiliser bcrypt comme configuré dans auth.ts
+async function hashPassword(password: string): Promise<string> {
+  return await hash(password, 10);
 }
 
 async function setAdminPassword() {
@@ -36,7 +35,7 @@ async function setAdminPassword() {
       },
     });
 
-    const hashedPassword = hashPassword(ADMIN_PASSWORD);
+    const hashedPassword = await hashPassword(ADMIN_PASSWORD);
 
     if (existingAccount) {
       // Mettre à jour le compte existant
@@ -52,7 +51,7 @@ async function setAdminPassword() {
       // Créer un nouveau compte
       await prisma.account.create({
         data: {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           userId: admin.id,
           accountId: ADMIN_EMAIL,
           providerId: "credential",

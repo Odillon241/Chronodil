@@ -461,32 +461,79 @@ export function TaskGantt({
                                 <p className="flex-1 truncate text-xs">
                                   {feature.name}
                                 </p>
-                                {(() => {
-                                  const creator = (task as any).Creator || (task as any).User_Task_createdByToUser;
-                                  if (!creator) return null;
-                                  
-                                  const initials = creator.name
-                                    ?.split(" ")
-                                    .map((n: string) => n[0])
-                                    .join("")
-                                    .slice(0, 2)
-                                    .toUpperCase() || "?";
-                                  
-                                  const color = getAvatarColor(creator.id, creator.name);
-                                  
-                                  return (
-                                    <Avatar className="h-6 w-6 flex-shrink-0">
-                                      <AvatarImage src={creator.avatar || undefined} alt={creator.name} />
-                                      <AvatarFallback className={cn(
-                                        "text-[10px] font-medium leading-none flex items-center justify-center",
-                                        color.bg,
-                                        color.text
-                                      )}>
-                                        {initials}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  );
-                                })()}
+                                {/* Afficher le créateur et les membres assignés */}
+                                <div className="flex -space-x-2 flex-shrink-0">
+                                  {(() => {
+                                    const creator = (task as any).Creator || (task as any).User_Task_createdByToUser;
+                                    const members = (task as any).TaskMember || [];
+
+                                    const avatarsToDisplay: Array<{ id: string; name: string; avatar?: string; isCreator: boolean }> = [];
+
+                                    // Ajouter le créateur
+                                    if (creator) {
+                                      avatarsToDisplay.push({
+                                        id: creator.id,
+                                        name: creator.name,
+                                        avatar: creator.avatar,
+                                        isCreator: true,
+                                      });
+                                    }
+
+                                    // Ajouter les membres assignés (sans dupliquer le créateur)
+                                    members.forEach((member: any) => {
+                                      if (member.User.id !== creator?.id) {
+                                        avatarsToDisplay.push({
+                                          id: member.User.id,
+                                          name: member.User.name,
+                                          avatar: member.User.avatar,
+                                          isCreator: false,
+                                        });
+                                      }
+                                    });
+
+                                    // Afficher max 3 avatars + indicateur "+N"
+                                    const maxVisible = 3;
+                                    const visibleAvatars = avatarsToDisplay.slice(0, maxVisible);
+                                    const remaining = avatarsToDisplay.length - maxVisible;
+
+                                    return (
+                                      <>
+                                        {visibleAvatars.map((person) => {
+                                          const initials = person.name
+                                            ?.split(" ")
+                                            .map((n: string) => n[0])
+                                            .join("")
+                                            .slice(0, 2)
+                                            .toUpperCase() || "?";
+
+                                          const color = getAvatarColor(person.id, person.name);
+
+                                          return (
+                                            <Avatar
+                                              key={person.id}
+                                              className="h-6 w-6 border-2 border-background"
+                                              title={`${person.name}${person.isCreator ? " (Créateur)" : ""}`}
+                                            >
+                                              <AvatarImage src={person.avatar || undefined} alt={person.name} />
+                                              <AvatarFallback className={cn(
+                                                "text-[10px] font-medium leading-none flex items-center justify-center",
+                                                color.bg,
+                                                color.text
+                                              )}>
+                                                {initials}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                          );
+                                        })}
+                                        {remaining > 0 && (
+                                          <div className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center">
+                                            <span className="text-[10px] font-medium">+{remaining}</span>
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
                               </GanttFeatureItem>
                             </button>
                           </div>

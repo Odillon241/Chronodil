@@ -12,9 +12,11 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Bell, Clock, Calendar } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Bell, Clock, Calendar, Mail, Monitor, MessageSquare, ExternalLink, Info } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { getReminderPreferences, updateReminderPreferences } from "@/actions/reminder-preferences.actions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
 
 const reminderPreferencesSchema = z.object({
   enableTimesheetReminders: z.boolean(),
@@ -107,8 +109,8 @@ export default function ReminderPreferencesPage() {
   if (isLoadingData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <SpinnerCustom />
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="size-6" />
           <p className="text-muted-foreground">Chargement des préférences...</p>
         </div>
       </div>
@@ -124,6 +126,27 @@ export default function ReminderPreferencesPage() {
         </p>
       </div>
 
+      <Separator />
+
+      {/* Information sur l'intégration avec les notifications */}
+      <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
+        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <AlertTitle className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+          Intégration avec les notifications
+        </AlertTitle>
+        <AlertDescription className="text-xs text-blue-800 dark:text-blue-200 mt-1">
+          Les rappels de saisie de temps utilisent le système de notifications de l'application. 
+          Vous recevrez des notifications <strong>in-app</strong> et, selon vos préférences, par <strong>email</strong> ou <strong>desktop</strong>. 
+          <Link 
+            href="/dashboard/settings?tab=notifications" 
+            className="inline-flex items-center gap-1 ml-1 text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
+            Configurer les notifications
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </AlertDescription>
+      </Alert>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -131,7 +154,8 @@ export default function ReminderPreferencesPage() {
             Rappels de saisie de temps
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
-            Activez ou désactivez les rappels pour vous aider à saisir vos heures de travail
+            Activez ou désactivez les rappels pour vous aider à saisir vos heures de travail. 
+            Les rappels sont envoyés uniquement si vous n'avez pas encore saisi de temps pour la journée.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -217,7 +241,12 @@ export default function ReminderPreferencesPage() {
                 className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
                 disabled={isLoading}
               >
-                {isLoading ? "Sauvegarde..." : "Sauvegarder"}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner />
+                    Sauvegarde...
+                  </span>
+                ) : "Sauvegarder"}
               </Button>
             </div>
           </form>
@@ -229,19 +258,64 @@ export default function ReminderPreferencesPage() {
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">À propos des rappels</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-xs sm:text-sm text-muted-foreground">
-          <p>
-            • Les rappels vous aideront à ne pas oublier de saisir vos heures de travail quotidiennes
-          </p>
-          <p>
-            • Vous recevrez une notification à l'heure choisie pour les jours sélectionnés
-          </p>
-          <p>
-            • Vous pouvez modifier ces préférences à tout moment
-          </p>
-          <p>
-            • Les rappels ne sont envoyés que si vous n'avez pas encore saisi de temps pour la journée
-          </p>
+        <CardContent className="space-y-4">
+          <div className="space-y-3 text-xs sm:text-sm text-muted-foreground">
+            <p>
+              • Les rappels vous aideront à ne pas oublier de saisir vos heures de travail quotidiennes
+            </p>
+            <p>
+              • Vous recevrez une notification à l'heure choisie pour les jours sélectionnés
+            </p>
+            <p>
+              • Vous pouvez modifier ces préférences à tout moment
+            </p>
+            <p>
+              • Les rappels ne sont envoyés que si vous n'avez pas encore saisi de temps pour la journée
+            </p>
+          </div>
+
+          <Separator />
+
+          {/* Types de notifications */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Types de notifications pour les rappels</h4>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
+                <MessageSquare className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">Notification in-app</p>
+                  <p className="text-xs text-muted-foreground">
+                    Toujours activée. Apparaît dans le menu notifications.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
+                <Mail className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">Email</p>
+                  <p className="text-xs text-muted-foreground">
+                    Configurable dans les préférences de notifications.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
+                <Monitor className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">Notification desktop</p>
+                  <p className="text-xs text-muted-foreground">
+                    Configurable dans les préférences de notifications.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Link 
+              href="/dashboard/settings?tab=notifications" 
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+            >
+              Configurer les préférences de notifications
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

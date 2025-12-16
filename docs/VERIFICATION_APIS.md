@@ -117,8 +117,9 @@ await markAllAsRead({});
 
 **Fonctions** :
 1. `sendEmailNotification` - Email général
-2. `sendTimesheetSubmittedNotification` - Manager notification
-3. `sendTimesheetValidatedNotification` - Employee notification
+2. `sendTimesheetReminders` - Rappels automatiques de saisie de temps (cron)
+3. `sendTimesheetSubmittedNotification` - Manager notification
+4. `sendTimesheetValidatedNotification` - Employee notification
 
 **Test** :
 1. Configurer `RESEND_API_KEY` dans `.env`
@@ -132,11 +133,13 @@ await markAllAsRead({});
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@chronodil.app
 NEXT_PUBLIC_APP_URL=http://localhost:3002
+INNGEST_EVENT_KEY=evt_xxxxxxxxxxxxx
+INNGEST_SIGNING_KEY=signkey_xxxxxxxxxxxxx
 ```
 
 **Helper Functions** :
 ```javascript
-import { sendNotification, notifyTimesheetSubmitted, notifyTimesheetValidated } from '@/lib/inngest/helpers';
+import { sendNotification, triggerTimesheetReminders } from '@/lib/inngest/helpers';
 
 // Notification générale
 await sendNotification({
@@ -147,20 +150,41 @@ await sendNotification({
   link: "/dashboard/timesheet"
 });
 
-// Soumission timesheet
-await notifyTimesheetSubmitted({
-  userId: "user-id",
-  timesheetEntryIds: ["entry1", "entry2"]
-});
-
-// Validation
-await notifyTimesheetValidated({
-  userId: "user-id",
-  status: "APPROVED",
-  validatorName: "Jean Dupont",
-  comment: "Bien!"
-});
+// Déclencher manuellement les rappels (pour tests)
+await triggerTimesheetReminders();
 ```
+
+**Rappels automatiques de saisie de temps** :
+
+La fonction `sendTimesheetReminders` s'exécute automatiquement **toutes les heures** via un cron job (`0 * * * *`).
+
+**Fonctionnement** :
+1. Vérifie tous les utilisateurs qui ont activé les rappels
+2. Filtre par heure et jour de la semaine configurés
+3. Vérifie si l'utilisateur a déjà saisi du temps aujourd'hui
+4. Envoie une notification in-app + email (si activé) uniquement si nécessaire
+
+**Préférences utilisateur** :
+- `enableTimesheetReminders` : Activer/désactiver les rappels
+- `reminderTime` : Heure du rappel (format HH:MM, ex: "17:00")
+- `reminderDays` : Jours de la semaine (MONDAY, TUESDAY, etc.)
+- `emailNotificationsEnabled` : Activer les emails pour les rappels
+
+**Test manuel** :
+```javascript
+// Dans un script de test ou via l'API Inngest
+import { triggerTimesheetReminders } from '@/lib/inngest/helpers';
+
+// Déclencher immédiatement (sans attendre le cron)
+await triggerTimesheetReminders();
+```
+
+**Vérification** :
+1. Configurer les préférences de rappel dans `/dashboard/settings/reminders`
+2. S'assurer qu'aucun temps n'est saisi pour aujourd'hui
+3. Attendre l'heure configurée OU déclencher manuellement
+4. Vérifier la notification in-app dans `/dashboard/notifications`
+5. Vérifier l'email (si activé)
 
 ---
 

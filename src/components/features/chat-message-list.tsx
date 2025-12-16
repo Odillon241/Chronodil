@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -12,13 +18,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
   Send,
@@ -26,10 +42,8 @@ import {
   Edit2,
   Trash2,
   Check,
-  CheckCheck,
   Users,
   FolderKanban,
-  Settings,
   Reply,
   X,
   Search,
@@ -37,23 +51,51 @@ import {
   Paperclip,
   File,
   Image as ImageIcon,
-  Download,
   Bell,
   BellOff,
   Info,
+  Pin,
+  PinOff,
+  AtSign,
+  MessageSquare,
+  Video,
+  Star,
+  StarOff,
+  UserPlus,
+  LogOut,
+  Archive,
+  Settings,
+  Calendar,
+  Hash,
+  Lock,
+  Globe,
+  BarChart3,
+  Clock,
+  Shield,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { ChatAttachmentViewer } from "./chat-attachment-viewer";
 import { format, isToday, isYesterday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import {
   sendMessage,
+  sendMessageWithThread,
   updateMessage,
   deleteMessage,
   markAsRead,
   toggleReaction,
+  pinMessage,
+  unpinMessage,
+  toggleMuteConversation,
+  updateChannel,
 } from "@/actions/chat.actions";
+import { useRealtimePresence } from "@/hooks/use-realtime-presence";
+import { useRealtimeTyping } from "@/hooks/use-realtime-typing";
+import { formatLastSeen, getPresenceLabel } from "@/lib/utils/presence";
+import { LinkPreview } from "./link-preview";
+import { EmojiPicker, QuickEmojiPicker } from "@/components/ui/emoji-picker";
+import { ChatManageMembersDialog } from "./chat-manage-members-dialog";
 
 interface Message {
   id: string;
@@ -63,6 +105,11 @@ interface Message {
   attachments?: any;
   createdAt: Date;
   reactions?: Record<string, string[]> | null;
+  pinnedAt?: Date | null;
+  pinnedById?: string | null;
+  threadId?: string | null;
+  threadCount?: number;
+  isThreadRoot?: boolean;
   User: {
     id: string;
     name: string;
@@ -82,15 +129,33 @@ interface Message {
 
 interface Conversation {
   id: string;
-  type: "DIRECT" | "GROUP" | "PROJECT";
+  type: "DIRECT" | "GROUP" | "PROJECT" | "CHANNEL";
   name?: string | null;
+  description?: string | null;
+  topic?: string | null;
+  purpose?: string | null;
+  category?: string | null;
+  isPrivate?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string | null;
+  User?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+    image?: string | null;
+  } | null;
   ConversationMember: {
+    isAdmin: boolean;
+    isMuted?: boolean;
     User: {
       id: string;
       name: string;
       email: string;
       avatar?: string | null;
       image?: string | null;
+      role?: string | null;
     };
   }[];
   Project?: {
@@ -100,37 +165,107 @@ interface Conversation {
     color: string;
   } | null;
   Message: Message[];
+  _count?: {
+    Message: number;
+    ConversationMember: number;
+  };
 }
 
 interface ChatMessageListProps {
   conversation: Conversation;
   currentUserId: string;
+  currentUserName?: string;
   onUpdate: () => void;
+  onThreadClick?: (threadId: string) => void;
+  onVideoCall?: () => void;
+  onDeleteConversation?: (conversationId: string) => void;
+  onLeaveConversation?: (conversationId: string) => void;
+  openInfoOnMount?: boolean;
+  openManageMembersOnMount?: boolean;
+  onInfoOpened?: () => void;
+  onManageMembersOpened?: () => void;
 }
 
 export function ChatMessageList({
   conversation,
   currentUserId,
+  currentUserName = "Utilisateur",
   onUpdate,
+  onThreadClick,
+  onVideoCall,
+  onDeleteConversation,
+  onLeaveConversation,
+  openInfoOnMount = false,
+  openManageMembersOnMount = false,
+  onInfoOpened,
+  onManageMembersOpened,
 }: ChatMessageListProps) {
   const [message, setMessage] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [sending, setSending] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [mentionQuery, setMentionQuery] = useState<string>("");
   const [showMentions, setShowMentions] = useState(false);
   const [mentionCursorPosition, setMentionCursorPosition] = useState<number>(0);
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => {
+    const member = conversation.ConversationMember.find(m => m.User.id === currentUserId);
+    return member?.isMuted || false;
+  });
   const [showConversationInfo, setShowConversationInfo] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showManageMembers, setShowManageMembers] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [isEditingChannel, setIsEditingChannel] = useState(false);
+  const [editChannelName, setEditChannelName] = useState("");
+  const [editChannelDescription, setEditChannelDescription] = useState("");
+  const [editChannelTopic, setEditChannelTopic] = useState("");
+  const [editChannelPurpose, setEditChannelPurpose] = useState("");
+  const [editChannelCategory, setEditChannelCategory] = useState("");
+  const [savingChannel, setSavingChannel] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const draftTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // TODO: Implémenter useFavoriteMessages (hook manquant)
+  const toggleFavorite = (messageId: string) => console.warn('useFavoriteMessages not implemented');
+  const isFavorite = (messageId: string) => false;
+
+  // Vérifier si l'utilisateur actuel est admin de la conversation
+  const isCurrentUserAdmin = conversation.ConversationMember.find(
+    (m) => m.User.id === currentUserId
+  )?.isAdmin;
+
+  // Hook de présence en temps réel
+  const { isUserOnline, getLastSeenAt } = useRealtimePresence();
+
+  // Hook d'indicateur de frappe en temps réel
+  const { typingUsers, onTyping, stopTyping } = useRealtimeTyping({
+    conversationId: conversation.id,
+    currentUserId,
+    currentUserName,
+  });
+
+  // Liste des membres pour les mentions
+  const conversationMembers = useMemo(() => {
+    return conversation.ConversationMember.filter(
+      (m) => m.User.id !== currentUserId
+    ).map((m) => ({
+      id: m.User.id,
+      name: m.User.name,
+      avatar: m.User.avatar || m.User.image,
+    }));
+  }, [conversation.ConversationMember, currentUserId]);
+
+  // Filtrer les membres pour les mentions
+  const filteredMentions = useMemo(() => {
+    if (!mentionQuery) return conversationMembers;
+    return conversationMembers.filter((m) =>
+      m.name.toLowerCase().includes(mentionQuery.toLowerCase())
+    );
+  }, [conversationMembers, mentionQuery]);
 
   // Fonction pour formater la taille du fichier
   const formatFileSize = (bytes: number): string => {
@@ -141,6 +276,59 @@ export function ChatMessageList({
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
+  // Fonction pour extraire les URLs d'un texte
+  const extractUrls = (text: string): string[] => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.match(urlRegex) || [];
+  };
+
+  // Clé localStorage pour le brouillon
+  const getDraftKey = () => `chat-draft-${conversation.id}`;
+
+  // Sauvegarder le brouillon dans localStorage
+  const saveDraft = (text: string) => {
+    if (text.trim()) {
+      localStorage.setItem(getDraftKey(), text);
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2000); // Afficher l'indicateur pendant 2s
+    } else {
+      localStorage.removeItem(getDraftKey());
+      setDraftSaved(false);
+    }
+  };
+
+  // Restaurer le brouillon au chargement de la conversation
+  useEffect(() => {
+    const draft = localStorage.getItem(getDraftKey());
+    if (draft) {
+      setMessage(draft);
+    }
+
+    // Cleanup: sauvegarder le brouillon au démontage
+    return () => {
+      if (message.trim()) {
+        localStorage.setItem(getDraftKey(), message);
+      }
+    };
+  }, [conversation.id]); // Se déclenche quand la conversation change
+
+  // Sauvegarder automatiquement le brouillon toutes les 2 secondes pendant la frappe
+  useEffect(() => {
+    if (draftTimeoutRef.current) {
+      clearTimeout(draftTimeoutRef.current);
+    }
+
+    draftTimeoutRef.current = setTimeout(() => {
+      saveDraft(message);
+    }, 2000);
+
+    return () => {
+      if (draftTimeoutRef.current) {
+        clearTimeout(draftTimeoutRef.current);
+      }
+    };
+  }, [message]);
+
   // Auto-scroll vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
     if (scrollRef.current) {
@@ -148,38 +336,26 @@ export function ChatMessageList({
     }
   }, [conversation.Message]);
 
-  // Cleanup du timeout de typing à la fermeture
-  useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Simuler la réception d'événements de frappe d'autres utilisateurs
-  // Dans une vraie app, cela viendrait d'un WebSocket
-  useEffect(() => {
-    // Pour la démo, simuler aléatoirement qu'un utilisateur tape
-    const simulateTyping = () => {
-      if (Math.random() > 0.95 && conversation.ConversationMember.length > 1) {
-        const otherMember = conversation.ConversationMember.find(m => m.User.id !== currentUserId);
-        if (otherMember) {
-          setTypingUsers([otherMember.User.name]);
-          setTimeout(() => setTypingUsers([]), 3000);
-        }
-      }
-    };
-
-    // Vérifier toutes les 10 secondes (juste pour la démo)
-    const interval = setInterval(simulateTyping, 10000);
-    return () => clearInterval(interval);
-  }, [conversation.ConversationMember, currentUserId]);
-
   // Marquer comme lu quand on ouvre la conversation
   useEffect(() => {
     markAsRead({ conversationId: conversation.id });
   }, [conversation.id]);
+
+  // Ouvrir le dialogue d'infos si demandé depuis l'extérieur
+  useEffect(() => {
+    if (openInfoOnMount) {
+      setShowConversationInfo(true);
+      onInfoOpened?.();
+    }
+  }, [openInfoOnMount, onInfoOpened]);
+
+  // Ouvrir le dialogue de gestion des membres si demandé depuis l'extérieur
+  useEffect(() => {
+    if (openManageMembersOnMount) {
+      setShowManageMembers(true);
+      onManageMembersOpened?.();
+    }
+  }, [openManageMembersOnMount, onManageMembersOpened]);
 
   const handleSendMessage = async () => {
     if ((!message.trim() && attachments.length === 0) || sending) return;
@@ -211,17 +387,29 @@ export function ChatMessageList({
       }
 
       console.log("💬 Envoi du message avec attachments:", attachmentsData);
-      const result = await sendMessage({
-        conversationId: conversation.id,
-        content: message.trim() || "(Fichier joint)",
-        replyToId: replyingTo?.id,
-        attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
-      });
+      
+      // Utiliser sendMessageWithThread si on répond à un message (pour gérer les threads)
+      const result = replyingTo
+        ? await sendMessageWithThread({
+            conversationId: conversation.id,
+            content: message.trim() || "(Fichier joint)",
+            replyToId: replyingTo.id,
+            attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
+          })
+        : await sendMessage({
+            conversationId: conversation.id,
+            content: message.trim() || "(Fichier joint)",
+            replyToId: undefined,
+            attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
+          });
 
       if (result?.data) {
         setMessage("");
         setReplyingTo(null);
         setAttachments([]);
+        // Supprimer le brouillon après l'envoi réussi
+        localStorage.removeItem(getDraftKey());
+        setDraftSaved(false);
         onUpdate();
         toast.success("Message envoyé");
       } else {
@@ -287,8 +475,75 @@ export function ChatMessageList({
     }
   };
 
-  // Emojis populaires
-  const popularEmojis = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+  const handleToggleMute = async () => {
+    try {
+      const result = await toggleMuteConversation({ conversationId: conversation.id });
+      if (result?.data) {
+        setIsMuted(result.data.isMuted);
+        toast.success(
+          result.data.isMuted
+            ? "Notifications désactivées pour cette conversation"
+            : "Notifications activées pour cette conversation"
+        );
+        onUpdate();
+      } else {
+         toast.error(result?.serverError || "Erreur lors de la modification des notifications");
+      }
+    } catch (error) {
+      toast.error("Erreur lors de la modification des notifications");
+    }
+  };
+
+  // Gérer l'insertion d'une mention
+  const handleInsertMention = useCallback((userId: string, userName: string) => {
+    if (!inputRef.current) return;
+
+    const input = inputRef.current;
+    const cursorPos = input.selectionStart || 0;
+    const textBefore = message.substring(0, mentionCursorPosition);
+    const textAfter = message.substring(cursorPos);
+
+    // Insérer la mention au format @[userId:userName]
+    const mention = `@[${userId}:${userName}] `;
+    const newMessage = textBefore + mention + textAfter;
+
+    setMessage(newMessage);
+    setShowMentions(false);
+    setMentionQuery("");
+
+    // Replacer le curseur après la mention
+    setTimeout(() => {
+      const newCursorPos = textBefore.length + mention.length;
+      input.focus();
+      input.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  }, [message, mentionCursorPosition]);
+
+  // Détecter quand l'utilisateur tape @ pour les mentions
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setMessage(value);
+    onTyping(); // Notifier qu'on est en train d'écrire
+
+    // Détecter les mentions
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      // Vérifier qu'il n'y a pas d'espace après @
+      if (!textAfterAt.includes(" ") && !textAfterAt.includes("[")) {
+        setShowMentions(true);
+        setMentionQuery(textAfterAt);
+        setMentionCursorPosition(lastAtIndex);
+        return;
+      }
+    }
+
+    setShowMentions(false);
+    setMentionQuery("");
+  }, [onTyping]);
 
   // Fonction pour rendre le contenu avec les mentions
   const renderMessageContent = (content: string) => {
@@ -318,26 +573,6 @@ export function ChatMessageList({
     }
     
     return result.length > 0 ? result : content;
-  };
-
-  // Simuler l'indicateur de frappe (dans une vraie app, utiliser WebSockets)
-  const handleTyping = () => {
-    // Dans une vraie application, on enverrait un événement via WebSocket
-    // Pour cette simulation, on va juste afficher un message temporaire
-    // en utilisant le localStorage pour simuler la communication entre utilisateurs
-    
-    // Clear le timeout précédent
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Simuler l'envoi de l'événement "typing"
-    // Dans une vraie app: socket.emit('typing', { conversationId, userId, userName })
-    
-    // Définir un nouveau timeout pour arrêter l'indication après 3 secondes
-    typingTimeoutRef.current = setTimeout(() => {
-      // Dans une vraie app: socket.emit('stop-typing', { conversationId, userId })
-    }, 3000);
   };
 
   const getConversationTitle = () => {
@@ -392,6 +627,11 @@ export function ChatMessageList({
     return format(date, "dd MMMM yyyy", { locale: fr });
   };
 
+  // Séparer les messages épinglés des messages normaux
+  const pinnedMessages = conversation.Message.filter((msg) => msg.pinnedAt).sort(
+    (a, b) => new Date(a.pinnedAt!).getTime() - new Date(b.pinnedAt!).getTime()
+  );
+
   // Filtrer les messages selon la recherche
   const filteredMessages = searchQuery
     ? conversation.Message.filter((msg) =>
@@ -402,11 +642,49 @@ export function ChatMessageList({
 
   const messageGroups = groupMessagesByDate(filteredMessages);
 
+  // Gérer l'épinglage d'un message
+  const handlePinMessage = async (messageId: string) => {
+    try {
+      const result = await pinMessage({
+        messageId,
+        conversationId: conversation.id,
+      });
+
+      if (result?.serverError) {
+        toast.error(result.serverError);
+      } else {
+        toast.success("Message épinglé");
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error("Erreur lors de l'épinglage du message");
+    }
+  };
+
+  // Gérer le désépinglage d'un message
+  const handleUnpinMessage = async (messageId: string) => {
+    try {
+      const result = await unpinMessage({ messageId });
+
+      if (result?.serverError) {
+        toast.error(result.serverError);
+      } else {
+        toast.success("Message désépinglé");
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error("Erreur lors du désépinglage du message");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-3 sm:p-4 border-b flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div 
+          className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 cursor-pointer hover:bg-muted/50 p-1 -ml-1 rounded-md transition-colors"
+          onClick={() => setShowConversationInfo(true)}
+        >
           {conversation.type === "PROJECT" && conversation.Project ? (
             <div
               className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
@@ -419,30 +697,82 @@ export function ChatMessageList({
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           ) : (
-            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-              <AvatarImage
-                src={
-                  conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
-                    ?.User.avatar ||
-                  conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
-                    ?.User.image ||
-                  undefined
-                }
-              />
-              <AvatarFallback>
-                {getConversationTitle().substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                      <AvatarImage
+                        src={
+                          conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
+                            ?.User.avatar ||
+                          conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
+                            ?.User.image ||
+                          undefined
+                        }
+                      />
+                      <AvatarFallback>
+                        {getConversationTitle().substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Badge de présence */}
+                    {(() => {
+                      const otherUser = conversation.ConversationMember.find((m) => m.User.id !== currentUserId)?.User;
+                      if (!otherUser) return null;
+                      const online = isUserOnline(otherUser.id);
+                      return (
+                        <span
+                          className={cn(
+                            "absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background",
+                            online ? "bg-green-500" : "bg-gray-400 dark:bg-gray-600"
+                          )}
+                        />
+                      );
+                    })()}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-xs">
+                    {(() => {
+                      const otherUser = conversation.ConversationMember.find((m) => m.User.id !== currentUserId)?.User;
+                      if (!otherUser) return null;
+                      const online = isUserOnline(otherUser.id);
+                      const lastSeen = getLastSeenAt(otherUser.id);
+                      return online ? "En ligne" : `Hors ligne • ${formatLastSeen(lastSeen)}`;
+                    })()}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold text-sm sm:text-base truncate">{getConversationTitle()}</h2>
             <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {conversation.ConversationMember.length} membre{conversation.ConversationMember.length > 1 ? "s" : ""}
+              {conversation.type === "DIRECT" ? (
+                (() => {
+                  const otherUser = conversation.ConversationMember.find((m) => m.User.id !== currentUserId)?.User;
+                  if (!otherUser) return null;
+                  return getPresenceLabel(isUserOnline(otherUser.id) ? new Date() : getLastSeenAt(otherUser.id));
+                })()
+              ) : (
+                `${conversation.ConversationMember.length} membre${conversation.ConversationMember.length > 1 ? "s" : ""}`
+              )}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {onVideoCall && conversation.type === "DIRECT" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onVideoCall}
+              className="h-8 w-8 sm:h-10 sm:w-10"
+              title="Appel vidéo"
+            >
+              <Video className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -458,15 +788,29 @@ export function ChatMessageList({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Paramètres de la conversation</DropdownMenuLabel>
+              <DropdownMenuLabel>Paramètres du canal</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => {
-                  setIsMuted(!isMuted);
-                  toast.success(
-                    isMuted 
-                      ? "Notifications activées pour cette conversation" 
-                      : "Notifications désactivées pour cette conversation"
-                  );
+                onSelect={() => setShowConversationInfo(true)}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {conversation.type === "CHANNEL" ? "Informations du canal" : "Informations de la conversation"}
+              </DropdownMenuItem>
+              
+              {isCurrentUserAdmin && (conversation.type === "GROUP" || conversation.type === "CHANNEL" || conversation.type === "PROJECT") && (
+                <DropdownMenuItem
+                  onSelect={() => setShowManageMembers(true)}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Gérer les membres
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault(); // Empêcher la fermeture immédiate pour voir le toast
+                  handleToggleMute();
                 }}
               >
                 {isMuted ? (
@@ -481,12 +825,43 @@ export function ChatMessageList({
                   </>
                 )}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setShowConversationInfo(true)}
-              >
-                <Info className="mr-2 h-4 w-4" />
-                Informations sur la conversation
-              </DropdownMenuItem>
+
+              {(conversation.type === "CHANNEL" || conversation.type === "GROUP") && (
+                 <>
+                   <DropdownMenuSeparator />
+                   {!isCurrentUserAdmin && onLeaveConversation && (
+                     <DropdownMenuItem
+                       className="text-destructive focus:text-destructive"
+                       onSelect={() => {
+                         setTimeout(() => {
+                           if (confirm("Voulez-vous vraiment quitter ce canal ?")) {
+                             onLeaveConversation(conversation.id);
+                           }
+                         }, 100);
+                       }}
+                     >
+                       <Reply className="mr-2 h-4 w-4 rotate-180" />
+                       Quitter le canal
+                     </DropdownMenuItem>
+                   )}
+                   
+                   {isCurrentUserAdmin && onDeleteConversation && (
+                     <DropdownMenuItem
+                       className="text-destructive focus:text-destructive"
+                       onSelect={() => {
+                         setTimeout(() => {
+                           if (confirm("Voulez-vous vraiment supprimer ce canal ? Cette action est irréversible.")) {
+                             onDeleteConversation(conversation.id);
+                           }
+                         }, 100);
+                       }}
+                     >
+                       <Trash2 className="mr-2 h-4 w-4" />
+                       Supprimer le canal
+                     </DropdownMenuItem>
+                   )}
+                 </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -496,12 +871,10 @@ export function ChatMessageList({
       {showSearch && (
         <div className="p-3 border-b bg-muted/50">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Rechercher dans les messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
             />
             {searchQuery && (
               <Button
@@ -522,6 +895,48 @@ export function ChatMessageList({
         </div>
       )}
 
+      {/* Pinned Messages Section */}
+      {pinnedMessages.length > 0 && (
+        <div className="border-b bg-amber-50 dark:bg-amber-950/20">
+          <div className="p-3 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-amber-900 dark:text-amber-100">
+              <Pin className="h-4 w-4" />
+              <span>Messages épinglés ({pinnedMessages.length}/3)</span>
+            </div>
+            <div className="space-y-2">
+              {pinnedMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className="bg-white dark:bg-gray-900 rounded-lg p-3 flex items-start gap-2 group hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <Pin className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                        {msg.User.name}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {format(new Date(msg.createdAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                      {msg.content}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    onClick={() => handleUnpinMessage(msg.id)}
+                  >
+                    <PinOff className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-2 sm:p-4" ref={scrollRef}>
@@ -629,9 +1044,9 @@ export function ChatMessageList({
                                 </div>
                               )}
 
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
+                              <div className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                                 {renderMessageContent(msg.content)}
-                              </p>
+                              </div>
 
                               {/* Attachments */}
                               {msg.attachments && Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
@@ -646,6 +1061,18 @@ export function ChatMessageList({
                                       />
                                     );
                                   })}
+                                </div>
+                              )}
+
+                              {/* Link Previews */}
+                              {!msg.isDeleted && extractUrls(msg.content).length > 0 && (
+                                <div className="mt-2 space-y-2">
+                                  {extractUrls(msg.content).map((url, idx) => (
+                                    <LinkPreview
+                                      key={`${msg.id}-url-${idx}`}
+                                      url={url}
+                                    />
+                                  ))}
                                 </div>
                               )}
                             </div>
@@ -672,6 +1099,36 @@ export function ChatMessageList({
                                     >
                                       <Reply className="mr-2 h-4 w-4" />
                                       Répondre
+                                    </DropdownMenuItem>
+                                    {msg.pinnedAt ? (
+                                      <DropdownMenuItem
+                                        onClick={() => handleUnpinMessage(msg.id)}
+                                      >
+                                        <PinOff className="mr-2 h-4 w-4" />
+                                        Désépingler
+                                      </DropdownMenuItem>
+                                    ) : (
+                                      <DropdownMenuItem
+                                        onClick={() => handlePinMessage(msg.id)}
+                                      >
+                                        <Pin className="mr-2 h-4 w-4" />
+                                        Épingler
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem
+                                      onClick={() => toggleFavorite(msg.id)}
+                                    >
+                                      {isFavorite(msg.id) ? (
+                                        <>
+                                          <StarOff className="mr-2 h-4 w-4" />
+                                          Retirer des favoris
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Star className="mr-2 h-4 w-4" />
+                                          Ajouter aux favoris
+                                        </>
+                                      )}
                                     </DropdownMenuItem>
                                     {isCurrentUser && (
                                       <>
@@ -709,6 +1166,17 @@ export function ChatMessageList({
                       >
                         <span>{formatMessageDate(new Date(msg.createdAt))}</span>
                         {msg.isEdited && <span>• modifié</span>}
+                        
+                        {/* Thread indicator */}
+                        {msg.isThreadRoot && msg.threadCount !== undefined && msg.threadCount > 0 && (
+                          <button
+                            onClick={() => onThreadClick?.(msg.id)}
+                            className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                          >
+                            <MessageSquare className="h-3 w-3" />
+                            <span>{msg.threadCount} réponse{msg.threadCount > 1 ? "s" : ""}</span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Reactions */}
@@ -718,43 +1186,43 @@ export function ChatMessageList({
                           isCurrentUser && "justify-end"
                         )}>
                           {Object.entries(msg.reactions).map(([emoji, userIds]) => (
-                            <Button
-                              key={emoji}
-                              variant="outline"
-                              size="sm"
-                              className={cn(
-                                "h-6 px-2 text-xs",
-                                userIds.includes(currentUserId) && "bg-accent"
-                              )}
-                              onClick={() => handleToggleReaction(msg.id, emoji)}
-                            >
-                              <span>{emoji}</span>
-                              <span className="ml-1">{userIds.length}</span>
-                            </Button>
+                            <TooltipProvider key={emoji}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={cn(
+                                      "h-6 px-2 text-xs",
+                                      userIds.includes(currentUserId) && "bg-accent border-primary"
+                                    )}
+                                    onClick={() => handleToggleReaction(msg.id, emoji)}
+                                  >
+                                    <span>{emoji}</span>
+                                    <span className="ml-1">{userIds.length}</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">
+                                    {userIds.includes(currentUserId) ? "Cliquez pour retirer" : "Cliquez pour réagir"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           ))}
-                          {/* Add reaction button */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                          {/* Add reaction button with emoji picker */}
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button variant="outline" size="sm" className="h-6 px-2">
                                 <Smile className="h-3 w-3" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <div className="grid grid-cols-3 gap-1 p-2">
-                                {popularEmojis.map((emoji) => (
-                                  <Button
-                                    key={emoji}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xl"
-                                    onClick={() => handleToggleReaction(msg.id, emoji)}
-                                  >
-                                    {emoji}
-                                  </Button>
-                                ))}
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2" align="start">
+                              <QuickEmojiPicker
+                                onEmojiSelect={(emoji) => handleToggleReaction(msg.id, emoji)}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       )}
 
@@ -764,28 +1232,18 @@ export function ChatMessageList({
                           "mt-1 opacity-0 group-hover:opacity-100 transition-opacity",
                           isCurrentUser && "flex justify-end"
                         )}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-6 px-2">
                                 <Smile className="h-3 w-3" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <div className="grid grid-cols-3 gap-1 p-2">
-                                {popularEmojis.map((emoji) => (
-                                  <Button
-                                    key={emoji}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xl"
-                                    onClick={() => handleToggleReaction(msg.id, emoji)}
-                                  >
-                                    {emoji}
-                                  </Button>
-                                ))}
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2" align="start">
+                              <QuickEmojiPicker
+                                onEmojiSelect={(emoji) => handleToggleReaction(msg.id, emoji)}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       )}
                     </div>
@@ -874,6 +1332,28 @@ export function ChatMessageList({
 
       {/* Input */}
       <div className="p-2 sm:p-4 border-t">
+        {/* Popup de suggestions de mentions */}
+        {showMentions && filteredMentions.length > 0 && (
+          <div className="mb-2 bg-popover border rounded-lg shadow-lg p-1 max-h-40 overflow-y-auto">
+            <p className="px-2 py-1 text-xs text-muted-foreground">Mentionner un membre</p>
+            {filteredMentions.map((member) => (
+              <button
+                key={member.id}
+                onClick={() => handleInsertMention(member.id, member.name)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-muted rounded text-left"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={member.avatar || undefined} />
+                  <AvatarFallback className="text-xs">
+                    {member.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm">{member.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-1 sm:gap-2">
           <input
             ref={fileInputRef}
@@ -895,123 +1375,649 @@ export function ChatMessageList({
           >
             <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
+          {/* Bouton pour ouvrir les mentions */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              const cursorPos = inputRef.current?.selectionStart || message.length;
+              const newMessage = message.slice(0, cursorPos) + "@" + message.slice(cursorPos);
+              setMessage(newMessage);
+              setMentionCursorPosition(cursorPos);
+              setShowMentions(true);
+              setMentionQuery("");
+              inputRef.current?.focus();
+            }}
+            disabled={sending}
+            className="h-8 w-8 sm:h-10 sm:w-10"
+            title="Mentionner quelqu'un (@)"
+          >
+            <AtSign className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+          {/* Emoji Picker pour l'input */}
+          <EmojiPicker
+            onEmojiSelect={(emoji) => {
+              const cursorPos = inputRef.current?.selectionStart || message.length;
+              const newMessage = message.slice(0, cursorPos) + emoji + message.slice(cursorPos);
+              setMessage(newMessage);
+              onTyping();
+              setTimeout(() => {
+                inputRef.current?.focus();
+                inputRef.current?.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+              }, 0);
+            }}
+            className="h-8 w-8 sm:h-10 sm:w-10"
+          />
           <Input
             ref={inputRef}
-            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message..."}
+            placeholder={replyingTo ? `Répondre à ${replyingTo.User.name}...` : "Écrivez votre message... (@ pour mentionner, / pour commandes)"}
             value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              handleTyping();
+            onChange={handleInputChange}
+            onFocus={async () => {
+              // TODO: Implémenter les suggestions AI (module chat-ai.actions manquant)
+              // if (!message.trim() && process.env.NEXT_PUBLIC_ENABLE_AI === "true") {
+              //   try {
+              //     const { suggestReplyAction } = await import("@/actions/chat-ai.actions");
+              //     const result = await suggestReplyAction({ conversationId: conversation.id });
+              //     if (result?.data?.suggestions && result.data.suggestions.length > 0) {
+              //       console.log("Suggestions AI:", result.data.suggestions);
+              //     }
+              //   } catch (error) {
+              //     // Ignorer les erreurs AI
+              //   }
+              // }
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
-              } else if (e.key === "Escape" && replyingTo) {
-                setReplyingTo(null);
+                if (showMentions && filteredMentions.length > 0) {
+                  // Sélectionner la première mention
+                  handleInsertMention(filteredMentions[0].id, filteredMentions[0].name);
+                } else {
+                  stopTyping();
+                  handleSendMessage();
+                }
+              } else if (e.key === "Escape") {
+                if (showMentions) {
+                  setShowMentions(false);
+                } else if (replyingTo) {
+                  setReplyingTo(null);
+                }
+              } else if (e.key === "ArrowDown" && showMentions) {
+                e.preventDefault();
+                // TODO: Navigation dans la liste des mentions
+              } else if (e.key === "ArrowUp" && showMentions) {
+                e.preventDefault();
+                // TODO: Navigation dans la liste des mentions
               }
             }}
+            onBlur={() => {
+              // Délai pour permettre le clic sur les mentions
+              setTimeout(() => {
+                stopTyping();
+              }, 200);
+            }}
             disabled={sending}
-            className="text-sm"
+            className="text-sm flex-1"
           />
           <Button
-            onClick={handleSendMessage}
+            onClick={() => {
+              stopTyping();
+              handleSendMessage();
+            }}
             disabled={(!message.trim() && attachments.length === 0) || sending}
             className="bg-primary hover:bg-primary h-8 w-8 sm:h-10 sm:w-10"
           >
             {sending ? (
-              <SpinnerCustom />
+              <Spinner className="size-4 sm:size-5" />
             ) : (
               <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             )}
           </Button>
         </div>
+
+        {/* Indicateur de brouillon enregistré */}
+        {draftSaved && message.trim() && (
+          <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            <span>Brouillon enregistré</span>
+          </div>
+        )}
       </div>
 
-      {/* Dialog d'informations de la conversation */}
+      {/* Dialog d'informations de la conversation - Version enrichie */}
       <Dialog open={showConversationInfo} onOpenChange={setShowConversationInfo}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Informations sur la conversation</DialogTitle>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              {conversation.type === "CHANNEL" ? (
+                <>
+                  <Hash className="h-5 w-5" />
+                  Informations sur le canal
+                </>
+              ) : (
+                <>
+                  <Info className="h-5 w-5" />
+                  Informations sur la conversation
+                </>
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Détails et paramètres de cette conversation
+              {conversation.type === "CHANNEL" 
+                ? "Gérez les paramètres et les détails de ce canal"
+                : "Détails et paramètres de cette conversation"
+              }
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            {/* Type de conversation */}
-            <div className="flex items-center gap-3">
-              {conversation.type === "DIRECT" && <Users className="h-5 w-5 text-blue-500" />}
-              {conversation.type === "GROUP" && <Users className="h-5 w-5 text-green-500" />}
-              {conversation.type === "PROJECT" && <FolderKanban className="h-5 w-5 text-purple-500" />}
-              <div>
-                <p className="font-medium">
-                  {conversation.type === "DIRECT" && "Conversation directe"}
-                  {conversation.type === "GROUP" && "Groupe"}
-                  {conversation.type === "PROJECT" && "Conversation de projet"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {conversation.type === "PROJECT" && conversation.name}
-                </p>
-              </div>
-            </div>
+          <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
+              <TabsTrigger value="details">Détails</TabsTrigger>
+              <TabsTrigger value="members">Membres</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="actions">Actions</TabsTrigger>
+            </TabsList>
 
-            {/* Nom de la conversation */}
-            {conversation.name && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Nom</p>
-                <p className="text-lg">{conversation.name}</p>
-              </div>
-            )}
+            <div className="flex-1 overflow-y-auto mt-4">
+              {/* Onglet Détails */}
+              <TabsContent value="details" className="space-y-6 mt-0">
+                {/* En-tête avec nom et type */}
+                <div className="flex items-start gap-4 pb-4 border-b">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-muted">
+                    {conversation.type === "DIRECT" && <Users className="h-6 w-6 text-blue-500" />}
+                    {conversation.type === "GROUP" && <Users className="h-6 w-6 text-green-500" />}
+                    {conversation.type === "PROJECT" && <FolderKanban className="h-6 w-6 text-purple-500" />}
+                    {conversation.type === "CHANNEL" && <MessageSquare className="h-6 w-6 text-orange-500" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-semibold truncate">
+                        {conversation.name || "Sans nom"}
+                      </h3>
+                      {conversation.type === "CHANNEL" && (
+                        <>
+                          {conversation.isPrivate ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <Lock className="h-3 w-3" />
+                              Privé
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="gap-1">
+                              <Globe className="h-3 w-3" />
+                              Public
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {conversation.type === "DIRECT" && "Conversation directe"}
+                      {conversation.type === "GROUP" && "Groupe de discussion"}
+                      {conversation.type === "PROJECT" && "Conversation de projet"}
+                      {conversation.type === "CHANNEL" && "Canal de discussion"}
+                    </p>
+                  </div>
+                  {conversation.type === "CHANNEL" && isCurrentUserAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingChannel(true);
+                        setEditChannelName(conversation.name || "");
+                        setEditChannelDescription(conversation.description || "");
+                        setEditChannelTopic(conversation.topic || "");
+                        setEditChannelPurpose(conversation.purpose || "");
+                        setEditChannelCategory(conversation.category || "");
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Modifier
+                    </Button>
+                  )}
+                </div>
 
-            {/* Membres */}
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                Membres ({conversation.ConversationMember.length})
-              </p>
-              <div className="space-y-2">
-                {conversation.ConversationMember.map((member: any) => (
-                  <div key={member.User.id} className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={member.User.avatar || member.User.image || ""} />
-                      <AvatarFallback>
-                        {member.User.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "?"}
-                      </AvatarFallback>
-                    </Avatar>
+                {/* Édition du canal */}
+                {isEditingChannel && conversation.type === "CHANNEL" ? (
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
                     <div>
-                      <p className="text-sm font-medium">{member.User.name}</p>
+                      <Label htmlFor="channelName">Nom du canal *</Label>
+                      <Input
+                        id="channelName"
+                        value={editChannelName}
+                        onChange={(e) => setEditChannelName(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelDescription">Description</Label>
+                      <Textarea
+                        id="channelDescription"
+                        value={editChannelDescription}
+                        onChange={(e) => setEditChannelDescription(e.target.value)}
+                        placeholder="Décrivez le but de ce canal..."
+                        className="mt-1"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelTopic">Sujet actuel</Label>
+                      <Input
+                        id="channelTopic"
+                        value={editChannelTopic}
+                        onChange={(e) => setEditChannelTopic(e.target.value)}
+                        placeholder="Ex: Discussion sur le sprint actuel"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelPurpose">Objectif</Label>
+                      <Textarea
+                        id="channelPurpose"
+                        value={editChannelPurpose}
+                        onChange={(e) => setEditChannelPurpose(e.target.value)}
+                        placeholder="Quel est l'objectif de ce canal ?"
+                        className="mt-1"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="channelCategory">Catégorie</Label>
+                      <Input
+                        id="channelCategory"
+                        value={editChannelCategory}
+                        onChange={(e) => setEditChannelCategory(e.target.value)}
+                        placeholder="Ex: Équipes, Projets, Général"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          setSavingChannel(true);
+                          try {
+                            const result = await updateChannel({
+                              conversationId: conversation.id,
+                              name: editChannelName,
+                              description: editChannelDescription || undefined,
+                              topic: editChannelTopic || undefined,
+                              purpose: editChannelPurpose || undefined,
+                              category: editChannelCategory || undefined,
+                            });
+                            if (result?.data) {
+                              toast.success("Canal mis à jour avec succès");
+                              setIsEditingChannel(false);
+                              onUpdate();
+                            } else {
+                              throw new Error(result?.serverError || "Erreur lors de la mise à jour");
+                            }
+                          } catch (error: any) {
+                            toast.error(error.message || "Erreur lors de la mise à jour du canal");
+                          } finally {
+                            setSavingChannel(false);
+                          }
+                        }}
+                        disabled={!editChannelName.trim() || savingChannel}
+                      >
+                        {savingChannel ? (
+                          <>
+                            <Spinner className="h-4 w-4 mr-2" />
+                            Enregistrement...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 mr-2" />
+                            Enregistrer
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditingChannel(false);
+                          setEditChannelName("");
+                          setEditChannelDescription("");
+                          setEditChannelTopic("");
+                          setEditChannelPurpose("");
+                          setEditChannelCategory("");
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Description */}
+                    {conversation.description && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                        <p className="text-sm mt-1">{conversation.description}</p>
+                      </div>
+                    )}
+
+                    {/* Sujet */}
+                    {conversation.topic && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Sujet actuel</Label>
+                        <p className="text-sm italic mt-1">{conversation.topic}</p>
+                      </div>
+                    )}
+
+                    {/* Objectif */}
+                    {conversation.purpose && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Objectif</Label>
+                        <p className="text-sm mt-1">{conversation.purpose}</p>
+                      </div>
+                    )}
+
+                    {/* Catégorie */}
+                    {conversation.category && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Catégorie</Label>
+                        <Badge variant="outline" className="mt-1">
+                          {conversation.category}
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Statistiques */}
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {conversation._count?.Message || conversation.Message?.length || 0} messages
+                          </p>
+                          <p className="text-xs text-muted-foreground">Total</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {conversation._count?.ConversationMember || conversation.ConversationMember.length} membres
+                          </p>
+                          <p className="text-xs text-muted-foreground">Total</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Informations de création */}
+                    <div className="space-y-3 pt-4 border-t">
+                      {conversation.User && (
+                        <div className="flex items-center gap-3">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Créé par</p>
+                            <p className="text-sm font-medium">{conversation.User.name}</p>
+                          </div>
+                        </div>
+                      )}
+                      {conversation.createdAt && (
+                        <div className="flex items-center gap-3">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Créé le</p>
+                            <p className="text-sm font-medium">
+                              {format(new Date(conversation.createdAt), "PPP", { locale: fr })}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {conversation.updatedAt && (
+                        <div className="flex items-center gap-3">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground">Dernière activité</p>
+                            <p className="text-sm font-medium">
+                              {format(new Date(conversation.updatedAt), "PPP 'à' HH:mm", { locale: fr })}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+
+              {/* Onglet Membres */}
+              <TabsContent value="members" className="mt-0 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold">
+                      Membres ({conversation.ConversationMember.length})
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {conversation._count?.ConversationMember || conversation.ConversationMember.length} membre{conversation.ConversationMember.length > 1 ? "s" : ""} dans ce {conversation.type === "CHANNEL" ? "canal" : "conversation"}
+                    </p>
+                  </div>
+                  {isCurrentUserAdmin && (conversation.type === "GROUP" || conversation.type === "CHANNEL" || conversation.type === "PROJECT") && (
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => {
+                        setShowConversationInfo(false);
+                        setShowManageMembers(true);
+                      }}
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Gérer les membres
+                    </Button>
+                  )}
+                </div>
+                <ScrollArea className="h-[400px] rounded-md border p-4">
+                  <div className="space-y-3">
+                    {conversation.ConversationMember.map((member: any) => (
+                      <div key={member.User.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={member.User.avatar || member.User.image || ""} />
+                          <AvatarFallback>
+                            {member.User.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium truncate">{member.User.name}</p>
+                            {member.isAdmin && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Shield className="h-3 w-3 mr-1" />
+                                Admin
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{member.User.email}</p>
+                          {member.User.role && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{member.User.role}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              {/* Onglet Notifications */}
+              <TabsContent value="notifications" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-4">Paramètres de notifications</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4 p-4 border rounded-lg">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {isMuted ? (
+                          <BellOff className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <Bell className="h-5 w-5 text-green-500" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {isMuted ? "Notifications désactivées" : "Notifications activées"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {isMuted 
+                                ? "Vous ne recevrez pas de notifications pour cette conversation"
+                                : "Vous recevrez des notifications pour tous les nouveaux messages"
+                              }
+                            </p>
+                          </div>
+                          <Button
+                            variant={isMuted ? "default" : "outline"}
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                const result = await toggleMuteConversation({
+                                  conversationId: conversation.id,
+                                });
+                                if (result?.data) {
+                                  setIsMuted(!isMuted);
+                                  toast.success(
+                                    !isMuted 
+                                      ? "Notifications désactivées" 
+                                      : "Notifications activées"
+                                  );
+                                  onUpdate();
+                                }
+                              } catch (error: any) {
+                                toast.error(error.message || "Erreur lors de la modification des notifications");
+                              }
+                            }}
+                          >
+                            {isMuted ? "Activer" : "Désactiver"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
                       <p className="text-xs text-muted-foreground">
-                        {member.isAdmin ? "Administrateur" : "Membre"}
+                        💡 <strong>Astuce :</strong> Vous pouvez personnaliser vos notifications pour recevoir uniquement les mentions (@vous) ou désactiver complètement les notifications pour cette conversation.
                       </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              </TabsContent>
 
-            {/* Statut des notifications */}
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              {isMuted ? (
-                <BellOff className="h-5 w-5 text-red-500" />
-              ) : (
-                <Bell className="h-5 w-5 text-green-500" />
-              )}
-              <div>
-                <p className="text-sm font-medium">
-                  {isMuted ? "Notifications désactivées" : "Notifications activées"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isMuted 
-                    ? "Vous ne recevrez pas de notifications pour cette conversation"
-                    : "Vous recevrez des notifications pour cette conversation"
-                  }
-                </p>
-              </div>
+              {/* Onglet Actions */}
+              <TabsContent value="actions" className="mt-0 space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-4">Actions disponibles</h3>
+                  <div className="space-y-2">
+                    {/* Quitter le canal */}
+                    {conversation.type === "CHANNEL" && !isCurrentUserAdmin && conversation.createdBy !== currentUserId && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        onClick={async () => {
+                          if (confirm("Êtes-vous sûr de vouloir quitter ce canal ?")) {
+                            try {
+                              if (onLeaveConversation) {
+                                await onLeaveConversation(conversation.id);
+                                setShowConversationInfo(false);
+                                toast.success("Vous avez quitté le canal");
+                              }
+                            } catch (error: any) {
+                              toast.error(error.message || "Erreur lors de la sortie du canal");
+                            }
+                          }
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Quitter le canal
+                      </Button>
+                    )}
+
+                    {/* Archiver (placeholder) */}
+                    {conversation.type === "CHANNEL" && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          toast.info("Fonctionnalité d'archivage à venir");
+                        }}
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archiver le canal
+                      </Button>
+                    )}
+
+                    {/* Messages épinglés */}
+                    {conversation.type === "CHANNEL" && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          toast.info("Voir les messages épinglés (à implémenter)");
+                        }}
+                      >
+                        <Pin className="h-4 w-4 mr-2" />
+                        Voir les messages épinglés
+                      </Button>
+                    )}
+
+                    {/* Actions admin */}
+                    {isCurrentUserAdmin && (conversation.type === "CHANNEL" || conversation.type === "GROUP") && (
+                      <>
+                        <div className="pt-2 border-t">
+                          <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase">Actions administrateur</p>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              setShowConversationInfo(false);
+                              setShowManageMembers(true);
+                            }}
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Gérer les membres
+                          </Button>
+                          {conversation.type === "CHANNEL" && (
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={async () => {
+                                if (confirm("Êtes-vous sûr de vouloir supprimer ce canal ? Cette action est irréversible.")) {
+                                  if (confirm("⚠️ ATTENTION : Cette action supprimera définitivement le canal et tous ses messages. Continuer ?")) {
+                                    try {
+                                      if (onDeleteConversation) {
+                                        await onDeleteConversation(conversation.id);
+                                        setShowConversationInfo(false);
+                                        toast.success("Canal supprimé");
+                                      }
+                                    } catch (error: any) {
+                                      toast.error(error.message || "Erreur lors de la suppression du canal");
+                                    }
+                                  }
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Supprimer le canal
+                            </Button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
             </div>
-          </div>
+          </Tabs>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de gestion des membres */}
+      <ChatManageMembersDialog
+        open={showManageMembers}
+        onOpenChange={setShowManageMembers}
+        conversationId={conversation.id}
+        members={conversation.ConversationMember}
+        currentUserId={currentUserId}
+        onUpdate={onUpdate}
+      />
     </div>
   );
 }
-

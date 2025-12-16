@@ -10,15 +10,35 @@ export interface GeneralSettings {
   viewDensity: string;
   fontSize: number;
   // Localisation
-  language: string;
   dateFormat: string;
   hourFormat: string;
   timezone: string;
   // Accessibilité
   highContrast: boolean;
-  screenReaderMode: boolean;
   reduceMotion: boolean;
 }
+
+// Mapping pour migrer les anciennes couleurs vers les nouvelles
+const colorMigrationMap: Record<string, string> = {
+  "rusty-red": "green-anis",
+  "ou-crimson": "green-teal",
+  "powder-blue": "green-anis",
+  "golden-orange": "yellow-vibrant",
+  "green": "green-anis",
+  "dark-green": "green-teal",
+  "light-green": "green-anis",
+  "forest-green": "green-teal",
+  "sage-green": "green-anis",
+};
+
+const validAccentColors = ["yellow-vibrant", "green-anis", "green-teal", "dark"];
+
+// Fonction pour normaliser la couleur d'accentuation
+const normalizeAccentColor = (accentColor: string | null | undefined): string => {
+  if (!accentColor) return "green-anis";
+  if (validAccentColors.includes(accentColor)) return accentColor;
+  return colorMigrationMap[accentColor] || "green-anis";
+};
 
 export function useGeneralSettings() {
   const { data: session } = useSession();
@@ -50,7 +70,9 @@ export function useGeneralSettings() {
 
   const applySettings = (settings: GeneralSettings) => {
     // Appliquer la taille de police
-    document.documentElement.style.fontSize = `${settings.fontSize}px`;
+    if (settings.fontSize) {
+      document.documentElement.style.fontSize = `${settings.fontSize}px`;
+    }
 
     // Appliquer le contraste élevé
     if (settings.highContrast) {
@@ -67,10 +89,15 @@ export function useGeneralSettings() {
     }
 
     // Appliquer la densité d'affichage
-    document.documentElement.setAttribute("data-density", settings.viewDensity);
+    if (settings.viewDensity) {
+      document.documentElement.setAttribute("data-density", settings.viewDensity);
+    } else {
+      document.documentElement.setAttribute("data-density", "normal");
+    }
 
-    // Appliquer la couleur d'accentuation
-    document.documentElement.setAttribute("data-accent", settings.accentColor);
+    // Appliquer la couleur d'accentuation (normalisée) - TOUJOURS appliquer une valeur
+    const normalizedColor = normalizeAccentColor(settings.accentColor);
+    document.documentElement.setAttribute("data-accent", normalizedColor);
   };
 
   const updateSetting = (key: keyof GeneralSettings, value: any) => {

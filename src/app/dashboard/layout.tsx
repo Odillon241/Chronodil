@@ -9,8 +9,10 @@ import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
 import { CommandPalette } from "@/components/features/command-palette";
 import { SettingsProvider } from "@/components/providers/settings-provider";
-import { Search } from "lucide-react";
+import { QueryProvider } from "@/providers/query-provider";
 import { Input } from "@/components/ui/input";
+import { registerServiceWorker } from "@/lib/service-worker-registration";
+import { usePresenceTracker } from "@/hooks/use-presence-tracker";
 
 function SearchBar() {
   const [isMac, setIsMac] = useState(false);
@@ -21,11 +23,10 @@ function SearchBar() {
 
   return (
     <div className="relative w-full group">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type="text"
         placeholder="Rechercher..."
-        className="pl-9 pr-20 h-9 cursor-pointer"
+        className="pr-20 h-9 cursor-pointer"
         onClick={() => {
           const event = new CustomEvent("open-search");
           document.dispatchEvent(event);
@@ -56,39 +57,56 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Tracker la présence de l'utilisateur (met à jour lastSeenAt en DB)
+  usePresenceTracker();
+
+  // Enregistrer le service worker au chargement du dashboard
+  useEffect(() => {
+    registerServiceWorker({
+      onSuccess: (registration) => {
+        console.log("[Service Worker] Enregistré avec succès dans le dashboard");
+      },
+      onError: (error) => {
+        console.warn("[Service Worker] Erreur d'enregistrement:", error);
+      },
+    });
+  }, []);
+
   return (
-    <SettingsProvider>
-      <SidebarProvider>
-        <Suspense fallback={<div>Loading...</div>}>
-          <AppSidebar />
-        </Suspense>
-        <SidebarInset className="flex flex-col h-screen overflow-hidden">
-          <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
-            <div className="flex flex-1 items-center gap-2 min-w-0">
-              <Suspense fallback={<div>Loading...</div>}>
-                <DynamicBreadcrumb />
-              </Suspense>
-            </div>
-            <div className="hidden md:flex items-center gap-2 max-w-md mx-4">
-              <SearchBar />
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeSwitcher />
-              <Suspense fallback={<div>Loading...</div>}>
-                <NotificationDropdown />
-              </Suspense>
-            </div>
-          </header>
-          <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
-            {children}
-          </main>
-        </SidebarInset>
-        <Suspense fallback={null}>
-          <CommandPalette />
-        </Suspense>
-      </SidebarProvider>
-    </SettingsProvider>
+    <QueryProvider>
+      <SettingsProvider>
+        <SidebarProvider>
+          <Suspense fallback={<div>Loading...</div>}>
+            <AppSidebar />
+          </Suspense>
+          <SidebarInset className="flex flex-col h-screen overflow-hidden">
+            <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
+              <div className="flex flex-1 items-center gap-2 min-w-0">
+                <Suspense fallback={<div>Loading...</div>}>
+                  <DynamicBreadcrumb />
+                </Suspense>
+              </div>
+              <div className="hidden md:flex items-center gap-2 max-w-md mx-4">
+                <SearchBar />
+              </div>
+              <div className="flex items-center gap-2">
+                <ThemeSwitcher />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <NotificationDropdown />
+                </Suspense>
+              </div>
+            </header>
+            <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
+              {children}
+            </main>
+          </SidebarInset>
+          <Suspense fallback={null}>
+            <CommandPalette />
+          </Suspense>
+        </SidebarProvider>
+      </SettingsProvider>
+    </QueryProvider>
   );
 }

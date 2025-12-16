@@ -1,22 +1,5 @@
-import { LoaderIcon } from "lucide-react"
+// Ce fichier est maintenant déprécié
+// Utilisez directement le composant Spinner de shadcn/ui :
+// import { Spinner } from "@/components/ui/spinner"
 
-import { cn } from "@/lib/utils"
-
-function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
-  return (
-    <LoaderIcon
-      role="status"
-      aria-label="Loading"
-      className={cn("size-4 animate-spin", className)}
-      {...props}
-    />
-  )
-}
-
-export function SpinnerCustom() {
-  return (
-    <div className="flex items-center gap-4">
-      <Spinner />
-    </div>
-  )
-}
+export { Spinner as SpinnerCustom } from "@/components/ui/spinner"

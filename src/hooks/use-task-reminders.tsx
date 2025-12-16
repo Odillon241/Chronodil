@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useDesktopNotifications } from "./use-desktop-notifications";
 
 interface Task {
   id: string;
@@ -18,6 +19,7 @@ interface UseTaskRemindersProps {
 export function useTaskReminders({ tasks }: UseTaskRemindersProps) {
   const [checkedReminders, setCheckedReminders] = useState<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { notifyTaskReminder } = useDesktopNotifications();
 
   useEffect(() => {
     // Initialiser l'audio pour la notification sonore
@@ -63,13 +65,11 @@ export function useTaskReminders({ tasks }: UseTaskRemindersProps) {
             });
           }
 
-          // Demander la permission pour les notifications système
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(`Rappel: ${task.name}`, {
-              body: "Il est temps de travailler sur cette tâche !",
-              icon: "/icon.svg",
-            });
-          }
+          // Afficher la notification de bureau
+          notifyTaskReminder(task.name, () => {
+            // Rediriger vers la tâche si nécessaire
+            window.location.href = `/dashboard/tasks?task=${task.id}`;
+          });
         }
       });
     };

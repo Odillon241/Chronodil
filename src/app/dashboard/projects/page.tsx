@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useT } from "@/lib/translations";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +57,7 @@ import {
   ChevronRight,
   Trash2,
 } from "lucide-react";
-import { SpinnerCustom } from "@/components/features/loading-spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import {
@@ -77,7 +77,7 @@ import { useSession } from "@/lib/auth-client";
 import { ProjectHealthIndicator } from "@/components/features/project-health-indicator";
 import { useRealtimeProjects } from "@/hooks/use-realtime-projects";
 import { FilterButtonGroup } from "@/components/ui/filter-button-group";
-import { StatusTabs } from "@/components/ui/status-menubar";
+import { StatusTabs } from "@/components/ui/status-tabs";
 import {
   Table,
   TableBody,
@@ -102,7 +102,7 @@ export default function ProjectsPage() {
   const { data: session } = useSession();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const currentUser = session?.user;
-  const t = useTranslations("projects");
+  const t = useT("projects");
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -606,7 +606,7 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <SpinnerCustom />
+        <Spinner className="size-6" />
       </div>
     );
   }
@@ -797,10 +797,10 @@ export default function ProjectsPage() {
                   disabled={submitting}
                 >
                   {submitting ? (
-                    <>
-                      <SpinnerCustom />
+                    <span className="flex items-center gap-2">
+                      <Spinner />
                       Création...
-                    </>
+                    </span>
                   ) : (
                     <>
                       <Plus className="mr-2 h-4 w-4" />
@@ -1594,10 +1594,10 @@ export default function ProjectsPage() {
                 disabled={submitting}
               >
                 {submitting ? (
-                  <>
-                    <SpinnerCustom />
+                  <span className="flex items-center gap-2">
+                    <Spinner />
                     Mise à jour...
-                  </>
+                  </span>
                 ) : (
                   <>
                     <Edit className="mr-2 h-4 w-4" />

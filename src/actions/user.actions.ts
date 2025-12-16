@@ -6,9 +6,12 @@ type ActionContext = {
 
 import { authActionClient } from "@/lib/safe-action";
 import { prisma } from "@/lib/db";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { CacheTags } from "@/lib/cache";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 // Récupérer le profil de l'utilisateur connecté
 export const getMyProfile = authActionClient
@@ -24,6 +27,7 @@ export const getMyProfile = authActionClient
         email: true,
         role: true,
         avatar: true,
+        position: true,
         createdAt: true,
         updatedAt: true,
         Department: {
@@ -65,6 +69,7 @@ export const updateMyProfile = authActionClient
       name: z.string().min(2).optional(),
       email: z.string().email().optional(),
       avatar: z.string().optional(),
+      position: z.string().optional(),
     })
   )
   .action(async ({ parsedInput, ctx }) => {
@@ -77,7 +82,7 @@ export const updateMyProfile = authActionClient
 
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return user;
   });
 
@@ -101,8 +106,20 @@ export const getUsers = authActionClient
         ...(parsedInput.role && { role: parsedInput.role }),
         ...(parsedInput.departmentId && { departmentId: parsedInput.departmentId }),
       },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        departmentId: true,
+        managerId: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         User: {
           select: {
             id: true,
@@ -113,6 +130,7 @@ export const getUsers = authActionClient
         _count: {
           select: {
             other_User: true,
+            HRTimesheet_HRTimesheet_userIdToUser: true,
           },
         },
       },
@@ -121,7 +139,28 @@ export const getUsers = authActionClient
       },
     });
 
-    return users;
+    // Mapper les données pour correspondre à l'interface attendue
+    const mappedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      department: user.Department ? {
+        id: user.Department.id,
+        name: user.Department.name,
+      } : null,
+      manager: user.User ? {
+        id: user.User.id,
+        name: user.User.name,
+      } : null,
+      _count: {
+        timesheetEntries: user._count.HRTimesheet_HRTimesheet_userIdToUser || 0,
+        subordinates: user._count.other_User || 0,
+      },
+    }));
+
+    return mappedUsers;
   });
 
 // Créer un utilisateur (Admin/HR/DIRECTEUR)
@@ -196,9 +235,24 @@ export const createUser = authActionClient
       },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: ctx.userId,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.USER,
+      entityId: user.id,
+      changes: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        departmentId: user.departmentId,
+        managerId: user.managerId,
+      },
+    });
+
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return user;
   });
 
@@ -211,8 +265,8 @@ export const updateUser = authActionClient
         name: z.string().min(2).optional(),
         email: z.string().email().optional(),
         role: z.enum(["EMPLOYEE", "MANAGER", "HR", "DIRECTEUR", "ADMIN"]).optional(),
-        departmentId: z.string().optional(),
-        managerId: z.string().optional(),
+        departmentId: z.string().nullable().optional(),
+        managerId: z.string().nullable().optional(),
       }),
     })
   )
@@ -242,12 +296,49 @@ export const updateUser = authActionClient
       }
     }
 
+    // Construire l'objet de données en gérant explicitement null
+    const updateData: any = {};
+    
+    if (parsedInput.data.name !== undefined) updateData.name = parsedInput.data.name;
+    if (parsedInput.data.email !== undefined) updateData.email = parsedInput.data.email;
+    if (parsedInput.data.role !== undefined) updateData.role = parsedInput.data.role;
+    
+    // Gérer departmentId : null signifie "aucun département"
+    if (parsedInput.data.departmentId !== undefined) {
+      updateData.departmentId = parsedInput.data.departmentId === null ? null : parsedInput.data.departmentId;
+    }
+    
+    // Gérer managerId : null signifie "tous les validateurs"
+    if (parsedInput.data.managerId !== undefined) {
+      updateData.managerId = parsedInput.data.managerId === null ? null : parsedInput.data.managerId;
+    }
+
     const user = await prisma.user.update({
       where: { id: parsedInput.id },
-      data: parsedInput.data,
+      data: updateData,
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.USER,
+      entityId: parsedInput.id,
+      changes: {
+        previous: {
+          name: targetUser.name,
+          email: targetUser.email,
+          role: targetUser.role,
+          departmentId: targetUser.departmentId,
+          managerId: targetUser.managerId,
+        },
+        new: parsedInput.data,
+      },
     });
 
     revalidatePath("/dashboard/team");
+    revalidatePath("/dashboard/settings/users");
+    updateTag(CacheTags.USERS);
     return user;
   });
 
@@ -329,8 +420,19 @@ export const getMyTeam = authActionClient
       where: {
         managerId: userId,
       },
-      include: {
-        Department: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        position: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
           select: {
             Task_Task_createdByToUser: true,
@@ -427,13 +529,30 @@ export const deleteUser = authActionClient
       throw new Error("Utilisateur non trouvé");
     }
 
+    // Sauvegarder les informations de l'utilisateur avant suppression pour l'audit
+    const userData = {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      departmentId: user.departmentId,
+    };
+
     // Supprimer l'utilisateur
     await prisma.user.delete({
       where: { id: parsedInput.id },
     });
 
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: userId,
+      action: AuditActions.DELETE,
+      entity: AuditEntities.USER,
+      entityId: parsedInput.id,
+      changes: userData,
+    });
+
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return { success: true, message: "Utilisateur supprimé avec succès" };
   });
 
@@ -455,7 +574,16 @@ export const resetUserPassword = authActionClient
     // Vérifier que l'utilisateur existe
     const user = await prisma.user.findUnique({
       where: { id: parsedInput.id },
-      include: { Account: true },
+      select: {
+        id: true,
+        Account: {
+          select: {
+            id: true,
+            providerId: true,
+            password: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -486,7 +614,15 @@ export const resetUserPassword = authActionClient
     // 2. Récupérer le hash
     const tempUser = await prisma.user.findUnique({
       where: { email: tempEmail },
-      include: { Account: true },
+      select: {
+        id: true,
+        Account: {
+          select: {
+            id: true,
+            password: true,
+          },
+        },
+      },
     });
 
     if (!tempUser || !tempUser.Account || tempUser.Account.length === 0) {
@@ -525,10 +661,49 @@ export const resetUserPassword = authActionClient
     await prisma.user.delete({ where: { id: tempUser.id } });
 
     revalidatePath("/dashboard/settings/users");
-    revalidateTag(CacheTags.USERS, 'max');
+    updateTag(CacheTags.USERS);
     return {
       success: true,
       message: "Mot de passe réinitialisé avec succès",
       tempPassword: parsedInput.newPassword
     };
+  });
+
+// Changer le mot de passe de l'utilisateur connecté
+export const changeMyPassword = authActionClient
+  .schema(
+    z.object({
+      currentPassword: z.string().min(1, "Le mot de passe actuel est requis"),
+      newPassword: z.string().min(6, "Le nouveau mot de passe doit contenir au moins 6 caractères"),
+    })
+  )
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId } = ctx;
+    
+    try {
+      // Utiliser l'API Better Auth pour changer le mot de passe
+      const result = await auth.api.changePassword({
+        body: {
+          currentPassword: parsedInput.currentPassword,
+          newPassword: parsedInput.newPassword,
+          revokeOtherSessions: true, // Invalider les autres sessions pour la sécurité
+        },
+        headers: await headers(),
+      });
+
+      if (!result) {
+        throw new Error("Erreur lors du changement de mot de passe");
+      }
+
+      return {
+        success: true,
+        message: "Mot de passe modifié avec succès",
+      };
+    } catch (error: any) {
+      // Gérer les erreurs spécifiques de Better Auth
+      if (error.message?.includes("Invalid current password") || error.message?.includes("incorrect")) {
+        throw new Error("Le mot de passe actuel est incorrect");
+      }
+      throw new Error(error.message || "Erreur lors du changement de mot de passe");
+    }
   });

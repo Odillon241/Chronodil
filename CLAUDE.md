@@ -1,6 +1,120 @@
 # Chronodil App - Project Instructions
 
-## Corrections récentes (2025-11-08)
+## Corrections récentes (2025-12-08)
+
+### ✅ Supabase Realtime pour Chat - CONFIGURÉ ET ACTIVÉ
+**Fonctionnalité** : Communication en temps réel pour le système de chat via Supabase Realtime.
+
+**Configuration effectuée** :
+1. **Tables ajoutées à la publication `supabase_realtime`** :
+   - `Conversation` ✅ (déjà présent)
+   - `ConversationMember` ✅ (déjà présent)
+   - `Message` ✅ (déjà présent)
+   - `MessageRead` ✅ (ajouté)
+   - `ChannelPermission` ✅ (ajouté)
+   - `ScheduledMessage` ✅ (ajouté)
+   - `MessageReminder` ✅ (ajouté)
+   - `ChatAuditLog` ✅ (ajouté)
+   - `PushSubscription` ✅ (ajouté)
+
+2. **Politiques RLS créées pour Realtime** :
+   - `Enable realtime for conversations` - SELECT sur `Conversation` pour anon/authenticated
+   - `Enable realtime for conversation members` - SELECT sur `ConversationMember` pour anon/authenticated
+   - `Enable realtime for messages` - SELECT sur `Message` pour anon/authenticated
+   - `Enable realtime for message reads` - SELECT sur `MessageRead` pour anon/authenticated
+
+3. **Hook `useRealtimeChat`** (existant) :
+   - Écoute les changements sur `Conversation`, `ConversationMember`, `Message`
+   - Backoff exponentiel pour les reconnexions
+   - Notifications toast et desktop pour les nouveaux messages
+   - Fichier : `src/hooks/use-realtime-chat.tsx`
+
+**Pourquoi ces politiques RLS ?** :
+Le projet utilise **Better Auth** (et non Supabase Auth), donc `auth.uid()` ne fonctionne pas pour identifier les utilisateurs. Les politiques RLS permissives permettent à Supabase Realtime de diffuser les événements à tous les clients connectés. Le filtrage des conversations se fait côté application (dans le hook `useRealtimeChat`).
+
+**Migration SQL** : `prisma/migrations/enable_realtime_for_chat.sql`
+
+**Lien Supabase Realtime Inspector** :
+- https://supabase.com/dashboard/project/ipghppjjhjbkhuqzqzyq/realtime/inspector
+
+**Test du Realtime** :
+1. Ouvrir le chat dans deux navigateurs/onglets différents
+2. Se connecter avec deux utilisateurs différents
+3. Envoyer un message depuis un navigateur
+4. Vérifier que l'autre reçoit le message en temps réel (sans rafraîchir)
+
+**Résultat** :
+- ✅ Supabase Realtime configuré pour toutes les tables du chat
+- ✅ Politiques RLS permissives pour la diffusion des événements
+- ✅ Hook `useRealtimeChat` fonctionnel avec reconnexion automatique
+- ✅ Notifications en temps réel pour les nouveaux messages
+
+---
+
+## Corrections précédentes (2025-12-04)
+
+### ✅ Système de Push Notifications - IMPLÉMENTÉ
+**Fonctionnalité** : Notifications push Web complètes pour alerter les utilisateurs même lorsqu'ils ne sont pas sur l'application.
+
+**Ce qui a été implémenté** :
+1. **Actions serveur push-subscription.actions.ts** :
+   - `savePushSubscription()` - Sauvegarder une subscription push en DB
+   - `deletePushSubscription()` - Supprimer une subscription
+   - `checkPushSubscription()` - Vérifier si l'utilisateur a une subscription active
+
+2. **Module notification-helpers.ts** :
+   - `sendPushNotificationForNotification()` - Envoyer une push à un utilisateur
+   - `sendPushNotificationsForNotifications()` - Envoyer des push en batch
+   - `createAndSendNotification()` - Créer notification + push (centralisé)
+   - `createAndSendNotifications()` - Création batch avec push
+
+3. **Hook usePushSubscription** (refactorisé) :
+   - Support complet du subscribe/unsubscribe
+   - Gestion des permissions du navigateur
+   - Conversion VAPID base64 → Uint8Array
+   - Intégration avec le Service Worker existant
+
+4. **Actions createNotification** dans notification.actions.ts :
+   - `createNotification()` - Créer une notification avec push automatique
+   - `createNotifications()` - Créer plusieurs notifications
+   - `createNotificationDirect()` - Fonction utilitaire serveur
+
+5. **Activation des push dans les modules existants** :
+   - `task.actions.ts` - Partage de tâche
+   - `chat.actions.ts` - Nouveaux messages
+   - `task-comment.actions.ts` - Nouveaux commentaires
+   - `inngest/functions.ts` - Rappels email et timesheet
+
+**Configuration requise** :
+Générer les clés VAPID avec :
+```bash
+pnpm tsx scripts/generate-vapid-keys.ts
+```
+
+Ajouter au fichier `.env` :
+```bash
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public_key>
+VAPID_PRIVATE_KEY=<private_key>
+VAPID_SUBJECT=mailto:admin@chronodil.com
+```
+
+**Fichiers créés/modifiés** :
+- [src/actions/push-subscription.actions.ts](src/actions/push-subscription.actions.ts) - Actions DB
+- [src/lib/notification-helpers.ts](src/lib/notification-helpers.ts) - Fonctions d'envoi push
+- [src/hooks/use-push-subscription.tsx](src/hooks/use-push-subscription.tsx) - Hook client
+- [src/actions/notification.actions.ts](src/actions/notification.actions.ts) - Actions centralisées
+- [scripts/generate-vapid-keys.ts](scripts/generate-vapid-keys.ts) - Générateur de clés
+- [docs/features/notifications/NOTIFICATION_SYSTEM.md](docs/features/notifications/NOTIFICATION_SYSTEM.md) - Documentation
+
+**Résultat** :
+- ✅ Push notifications fonctionnelles
+- ✅ Service Worker configuré pour recevoir les push
+- ✅ Intégration automatique dans les actions existantes
+- ✅ Documentation complète
+
+---
+
+## Corrections précédentes (2025-11-08)
 
 ### ✅ Synchronisation bidirectionnelle Task ↔ HR Activity - IMPLÉMENTÉE
 **Fonctionnalité** : Création automatique de tâches pour les activités RH créées en mode manuel.

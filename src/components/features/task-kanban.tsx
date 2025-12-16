@@ -45,6 +45,31 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
+// Palette de couleurs pour les avatars
+const AVATAR_COLORS = [
+  { bg: "bg-blue-500", text: "text-white" },
+  { bg: "bg-green-500", text: "text-white" },
+  { bg: "bg-purple-500", text: "text-white" },
+  { bg: "bg-pink-500", text: "text-white" },
+  { bg: "bg-orange-500", text: "text-white" },
+  { bg: "bg-cyan-500", text: "text-white" },
+  { bg: "bg-indigo-500", text: "text-white" },
+  { bg: "bg-red-500", text: "text-white" },
+  { bg: "bg-yellow-500", text: "text-white" },
+  { bg: "bg-teal-500", text: "text-white" },
+];
+
+// Générer une couleur cohérente basée sur l'ID ou le nom de l'utilisateur
+const getAvatarColor = (userId: string | undefined, userName: string | undefined) => {
+  const identifier = userId || userName || "default";
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
+};
+
 function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle, currentUserId, currentUserRole }: {
   task: Task;
   onEventClick: (task: Task) => void;
@@ -60,6 +85,37 @@ function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle, c
     id: task.id,
     data: { task },
   });
+
+  // Construire la liste des avatars à afficher (créateur + membres assignés)
+  const avatarsToDisplay = useMemo(() => {
+    const avatars: Array<{ id: string; name: string; avatar?: string; isCreator: boolean }> = [];
+
+    // Ajouter le créateur en premier
+    if (task.Creator) {
+      avatars.push({
+        id: task.Creator.id,
+        name: task.Creator.name,
+        avatar: task.Creator.avatar,
+        isCreator: true,
+      });
+    }
+
+    // Ajouter les membres assignés (sans dupliquer le créateur)
+    if (task.TaskMember) {
+      task.TaskMember.forEach((member) => {
+        if (member.User.id !== task.Creator?.id) {
+          avatars.push({
+            id: member.User.id,
+            name: member.User.name,
+            avatar: member.User.avatar,
+            isCreator: false,
+          });
+        }
+      });
+    }
+
+    return avatars;
+  }, [task.Creator, task.TaskMember]);
 
   return (
     <ContextMenu>
@@ -102,6 +158,45 @@ function DraggableTaskCard({ task, onEventClick, onEventDelete, onEventToggle, c
             {task.estimatedHours && (
               <div className="text-xs text-muted-foreground">
                 ⏱️ {task.estimatedHours}h
+              </div>
+            )}
+
+            {/* Afficher les avatars du créateur et des membres assignés */}
+            {avatarsToDisplay.length > 0 && (
+              <div className="flex items-center gap-1 pt-1 border-t">
+                <div className="flex -space-x-2">
+                  {avatarsToDisplay.slice(0, 3).map((person) => {
+                    const initials = person.name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase() || "?";
+                    const color = getAvatarColor(person.id, person.name);
+
+                    return (
+                      <Avatar
+                        key={person.id}
+                        className="h-6 w-6 border-2 border-background"
+                        title={`${person.name}${person.isCreator ? " (Créateur)" : ""}`}
+                      >
+                        <AvatarImage src={person.avatar || undefined} alt={person.name} />
+                        <AvatarFallback className={cn(
+                          "text-[10px] font-medium",
+                          color.bg,
+                          color.text
+                        )}>
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    );
+                  })}
+                  {avatarsToDisplay.length > 3 && (
+                    <div className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center">
+                      <span className="text-[10px] font-medium">+{avatarsToDisplay.length - 3}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

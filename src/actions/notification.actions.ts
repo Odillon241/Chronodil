@@ -3,8 +3,161 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { actionClient } from "@/lib/safe-action";
+import { actionClient, authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
+import { nanoid } from "nanoid";
+import {
+  sendPushNotificationForNotification,
+  sendPushNotificationsForNotifications,
+} from "@/lib/notification-helpers";
+
+// ========================================
+// CRÉATION DE NOTIFICATIONS
+// ========================================
+
+const createNotificationSchema = z.object({
+  userId: z.string(),
+  title: z.string().min(1),
+  message: z.string().min(1),
+  type: z.string().optional(),
+  link: z.string().optional(),
+  sendPush: z.boolean().optional(),
+});
+
+/**
+ * Créer une notification pour un utilisateur
+ * Peut être appelée depuis d'autres actions serveur
+ */
+export const createNotification = authActionClient
+  .schema(createNotificationSchema)
+  .action(async ({ parsedInput }) => {
+    const notification = await prisma.notification.create({
+      data: {
+        id: nanoid(),
+        userId: parsedInput.userId,
+        title: parsedInput.title,
+        message: parsedInput.message,
+        type: parsedInput.type || "info",
+        link: parsedInput.link || null,
+      },
+    });
+
+    // Envoyer la push notification si demandé (par défaut: oui)
+    if (parsedInput.sendPush !== false) {
+      // Fire and forget - ne pas bloquer la réponse
+      sendPushNotificationForNotification(parsedInput.userId, {
+        id: notification.id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        link: notification.link,
+      }).catch(console.error);
+    }
+
+    return notification;
+  });
+
+/**
+ * Créer des notifications pour plusieurs utilisateurs
+ * Optimisé pour les notifications de groupe
+ */
+export const createNotifications = authActionClient
+  .schema(
+    z.object({
+      notifications: z.array(
+        z.object({
+          userId: z.string(),
+          title: z.string().min(1),
+          message: z.string().min(1),
+          type: z.string().optional(),
+          link: z.string().optional(),
+        })
+      ),
+      sendPush: z.boolean().optional(),
+    })
+  )
+  .action(async ({ parsedInput }) => {
+    const { notifications, sendPush } = parsedInput;
+
+    // Créer toutes les notifications en batch
+    const result = await prisma.notification.createMany({
+      data: notifications.map((n) => ({
+        id: nanoid(),
+        userId: n.userId,
+        title: n.title,
+        message: n.message,
+        type: n.type || "info",
+        link: n.link || null,
+      })),
+    });
+
+    // Envoyer les push notifications si demandé
+    if (sendPush !== false && result.count > 0) {
+      // Récupérer les notifications créées
+      const createdNotifications = await prisma.notification.findMany({
+        where: {
+          userId: { in: notifications.map((n) => n.userId) },
+        },
+        orderBy: { createdAt: "desc" },
+        take: result.count,
+      });
+
+      // Fire and forget
+      sendPushNotificationsForNotifications(
+        createdNotifications.map((n) => ({
+          id: n.id,
+          userId: n.userId,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          link: n.link,
+        }))
+      ).catch(console.error);
+    }
+
+    return { count: result.count };
+  });
+
+/**
+ * Fonction utilitaire pour créer une notification depuis le code serveur
+ * (sans passer par safe-action)
+ */
+export async function createNotificationDirect(params: {
+  userId: string;
+  title: string;
+  message: string;
+  type?: string;
+  link?: string | null;
+  sendPush?: boolean;
+}) {
+  const notification = await prisma.notification.create({
+    data: {
+      id: nanoid(),
+      userId: params.userId,
+      title: params.title,
+      message: params.message,
+      type: params.type || "info",
+      link: params.link || null,
+    },
+  });
+
+  // Envoyer la push notification
+  if (params.sendPush !== false) {
+    sendPushNotificationForNotification(params.userId, {
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      link: notification.link,
+    }).catch(console.error);
+  }
+
+  return notification;
+}
+
+// ========================================
+// LECTURE DES NOTIFICATIONS
+// ========================================
 
 export const getMyNotifications = actionClient
   .schema(z.object({ limit: z.number().optional() }))
@@ -124,4 +277,162 @@ export const getUnreadCount = actionClient
     });
 
     return count;
+  });
+
+// ========================================
+// HEURES CALMES (QUIET HOURS)
+// ========================================
+
+const quietHoursSchema = z.object({
+  enabled: z.boolean(),
+  startTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format invalide (HH:MM)"),
+  endTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format invalide (HH:MM)"),
+  days: z.array(z.string()).optional(), // Jours de la semaine (0-6, 0 = Dimanche)
+});
+
+/**
+ * Récupérer les préférences d'heures calmes de l'utilisateur
+ */
+export const getQuietHoursSettings = actionClient
+  .schema(z.object({}))
+  .action(async () => {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        quietHoursEnabled: true,
+        quietHoursStart: true,
+        quietHoursEnd: true,
+        quietHoursDays: true,
+      },
+    });
+
+    return {
+      enabled: user?.quietHoursEnabled ?? false,
+      startTime: user?.quietHoursStart ?? "22:00",
+      endTime: user?.quietHoursEnd ?? "07:00",
+      days: user?.quietHoursDays ?? [],
+    };
+  });
+
+/**
+ * Mettre à jour les préférences d'heures calmes
+ */
+export const updateQuietHoursSettings = actionClient
+  .schema(quietHoursSchema)
+  .action(async ({ parsedInput }) => {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        quietHoursEnabled: parsedInput.enabled,
+        quietHoursStart: parsedInput.startTime,
+        quietHoursEnd: parsedInput.endTime,
+        quietHoursDays: parsedInput.days || [],
+      },
+    });
+
+    return { success: true };
+  });
+
+/**
+ * Vérifier si on est actuellement dans les heures calmes
+ * Cette fonction peut être appelée côté client pour décider d'afficher les notifications
+ */
+export const isInQuietHours = actionClient
+  .schema(z.object({}))
+  .action(async () => {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        quietHoursEnabled: true,
+        quietHoursStart: true,
+        quietHoursEnd: true,
+        quietHoursDays: true,
+        timezone: true,
+      },
+    });
+
+    if (!user?.quietHoursEnabled) {
+      return { isQuiet: false };
+    }
+
+    // Obtenir l'heure actuelle dans le fuseau horaire de l'utilisateur
+    const now = new Date();
+    const userTimezone = user.timezone || "Africa/Libreville";
+
+    // Convertir en heure locale de l'utilisateur
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: userTimezone,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    };
+    const currentTimeStr = new Intl.DateTimeFormat("fr-FR", options).format(now);
+    const currentTime = currentTimeStr.replace(":", "");
+
+    // Obtenir le jour de la semaine
+    const dayOptions: Intl.DateTimeFormatOptions = {
+      timeZone: userTimezone,
+      weekday: "short",
+    };
+    const currentDay = new Intl.DateTimeFormat("en-US", dayOptions).format(now).toLowerCase();
+    const dayMap: Record<string, string> = {
+      sun: "0",
+      mon: "1",
+      tue: "2",
+      wed: "3",
+      thu: "4",
+      fri: "5",
+      sat: "6",
+    };
+    const currentDayNum = dayMap[currentDay];
+
+    // Vérifier si c'est un jour où les heures calmes sont actives
+    if (user.quietHoursDays && user.quietHoursDays.length > 0) {
+      if (!user.quietHoursDays.includes(currentDayNum)) {
+        return { isQuiet: false };
+      }
+    }
+
+    // Convertir les heures en format numérique pour comparaison
+    const startTime = user.quietHoursStart.replace(":", "");
+    const endTime = user.quietHoursEnd.replace(":", "");
+
+    // Gérer le cas où les heures calmes passent minuit
+    if (startTime > endTime) {
+      // Ex: 22:00 - 07:00
+      if (currentTime >= startTime || currentTime < endTime) {
+        return { isQuiet: true };
+      }
+    } else {
+      // Ex: 13:00 - 14:00 (pause déjeuner)
+      if (currentTime >= startTime && currentTime < endTime) {
+        return { isQuiet: true };
+      }
+    }
+
+    return { isQuiet: false };
   });

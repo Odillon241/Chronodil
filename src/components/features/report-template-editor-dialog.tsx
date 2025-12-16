@@ -25,6 +25,7 @@ import { createReportTemplate, updateReportTemplate } from "@/actions/report-tem
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 import { Save, FileText, Info } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
@@ -334,12 +335,17 @@ export function ReportTemplateEditorDialog({
               Annuler
             </Button>
             <Button type="submit" disabled={isSaving}>
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving
-                ? "Enregistrement..."
-                : isEditing
-                ? "Enregistrer les modifications"
-                : "Créer le modèle"}
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Enregistrement...
+                </span>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isEditing ? "Enregistrer les modifications" : "Créer le modèle"}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

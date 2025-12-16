@@ -8,13 +8,14 @@
 // - Un seul channel au lieu de 4
 // - Utilisation de React Query pour synchroniser le cache
 // - Debouncing des notifications
+// - Protection SSR: ne s'exécute que côté client
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createClient } from "@/lib/supabase-client";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/providers/query-provider";
+import { QueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS, getQueryClient } from "@/providers/query-provider";
 
 interface UseRealtimeTasksOptimizedProps {
   userId: string; // REQUIS pour filtrer les événements
@@ -30,12 +31,17 @@ export function useRealtimeTasksOptimized({
   projectId,
   enabled = true,
 }: UseRealtimeTasksOptimizedProps) {
-  const queryClient = useQueryClient();
+  const [isMounted, setIsMounted] = useState(false);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const retryCountRef = useRef(0);
   const maxRetries = 5;
   const isSubscribedRef = useRef(false);
   const lastNotificationRef = useRef<{ [key: string]: number }>({});
+
+  // Marquer comme monté côté client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Debounce les notifications (max 1 toutes les 3 secondes par type)
   const canShowNotification = useCallback((type: string) => {
@@ -49,7 +55,9 @@ export function useRealtimeTasksOptimized({
   }, []);
 
   useEffect(() => {
-    if (!enabled) return;
+    // ⚡ Ne pas exécuter côté serveur ou si désactivé
+    const queryClient = getQueryClient();
+    if (!isMounted || !enabled || !queryClient) return;
 
     const supabase = createClient();
     let reconnectTimeout: NodeJS.Timeout;
@@ -197,19 +205,26 @@ export function useRealtimeTasksOptimized({
         isSubscribedRef.current = false;
       }
     };
-  }, [userId, projectId, enabled, queryClient, canShowNotification]);
+  }, [userId, projectId, enabled, isMounted, canShowNotification]);
 }
 
 // ============================================
 // HOOK REAL-TIME POUR LES HR TIMESHEETS
 // ============================================
 export function useRealtimeHRTimesheets({ userId, enabled = true }: { userId: string; enabled?: boolean }) {
-  const queryClient = useQueryClient();
+  const [isMounted, setIsMounted] = useState(false);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isSubscribedRef = useRef(false);
 
+  // Marquer comme monté côté client
   useEffect(() => {
-    if (!enabled) return;
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // ⚡ Ne pas exécuter côté serveur ou si désactivé
+    const queryClient = getQueryClient();
+    if (!isMounted || !enabled || !queryClient) return;
 
     const supabase = createClient();
 
@@ -280,7 +295,7 @@ export function useRealtimeHRTimesheets({ userId, enabled = true }: { userId: st
         isSubscribedRef.current = false;
       }
     };
-  }, [userId, enabled, queryClient]);
+  }, [userId, enabled, isMounted]);
 }
 
 // ============================================
@@ -298,6 +313,7 @@ export function useRealtimeHRTimesheets({ userId, enabled = true }: { userId: st
 // - Notifications debouncées (max 1 toutes les 3s par type)
 // - Synchronisation automatique du cache React Query
 // - Peut être désactivé avec enabled={false}
+// - Protection SSR: ne s'exécute que côté client
 //
 // GAINS ATTENDUS:
 // - Réduction du trafic réseau: -70 à -80%

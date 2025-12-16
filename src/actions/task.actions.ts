@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { getSession, getUserRole } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -7,6 +7,7 @@ import { actionClient, authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { logTaskActivity, logTaskChanges } from "@/lib/task-activity";
+import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
 
 const createTaskSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -153,7 +154,7 @@ export const createTask = actionClient
           select: { name: true },
         });
 
-        await tx.notification.createMany({
+        const notifications = await tx.notification.createMany({
           data: sharedWith.map((userId) => ({
             id: nanoid(),
             userId: userId,
@@ -164,6 +165,33 @@ export const createTask = actionClient
             isRead: false,
           })),
         });
+
+        // Envoyer les push notifications (fire and forget, après la transaction)
+        if (notifications.count > 0) {
+          import('@/lib/notification-helpers').then(({ sendPushNotificationsForNotifications }) => {
+            // Récupérer les notifications créées pour envoyer les push
+            prisma.notification.findMany({
+              where: {
+                userId: { in: sharedWith },
+                title: "Nouvelle tâche partagée",
+              },
+              orderBy: { createdAt: 'desc' },
+              take: sharedWith.length,
+            }).then((createdNotifications) => {
+              // Envoyer en arrière-plan (ne pas attendre)
+              sendPushNotificationsForNotifications(
+                createdNotifications.map((n) => ({
+                  userId: n.userId,
+                  id: n.id,
+                  title: n.title,
+                  message: n.message,
+                  type: n.type,
+                  link: n.link,
+                }))
+              ).catch(console.error);
+            });
+          }).catch(console.error);
+        }
       }
 
       return newTask;
@@ -174,6 +202,20 @@ export const createTask = actionClient
       taskId: task.id,
       userId: session.user.id,
       action: "created",
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: session.user.id,
+      action: AuditActions.CREATE,
+      entity: AuditEntities.TASK,
+      entityId: task.id,
+      changes: {
+        name: task.name,
+        status: task.status,
+        projectId: task.projectId,
+        createdBy: task.createdBy,
+      },
     });
 
     return task;
@@ -193,7 +235,15 @@ export const updateTask = actionClient
 
     const task = await prisma.task.findUnique({
       where: { id },
-      include: { Project: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        priority: true,
+        createdBy: true,
+        projectId: true,
+      },
     });
 
     if (!task) {
@@ -214,7 +264,20 @@ export const updateTask = actionClient
         ...data,
         updatedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        status: true,
+        priority: true,
+        isActive: true,
+        estimatedHours: true,
+        dueDate: true,
+        reminderDate: true,
+        reminderTime: true,
+        soundEnabled: true,
+        createdBy: true,
+        updatedAt: true,
         Project: {
           select: {
             name: true,
@@ -226,6 +289,28 @@ export const updateTask = actionClient
 
     // Logger les changements
     await logTaskChanges(id, session.user.id, task, updatedTask);
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: session.user.id,
+      action: AuditActions.UPDATE,
+      entity: AuditEntities.TASK,
+      entityId: id,
+      changes: {
+        previous: {
+          name: task.name,
+          status: task.status,
+          priority: task.priority,
+          description: task.description,
+        },
+        new: {
+          name: updatedTask.name,
+          status: updatedTask.status,
+          priority: updatedTask.priority,
+          description: updatedTask.description,
+        },
+      },
+    });
 
     return updatedTask;
   });
@@ -242,7 +327,13 @@ export const deleteTask = actionClient
 
     const task = await prisma.task.findUnique({
       where: { id: parsedInput.id },
-      include: { Project: true },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        projectId: true,
+        createdBy: true,
+      },
     });
 
     if (!task) {
@@ -257,8 +348,25 @@ export const deleteTask = actionClient
       throw new Error("Vous n'avez pas la permission de supprimer cette tâche. Seul le créateur ou un administrateur peut supprimer une tâche.");
     }
 
+    // Sauvegarder les informations de la tâche avant suppression pour l'audit
+    const taskData = {
+      name: task.name,
+      status: task.status,
+      projectId: task.projectId,
+      createdBy: task.createdBy,
+    };
+
     await prisma.task.delete({
       where: { id: parsedInput.id },
+    });
+
+    // Créer un log d'audit
+    await createAuditLog({
+      userId: session.user.id,
+      action: AuditActions.DELETE,
+      entity: AuditEntities.TASK,
+      entityId: parsedInput.id,
+      changes: taskData,
     });
 
     return { success: true };
@@ -395,6 +503,7 @@ export const getMyTasks = actionClient
         },
         User_Task_createdByToUser: {
           select: {
+            id: true,
             name: true,
             email: true,
             avatar: true,
@@ -471,6 +580,7 @@ export const getAllTasks = actionClient
         },
         User_Task_createdByToUser: {
           select: {
+            id: true,
             name: true,
             email: true,
             avatar: true,
@@ -519,7 +629,7 @@ export const getAvailableUsersForSharing = actionClient
           projectId: parsedInput.projectId,
           userId: { not: session.user.id }, // Exclure l'utilisateur actuel
         },
-        include: {
+        select: {
           User: {
             select: {
               id: true,
@@ -572,9 +682,16 @@ export const updateTaskStatus = actionClient
 
     const task = await prisma.task.findUnique({
       where: { id: parsedInput.id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        createdBy: true,
+        isShared: true,
+        completedAt: true,
         TaskMember: {
-          include: {
+          select: {
+            userId: true,
             User: {
               select: {
                 id: true,
@@ -606,7 +723,14 @@ export const updateTaskStatus = actionClient
         completedAt: parsedInput.status === "DONE" ? new Date() : task.completedAt,
         updatedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        priority: true,
+        isActive: true,
+        completedAt: true,
+        updatedAt: true,
         Project: {
           select: {
             name: true,
@@ -622,7 +746,7 @@ export const updateTaskStatus = actionClient
       const otherMembers = task.TaskMember.filter(m => m.userId !== session.user.id);
       
       if (otherMembers.length > 0) {
-        await prisma.notification.createMany({
+        const statusNotifications = await prisma.notification.createMany({
           data: otherMembers.map(member => ({
             id: nanoid(),
             userId: member.userId,
@@ -633,6 +757,32 @@ export const updateTaskStatus = actionClient
             isRead: false,
           })),
         });
+
+        // Envoyer les push notifications (fire and forget)
+        // TODO: Implémenter les push notifications (module notification-helpers manquant)
+        // if (statusNotifications.count > 0) {
+        //   const { sendPushNotificationsForNotifications } = await import('@/lib/notification-helpers');
+        //   // Récupérer les notifications créées
+        //   const createdStatusNotifications = await prisma.notification.findMany({
+        //     where: {
+        //       userId: { in: otherMembers.map(m => m.userId) },
+        //       title: "Statut de tâche modifié",
+        //     },
+        //     orderBy: { createdAt: 'desc' },
+        //     take: otherMembers.length,
+        //   });
+        //
+        //   sendPushNotificationsForNotifications(
+        //     createdStatusNotifications.map((n) => ({
+        //       userId: n.userId,
+        //       id: n.id,
+        //       title: n.title,
+        //       message: n.message,
+        //       type: n.type,
+        //       link: n.link,
+        //     }))
+        //   ).catch(console.error);
+        // }
       }
     }
 
@@ -685,7 +835,13 @@ export const updateTaskPriority = actionClient
         priority: parsedInput.priority,
         updatedAt: new Date(),
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        priority: true,
+        isActive: true,
+        updatedAt: true,
         Project: {
           select: {
             name: true,
@@ -871,5 +1027,177 @@ export const getUserTasksForHRTimesheet = authActionClient
         }`
       );
     }
+  });
+
+/**
+ * Récupérer les tâches d'un projet triées par date d'échéance
+ * Utilise l'index Task_projectId_dueDate_idx pour des performances optimales
+ */
+export const getProjectTasksByDueDate = authActionClient
+  .schema(z.object({
+    projectId: z.string(),
+    startDate: z.date().optional(),
+    endDate: z.date().optional(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { projectId, startDate, endDate } = parsedInput;
+
+    // Vérifier que l'utilisateur est membre du projet ou admin
+    const session = await getSession(await headers());
+    if (!session) {
+      throw new Error("Non authentifié");
+    }
+
+    const member = await prisma.projectMember.findFirst({
+      where: {
+        projectId,
+        userId: ctx.userId,
+      },
+    });
+
+    if (!member && getUserRole(session) !== "ADMIN") {
+      throw new Error("Vous n'êtes pas membre de ce projet");
+    }
+
+    // Construire le filtre de dates
+    const dateFilter: any = {};
+    if (startDate || endDate) {
+      dateFilter.dueDate = {};
+      if (startDate) dateFilter.dueDate.gte = startDate;
+      if (endDate) dateFilter.dueDate.lte = endDate;
+    } else {
+      // Si pas de filtre, récupérer uniquement les tâches avec une date d'échéance
+      dateFilter.dueDate = { not: null };
+    }
+
+    // Cette requête utilise l'index composite Task_projectId_dueDate_idx
+    const tasks = await prisma.task.findMany({
+      where: {
+        projectId,
+        isActive: true,
+        ...dateFilter,
+      },
+      include: {
+        User_Task_createdByToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        TaskMember: {
+          include: {
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            TaskComment: true,
+            TaskActivity: true,
+          },
+        },
+      },
+      orderBy: [
+        { dueDate: "asc" },
+        { priority: "desc" },
+      ],
+    });
+
+    return { tasks, totalTasks: tasks.length };
+  });
+
+/**
+ * Récupérer les tâches d'une feuille de temps RH filtrées par statut
+ * Utilise l'index Task_hrTimesheetId_status_idx pour des performances optimales
+ */
+export const getHRTimesheetTasksByStatus = authActionClient
+  .schema(z.object({
+    hrTimesheetId: z.string(),
+    status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]).optional(),
+  }))
+  .action(async ({ parsedInput, ctx }) => {
+    const { hrTimesheetId, status } = parsedInput;
+
+    // Vérifier que la feuille de temps existe et appartient à l'utilisateur
+    const timesheet = await prisma.hRTimesheet.findFirst({
+      where: {
+        id: hrTimesheetId,
+        OR: [
+          { userId: ctx.userId },
+          // Permettre aux managers/directeurs de voir les feuilles de temps qu'ils supervisent
+          { managerSignedById: ctx.userId },
+          { odillonSignedById: ctx.userId },
+        ],
+      },
+    });
+
+    if (!timesheet) {
+      throw new Error("Feuille de temps non trouvée ou accès non autorisé");
+    }
+
+    // Construire le filtre de statut
+    const statusFilter: any = {};
+    if (status) {
+      statusFilter.status = status;
+    }
+
+    // Cette requête utilise l'index composite Task_hrTimesheetId_status_idx
+    const tasks = await prisma.task.findMany({
+      where: {
+        hrTimesheetId,
+        ...statusFilter,
+      },
+      include: {
+        Project: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            color: true,
+          },
+        },
+        User_Task_createdByToUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        HRActivity: {
+          select: {
+            id: true,
+            activityName: true,
+            activityType: true,
+            periodicity: true,
+            totalHours: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: [
+        { status: "asc" },
+        { priority: "desc" },
+        { dueDate: "asc" },
+      ],
+    });
+
+    // Calculer les statistiques par statut
+    const statusStats = {
+      TODO: tasks.filter(t => t.status === "TODO").length,
+      IN_PROGRESS: tasks.filter(t => t.status === "IN_PROGRESS").length,
+      REVIEW: tasks.filter(t => t.status === "REVIEW").length,
+      DONE: tasks.filter(t => t.status === "DONE").length,
+      BLOCKED: tasks.filter(t => t.status === "BLOCKED").length,
+    };
+
+    return { tasks, totalTasks: tasks.length, statusStats };
   });
 
