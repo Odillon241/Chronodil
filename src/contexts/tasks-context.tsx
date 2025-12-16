@@ -14,23 +14,27 @@ export interface TasksContextType {
   allTasks: Task[]; // Toutes les tâches (pour calendrier et gantt)
   filteredTasks: Task[];
   isLoading: boolean;
-  
+
   // Filtres
   searchQuery: string;
   statusFilter: string;
   priorityFilter: string;
   selectedProject: string;
   userFilter: "my" | "all"; // Filtre utilisateur pour tableau et kanban
-  
+  startDateFilter: string | undefined;
+  endDateFilter: string | undefined;
+
   // Vue
   viewMode: ViewMode;
-  
+
   // Actions
   setSearchQuery: (query: string) => void;
   setStatusFilter: (filter: string) => void;
   setPriorityFilter: (filter: string) => void;
   setSelectedProject: (projectId: string) => void;
   setUserFilter: (filter: "my" | "all") => void;
+  setStartDateFilter: (date: string | undefined) => void;
+  setEndDateFilter: (date: string | undefined) => void;
   setViewMode: (mode: ViewMode) => void;
   loadTasks: () => Promise<void>;
   refreshTasks: () => Promise<void>;
@@ -61,6 +65,8 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selectedProject, setSelectedProject] = useState<string>(initialProjectId);
   const [userFilter, setUserFilter] = useState<"my" | "all">("my"); // Par défaut, afficher mes tâches
+  const [startDateFilter, setStartDateFilter] = useState<string | undefined>(undefined);
+  const [endDateFilter, setEndDateFilter] = useState<string | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   // Fonction pour charger les tâches
@@ -139,8 +145,31 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
       filtered = filtered.filter((task) => task.priority === priorityFilter);
     }
 
+    // Filtre par date de début
+    if (startDateFilter) {
+      const startDate = new Date(startDateFilter);
+      startDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter((task) => {
+        if (!task.dueDate) return false;
+        const taskDate = new Date(task.dueDate);
+        taskDate.setHours(0, 0, 0, 0);
+        return taskDate >= startDate;
+      });
+    }
+
+    // Filtre par date de fin
+    if (endDateFilter) {
+      const endDate = new Date(endDateFilter);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((task) => {
+        if (!task.dueDate) return false;
+        const taskDate = new Date(task.dueDate);
+        return taskDate <= endDate;
+      });
+    }
+
     setFilteredTasks(filtered);
-  }, [searchQuery, userTasks, allTasks, statusFilter, priorityFilter, viewMode, userFilter]);
+  }, [searchQuery, userTasks, allTasks, statusFilter, priorityFilter, startDateFilter, endDateFilter, viewMode, userFilter]);
 
   const value: TasksContextType = {
     userTasks,
@@ -152,12 +181,16 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
     priorityFilter,
     selectedProject,
     userFilter,
+    startDateFilter,
+    endDateFilter,
     viewMode,
     setSearchQuery,
     setStatusFilter,
     setPriorityFilter,
     setSelectedProject,
     setUserFilter,
+    setStartDateFilter,
+    setEndDateFilter,
     setViewMode,
     loadTasks,
     refreshTasks,
