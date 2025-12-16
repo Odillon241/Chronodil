@@ -96,7 +96,8 @@
       "Bash(pnpm tsx:*)",
       "mcp__better-auth__search",
       "Bash(tasklist:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git -C \"c:/Users/nexon/chronodil_app_clone/CHRONODIL_app\" log --oneline -5)"
     ],
     "deny": [],
     "ask": []
