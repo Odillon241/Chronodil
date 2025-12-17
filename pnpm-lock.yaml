@@ -240,7 +240,7 @@ importers:
         specifier: ^22.18.12
         version: 22.19.0
       '@types/nodemailer':
-        specifier: ^7.0.3
+        specifier: ^7.0.4
         version: 7.0.4
       '@types/react':
         specifier: ^19.2.7
