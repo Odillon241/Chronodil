@@ -8,7 +8,7 @@ export function BackButton() {
     <Button
       variant="outline"
       onClick={() => window.history.back()}
-      className="w-full sm:w-auto"
+      className="w-fit"
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
       Page précédente

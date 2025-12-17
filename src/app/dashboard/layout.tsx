@@ -13,6 +13,7 @@ import { QueryProvider } from "@/providers/query-provider";
 import { Input } from "@/components/ui/input";
 import { registerServiceWorker } from "@/lib/service-worker-registration";
 import { usePresenceTracker } from "@/hooks/use-presence-tracker";
+import { usePreloadDashboardData } from "@/hooks/use-preload-dashboard-data";
 
 function SearchBar() {
   const [isMac, setIsMac] = useState(false);
@@ -52,13 +53,14 @@ function SearchBar() {
   );
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Composant interne qui gère le préchargement des données
+function DashboardContent({ children }: { children: React.ReactNode }) {
   // Tracker la présence de l'utilisateur (met à jour lastSeenAt en DB)
   usePresenceTracker();
+
+  // ⚡ PRÉCHARGEMENT: Charger toutes les données critiques en arrière-plan
+  // Pour un affichage instantané lors de la navigation
+  usePreloadDashboardData();
 
   // Enregistrer le service worker au chargement du dashboard
   useEffect(() => {
@@ -73,39 +75,49 @@ export default function DashboardLayout({
   }, []);
 
   return (
+    <SidebarProvider>
+      <Suspense fallback={<div>Loading...</div>}>
+        <AppSidebar />
+      </Suspense>
+      <SidebarInset className="flex flex-col h-screen overflow-hidden">
+        <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
+          <div className="flex flex-1 items-center gap-2 min-w-0">
+            <Suspense fallback={<div>Loading...</div>}>
+              <DynamicBreadcrumb />
+            </Suspense>
+          </div>
+          <div className="hidden md:flex items-center gap-2 max-w-md mx-4">
+            <SearchBar />
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <Suspense fallback={<div>Loading...</div>}>
+              <NotificationDropdown />
+            </Suspense>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
+          {children}
+        </main>
+      </SidebarInset>
+      <Suspense fallback={null}>
+        <CommandPalette />
+      </Suspense>
+    </SidebarProvider>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
     <QueryProvider>
       <SettingsProvider>
-        <SidebarProvider>
-          <Suspense fallback={<div>Loading...</div>}>
-            <AppSidebar />
-          </Suspense>
-          <SidebarInset className="flex flex-col h-screen overflow-hidden">
-            <header className="sticky top-0 z-10 flex h-14 sm:h-16 shrink-0 items-center gap-2 border-b bg-background px-2 sm:px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4" />
-              <div className="flex flex-1 items-center gap-2 min-w-0">
-                <Suspense fallback={<div>Loading...</div>}>
-                  <DynamicBreadcrumb />
-                </Suspense>
-              </div>
-              <div className="hidden md:flex items-center gap-2 max-w-md mx-4">
-                <SearchBar />
-              </div>
-              <div className="flex items-center gap-2">
-                <ThemeSwitcher />
-                <Suspense fallback={<div>Loading...</div>}>
-                  <NotificationDropdown />
-                </Suspense>
-              </div>
-            </header>
-            <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6">
-              {children}
-            </main>
-          </SidebarInset>
-          <Suspense fallback={null}>
-            <CommandPalette />
-          </Suspense>
-        </SidebarProvider>
+        <DashboardContent>{children}</DashboardContent>
       </SettingsProvider>
     </QueryProvider>
   );

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter, Edit2 } from "lucide-react";
+import { X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter, Edit2, Eye, Info } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -15,6 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -94,6 +101,8 @@ export function HRTimesheetActivitiesTable({
   const [filterPeriodicity, setFilterPeriodicity] = useState<string>("all");
   const [sortField, setSortField] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   // Filtrage des activités
   let filteredDisplayActivities = useMemo(() => {
@@ -522,13 +531,43 @@ export function HRTimesheetActivitiesTable({
               {filteredDisplayActivities.map((activity) => (
                 <ContextMenu key={activity.id}>
                   <ContextMenuTrigger asChild>
-                    <TableRow>
+                    <TableRow
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        // Ne pas ouvrir le modal si on a cliqué sur un bouton ou un élément interactif
+                        const target = e.target as HTMLElement;
+                        if (
+                          target.closest('button') ||
+                          target.closest('[role="menuitem"]') ||
+                          target.closest('[role="option"]')
+                        ) {
+                          return;
+                        }
+                        setSelectedActivity(activity);
+                        setShowDetailsDialog(true);
+                      }}
+                    >
                       <TableCell className="font-medium">
                         {activity.ActivityCatalog?.category || "Autres"}
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <p className="font-medium">{activity.activityName}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{activity.activityName}</p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedActivity(activity);
+                                setShowDetailsDialog(true);
+                              }}
+                              title="Voir les détails"
+                            >
+                              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          </div>
                           {activity.description && (
                             <p className="text-sm text-muted-foreground line-clamp-1">
                               {activity.description}
@@ -571,7 +610,10 @@ export function HRTimesheetActivitiesTable({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onEdit(activity)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit(activity);
+                                }}
                                 className="text-primary hover:text-primary"
                               >
                                 <Edit2 className="h-4 w-4" />
@@ -581,7 +623,10 @@ export function HRTimesheetActivitiesTable({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onDelete(activity.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDelete(activity.id);
+                                }}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -620,6 +665,80 @@ export function HRTimesheetActivitiesTable({
           </Table>
         </div>
       )}
+
+      {/* Dialog de détails de l'activité */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Détails de l'activité</DialogTitle>
+            <DialogDescription>
+              Informations complètes sur l'activité sélectionnée
+            </DialogDescription>
+          </DialogHeader>
+          {selectedActivity && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Nom de l'activité</span>
+                </div>
+                <p className="text-base font-semibold">{selectedActivity.activityName}</p>
+              </div>
+
+              {selectedActivity.description && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">Description</span>
+                  </div>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.description}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Catégorie</span>
+                  <p className="text-sm">{selectedActivity.ActivityCatalog?.category || "Autres"}</p>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Type</span>
+                  <div>{getActivityTypeBadge(selectedActivity.activityType)}</div>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Périodicité</span>
+                  <div>
+                    <Badge variant="outline">
+                      {getPeriodicityLabel(selectedActivity.periodicity)}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Statut</span>
+                  <div>
+                    <Badge variant={selectedActivity.status === "COMPLETED" ? "default" : "secondary"}>
+                      {selectedActivity.status === "COMPLETED" ? "Terminé" : "En cours"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Période</span>
+                  <p className="text-sm">
+                    {format(new Date(selectedActivity.startDate), "dd/MM/yyyy", { locale: fr })}
+                    {" → "}
+                    {format(new Date(selectedActivity.endDate), "dd/MM/yyyy", { locale: fr })}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Heures</span>
+                  <p className="text-sm font-semibold text-primary">
+                    {selectedActivity.totalHours.toFixed(1)}h
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

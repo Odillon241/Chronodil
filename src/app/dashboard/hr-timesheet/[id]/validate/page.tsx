@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock, User, Briefcase, MapPin, Mail } from "lucide-react";
+import { BackButton } from "@/components/features/back-button";
 import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -259,25 +260,47 @@ export default function ValidateHRTimesheetPage() {
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       {/* Bouton retour */}
-      <Button variant="ghost" onClick={() => router.back()} className="w-fit -ml-2">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        <span>Retour</span>
-      </Button>
+      <BackButton />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Validation {validationLevel} - Feuille de temps RH
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Semaine du {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
-            {" - "}
-            {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
-          </p>
+      {/* Header avec boutons de validation */}
+      <div className="flex flex-col gap-4 sm:gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              Validation {validationLevel} - Feuille de temps RH
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
+              Semaine du {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
+              {" - "}
+              {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
+            </p>
+          </div>
+          <div className="flex-shrink-0 w-full sm:w-auto">
+            {getStatusBadge(timesheet.status)}
+          </div>
         </div>
-        <div className="flex-shrink-0 w-full sm:w-auto">
-          {getStatusBadge(timesheet.status)}
+        
+        {/* Boutons de validation rapide */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 border-t">
+          <Button
+            type="button"
+            onClick={() => setShowApproveDialog(true)}
+            className="w-full sm:flex-1 shadow-sm"
+            size="lg"
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Approuver
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setShowRejectDialog(true)}
+            className="w-full sm:flex-1 shadow-sm"
+            size="lg"
+          >
+            <XCircle className="h-4 w-4 mr-2" />
+            Rejeter
+          </Button>
         </div>
       </div>
 
@@ -426,37 +449,6 @@ export default function ValidateHRTimesheetPage() {
             )}
           </div>
         </form>
-        
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t">
-          <Button
-            type="button"
-            onClick={() => setShowApproveDialog(true)}
-            className="w-full sm:flex-1 shadow-sm"
-            size="lg"
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Approuver
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setShowRejectDialog(true)}
-            className="w-full sm:flex-1 shadow-sm"
-            size="lg"
-          >
-            <XCircle className="h-4 w-4 mr-2" />
-            Rejeter
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            className="w-full sm:w-auto"
-            size="lg"
-          >
-            Annuler
-          </Button>
-        </div>
       </div>
 
       {/* Dialog de confirmation d'approbation */}

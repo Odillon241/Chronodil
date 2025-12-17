@@ -379,6 +379,57 @@ export default function HRTimesheetPage() {
     }
   }, [filters]);
 
+  // Charger toutes les données en parallèle au montage pour afficher tous les compteurs
+  useEffect(() => {
+    const loadAllTimesheets = async () => {
+      setIsLoading(true);
+      try {
+        // Charger toutes les données en parallèle
+        const promises = [
+          getMyHRTimesheets({
+            ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
+            ...(filters.startDate && { weekStartDate: filters.startDate }),
+            ...(filters.endDate && { weekEndDate: filters.endDate }),
+          }),
+          getMyHRTimesheets({
+            status: "REJECTED" as any,
+            ...(filters.startDate && { weekStartDate: filters.startDate }),
+            ...(filters.endDate && { weekEndDate: filters.endDate }),
+          }),
+        ];
+
+        // Ajouter les requêtes pour les validateurs si l'utilisateur a les droits
+        if (canViewPendingTab) {
+          promises.push(
+            getHRTimesheetsForApproval({}),
+            getHRTimesheetsValidatedByMe({
+              ...(filters.status && filters.status !== "all" && { status: filters.status as any }),
+              ...(filters.startDate && { weekStartDate: filters.startDate }),
+              ...(filters.endDate && { weekEndDate: filters.endDate }),
+            })
+          );
+        }
+
+        const results = await Promise.all(promises);
+
+        // Mettre à jour les états avec les résultats
+        if (results[0]?.data) setMyTimesheets(results[0].data);
+        if (results[1]?.data) setRejectedTimesheets(results[1].data);
+        if (canViewPendingTab) {
+          if (results[2]?.data) setPendingTimesheets(results[2].data);
+          if (results[3]?.data) setValidatedTimesheets(results[3].data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des timesheets:", error);
+        toast.error("Erreur lors du chargement des timesheets");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAllTimesheets();
+  }, [canViewPendingTab, filters]);
+
   // Rediriger vers "my" si l'utilisateur est sur "pending" mais n'a pas les droits
   useEffect(() => {
     if (dataView === "pending" && !canViewPendingTab) {
@@ -386,6 +437,7 @@ export default function HRTimesheetPage() {
     }
   }, [dataView, canViewPendingTab]);
 
+  // Rafraîchir les données de l'onglet actif lors du changement d'onglet
   useEffect(() => {
     if (dataView === "my") {
       loadMyTimesheets();

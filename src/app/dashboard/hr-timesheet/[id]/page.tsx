@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar } from "lucide-react";
+import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar, CheckCircle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -22,10 +22,29 @@ import {
   getHRTimesheet,
   deleteHRActivity,
   submitHRTimesheet,
+  managerApproveHRTimesheet,
+  odillonApproveHRTimesheet,
 } from "@/actions/hr-timesheet.actions";
 import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
 import { useRouter, useParams } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
+import { BackButton } from "@/components/features/back-button";
+import { useSession } from "@/lib/auth-client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Activity {
   id: string;
@@ -71,14 +90,34 @@ interface Timesheet {
   HRActivity: Activity[];
 }
 
+const validationSchema = z.object({
+  comments: z.string().optional(),
+});
+
+type ValidationInput = z.infer<typeof validationSchema>;
+
 export default function HRTimesheetDetailPage() {
   const router = useRouter();
   const params = useParams();
   const timesheetId = params.id as string;
+  const { data: session } = useSession() as any;
+  const userRole = session?.user?.role;
+  const canValidate = userRole === "MANAGER" || userRole === "DIRECTEUR" || userRole === "ADMIN";
 
   const [timesheet, setTimesheet] = useState<Timesheet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ValidationInput>({
+    resolver: zodResolver(validationSchema),
+  });
 
   useEffect(() => {
     loadTimesheet();
@@ -124,7 +163,7 @@ export default function HRTimesheetDetailPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitTimesheet = async () => {
     if (!confirm("Soumettre ce timesheet pour validation ?")) return;
 
     try {
@@ -179,6 +218,77 @@ export default function HRTimesheetDetailPage() {
     }
   };
 
+  const handleApprove = async (data: ValidationInput) => {
+    try {
+      let result;
+
+      // Déterminer quelle action utiliser selon le statut
+      if (timesheet?.status === "PENDING") {
+        // Validation manager
+        result = await managerApproveHRTimesheet({
+          timesheetId,
+          action: "approve",
+          comments: data.comments,
+        });
+      } else if (timesheet?.status === "MANAGER_APPROVED") {
+        // Validation Odillon/Admin
+        result = await odillonApproveHRTimesheet({
+          timesheetId,
+          action: "approve",
+          comments: data.comments,
+        });
+      }
+
+      if (result?.data) {
+        toast.success("Timesheet approuvé avec succès !");
+        reset();
+        loadTimesheet();
+      } else {
+        toast.error(result?.serverError || "Erreur lors de l'approbation");
+      }
+    } catch (error) {
+      toast.error("Erreur lors de l'approbation");
+    }
+  };
+
+  const handleReject = async (data: ValidationInput) => {
+    if (!data.comments || data.comments.trim() === "") {
+      toast.error("Veuillez fournir un commentaire pour le rejet");
+      return;
+    }
+
+    try {
+      let result;
+
+      // Déterminer quelle action utiliser selon le statut
+      if (timesheet?.status === "PENDING") {
+        // Rejet manager
+        result = await managerApproveHRTimesheet({
+          timesheetId,
+          action: "reject",
+          comments: data.comments,
+        });
+      } else if (timesheet?.status === "MANAGER_APPROVED") {
+        // Rejet Odillon/Admin
+        result = await odillonApproveHRTimesheet({
+          timesheetId,
+          action: "reject",
+          comments: data.comments,
+        });
+      }
+
+      if (result?.data) {
+        toast.success("Timesheet rejeté");
+        reset();
+        loadTimesheet();
+      } else {
+        toast.error(result?.serverError || "Erreur lors du rejet");
+      }
+    } catch (error) {
+      toast.error("Erreur lors du rejet");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", label: string }> = {
       DRAFT: { variant: "outline", label: "Brouillon" },
@@ -209,14 +319,16 @@ export default function HRTimesheetDetailPage() {
     return null;
   }
 
+  const canValidateTimesheet = canValidate && (timesheet.status === "PENDING" || timesheet.status === "MANAGER_APPROVED");
+
   return (
     <div className="flex flex-col gap-6">
+      {/* Bouton retour */}
+      <BackButton />
+
       {/* Header amélioré */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
               Feuille de temps RH
@@ -236,7 +348,7 @@ export default function HRTimesheetDetailPage() {
           {timesheet.status === "DRAFT" && (
             <>
               <Button
-                onClick={handleSubmit}
+                onClick={handleSubmitTimesheet}
                 className="bg-primary hover:bg-primary"
               >
                 <FileText className="h-4 w-4 mr-2" />
@@ -249,6 +361,24 @@ export default function HRTimesheetDetailPage() {
                 title="Modifier"
               >
                 <Edit className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          {canValidateTimesheet && (
+            <>
+              <Button
+                onClick={() => setShowApproveDialog(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Approuver
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => setShowRejectDialog(true)}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Rejeter
               </Button>
             </>
           )}
@@ -392,6 +522,85 @@ export default function HRTimesheetDetailPage() {
           />
         </CardContent>
       </Card>
+
+      {/* Dialog de confirmation d'approbation */}
+      <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base sm:text-lg">Confirmer l'approbation</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
+              Êtes-vous sûr de vouloir approuver ce timesheet ? Cette action notifiera l'employé
+              {timesheet.status === "PENDING" && " et enverra le timesheet pour validation finale."}
+              {timesheet.status === "MANAGER_APPROVED" && " et marquera le timesheet comme définitivement approuvé."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleSubmit(handleApprove)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="approve-comments" className="text-sm font-medium">
+                Commentaires (optionnel)
+              </Label>
+              <Textarea
+                id="approve-comments"
+                placeholder="Ajoutez vos remarques ou commentaires..."
+                rows={4}
+                className="resize-none"
+                {...register("comments")}
+              />
+              {errors.comments && (
+                <p className="text-xs sm:text-sm text-destructive mt-1">{errors.comments.message}</p>
+              )}
+            </div>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+              <AlertDialogCancel className="w-full sm:w-auto m-0" onClick={() => reset()}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                type="submit"
+                className="w-full sm:w-auto"
+              >
+                Confirmer l'approbation
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de confirmation de rejet */}
+      <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base sm:text-lg">Confirmer le rejet</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
+              Êtes-vous sûr de vouloir rejeter ce timesheet ? L'employé devra le corriger et le soumettre à nouveau.
+              Assurez-vous d'avoir fourni un commentaire expliquant la raison du rejet.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleSubmit(handleReject)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reject-comments" className="text-sm font-medium">
+                Commentaire de rejet *
+              </Label>
+              <Textarea
+                id="reject-comments"
+                placeholder="Expliquez pourquoi vous rejetez cette feuille de temps..."
+                rows={4}
+                className="resize-none"
+                {...register("comments")}
+              />
+              {errors.comments && (
+                <p className="text-xs sm:text-sm text-destructive mt-1">{errors.comments.message}</p>
+              )}
+            </div>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+              <AlertDialogCancel className="w-full sm:w-auto m-0" onClick={() => reset()}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                type="submit"
+                className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
+              >
+                Confirmer le rejet
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
