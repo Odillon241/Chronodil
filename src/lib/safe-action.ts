@@ -1,6 +1,5 @@
 import { createSafeActionClient } from "next-safe-action";
 import { getSession, getUserRole } from "./auth";
-import { headers } from "next/headers";
 
 export const actionClient = createSafeActionClient({
   handleServerError: (error) => {
@@ -13,8 +12,8 @@ export const actionClient = createSafeActionClient({
 });
 
 export const authActionClient = actionClient.use(async ({ next }) => {
-  const session = await getSession(await headers());
-    const userRole = getUserRole(session);
+  const session = await getSession();
+  const userRole = getUserRole(session);
 
   if (!session) {
     throw new Error("Unauthorized");
@@ -23,7 +22,7 @@ export const authActionClient = actionClient.use(async ({ next }) => {
   return next({
     ctx: {
       userId: session.user.id,
-      userRole: getUserRole(session) as string,
+      userRole: userRole as string,
       user: session.user,
     },
   });

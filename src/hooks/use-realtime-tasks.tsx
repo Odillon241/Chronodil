@@ -176,10 +176,8 @@ export function useRealtimeTasks({ onTaskChange, userId }: UseRealtimeTasksProps
                 setupChannel();
               }, delay);
             } else {
-              console.error('❌ Nombre maximum de tentatives de reconnexion atteint');
-              toast.error('Connexion real-time perdue. Veuillez rafraîchir la page.', {
-                duration: 5000,
-              });
+              console.warn('⚠️ Connexion real-time Tasks en mode dégradé (fonctionnement sans temps réel)');
+              // Ne pas afficher de toast d'erreur - le fonctionnement continue par polling
             }
           }
         });

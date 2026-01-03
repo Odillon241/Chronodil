@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase-client";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -8,29 +8,58 @@ import { toast } from "sonner";
 interface UseRealtimeHRTimesheetsProps {
   onHRTimesheetChange: (eventType?: 'INSERT' | 'UPDATE' | 'DELETE', hrTimesheetId?: string) => void;
   userId?: string;
+  enabled?: boolean;
 }
 
 // ⚡ Hook optimisé pour Realtime HR Timesheets
-export function useRealtimeHRTimesheets({ onHRTimesheetChange, userId }: UseRealtimeHRTimesheetsProps) {
+export function useRealtimeHRTimesheets({ onHRTimesheetChange, userId, enabled = true }: UseRealtimeHRTimesheetsProps) {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const retryCountRef = useRef(0);
-  const maxRetries = 5;
+  const maxRetries = 10; // Augmenté pour plus de résilience
   const isSubscribedRef = useRef(false);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasShownErrorRef = useRef(false);
 
-  const stableOnChange = useCallback(onHRTimesheetChange, [onHRTimesheetChange]);
+  // Utiliser le singleton Supabase
+  const supabase = useMemo(() => createClient(), []);
+  
+  // Garder une référence stable du callback
+  const onHRTimesheetChangeRef = useRef(onHRTimesheetChange);
+  useEffect(() => {
+    onHRTimesheetChangeRef.current = onHRTimesheetChange;
+  }, [onHRTimesheetChange]);
 
   useEffect(() => {
-    const supabase = createClient();
-    let reconnectTimeout: NodeJS.Timeout;
+    if (!enabled) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const cleanupChannel = async () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      if (channelRef.current) {
+        try {
+          await supabase.removeChannel(channelRef.current);
+        } catch {
+          // Ignorer les erreurs de nettoyage
+        }
+        channelRef.current = null;
+      }
+      isSubscribedRef.current = false;
+    };
 
     const setupChannel = () => {
-      if (channelRef.current || isSubscribedRef.current) {
+      if (!isMounted || channelRef.current || isSubscribedRef.current) {
         return;
       }
 
       console.log('🔄 Configuration du real-time Supabase pour les HR Timesheets...');
 
-      channelRef.current = supabase
+      const channel = supabase
         .channel('hr-timesheet-realtime-channel', {
           config: {
             broadcast: { self: false },
@@ -47,6 +76,7 @@ export function useRealtimeHRTimesheets({ onHRTimesheetChange, userId }: UseReal
           },
           (payload: RealtimePostgresChangesPayload<Record<string, any>>) => {
             retryCountRef.current = 0;
+            hasShownErrorRef.current = false;
             const eventType = payload.eventType;
             const hrTimesheetId = (payload.new as any)?.id || (payload.old as any)?.id;
             const employeeName = (payload.new as any)?.employeeName || (payload.old as any)?.employeeName;
@@ -72,7 +102,7 @@ export function useRealtimeHRTimesheets({ onHRTimesheetChange, userId }: UseReal
               });
             }
 
-            stableOnChange(eventType, hrTimesheetId);
+            onHRTimesheetChangeRef.current?.(eventType, hrTimesheetId);
           }
         )
         // Écouter les changements sur HRActivity
@@ -85,12 +115,13 @@ export function useRealtimeHRTimesheets({ onHRTimesheetChange, userId }: UseReal
           },
           (payload: RealtimePostgresChangesPayload<Record<string, any>>) => {
             retryCountRef.current = 0;
+            hasShownErrorRef.current = false;
             const hrTimesheetId = (payload.new as any)?.hrTimesheetId || (payload.old as any)?.hrTimesheetId;
 
             console.log(`📋 Événement HRActivity pour HRTimesheet:`, hrTimesheetId);
 
             // Rafraîchissement silencieux pour les activités
-            stableOnChange('UPDATE', hrTimesheetId);
+            onHRTimesheetChangeRef.current?.('UPDATE', hrTimesheetId);
           }
         )
         .subscribe((status) => {
@@ -99,45 +130,82 @@ export function useRealtimeHRTimesheets({ onHRTimesheetChange, userId }: UseReal
           if (status === 'SUBSCRIBED') {
             isSubscribedRef.current = true;
             retryCountRef.current = 0;
+            hasShownErrorRef.current = false;
             console.log('✅ Subscription real-time active pour les HR Timesheets');
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
             isSubscribedRef.current = false;
-            console.warn('⚠️ Erreur de connexion real-time, tentative de reconnexion...');
+            console.warn(`⚠️ Erreur de connexion real-time HR Timesheets (${status}), tentative ${retryCountRef.current + 1}/${maxRetries}...`);
 
-            if (retryCountRef.current < maxRetries) {
-              const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+            if (retryCountRef.current < maxRetries && isMounted) {
+              // Backoff exponentiel avec jitter
+              const baseDelay = Math.min(1000 * Math.pow(2, retryCountRef.current), 60000);
+              const jitter = Math.random() * 1000;
+              const delay = baseDelay + jitter;
               retryCountRef.current++;
 
-              reconnectTimeout = setTimeout(() => {
-                if (channelRef.current) {
-                  supabase.removeChannel(channelRef.current);
-                  channelRef.current = null;
+              console.log(`🔄 Reconnexion HR Timesheets dans ${Math.round(delay / 1000)}s...`);
+
+              reconnectTimeoutRef.current = setTimeout(async () => {
+                if (!isMounted) return;
+                await cleanupChannel();
+                if (isMounted) {
+                  setupChannel();
                 }
-                isSubscribedRef.current = false;
-                setupChannel();
               }, delay);
-            } else {
-              console.error('❌ Nombre maximum de tentatives de reconnexion atteint');
-              toast.error('Connexion real-time perdue. Veuillez rafraîchir la page.', {
-                duration: 5000,
-              });
+            } else if (isMounted && !hasShownErrorRef.current) {
+              hasShownErrorRef.current = true;
+              console.warn('⚠️ Connexion real-time HR Timesheets en mode dégradé (fonctionnement sans temps réel)');
+              // Ne pas afficher de toast d'erreur - le fonctionnement continue par polling
             }
           }
         });
+
+      channelRef.current = channel;
     };
 
     setupChannel();
 
+    // Reconnexion quand la page redevient visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !isSubscribedRef.current && isMounted) {
+        console.log('👁️ Page visible, tentative de reconnexion HR Timesheets...');
+        retryCountRef.current = 0;
+        hasShownErrorRef.current = false;
+        cleanupChannel().then(() => {
+          if (isMounted) setupChannel();
+        });
+      }
+    };
+
+    // Reconnexion quand le réseau revient
+    const handleOnline = () => {
+      if (isMounted && !isSubscribedRef.current) {
+        console.log('🌐 Connexion réseau rétablie, reconnexion HR Timesheets...');
+        retryCountRef.current = 0;
+        hasShownErrorRef.current = false;
+        cleanupChannel().then(() => {
+          if (isMounted) setupChannel();
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+
     return () => {
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
+      isMounted = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+      
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
       }
       if (channelRef.current) {
         console.log('🧹 Nettoyage de la subscription real-time HR Timesheets...');
-        supabase.removeChannel(channelRef.current);
+        supabase.removeChannel(channelRef.current).catch(() => {});
         channelRef.current = null;
         isSubscribedRef.current = false;
       }
     };
-  }, [stableOnChange, userId]);
+  }, [supabase, userId, enabled]);
 }

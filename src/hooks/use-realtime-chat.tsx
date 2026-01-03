@@ -231,22 +231,9 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
                 }
               }, delay);
             } else if (isMounted) {
-              console.error('❌ Nombre maximum de tentatives de reconnexion atteint');
-              toast.error(
-                'Connexion real-time perdue. Cliquez pour réessayer.',
-                {
-                  duration: 10000,
-                  action: {
-                    label: 'Réessayer',
-                    onClick: () => {
-                      retryCountRef.current = 0;
-                      cleanupChannel().then(() => {
-                        if (isMounted) setupChannel();
-                      });
-                    },
-                  },
-                }
-              );
+              console.warn('⚠️ Connexion real-time Chat en mode dégradé (fonctionnement sans temps réel)');
+              // Ne pas afficher de toast d'erreur répétitif - le chat fonctionne par polling
+              // L'utilisateur peut utiliser le bouton reconnect si nécessaire
             }
           }
         });

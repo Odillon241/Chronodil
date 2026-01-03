@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { readFile, stat } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
@@ -11,9 +10,7 @@ export async function GET(
 ) {
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });

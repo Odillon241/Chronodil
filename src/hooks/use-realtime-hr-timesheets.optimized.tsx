@@ -170,7 +170,7 @@ export function useRealtimeHRTimesheetsOptimized({
               // Le cleanup et la recréation se feront au prochain render
             }, backoffDelay);
           } else {
-            console.error("❌ [HR Timesheets Real-time] Nombre maximum de tentatives de reconnexion atteint");
+            console.warn("⚠️ [HR Timesheets Real-time] Connexion en mode dégradé (fonctionnement sans temps réel)");
           }
         } else if (status === "CLOSED") {
           console.log("🔌 [HR Timesheets Real-time] Channel fermé");

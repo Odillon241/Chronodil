@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 // Store pour le rate limiting (en production, utiliser Redis)
@@ -15,9 +14,7 @@ const RATE_LIMIT_WINDOW = 30 * 1000; // 30 secondes
 export async function POST(request: NextRequest) {
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session?.user) {
       return NextResponse.json(

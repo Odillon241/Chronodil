@@ -49,7 +49,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-      const result = await signIn.email({
+      const result = await signIn({
         email: data.email,
         password: data.password,
       });
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
               <Link
-                href="/auth/reset-password"
+                href="/auth/forgot-password"
                 className="text-sm text-primary hover:text-primary/80 transition-colors font-medium underline"
               >
                 Mot de passe oublié ?
@@ -199,7 +199,7 @@ export default function LoginPage() {
       
       {/* Pied de page avec copyright */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
-        <span>&copy; 2025 by </span>
+        <span>&copy; 2026 by </span>
         <span className="font-semibold">ODILLON</span>
       </footer>
     </div>

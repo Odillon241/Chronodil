@@ -711,7 +711,9 @@ export default function TasksPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="no-project">Aucun projet</SelectItem>
-                        {projects.map((project) => (
+                        {projects
+                          .filter((project) => project.id)
+                          .map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name}
                           </SelectItem>
@@ -733,7 +735,9 @@ export default function TasksPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="no-timesheet">Aucune feuille de temps</SelectItem>
-                        {availableTimesheets.map((timesheet) => (
+                        {availableTimesheets
+                          .filter((timesheet) => timesheet.id)
+                          .map((timesheet) => (
                           <SelectItem key={timesheet.id} value={timesheet.id}>
                             📅 Semaine du {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
                             {" au "}{new Date(timesheet.weekEndDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
@@ -797,8 +801,10 @@ export default function TasksPage() {
                         <SelectValue placeholder="Sélectionner une catégorie" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
+                        {categories
+                          .filter((category) => category)
+                          .map((category, index) => (
+                          <SelectItem key={`${category}-${index}`} value={category}>
                             {category}
                           </SelectItem>
                         ))}
@@ -817,7 +823,9 @@ export default function TasksPage() {
                         <SelectValue placeholder={selectedCategory ? "Sélectionner une activité" : "Sélectionnez d'abord une catégorie"} />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {filteredCatalogActivities.map((item: any) => (
+                        {filteredCatalogActivities
+                          .filter((item: any) => item.id)
+                          .map((item: any) => (
                           <SelectItem key={item.id} value={item.id}>
                             {item.name}
                           </SelectItem>

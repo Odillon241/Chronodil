@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
@@ -33,9 +32,7 @@ export type GeneralSettingsInput = z.infer<typeof generalSettingsSchema>;
 export const getGeneralSettings = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -70,9 +67,7 @@ export const getGeneralSettings = actionClient
 export const updateGeneralSettings = actionClient
   .schema(generalSettingsSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -105,9 +100,7 @@ export const updateGeneralSettings = actionClient
 export const resetGeneralSettings = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");

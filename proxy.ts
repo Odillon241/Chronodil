@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSessionCookie } from "better-auth/cookies";
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { createServerClient } from '@supabase/ssr';
 
 // ⚡ Next.js 16 Best Practice: proxy.ts (remplace middleware.ts)
 // Gère 2 responsabilités:
-// 1. Protection des routes dashboard (authentification)
+// 1. Protection des routes dashboard (authentification via Supabase)
 // 2. Détection de la locale utilisateur (i18n)
 
 const DEFAULT_LOCALE = 'fr';
@@ -14,58 +12,68 @@ const LOCALE_COOKIE = 'NEXT_LOCALE';
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Créer une réponse initiale
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  // Créer le client Supabase pour le middleware
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  // Récupérer la session utilisateur
+  const { data: { user }, error } = await supabase.auth.getUser();
 
   // 1. PROTECTION AUTH: Vérifier l'authentification pour les routes dashboard
   if (pathname.startsWith('/dashboard')) {
-    const sessionCookie = getSessionCookie(request);
-
-    // Si pas de session, rediriger vers login
-    if (!sessionCookie) {
+    if (!user) {
       return NextResponse.redirect(new URL("/auth/login", request.url));
     }
   }
 
-  // 2. DÉTECTION LOCALE: Configurer le cookie de langue
-  const response = NextResponse.next();
+  // 2. Rediriger les utilisateurs connectés depuis les pages auth vers dashboard
+  if (pathname.startsWith('/auth/') && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
 
+  // 3. DÉTECTION LOCALE: Configurer le cookie de langue
   try {
-    // Récupérer la session utilisateur (si disponible)
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    // Vérifier si on a déjà un cookie de locale
+    const existingLocale = request.cookies.get(LOCALE_COOKIE)?.value;
 
-    if (session?.user?.id) {
-      // Vérifier si on a déjà un cookie de locale
-      const existingLocale = request.cookies.get(LOCALE_COOKIE)?.value;
-
-      if (!existingLocale) {
-        // Récupérer la langue de l'utilisateur depuis la DB
-        const user = await prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: { language: true },
-        });
-
-        const userLocale = user?.language || DEFAULT_LOCALE;
-
-        // Stocker la locale dans un cookie
-        response.cookies.set(LOCALE_COOKIE, userLocale, {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 365, // 1 an
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-        });
-      }
-    } else {
-      // Pas de session, utiliser la locale par défaut si pas de cookie
-      const existingLocale = request.cookies.get(LOCALE_COOKIE)?.value;
-      if (!existingLocale) {
-        response.cookies.set(LOCALE_COOKIE, DEFAULT_LOCALE, {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 365,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-        });
-      }
+    if (!existingLocale) {
+      // Définir la locale par défaut
+      response.cookies.set(LOCALE_COOKIE, DEFAULT_LOCALE, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365, // 1 an
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
     }
   } catch (error) {
     console.error('[Proxy] Error setting locale:', error);

@@ -1,9 +1,7 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { actionClient, authActionClient } from "@/lib/safe-action";
+import { authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
 
 /**

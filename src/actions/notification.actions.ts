@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { actionClient, authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
@@ -162,9 +161,7 @@ export async function createNotificationDirect(params: {
 export const getMyNotifications = actionClient
   .schema(z.object({ limit: z.number().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -186,9 +183,7 @@ export const getMyNotifications = actionClient
 export const markAsRead = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -213,9 +208,7 @@ export const markAsRead = actionClient
 export const markAllAsRead = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -235,9 +228,7 @@ export const markAllAsRead = actionClient
 export const deleteNotification = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -261,9 +252,7 @@ export const deleteNotification = actionClient
 export const getUnreadCount = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -296,9 +285,7 @@ const quietHoursSchema = z.object({
 export const getQuietHoursSettings = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -328,9 +315,7 @@ export const getQuietHoursSettings = actionClient
 export const updateQuietHoursSettings = actionClient
   .schema(quietHoursSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -356,9 +341,7 @@ export const updateQuietHoursSettings = actionClient
 export const isInQuietHours = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");

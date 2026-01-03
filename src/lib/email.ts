@@ -228,7 +228,7 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
                 Gestion optimisée du temps et des projets
               </p>
               <p style="color: #d1d5db; font-size: 11px; margin: 0;">
-                © 2025 Chronodil. Tous droits réservés.
+                © 2026 Chronodil. Tous droits réservés.
               </p>
             </td>
           </tr>

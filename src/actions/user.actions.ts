@@ -10,8 +10,6 @@ import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { CacheTags } from "@/lib/cache";
 import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 // Récupérer le profil de l'utilisateur connecté
 export const getMyProfile = authActionClient
@@ -196,42 +194,39 @@ export const createUser = authActionClient
       throw new Error("Cet email est déjà utilisé");
     }
 
-    // Créer l'utilisateur via l'API Better Auth pour obtenir le bon hash
-    const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-    const response = await fetch(`${betterAuthUrl}/api/auth/sign-up/email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: parsedInput.email,
-        password: parsedInput.password,
+    // Créer l'utilisateur via Supabase Auth Admin API
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: parsedInput.email,
+      password: parsedInput.password,
+      email_confirm: true, // Confirmer l'email automatiquement
+      user_metadata: {
         name: parsedInput.name,
-      }),
+        role: parsedInput.role,
+      },
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Erreur lors de la création du compte: ${error}`);
+    if (authError || !authData.user) {
+      throw new Error(`Erreur lors de la création du compte: ${authError?.message || "Utilisateur non créé"}`);
     }
 
-    // Récupérer l'utilisateur créé
-    const createdUser = await prisma.user.findUnique({
-      where: { email: parsedInput.email },
-    });
-
-    if (!createdUser) {
-      throw new Error("Utilisateur créé mais non trouvé");
-    }
-
-    // Mettre à jour avec les informations supplémentaires
-    const user = await prisma.user.update({
-      where: { id: createdUser.id },
+    // Créer l'utilisateur dans Prisma avec l'ID Supabase
+    const user = await prisma.user.create({
       data: {
+        id: authData.user.id,
+        email: parsedInput.email,
+        name: parsedInput.name,
         role: parsedInput.role,
         ...(parsedInput.departmentId && { departmentId: parsedInput.departmentId }),
         ...(parsedInput.managerId && { managerId: parsedInput.managerId }),
-        emailVerified: true, // Marquer comme vérifié pour les utilisateurs créés par admin
+        emailVerified: true,
+        updatedAt: new Date(),
       },
     });
 
@@ -576,7 +571,7 @@ export const resetUserPassword = authActionClient
       where: { id: parsedInput.id },
       select: {
         id: true,
-        Account: {
+        accounts: {
           select: {
             id: true,
             providerId: true,
@@ -616,7 +611,7 @@ export const resetUserPassword = authActionClient
       where: { email: tempEmail },
       select: {
         id: true,
-        Account: {
+        accounts: {
           select: {
             id: true,
             password: true,
@@ -625,14 +620,14 @@ export const resetUserPassword = authActionClient
       },
     });
 
-    if (!tempUser || !tempUser.Account || tempUser.Account.length === 0) {
+    if (!tempUser || !tempUser.accounts || tempUser.accounts.length === 0) {
       throw new Error("Erreur lors de la génération du hash");
     }
 
-    const newPasswordHash = tempUser.Account[0].password;
+    const newPasswordHash = tempUser.accounts[0].password;
 
     // 3. Mettre à jour le mot de passe de l'utilisateur cible
-    const userAccount = user.Account.find(acc => acc.providerId === "credential");
+    const userAccount = user.accounts.find(acc => acc.providerId === "credential");
     if (userAccount) {
       await prisma.account.update({
         where: { id: userAccount.id },
@@ -678,20 +673,40 @@ export const changeMyPassword = authActionClient
     })
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
+    const { userId, user } = ctx;
     
     try {
-      // Utiliser l'API Better Auth pour changer le mot de passe
-      const result = await auth.api.changePassword({
-        body: {
-          currentPassword: parsedInput.currentPassword,
-          newPassword: parsedInput.newPassword,
-          revokeOtherSessions: true, // Invalider les autres sessions pour la sécurité
-        },
-        headers: await headers(),
+      // Utiliser Supabase Auth Admin API pour changer le mot de passe
+      const { createClient } = await import("@supabase/supabase-js");
+      
+      // D'abord, vérifier le mot de passe actuel en tentant une connexion
+      const supabaseClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      
+      const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+        email: user.email,
+        password: parsedInput.currentPassword,
       });
+      
+      if (signInError) {
+        throw new Error("Le mot de passe actuel est incorrect");
+      }
+      
+      // Utiliser l'Admin API pour mettre à jour le mot de passe
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        { password: parsedInput.newPassword }
+      );
 
-      if (!result) {
+      if (updateError) {
         throw new Error("Erreur lors du changement de mot de passe");
       }
 
@@ -700,8 +715,7 @@ export const changeMyPassword = authActionClient
         message: "Mot de passe modifié avec succès",
       };
     } catch (error: any) {
-      // Gérer les erreurs spécifiques de Better Auth
-      if (error.message?.includes("Invalid current password") || error.message?.includes("incorrect")) {
+      if (error.message?.includes("Invalid login") || error.message?.includes("incorrect")) {
         throw new Error("Le mot de passe actuel est incorrect");
       }
       throw new Error(error.message || "Erreur lors du changement de mot de passe");

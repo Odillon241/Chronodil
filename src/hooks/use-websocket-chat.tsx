@@ -65,11 +65,13 @@ export function useWebSocketChat(options: UseWebSocketChatOptions = {}) {
         reconnectAttemptsRef.current = 0;
 
         // S'authentifier
-        sendMessage({
-          type: WSMessageType.AUTHENTICATE,
-          timestamp: new Date().toISOString(),
-          token: session.user.id, // À remplacer par un vrai token JWT
-        });
+        if (session?.user?.id) {
+          sendMessage({
+            type: WSMessageType.AUTHENTICATE,
+            timestamp: new Date().toISOString(),
+            token: session.user.id, // À remplacer par un vrai token JWT
+          });
+        }
       };
 
       ws.onmessage = (event) => {

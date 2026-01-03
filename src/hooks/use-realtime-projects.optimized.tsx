@@ -157,7 +157,7 @@ export function useRealtimeProjectsOptimized({
               // Le cleanup et la recréation se feront au prochain render
             }, backoffDelay);
           } else {
-            console.error("❌ [Projects Real-time] Nombre maximum de tentatives de reconnexion atteint");
+            console.warn("⚠️ [Projects Real-time] Connexion en mode dégradé (fonctionnement sans temps réel)");
           }
         } else if (status === "CLOSED") {
           console.log("🔌 [Projects Real-time] Channel fermé");

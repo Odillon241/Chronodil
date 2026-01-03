@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
@@ -9,9 +8,7 @@ import { z } from "zod";
 export const getTaskActivities = actionClient
   .schema(z.object({ taskId: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");

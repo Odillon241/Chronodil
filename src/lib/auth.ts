@@ -1,64 +1,118 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { prisma } from "@/lib/db";
-import { compare, hash } from "@node-rs/bcrypt";
 import type { Role } from "@prisma/client";
-import { sendEmail, getResetPasswordEmailTemplate } from "@/lib/email";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-  }),
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: false,
-    sendResetPassword: async ({ user, url, token }, request) => {
-      console.log(`📧 Envoi d'email de réinitialisation à ${user.email}`);
-
-      await sendEmail({
-        to: user.email,
-        subject: "Réinitialisation de votre mot de passe Chronodil",
-        html: getResetPasswordEmailTemplate(url, user.name),
-      });
-
-      console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
-    },
-    resetPasswordTokenExpiresIn: 3600, // 1 heure
-    password: {
-      hash: async (password: string) => hash(password, 10),
-      verify: async (data: { hash: string; password: string }) => compare(data.password, data.hash),
-    },
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
-  },
+// Type pour la session utilisateur
+export interface Session {
   user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        required: false,
-        defaultValue: "EMPLOYEE",
-      },
-    },
-  },
-  trustedOrigins: [
-    process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    "http://localhost:3000", // Développement local
-  ],
-});
-
-export type Session = typeof auth.$Infer.Session & {
-  user: typeof auth.$Infer.Session['user'] & {
-    role?: Role;
+    id: string;
+    email: string;
+    name: string;
+    role: Role;
+    image?: string | null;
+    departmentId?: string | null;
+    managerId?: string | null;
   };
-};
-
-export async function getSession(headers: Headers): Promise<Session | null> {
-  const session = await auth.api.getSession({ headers });
-  return session as Session | null;
 }
 
-export function getUserRole(session: any): Role | undefined {
-  return session?.user?.role as Role | undefined;
+/**
+ * Récupère la session utilisateur depuis Supabase Auth
+ * et enrichit avec les données Prisma
+ */
+export async function getSession(headers?: Headers): Promise<Session | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return null;
+    }
+
+    // Récupérer les informations supplémentaires depuis Prisma
+    const prismaUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        image: true,
+        departmentId: true,
+        managerId: true,
+      },
+    });
+
+    if (!prismaUser) {
+      // L'utilisateur existe dans Supabase Auth mais pas dans Prisma
+      // Créer l'utilisateur dans Prisma
+      const newUser = await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || user.email!.split("@")[0],
+          role: "EMPLOYEE",
+          emailVerified: user.email_confirmed_at !== null,
+          updatedAt: new Date(),
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          image: true,
+          departmentId: true,
+          managerId: true,
+        },
+      });
+
+      return {
+        user: newUser,
+      };
+    }
+
+    return {
+      user: prismaUser,
+    };
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la session:", error);
+    return null;
+  }
+}
+
+/**
+ * Récupère le rôle de l'utilisateur depuis la session
+ */
+export function getUserRole(session: Session | null): Role | undefined {
+  return session?.user?.role;
+}
+
+/**
+ * Vérifie si l'utilisateur est authentifié
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  const session = await getSession();
+  return session !== null;
+}
+
+/**
+ * Récupère l'utilisateur Supabase brut (sans enrichissement Prisma)
+ */
+export async function getSupabaseUser(): Promise<SupabaseUser | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Déconnexion de l'utilisateur
+ */
+export async function signOut(): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
 }

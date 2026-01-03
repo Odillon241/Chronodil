@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
@@ -28,9 +27,7 @@ const updatePreferencesSchema = z.object({
 export const getUserPreferences = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -80,9 +77,7 @@ export const getUserPreferences = actionClient
 export const updateUserPreferences = actionClient
   .schema(updatePreferencesSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");

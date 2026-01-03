@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSession } from "@/lib/auth";
 
 // Cache en mémoire pour les previews (5 minutes)
 const previewCache = new Map<string, { data: any; timestamp: number }>();
@@ -104,9 +103,7 @@ function extractOpenGraphData(html: string, url: string): OpenGraphData {
 export async function GET(request: NextRequest) {
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getSession();
 
     if (!session?.user) {
       return NextResponse.json(

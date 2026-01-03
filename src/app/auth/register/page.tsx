@@ -47,7 +47,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
     try {
-      const result = await signUp.email({
+      const result = await signUp({
         email: data.email,
         password: data.password,
         name: data.name,
@@ -56,8 +56,8 @@ export default function RegisterPage() {
       if (result.error) {
         toast.error(result.error.message || "Échec de l'inscription");
       } else {
-        toast.success("Inscription réussie ! Redirection...");
-        router.push("/dashboard");
+        toast.success("Inscription réussie ! Vérifiez votre email pour confirmer votre compte.");
+        router.push("/auth/login");
       }
     } catch (error) {
       toast.error("Une erreur s'est produite");
@@ -210,7 +210,7 @@ export default function RegisterPage() {
       
       {/* Pied de page avec copyright */}
       <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
-        <span>&copy; 2025 by </span>
+        <span>&copy; 2026 by </span>
         <span className="font-semibold">ODILLON</span>
       </footer>
     </div>

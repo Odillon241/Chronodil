@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,9 +23,11 @@ model Account {
   refreshToken          String?
   refreshTokenExpiresAt DateTime?
   updatedAt             DateTime
-  User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User                  User      @relation("accounts", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
 }
 
 model ActivityCatalog {
@@ -79,22 +82,22 @@ model Conversation {
   id                 String               @id
   type               ConversationType
   name               String?
-  description        String?              // Description du canal
+  description        String? // Description du canal
   projectId          String?
   createdBy          String?
   isPrivate          Boolean              @default(false) // Canal privé (sur invitation)
   isShared           Boolean              @default(false) // Canal partagé (multi-organisations)
-  category           String?              // Catégorie pour organisation
-  topic              String?              // Sujet actuel du canal
-  purpose            String?              // Objectif du canal
+  category           String? // Catégorie pour organisation
+  topic              String? // Sujet actuel du canal
+  purpose            String? // Objectif du canal
   createdAt          DateTime             @default(now())
   updatedAt          DateTime
   User               User?                @relation(fields: [createdBy], references: [id])
   Project            Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   ConversationMember ConversationMember[]
   Message            Message[]
-  ChannelPermission  ChannelPermission[]  // Permissions spécifiques au canal
-  ScheduledMessage   ScheduledMessage[]    @relation("ScheduledMessageConversation")
+  ChannelPermission  ChannelPermission[] // Permissions spécifiques au canal
+  ScheduledMessage   ScheduledMessage[]   @relation("ScheduledMessageConversation")
   ChatAuditLog       ChatAuditLog[]       @relation("ChatAuditLogConversation")
 
   @@index([createdAt])
@@ -219,29 +222,29 @@ model Holiday {
 }
 
 model Message {
-  id             String        @id
-  conversationId String
-  senderId       String
-  content        String
-  attachments    Json?
-  isEdited       Boolean       @default(false)
-  isDeleted      Boolean       @default(false)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime
-  replyToId      String?
-  threadId       String?       // ID du thread parent (null si message principal)
-  threadCount    Int           @default(0) // Nombre de réponses dans le thread
-  isThreadRoot   Boolean       @default(false) // Si c'est la racine d'un thread
-  reactions      Json?
-  pinnedAt       DateTime?
-  pinnedById     String?
-  Conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  Message        Message?      @relation("MessageToMessage", fields: [replyToId], references: [id])
-  other_Message  Message[]     @relation("MessageToMessage")
-  ThreadParent   Message?      @relation("ThreadMessages", fields: [threadId], references: [id])
-  ThreadReplies  Message[]     @relation("ThreadMessages")
-  User           User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  MessageRead    MessageRead[]
+  id              String            @id
+  conversationId  String
+  senderId        String
+  content         String
+  attachments     Json?
+  isEdited        Boolean           @default(false)
+  isDeleted       Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  replyToId       String?
+  threadId        String? // ID du thread parent (null si message principal)
+  threadCount     Int               @default(0) // Nombre de réponses dans le thread
+  isThreadRoot    Boolean           @default(false) // Si c'est la racine d'un thread
+  reactions       Json?
+  pinnedAt        DateTime?
+  pinnedById      String?
+  Conversation    Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  Message         Message?          @relation("MessageToMessage", fields: [replyToId], references: [id])
+  other_Message   Message[]         @relation("MessageToMessage")
+  ThreadParent    Message?          @relation("ThreadMessages", fields: [threadId], references: [id])
+  ThreadReplies   Message[]         @relation("ThreadMessages")
+  User            User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  MessageRead     MessageRead[]
   MessageReminder MessageReminder[] @relation("MessageReminderMessage")
 
   @@index([conversationId])
@@ -268,21 +271,21 @@ model MessageRead {
 }
 
 model ChannelPermission {
-  id             String       @id @default(cuid())
-  conversationId String
-  userId         String?       // null = permission pour tous
-  role           String?      // OWNER, ADMIN, MEMBER, GUEST
-  canPost        Boolean      @default(true)
-  canEdit        Boolean      @default(false)
-  canDelete      Boolean      @default(false)
-  canAddMembers  Boolean      @default(false)
-  canRemoveMembers Boolean    @default(false)
-  canPinMessages Boolean      @default(false)
-  canMentionAll  Boolean      @default(false) // @channel, @here
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime
-  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  User           User?        @relation("ChannelPermissionUser", fields: [userId], references: [id], onDelete: Cascade)
+  id               String       @id @default(cuid())
+  conversationId   String
+  userId           String? // null = permission pour tous
+  role             String? // OWNER, ADMIN, MEMBER, GUEST
+  canPost          Boolean      @default(true)
+  canEdit          Boolean      @default(false)
+  canDelete        Boolean      @default(false)
+  canAddMembers    Boolean      @default(false)
+  canRemoveMembers Boolean      @default(false)
+  canPinMessages   Boolean      @default(false)
+  canMentionAll    Boolean      @default(false) // @channel, @here
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime
+  Conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User             User?        @relation("ChannelPermissionUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@index([conversationId])
@@ -290,17 +293,17 @@ model ChannelPermission {
 }
 
 model ChatAuditLog {
-  id             String       @id @default(cuid())
+  id             String        @id @default(cuid())
   userId         String?
-  action         String       // CREATE_CHANNEL, DELETE_MESSAGE, ADD_MEMBER, etc.
-  entityType     String       // CONVERSATION, MESSAGE, MEMBER, etc.
+  action         String // CREATE_CHANNEL, DELETE_MESSAGE, ADD_MEMBER, etc.
+  entityType     String // CONVERSATION, MESSAGE, MEMBER, etc.
   entityId       String
   conversationId String?
-  changes        Json?        // Changements effectués
+  changes        Json? // Changements effectués
   ipAddress      String?
   userAgent      String?
-  createdAt      DateTime     @default(now())
-  User           User?        @relation("ChatAuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  User           User?         @relation("ChatAuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
   Conversation   Conversation? @relation("ChatAuditLogConversation", fields: [conversationId], references: [id], onDelete: SetNull)
 
   @@index([userId])
@@ -315,10 +318,10 @@ model ScheduledMessage {
   senderId       String
   content        String
   attachments    Json?
-  scheduledFor   DateTime     // Date/heure d'envoi
-  sentAt         DateTime?    // null si pas encore envoyé
+  scheduledFor   DateTime // Date/heure d'envoi
+  sentAt         DateTime? // null si pas encore envoyé
   isRecurring    Boolean      @default(false)
-  recurrenceRule String?      // Cron expression ou règle de récurrence
+  recurrenceRule String? // Cron expression ou règle de récurrence
   createdAt      DateTime     @default(now())
   updatedAt      DateTime
   Conversation   Conversation @relation("ScheduledMessageConversation", fields: [conversationId], references: [id], onDelete: Cascade)
@@ -331,14 +334,14 @@ model ScheduledMessage {
 }
 
 model MessageReminder {
-  id             String       @id @default(cuid())
-  messageId      String
-  userId         String
-  remindAt       DateTime     // Date/heure du rappel
-  remindedAt     DateTime?    // null si pas encore rappelé
-  createdAt      DateTime     @default(now())
-  Message        Message      @relation("MessageReminderMessage", fields: [messageId], references: [id], onDelete: Cascade)
-  User           User         @relation("MessageReminderUser", fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  messageId  String
+  userId     String
+  remindAt   DateTime // Date/heure du rappel
+  remindedAt DateTime? // null si pas encore rappelé
+  createdAt  DateTime  @default(now())
+  Message    Message   @relation("MessageReminderMessage", fields: [messageId], references: [id], onDelete: Cascade)
+  User       User      @relation("MessageReminderUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId, remindAt])
   @@index([messageId])
@@ -505,12 +508,14 @@ model Session {
   userAgent String?
   createdAt DateTime @default(now())
   updatedAt DateTime
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User     @relation("sessions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@map("session")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+
 model Task {
   id                          String              @id
   name                        String
@@ -658,7 +663,6 @@ model User {
   quietHoursStart                                 String               @default("22:00")
   quietHoursEnd                                   String               @default("07:00")
   quietHoursDays                                  String[]             @default([])
-  Account                                         Account[]
   AuditLog                                        AuditLog[]
   Conversation                                    Conversation[]
   ConversationMember                              ConversationMember[]
@@ -673,7 +677,6 @@ model User {
   Report                                          Report[]
   ReportRecipient                                 ReportRecipient[]
   ReportTemplate                                  ReportTemplate[]
-  Session                                         Session[]
   Task_Task_createdByToUser                       Task[]               @relation("Task_createdByToUser")
   Task_Task_evaluatedByToUser                     Task[]               @relation("Task_evaluatedByToUser")
   TaskActivity                                    TaskActivity[]
@@ -688,10 +691,14 @@ model User {
   User                                            User?                @relation("UserToUser", fields: [managerId], references: [id])
   other_User                                      User[]               @relation("UserToUser")
 
+  sessions Session[] @relation("sessions")
+  accounts Account[] @relation("accounts")
+
   @@index([departmentId])
   @@index([email])
   @@index([managerId])
   @@index([lastSeenAt])
+  @@map("user")
 }
 
 model Verification {
@@ -703,13 +710,15 @@ model Verification {
   value      String
 
   @@unique([identifier, value])
+  @@index([identifier])
+  @@map("verification")
 }
 
 enum ConversationType {
   DIRECT
   GROUP
   PROJECT
-  CHANNEL  // Canal public/privé organisé
+  CHANNEL // Canal public/privé organisé
 }
 
 enum HRActivityStatus {
@@ -763,7 +772,7 @@ enum Role {
 enum TaskComplexity {
   FAIBLE
   MOYEN
-  LEV_   @map("ÉLEVÉ")
+  LEV_ @map("ÉLEVÉ")
 }
 
 enum TimeType {
@@ -788,4 +797,5 @@ enum UnderstandingLevel {
   COMPREHENSIVE
   EXPERT
 }
+
 
