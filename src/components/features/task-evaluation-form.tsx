@@ -11,7 +11,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { MinimalTiptap } from '@/components/ui/minimal-tiptap-dynamic';
 import { Button } from '@/components/ui/button';
-import { TrainingLevel, MasteryLevel, UnderstandingLevel } from '@prisma/client';
+import { TrainingLevel, MasteryLevel, UnderstandingLevel } from '@/generated/prisma';
 
 interface TaskEvaluationFormProps {
   trainingLevel?: TrainingLevel | null;

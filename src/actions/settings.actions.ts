@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma";
 
 // Jours fériés
 const holidaySchema = z.object({

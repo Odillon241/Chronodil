@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { prisma } from "@/lib/db";
-import type { Role } from "@prisma/client";
+import type { Role } from "@/generated/prisma";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 // Type pour la session utilisateur

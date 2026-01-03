@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import { Badge } from '@/components/ui/badge';
 import { Zap, Gauge, AlertCircle } from 'lucide-react';
-import { TaskComplexity } from '@prisma/client';
+import { TaskComplexity } from '@/generated/prisma';
 
 interface TaskComplexityBadgeProps {
   complexity: TaskComplexity;
@@ -34,7 +34,13 @@ export function TaskComplexityBadge({
   complexity,
   size = 'md',
 }: TaskComplexityBadgeProps) {
-  const config = complexityConfig[complexity];
+  const config = complexityConfig[complexity as keyof typeof complexityConfig];
+
+  // Fallback if config doesn't exist
+  if (!config) {
+    return null;
+  }
+
   const Icon = config.icon;
 
   const sizeClasses = {

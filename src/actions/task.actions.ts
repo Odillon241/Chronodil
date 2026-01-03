@@ -951,7 +951,7 @@ export const updateTaskComplexity = actionClient
     const updatedTask = await prisma.task.update({
       where: { id: parsedInput.id },
       data: {
-        complexity: parsedInput.complexity,
+        complexity: parsedInput.complexity as any,
         recurrence: parsedInput.recurrence,
       },
     });

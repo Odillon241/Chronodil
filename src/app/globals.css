@@ -129,10 +129,12 @@
   * {
     @apply border-border;
   }
+
   html {
     font-size: 12px;
     overflow-x: hidden;
   }
+
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
@@ -189,7 +191,7 @@
   --space-y-5: calc(1.25rem * var(--spacing-scale));
   --space-y-6: calc(1.5rem * var(--spacing-scale));
   --space-y-8: calc(2rem * var(--spacing-scale));
-  
+
   /* Gaps */
   --gap-1: calc(0.25rem * var(--spacing-scale));
   --gap-2: calc(0.5rem * var(--spacing-scale));
@@ -198,7 +200,7 @@
   --gap-5: calc(1.25rem * var(--spacing-scale));
   --gap-6: calc(1.5rem * var(--spacing-scale));
   --gap-8: calc(2rem * var(--spacing-scale));
-  
+
   /* Padding */
   --p-1: calc(0.25rem * var(--spacing-scale));
   --p-2: calc(0.5rem * var(--spacing-scale));
@@ -207,7 +209,7 @@
   --p-5: calc(1.25rem * var(--spacing-scale));
   --p-6: calc(1.5rem * var(--spacing-scale));
   --p-8: calc(2rem * var(--spacing-scale));
-  
+
   /* Padding horizontal */
   --px-1: calc(0.25rem * var(--spacing-scale));
   --px-2: calc(0.5rem * var(--spacing-scale));
@@ -215,7 +217,7 @@
   --px-4: calc(1rem * var(--spacing-scale));
   --px-5: calc(1.25rem * var(--spacing-scale));
   --px-6: calc(1.5rem * var(--spacing-scale));
-  
+
   /* Padding vertical */
   --py-1: calc(0.25rem * var(--spacing-scale));
   --py-2: calc(0.5rem * var(--spacing-scale));
@@ -223,7 +225,7 @@
   --py-4: calc(1rem * var(--spacing-scale));
   --py-5: calc(1.25rem * var(--spacing-scale));
   --py-6: calc(1.5rem * var(--spacing-scale));
-  
+
   /* Marges */
   --m-1: calc(0.25rem * var(--spacing-scale));
   --m-2: calc(0.5rem * var(--spacing-scale));
@@ -234,42 +236,145 @@
 }
 
 /* Application aux classes Tailwind les plus utilisées */
-[data-density] .gap-1 { gap: var(--gap-1) !important; }
-[data-density] .gap-2 { gap: var(--gap-2) !important; }
-[data-density] .gap-3 { gap: var(--gap-3) !important; }
-[data-density] .gap-4 { gap: var(--gap-4) !important; }
-[data-density] .gap-5 { gap: var(--gap-5) !important; }
-[data-density] .gap-6 { gap: var(--gap-6) !important; }
-[data-density] .gap-8 { gap: var(--gap-8) !important; }
+[data-density] .gap-1 {
+  gap: var(--gap-1) !important;
+}
 
-[data-density] .p-1 { padding: var(--p-1) !important; }
-[data-density] .p-2 { padding: var(--p-2) !important; }
-[data-density] .p-3 { padding: var(--p-3) !important; }
-[data-density] .p-4 { padding: var(--p-4) !important; }
-[data-density] .p-5 { padding: var(--p-5) !important; }
-[data-density] .p-6 { padding: var(--p-6) !important; }
-[data-density] .p-8 { padding: var(--p-8) !important; }
+[data-density] .gap-2 {
+  gap: var(--gap-2) !important;
+}
 
-[data-density] .px-1 { padding-left: var(--px-1) !important; padding-right: var(--px-1) !important; }
-[data-density] .px-2 { padding-left: var(--px-2) !important; padding-right: var(--px-2) !important; }
-[data-density] .px-3 { padding-left: var(--px-3) !important; padding-right: var(--px-3) !important; }
-[data-density] .px-4 { padding-left: var(--px-4) !important; padding-right: var(--px-4) !important; }
-[data-density] .px-5 { padding-left: var(--px-5) !important; padding-right: var(--px-5) !important; }
-[data-density] .px-6 { padding-left: var(--px-6) !important; padding-right: var(--px-6) !important; }
+[data-density] .gap-3 {
+  gap: var(--gap-3) !important;
+}
 
-[data-density] .py-1 { padding-top: var(--py-1) !important; padding-bottom: var(--py-1) !important; }
-[data-density] .py-2 { padding-top: var(--py-2) !important; padding-bottom: var(--py-2) !important; }
-[data-density] .py-3 { padding-top: var(--py-3) !important; padding-bottom: var(--py-3) !important; }
-[data-density] .py-4 { padding-top: var(--py-4) !important; padding-bottom: var(--py-4) !important; }
-[data-density] .py-5 { padding-top: var(--py-5) !important; padding-bottom: var(--py-5) !important; }
-[data-density] .py-6 { padding-top: var(--py-6) !important; padding-bottom: var(--py-6) !important; }
+[data-density] .gap-4 {
+  gap: var(--gap-4) !important;
+}
 
-[data-density] .m-1 { margin: var(--m-1) !important; }
-[data-density] .m-2 { margin: var(--m-2) !important; }
-[data-density] .m-3 { margin: var(--m-3) !important; }
-[data-density] .m-4 { margin: var(--m-4) !important; }
-[data-density] .m-5 { margin: var(--m-5) !important; }
-[data-density] .m-6 { margin: var(--m-6) !important; }
+[data-density] .gap-5 {
+  gap: var(--gap-5) !important;
+}
+
+[data-density] .gap-6 {
+  gap: var(--gap-6) !important;
+}
+
+[data-density] .gap-8 {
+  gap: var(--gap-8) !important;
+}
+
+[data-density] .p-1 {
+  padding: var(--p-1) !important;
+}
+
+[data-density] .p-2 {
+  padding: var(--p-2) !important;
+}
+
+[data-density] .p-3 {
+  padding: var(--p-3) !important;
+}
+
+[data-density] .p-4 {
+  padding: var(--p-4) !important;
+}
+
+[data-density] .p-5 {
+  padding: var(--p-5) !important;
+}
+
+[data-density] .p-6 {
+  padding: var(--p-6) !important;
+}
+
+[data-density] .p-8 {
+  padding: var(--p-8) !important;
+}
+
+[data-density] .px-1 {
+  padding-left: var(--px-1) !important;
+  padding-right: var(--px-1) !important;
+}
+
+[data-density] .px-2 {
+  padding-left: var(--px-2) !important;
+  padding-right: var(--px-2) !important;
+}
+
+[data-density] .px-3 {
+  padding-left: var(--px-3) !important;
+  padding-right: var(--px-3) !important;
+}
+
+[data-density] .px-4 {
+  padding-left: var(--px-4) !important;
+  padding-right: var(--px-4) !important;
+}
+
+[data-density] .px-5 {
+  padding-left: var(--px-5) !important;
+  padding-right: var(--px-5) !important;
+}
+
+[data-density] .px-6 {
+  padding-left: var(--px-6) !important;
+  padding-right: var(--px-6) !important;
+}
+
+[data-density] .py-1 {
+  padding-top: var(--py-1) !important;
+  padding-bottom: var(--py-1) !important;
+}
+
+[data-density] .py-2 {
+  padding-top: var(--py-2) !important;
+  padding-bottom: var(--py-2) !important;
+}
+
+[data-density] .py-3 {
+  padding-top: var(--py-3) !important;
+  padding-bottom: var(--py-3) !important;
+}
+
+[data-density] .py-4 {
+  padding-top: var(--py-4) !important;
+  padding-bottom: var(--py-4) !important;
+}
+
+[data-density] .py-5 {
+  padding-top: var(--py-5) !important;
+  padding-bottom: var(--py-5) !important;
+}
+
+[data-density] .py-6 {
+  padding-top: var(--py-6) !important;
+  padding-bottom: var(--py-6) !important;
+}
+
+[data-density] .m-1 {
+  margin: var(--m-1) !important;
+}
+
+[data-density] .m-2 {
+  margin: var(--m-2) !important;
+}
+
+[data-density] .m-3 {
+  margin: var(--m-3) !important;
+}
+
+[data-density] .m-4 {
+  margin: var(--m-4) !important;
+}
+
+[data-density] .m-5 {
+  margin: var(--m-5) !important;
+}
+
+[data-density] .m-6 {
+  margin: var(--m-6) !important;
+}
 
 /* Styles pour la scrollbar du Kanban */
 .kanban-scrollbar {
@@ -301,7 +406,7 @@
   .kanban-scrollbar::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   .kanban-scrollbar::-webkit-scrollbar-thumb {
     background: hsl(var(--muted-foreground) / 0.6);
   }

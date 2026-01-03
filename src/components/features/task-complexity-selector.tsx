@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TaskComplexity } from '@prisma/client';
+import { TaskComplexity } from '@/generated/prisma';
 import { TaskComplexityBadge } from './task-complexity-badge';
 
 interface TaskComplexitySelectorProps {
@@ -17,7 +17,7 @@ interface TaskComplexitySelectorProps {
   required?: boolean;
 }
 
-const complexityOptions: TaskComplexity[] = ['FAIBLE', 'MOYEN', 'LEV_'];
+const complexityOptions = ['FAIBLE', 'MOYEN', 'LEV_'] as const;
 
 export function TaskComplexitySelector({
   value = 'MOYEN',
@@ -40,7 +40,7 @@ export function TaskComplexitySelector({
           {complexityOptions.map((option) => (
             <SelectItem key={option} value={option}>
               <div className="flex items-center gap-2">
-                <TaskComplexityBadge complexity={option} size="sm" />
+                <TaskComplexityBadge complexity={option as TaskComplexity} size="sm" />
               </div>
             </SelectItem>
           ))}

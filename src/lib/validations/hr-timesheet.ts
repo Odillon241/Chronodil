@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 // Schéma de base pour une activité RH (sans validation)
 const hrActivityBaseSchema = z.object({
@@ -9,10 +9,10 @@ const hrActivityBaseSchema = z.object({
   weeklyQuantity: z.number().int().min(1).optional(),
   totalHours: z.number().min(0).optional(),
   startDate: z.date({
-    required_error: "La date de début est requise",
+    error: (issue) => issue.input === undefined ? "La date de début est requise" : "Date invalide",
   }),
   endDate: z.date({
-    required_error: "La date de fin est requise",
+    error: (issue) => issue.input === undefined ? "La date de fin est requise" : "Date invalide",
   }),
   status: z.enum(["IN_PROGRESS", "COMPLETED"]).default("IN_PROGRESS"),
   catalogId: z.string().optional(),
@@ -40,10 +40,10 @@ export const hrActivitySchema = hrActivityBaseSchema.refine(
 // Schéma de base pour un timesheet RH (sans validation)
 const hrTimesheetBaseSchema = z.object({
   weekStartDate: z.date({
-    required_error: "La date de début de semaine est requise",
+    error: (issue) => issue.input === undefined ? "La date de début de semaine est requise" : "Date invalide",
   }),
   weekEndDate: z.date({
-    required_error: "La date de fin de semaine est requise",
+    error: (issue) => issue.input === undefined ? "La date de fin de semaine est requise" : "Date invalide",
   }),
   employeeName: z.string().min(1, "Le nom de l'employé est requis"),
   position: z.string().min(1, "Le poste est requis"),
@@ -105,8 +105,12 @@ export const activityCatalogFilterSchema = z.object({
 export { hrActivityBaseSchema, hrTimesheetBaseSchema };
 
 // Types inférés pour TypeScript
-export type HRActivityInput = z.infer<typeof hrActivitySchema>;
-export type HRTimesheetInput = z.infer<typeof hrTimesheetSchema>;
+// Utiliser z.input pour les formulaires (avant transformation par Zod)
+// et z.infer/z.output pour les données validées (après transformation)
+export type HRActivityInput = z.input<typeof hrActivitySchema>;
+export type HRActivityOutput = z.output<typeof hrActivitySchema>;
+export type HRTimesheetInput = z.input<typeof hrTimesheetSchema>;
+export type HRTimesheetOutput = z.output<typeof hrTimesheetSchema>;
 export type SubmitHRTimesheetInput = z.infer<typeof submitHRTimesheetSchema>;
 export type ManagerApprovalInput = z.infer<typeof managerApprovalSchema>;
 export type OdillonApprovalInput = z.infer<typeof odillonApprovalSchema>;

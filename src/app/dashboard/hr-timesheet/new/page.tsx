@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -279,7 +279,7 @@ export default function NewHRTimesheetPage() {
       totalHours: activityData.totalHours,
       startDate: activityData.startDate,
       endDate: activityData.endDate,
-      status: activityData.status,
+      status: activityData.status ?? "IN_PROGRESS",
       soundEnabled: false, // Default: no sound notification
       catalogId: activityData.catalogId,
       priority: selectedTask?.priority,
