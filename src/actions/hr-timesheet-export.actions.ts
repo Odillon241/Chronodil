@@ -154,7 +154,7 @@ export const exportHRTimesheetToExcel = authActionClient
       // Activités de cette catégorie
       activities.forEach((activity: any) => {
         const row = worksheet.addRow({
-          type: activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting",
+          type: activity.ActivityCatalog?.category || (activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"),
           name: activity.activityName,
           category: activity.ActivityCatalog?.category || "Autres",
           periodicity: getPeriodicityLabel(activity.periodicity),

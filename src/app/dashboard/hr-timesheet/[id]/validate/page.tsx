@@ -205,10 +205,12 @@ export default function ValidateHRTimesheetPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getActivityTypeBadge = (type: string) => {
+  const getActivityTypeBadge = (activity: Activity) => {
+    const category = activity.ActivityCatalog?.category;
+    const type = activity.activityType;
     return (
       <Badge variant={type === "OPERATIONAL" ? "default" : "secondary"}>
-        {type === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+        {category || (type === "OPERATIONAL" ? "Opérationnel" : "Reporting")}
       </Badge>
     );
   };
@@ -377,7 +379,7 @@ export default function ValidateHRTimesheetPage() {
                     {activities.map((activity) => (
                       <div key={activity.id} className="p-4 border rounded-lg bg-muted/30">
                         <div className="flex items-center gap-2 mb-2">
-                          {getActivityTypeBadge(activity.activityType)}
+                          {getActivityTypeBadge(activity)}
                           <Badge variant="outline">
                             {getPeriodicityLabel(activity.periodicity)}
                           </Badge>

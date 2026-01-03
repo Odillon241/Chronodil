@@ -183,10 +183,12 @@ export default function HRTimesheetDetailPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getActivityTypeBadge = (type: string) => {
+  const getActivityTypeBadge = (activity: Activity) => {
+    const category = activity.ActivityCatalog?.category;
+    const type = activity.activityType;
     return (
       <Badge variant={type === "OPERATIONAL" ? "default" : "secondary"}>
-        {type === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+        {category || (type === "OPERATIONAL" ? "Opérationnel" : "Reporting")}
       </Badge>
     );
   };
@@ -442,7 +444,7 @@ export default function HRTimesheetDetailPage() {
                         <div className="flex items-start justify-between py-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              {getActivityTypeBadge(activity.activityType)}
+                              {getActivityTypeBadge(activity)}
                               <Badge variant="outline">
                                 {getPeriodicityLabel(activity.periodicity)}
                               </Badge>

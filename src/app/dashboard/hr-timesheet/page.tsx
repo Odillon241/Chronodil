@@ -1765,7 +1765,8 @@ export default function HRTimesheetPage() {
                               {/* Badges */}
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant={activity.activityType === "OPERATIONAL" ? "default" : "secondary"}>
-                                  {activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+                                  {activity.ActivityCatalog?.category || 
+                                   (activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting")}
                                 </Badge>
                                 <Badge variant="outline" className="capitalize">
                                   {activity.periodicity === "DAILY" ? "Quotidien" :
