@@ -77,7 +77,7 @@ export default function TasksPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState(true);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"calendar" | "kanban" | "gantt" | "list">("calendar");
+  const [viewMode, setViewMode] = useState<"calendar" | "kanban" | "gantt" | "list">("list");
 
   // Activer les rappels de tâches
   useTaskReminders({ tasks });
@@ -804,10 +804,10 @@ export default function TasksPage() {
           <CardContent className="pt-0">
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full min-w-0">
               <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
+                <TabsTrigger value="list" className="text-xs sm:text-sm px-2 sm:px-3">Liste</TabsTrigger>
                 <TabsTrigger value="calendar" className="text-xs sm:text-sm px-2 sm:px-3">Calendrier</TabsTrigger>
                 <TabsTrigger value="kanban" className="text-xs sm:text-sm px-2 sm:px-3">Kanban</TabsTrigger>
                 <TabsTrigger value="gantt" className="text-xs sm:text-sm px-2 sm:px-3 hidden sm:inline-flex">Gantt</TabsTrigger>
-                <TabsTrigger value="list" className="text-xs sm:text-sm px-2 sm:px-3">Liste</TabsTrigger>
               </TabsList>
 
               {/* Vue Calendrier */}

@@ -15,6 +15,16 @@ const hrActivityBaseSchema = z.object({
   }),
   status: z.enum(["IN_PROGRESS", "COMPLETED"]).default("IN_PROGRESS"),
   catalogId: z.string().optional(),
+  // Nouveaux champs pour intégration avec Task
+  taskId: z.string().optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  complexity: z.enum(["FAIBLE", "MOYEN", "ÉLEVÉ"]).optional(),
+  estimatedHours: z.number().min(0).optional(),
+  dueDate: z.date().optional(),
+  reminderDate: z.date().optional(),
+  reminderTime: z.string().optional(),
+  soundEnabled: z.boolean().default(true),
+  createLinkedTask: z.boolean().optional(), // Pour indiquer si on veut créer une tâche liée
 });
 
 // Schéma pour une activité RH avec validation

@@ -349,6 +349,47 @@ export const addHRActivity = authActionClient
     const days = differenceInDays(activity.endDate, activity.startDate);
     const totalHours = days * 24;
 
+    // Si on demande de créer une tâche liée, la créer d'abord
+    let linkedTaskId: string | undefined = activity.taskId;
+
+    if (activity.createLinkedTask) {
+      // Convertir le statut HRActivity en statut Task
+      const taskStatus = activity.status === "COMPLETED" ? "DONE" : "IN_PROGRESS";
+
+      const linkedTask = await prisma.task.create({
+        data: {
+          id: nanoid(),
+          name: activity.activityName,
+          description: activity.description,
+          createdBy: userId,
+          hrTimesheetId: timesheetId,
+          status: taskStatus,
+          priority: activity.priority || "MEDIUM",
+          complexity: activity.complexity || "MOYEN",
+          estimatedHours: activity.estimatedHours,
+          dueDate: activity.dueDate,
+          reminderDate: activity.reminderDate,
+          reminderTime: activity.reminderTime,
+          soundEnabled: activity.soundEnabled ?? true,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      // Ajouter le créateur comme membre de la tâche
+      await prisma.taskMember.create({
+        data: {
+          id: nanoid(),
+          taskId: linkedTask.id,
+          userId: userId,
+          role: "creator",
+        },
+      });
+
+      linkedTaskId = linkedTask.id;
+    }
+
     const newActivity = await prisma.hRActivity.create({
       data: {
         id: nanoid(),
@@ -363,11 +404,21 @@ export const addHRActivity = authActionClient
         totalHours,
         status: activity.status,
         catalogId: activity.catalogId,
+        // Nouveaux champs Task-related
+        taskId: linkedTaskId,
+        priority: activity.priority,
+        complexity: activity.complexity,
+        estimatedHours: activity.estimatedHours,
+        dueDate: activity.dueDate,
+        reminderDate: activity.reminderDate,
+        reminderTime: activity.reminderTime,
+        soundEnabled: activity.soundEnabled ?? true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       include: {
         ActivityCatalog: true,
+        Task: true,
       },
     });
 
@@ -376,6 +427,7 @@ export const addHRActivity = authActionClient
 
     revalidatePath("/dashboard/hr-timesheet");
     revalidatePath(`/dashboard/hr-timesheet/${timesheetId}`);
+    revalidatePath("/dashboard/tasks");
     return newActivity;
   });
 
