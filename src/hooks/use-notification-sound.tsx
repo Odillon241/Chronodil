@@ -1,165 +1,243 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from 'react';
+import useSound from 'use-sound';
 
-/**
- * Hook pour gérer les sons de notification
- * Permet de jouer un son lorsqu'une nouvelle notification arrive
- */
-export function useNotificationSound() {
-  const [isEnabled, setIsEnabled] = useState(true);
-  const [volume, setVolume] = useState(0.5);
-  const [selectedSound, setSelectedSound] = useState<"default" | "soft" | "alert">("default");
+interface NotificationSoundOptions {
+  soundEnabled?: boolean;
+  volume?: number;
+  onPermissionChange?: (permission: NotificationPermission) => void;
+}
 
-  // Charger les préférences depuis le localStorage au montage
+interface SoundFiles {
+  notification: string;
+  taskAssigned: string;
+  taskCompleted: string;
+  taskUpdated: string;
+  error: string;
+  success: string;
+}
+
+const SOUND_FILES: SoundFiles = {
+  notification: '/sounds/notification.wav',
+  taskAssigned: '/sounds/task-assigned.wav',
+  taskCompleted: '/sounds/task-completed.wav',
+  taskUpdated: '/sounds/task-updated.wav',
+  error: '/sounds/error.wav',
+  success: '/sounds/success.wav',
+};
+
+export function useNotificationSound(options?: NotificationSoundOptions) {
+  const { soundEnabled = false, volume = 1, onPermissionChange } = options || {};
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [mounted, setMounted] = useState(false);
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+
+  const [playNotification] = useSound(SOUND_FILES.notification, { volume });
+  const [playTaskAssigned] = useSound(SOUND_FILES.taskAssigned, { volume });
+  const [playTaskCompleted] = useSound(SOUND_FILES.taskCompleted, { volume });
+  const [playTaskUpdated] = useSound(SOUND_FILES.taskUpdated, { volume });
+  const [playError] = useSound(SOUND_FILES.error, { volume });
+  const [playSuccess] = useSound(SOUND_FILES.success, { volume });
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedEnabled = localStorage.getItem("notification-sound-enabled");
-      const savedVolume = localStorage.getItem("notification-sound-volume");
-      const savedSound = localStorage.getItem("notification-sound-type");
+    setMounted(true);
 
-      if (savedEnabled !== null) {
-        setIsEnabled(savedEnabled === "true");
-      }
-      if (savedVolume !== null) {
-        setVolume(parseFloat(savedVolume));
-      }
-      if (savedSound !== null) {
-        setSelectedSound(savedSound as "default" | "soft" | "alert");
+    if ('Notification' in window) {
+      const currentPermission = Notification.permission;
+      setPermission(currentPermission);
+    }
+
+    if ('BroadcastChannel' in window) {
+      try {
+        const channel = new BroadcastChannel('notification-sounds');
+        broadcastChannelRef.current = channel;
+
+        channel.onmessage = (event) => {
+          const { type, soundType } = event.data;
+          if (type === 'PLAY_SOUND' && soundEnabled) {
+            playSoundByType(soundType);
+          }
+        };
+      } catch (error) {
+        console.warn('BroadcastChannel not supported:', error);
       }
     }
+
+    return () => {
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.close();
+      }
+    };
   }, []);
 
-  /**
-   * Génère un son de notification en utilisant Web Audio API
-   * Différents sons selon le type sélectionné
-   */
-  const generateBeepSound = useCallback(
-    (type: "default" | "soft" | "alert") => {
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+  useEffect(() => {
+    if ('Notification' in window && mounted) {
+      const currentPermission = Notification.permission;
+      if (currentPermission !== permission) {
+        setPermission(currentPermission);
+        onPermissionChange?.(currentPermission);
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        // Configuration selon le type de son
-        switch (type) {
-          case "soft":
-            oscillator.frequency.value = 600;
-            gainNode.gain.setValueAtTime(volume * 0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
-            break;
-
-          case "alert":
-            // Son plus urgent avec deux tons
-            oscillator.frequency.value = 800;
-            gainNode.gain.setValueAtTime(volume * 0.5, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.15);
-
-            // Deuxième ton
-            setTimeout(() => {
-              const oscillator2 = audioContext.createOscillator();
-              const gainNode2 = audioContext.createGain();
-              oscillator2.connect(gainNode2);
-              gainNode2.connect(audioContext.destination);
-              oscillator2.frequency.value = 1000;
-              gainNode2.gain.setValueAtTime(volume * 0.5, audioContext.currentTime);
-              gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-              oscillator2.start(audioContext.currentTime);
-              oscillator2.stop(audioContext.currentTime + 0.15);
-            }, 150);
-            break;
-
-          case "default":
-          default:
-            // Son classique de notification
-            oscillator.frequency.value = 700;
-            gainNode.gain.setValueAtTime(volume * 0.4, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.4);
-            break;
+        if (broadcastChannelRef.current) {
+          broadcastChannelRef.current.postMessage({
+            type: 'PERMISSION_CHANGED',
+            permission: currentPermission,
+          });
         }
-      } catch (error) {
-        console.error("Erreur lors de la génération du son:", error);
+      }
+    }
+  }, [mounted, permission, onPermissionChange]);
+
+  const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
+    if (!('Notification' in window)) {
+      console.warn('Notifications API not supported');
+      return 'denied';
+    }
+
+    if (permission === 'denied') {
+      console.warn('Notification permission denied by user');
+      return 'denied';
+    }
+
+    if (permission === 'granted') {
+      return 'granted';
+    }
+
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      onPermissionChange?.(result);
+
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.postMessage({
+          type: 'PERMISSION_CHANGED',
+          permission: result,
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return 'denied';
+    }
+  }, [permission, onPermissionChange]);
+
+  const playSoundByType = useCallback((soundType: keyof SoundFiles) => {
+    if (!soundEnabled || !mounted) return;
+
+    switch (soundType) {
+      case 'notification':
+        playNotification();
+        break;
+      case 'taskAssigned':
+        playTaskAssigned();
+        break;
+      case 'taskCompleted':
+        playTaskCompleted();
+        break;
+      case 'taskUpdated':
+        playTaskUpdated();
+        break;
+      case 'error':
+        playError();
+        break;
+      case 'success':
+        playSuccess();
+        break;
+      default:
+        playNotification();
+    }
+  }, [
+    soundEnabled,
+    mounted,
+    playNotification,
+    playTaskAssigned,
+    playTaskCompleted,
+    playTaskUpdated,
+    playError,
+    playSuccess,
+  ]);
+
+  const notifyWithSound = useCallback(
+    async (
+      title: string,
+      options?: NotificationOptions & { soundType?: keyof SoundFiles }
+    ) => {
+      if (!mounted) return;
+
+      const { soundType = 'notification', ...notificationOptions } = options || {};
+
+      playSoundByType(soundType);
+
+      if (permission === 'granted' && 'Notification' in window) {
+        try {
+          new Notification(title, {
+            ...notificationOptions,
+            silent: true,
+          });
+        } catch (error) {
+          console.error('Error showing notification:', error);
+        }
+      }
+
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.postMessage({
+          type: 'PLAY_SOUND',
+          soundType,
+        });
       }
     },
-    [volume]
+    [permission, mounted, playSoundByType]
   );
 
-  /**
-   * Joue un son de notification
-   * Utilise Web Audio API pour générer un son synthétisé
-   */
   const playSound = useCallback(
-    async (soundType?: "default" | "soft" | "alert") => {
-      if (!isEnabled) return;
+    (soundType: keyof SoundFiles) => {
+      if (!soundEnabled || !mounted) return;
+      playSoundByType(soundType);
 
-      const type = soundType || selectedSound;
-
-      try {
-        // Utiliser directement Web Audio API pour générer le son
-        generateBeepSound(type);
-      } catch (error) {
-        console.error("Erreur lors de la lecture du son:", error);
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.postMessage({
+          type: 'PLAY_SOUND',
+          soundType,
+        });
       }
     },
-    [isEnabled, selectedSound, generateBeepSound]
+    [soundEnabled, mounted, playSoundByType]
   );
 
-  /**
-   * Active ou désactive les sons de notification
-   */
-  const toggleSound = useCallback((enabled: boolean) => {
-    setIsEnabled(enabled);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("notification-sound-enabled", enabled.toString());
-    }
-  }, []);
+  const showNotification = useCallback(
+    (title: string, options?: NotificationOptions) => {
+      if (permission === 'granted' && 'Notification' in window && mounted) {
+        try {
+          new Notification(title, {
+            ...options,
+            silent: true,
+          });
+        } catch (error) {
+          console.error('Error showing notification:', error);
+        }
+      }
+    },
+    [permission, mounted]
+  );
 
-  /**
-   * Change le volume du son (0 à 1)
-   */
-  const changeVolume = useCallback((newVolume: number) => {
-    const clampedVolume = Math.max(0, Math.min(1, newVolume));
-    setVolume(clampedVolume);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("notification-sound-volume", clampedVolume.toString());
-    }
-  }, []);
-
-  /**
-   * Change le type de son de notification
-   */
-  const changeSoundType = useCallback((type: "default" | "soft" | "alert") => {
-    setSelectedSound(type);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("notification-sound-type", type);
-    }
-  }, []);
-
-  /**
-   * Teste le son actuellement sélectionné
-   */
   const testSound = useCallback(() => {
-    playSound();
-  }, [playSound]);
+    playSoundByType('notification');
+  }, [playSoundByType]);
 
   return {
-    isEnabled,
-    volume,
-    selectedSound,
+    permission,
+    hasPermission: permission === 'granted',
+    soundEnabled,
+    mounted,
+    requestPermission,
     playSound,
-    toggleSound,
-    changeVolume,
-    changeSoundType,
+    notifyWithSound,
+    showNotification,
+    playSoundByType,
     testSound,
+    soundTypes: Object.keys(SOUND_FILES) as (keyof SoundFiles)[],
   };
 }
 
+export type { SoundFiles };

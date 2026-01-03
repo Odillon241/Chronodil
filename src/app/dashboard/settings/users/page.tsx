@@ -365,12 +365,12 @@ export default function UsersManagementPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight">
             {((session?.user as any)?.role === "DIRECTEUR")
               ? "Gestion de l'équipe"
               : "Gestion des utilisateurs"}
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p className="text-base text-muted-foreground mt-1">
             {((session?.user as any)?.role === "DIRECTEUR")
               ? "Gérez votre équipe et assignez des managers"
               : "Gérez les comptes utilisateurs et leurs permissions"}

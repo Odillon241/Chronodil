@@ -94,7 +94,8 @@
       "Bash(git commit:*)",
       "Bash(npx tsx:*)",
       "Bash(tasklist:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

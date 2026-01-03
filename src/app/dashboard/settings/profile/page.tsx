@@ -19,7 +19,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -188,7 +187,6 @@ export default function ProfilePage() {
     setPreviewUrl('');
     setCroppedImageUrl('');
     setShowCropper(false);
-    // Réinitialiser l'input de fichier
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -198,25 +196,19 @@ export default function ProfilePage() {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Valider le type de fichier
       if (!file.type.startsWith('image/')) {
         toast.error("Veuillez sélectionner un fichier image");
         return;
       }
       
-      // Valider la taille (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Le fichier ne doit pas dépasser 5MB");
         return;
       }
 
       setSelectedFile(file);
-      
-      // Créer une URL de prévisualisation
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      
-      // Afficher le recadreur
       setShowCropper(true);
     }
   };
@@ -241,15 +233,12 @@ export default function ProfilePage() {
     try {
       let avatarUrl = avatarValue.trim();
 
-      // Si c'est un upload de fichier
       if (avatarType === 'upload' && (selectedFile || croppedImageUrl)) {
         let base64: string;
         
         if (croppedImageUrl) {
-          // Utiliser l'image recadrée
           base64 = croppedImageUrl;
         } else if (selectedFile) {
-          // Convertir le fichier original en base64
           base64 = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -260,7 +249,6 @@ export default function ProfilePage() {
           return;
         }
 
-        // Uploader le fichier
         const uploadResult = await uploadAvatar({
           fileName: selectedFile?.name || 'cropped-avatar.png',
           fileContent: base64,
@@ -280,7 +268,6 @@ export default function ProfilePage() {
         return;
       }
 
-      // Mettre à jour le profil
       const result = await updateMyProfile({
         name: user?.name || '',
         email: user?.email || '',
@@ -293,21 +280,17 @@ export default function ProfilePage() {
         setUser(result.data as any);
         setIsAvatarDialogOpen(false);
         
-        // Nettoyer l'URL de prévisualisation
         if (previewUrl) {
           URL.revokeObjectURL(previewUrl);
           setPreviewUrl('');
         }
         
-        // Réinitialiser l'input de fichier
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
         
-        // Réinitialiser l'image recadrée
         setCroppedImageUrl('');
         
-        // Recharger la page pour mettre à jour la session
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -334,7 +317,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <SpinnerCustom />
           <p className="text-muted-foreground mt-4">Chargement du profil...</p>
@@ -355,18 +338,18 @@ export default function ProfilePage() {
     <div className="space-y-6">
       {/* En-tête */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Mon Profil</h1>
+        <p className="text-base text-muted-foreground mt-1">
           Gérez vos informations personnelles et vos préférences
         </p>
       </div>
 
       {/* Carte principale */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Colonne gauche - Avatar et infos rapides */}
-        <Card className="md:col-span-1">
+        <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Photo de profil</CardTitle>
+            <CardTitle>Photo de profil</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
@@ -403,36 +386,36 @@ export default function ProfilePage() {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Rôle</span>
-                <Badge className={`${getRoleBadgeColor(user.role)} text-xs`}>
+                <span className="text-sm text-muted-foreground">Rôle</span>
+                <Badge className={getRoleBadgeColor(user.role)}>
                   {getRoleLabel(user.role)}
                 </Badge>
               </div>
 
               {user.department && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">Département</span>
-                  <span className="text-xs sm:text-sm font-medium">{user.department.name}</span>
+                  <span className="text-sm text-muted-foreground">Département</span>
+                  <span className="text-sm font-medium">{user.department.name}</span>
                 </div>
               )}
 
               {user.manager && (
                 <div className="space-y-1">
-                  <span className="text-xs sm:text-sm text-muted-foreground">Manager</span>
+                  <span className="text-sm text-muted-foreground">Manager</span>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarFallback className="bg-primary text-white text-xs">
                         {getInitials(user.manager.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-xs sm:text-sm font-medium">{user.manager.name}</span>
+                    <span className="text-sm font-medium">{user.manager.name}</span>
                   </div>
                 </div>
               )}
 
               <div className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Membre depuis</span>
-                <span className="text-xs sm:text-sm font-medium">
+                <span className="text-sm text-muted-foreground">Membre depuis</span>
+                <span className="text-sm font-medium">
                   {new Date(user.createdAt).toLocaleDateString("fr-FR", {
                     month: "long",
                     year: "numeric",
@@ -444,20 +427,20 @@ export default function ProfilePage() {
         </Card>
 
         {/* Colonne droite - Informations détaillées */}
-        <Card className="md:col-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="text-lg sm:text-xl">Informations personnelles</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
+                <CardTitle>Informations personnelles</CardTitle>
+                <CardDescription>
                   {isEditing
                     ? "Modifiez vos informations personnelles"
                     : "Consultez vos informations personnelles"}
                 </CardDescription>
               </div>
               {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                  <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
                   Modifier
                 </Button>
               )}
@@ -465,7 +448,6 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             {isEditing ? (
-              // Mode édition
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -519,28 +501,12 @@ export default function ProfilePage() {
                       <p className="text-sm text-destructive">{errors.position.message}</p>
                     )}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="avatar">URL photo de profil</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="avatar"
-                        className="pl-10"
-                        placeholder="https://example.com/photo.jpg"
-                        {...register("avatar")}
-                      />
-                    </div>
-                    {errors.avatar && (
-                      <p className="text-sm text-destructive">{errors.avatar.message}</p>
-                    )}
-                  </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
                   <Button
                     type="submit"
-                    className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
+                    className="bg-primary hover:bg-primary"
                     disabled={isSaving}
                   >
                     {isSaving ? (
@@ -550,7 +516,7 @@ export default function ProfilePage() {
                       </>
                     ) : (
                       <>
-                        <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                        <Save className="mr-2 h-4 w-4" />
                         Enregistrer
                       </>
                     )}
@@ -560,15 +526,13 @@ export default function ProfilePage() {
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
-                    <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <X className="mr-2 h-4 w-4" />
                     Annuler
                   </Button>
                 </div>
               </form>
             ) : (
-              // Mode consultation
               <div className="space-y-6">
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -642,37 +606,6 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-
-                {/* Informations additionnelles (futures) */}
-                <Separator />
-
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm sm:text-base">Informations contractuelles</h3>
-                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
-                        <Clock className="h-4 w-4" />
-                        Horaires hebdomadaires
-                      </div>
-                      <p className="text-sm font-medium pl-6 text-muted-foreground">
-                        35h/semaine (à configurer)
-                      </p>
-                    </div>
-
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
-                        <CalendarDays className="h-4 w-4" />
-                        Solde congés
-                      </div>
-                      <p className="text-sm font-medium pl-6 text-muted-foreground">
-                        À venir (Phase 2)
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground italic">
-                    Ces informations seront disponibles dans une prochaine mise à jour
-                  </p>
-                </div>
               </div>
             )}
           </CardContent>
@@ -681,7 +614,7 @@ export default function ProfilePage() {
 
       {/* Modal de sélection d'avatar */}
       <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Modifier votre avatar</DialogTitle>
             <DialogDescription>
@@ -690,7 +623,6 @@ export default function ProfilePage() {
           </DialogHeader>
           
           <div className="space-y-4">
-            {/* Sélection du type d'avatar */}
             <div className="space-y-2">
               <Label>Type d'avatar</Label>
               <Select value={avatarType} onValueChange={(value: 'upload' | 'emoji') => setAvatarType(value)}>
@@ -714,7 +646,6 @@ export default function ProfilePage() {
               </Select>
             </div>
 
-            {/* Aperçu de l'avatar */}
             <div className="flex justify-center">
               <Avatar className="h-20 w-20">
                 <AvatarImage 
@@ -735,7 +666,6 @@ export default function ProfilePage() {
               </Avatar>
             </div>
 
-            {/* Champ de saisie */}
             {avatarType === 'upload' ? (
               <div className="space-y-2">
                 {!showCropper && (
@@ -784,7 +714,6 @@ export default function ProfilePage() {
                   maxLength={2}
                 />
                 
-                {/* Sélection d'emojis populaires */}
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Emojis populaires</Label>
                   <div className="grid grid-cols-10 gap-1 max-h-32 overflow-y-auto">
@@ -804,11 +733,10 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Boutons d'action */}
-            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+            <div className="flex gap-2 pt-4">
               <Button
                 onClick={handleAvatarUpdate}
-                className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
+                className="flex-1 bg-primary hover:bg-primary"
                 disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
               >
                 {isUpdatingAvatar ? (
@@ -818,7 +746,7 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <Save className="mr-2 h-4 w-4" />
                     Sauvegarder
                   </>
                 )}
@@ -827,9 +755,8 @@ export default function ProfilePage() {
                 variant="outline"
                 onClick={() => setIsAvatarDialogOpen(false)}
                 disabled={isUpdatingAvatar}
-                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <X className="mr-2 h-4 w-4" />
                 Annuler
               </Button>
             </div>

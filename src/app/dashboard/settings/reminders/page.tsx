@@ -55,7 +55,6 @@ export default function ReminderPreferencesPage() {
 
   const enableReminders = watch("enableTimesheetReminders");
 
-  // Charger les préférences existantes
   useEffect(() => {
     const loadPreferences = async () => {
       try {
@@ -109,7 +108,7 @@ export default function ReminderPreferencesPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <SpinnerCustom />
-          <p className="text-muted-foreground">Chargement des préférences...</p>
+          <p className="text-muted-foreground mt-4">Chargement des préférences...</p>
         </div>
       </div>
     );
@@ -118,19 +117,19 @@ export default function ReminderPreferencesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Préférences de rappel</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Préférences de rappel</h1>
+        <p className="text-base text-muted-foreground mt-1">
           Configurez vos préférences pour recevoir des rappels de saisie de temps
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
             Rappels de saisie de temps
           </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
+          <CardDescription>
             Activez ou désactivez les rappels pour vous aider à saisir vos heures de travail
           </CardDescription>
         </CardHeader>
@@ -139,10 +138,10 @@ export default function ReminderPreferencesPage() {
             {/* Activation/Désactivation des rappels */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg">
               <div className="space-y-1 flex-1">
-                <Label htmlFor="enableReminders" className="text-sm sm:text-base font-medium">
+                <Label htmlFor="enableReminders" className="text-base font-medium">
                   Activer les rappels de saisie de temps
                 </Label>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Recevez des notifications pour vous rappeler de saisir vos heures de travail
                 </p>
               </div>
@@ -160,7 +159,7 @@ export default function ReminderPreferencesPage() {
                 
                 {/* Heure du rappel */}
                 <div className="space-y-3">
-                  <Label htmlFor="reminderTime" className="flex items-center gap-2 text-sm sm:text-base font-medium">
+                  <Label htmlFor="reminderTime" className="flex items-center gap-2 text-base font-medium">
                     <Clock className="h-4 w-4" />
                     Heure du rappel
                   </Label>
@@ -171,9 +170,9 @@ export default function ReminderPreferencesPage() {
                     className="w-full sm:w-32"
                   />
                   {errors.reminderTime && (
-                    <p className="text-xs sm:text-sm text-destructive">{errors.reminderTime.message}</p>
+                    <p className="text-sm text-destructive">{errors.reminderTime.message}</p>
                   )}
-                  <p className="text-xs sm:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     L'heure à laquelle vous souhaitez recevoir vos rappels
                   </p>
                 </div>
@@ -182,7 +181,7 @@ export default function ReminderPreferencesPage() {
 
                 {/* Jours de rappel */}
                 <div className="space-y-3">
-                  <Label className="flex items-center gap-2 text-sm sm:text-base font-medium">
+                  <Label className="flex items-center gap-2 text-base font-medium">
                     <Calendar className="h-4 w-4" />
                     Jours de rappel
                   </Label>
@@ -196,14 +195,14 @@ export default function ReminderPreferencesPage() {
                         />
                         <Label
                           htmlFor={day.value}
-                          className="text-xs sm:text-sm font-normal cursor-pointer"
+                          className="text-sm font-normal cursor-pointer"
                         >
                           {day.label}
                         </Label>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Sélectionnez les jours où vous souhaitez recevoir des rappels
                   </p>
                 </div>
@@ -214,7 +213,7 @@ export default function ReminderPreferencesPage() {
             <div className="flex justify-end gap-3 pt-4">
               <Button
                 type="submit"
-                className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
+                className="bg-primary hover:bg-primary"
                 disabled={isLoading}
               >
                 {isLoading ? "Sauvegarde..." : "Sauvegarder"}
@@ -227,9 +226,9 @@ export default function ReminderPreferencesPage() {
       {/* Informations supplémentaires */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base sm:text-lg">À propos des rappels</CardTitle>
+          <CardTitle>À propos des rappels</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-xs sm:text-sm text-muted-foreground">
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
             • Les rappels vous aideront à ne pas oublier de saisir vos heures de travail quotidiennes
           </p>
