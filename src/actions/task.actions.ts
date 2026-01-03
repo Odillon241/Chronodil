@@ -26,6 +26,8 @@ const createTaskSchema = z.object({
   trainingLevel: z.enum(["NONE", "BASIC", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional().nullable(),
   masteryLevel: z.enum(["NOVICE", "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional().nullable(),
   understandingLevel: z.enum(["NONE", "SUPERFICIAL", "WORKING", "COMPREHENSIVE", "EXPERT"]).optional().nullable(),
+  // Nouveau champ pour lier à un HR Timesheet
+  hrTimesheetId: z.string().optional(),
 });
 
 const updateTaskSchema = z.object({
@@ -66,8 +68,22 @@ export const createTask = actionClient
       }
     }
 
-    const { sharedWith, ...taskData } = parsedInput;
+    const { sharedWith, hrTimesheetId, ...taskData } = parsedInput;
     const taskId = nanoid();
+
+    // Vérifier que le HR Timesheet existe et appartient à l'utilisateur si spécifié
+    if (hrTimesheetId) {
+      const timesheet = await prisma.hRTimesheet.findFirst({
+        where: {
+          id: hrTimesheetId,
+          userId: session.user.id,
+        },
+      });
+
+      if (!timesheet) {
+        throw new Error("Timesheet non trouvé ou vous n'avez pas la permission");
+      }
+    }
 
     // Créer la tâche avec transaction pour garantir la cohérence
     const task = await prisma.$transaction(async (tx) => {
@@ -76,6 +92,7 @@ export const createTask = actionClient
         data: {
           id: taskId,
           ...taskData,
+          hrTimesheetId,
           createdBy: session.user.id,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -85,6 +102,13 @@ export const createTask = actionClient
             select: {
               name: true,
               code: true,
+            },
+          },
+          HRTimesheet: {
+            select: {
+              id: true,
+              weekStartDate: true,
+              weekEndDate: true,
             },
           },
         },

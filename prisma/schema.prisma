@@ -136,14 +136,25 @@ model HRActivity {
   totalHours      Float
   status          HRActivityStatus
   catalogId       String?
+  // Nouveaux champs pour intégration avec Task
+  taskId          String?          @unique
+  priority        String?          // LOW, MEDIUM, HIGH, URGENT
+  complexity      TaskComplexity?
+  estimatedHours  Float?
+  dueDate         DateTime?
+  reminderDate    DateTime?
+  reminderTime    String?
+  soundEnabled    Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime
   ActivityCatalog ActivityCatalog? @relation(fields: [catalogId], references: [id])
   hrTimesheet     HRTimesheet      @relation("HRTimesheetActivities", fields: [hrTimesheetId], references: [id], onDelete: Cascade)
+  Task            Task?            @relation(fields: [taskId], references: [id])
 
   @@index([catalogId])
   @@index([hrTimesheetId])
   @@index([status])
+  @@index([taskId])
 }
 
 model HRTimesheet {
@@ -167,6 +178,7 @@ model HRTimesheet {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime
   activities           HRActivity[]      @relation("HRTimesheetActivities")
+  Task                 Task[]
   ManagerSigner        User?             @relation("HRTimesheet_managerSignedByIdToUser", fields: [managerSignedById], references: [id])
   OdillonSigner        User?             @relation("HRTimesheet_odillonSignedByIdToUser", fields: [odillonSignedById], references: [id])
   User                 User              @relation("HRTimesheet_userIdToUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -360,11 +372,15 @@ model Task {
   evaluatedBy        String?
   evaluationNotes    String?
   evaluatedAt        DateTime?
+  // Nouveau champ pour intégration avec HRTimesheet
+  hrTimesheetId      String?
   Creator            User?               @relation(fields: [createdBy], references: [id])
   Evaluator          User?               @relation("TaskEvaluation", fields: [evaluatedBy], references: [id])
   Task               Task?               @relation("TaskToTask", fields: [parentId], references: [id])
   other_Task         Task[]              @relation("TaskToTask")
   Project            Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  HRTimesheet        HRTimesheet?        @relation(fields: [hrTimesheetId], references: [id])
+  HRActivity         HRActivity?
   TaskActivity       TaskActivity[]
   TaskComment        TaskComment[]
   TaskMember         TaskMember[]
@@ -379,6 +395,7 @@ model Task {
   @@index([priority])
   @@index([complexity])
   @@index([evaluatedBy])
+  @@index([hrTimesheetId])
   // ⚡ Index composites pour optimiser les filtres de tâches
   @@index([status, priority])
   @@index([projectId, status])
