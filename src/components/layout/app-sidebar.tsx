@@ -272,59 +272,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarMenu>
+        <SidebarMenu suppressHydrationWarning>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="size-8">
-                    <AvatarImage
-                      src={
-                        mounted && (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                        mounted && (session?.user as any)?.avatar?.startsWith('http')
-                          ? (session?.user as any)?.avatar
-                          : undefined
-                      }
-                      alt={(session?.user as any)?.name || "User"}
-                    />
-                    <AvatarFallback className="bg-primary text-white text-xs" suppressHydrationWarning>
-                      {mounted ? ((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U') : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold" suppressHydrationWarning>
-                      {mounted ? (session?.user?.name || t("common.name")) : t("common.name")}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground" suppressHydrationWarning>
-                      {mounted ? session?.user?.email : ""}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            {mounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  >
                     <Avatar className="size-8">
                       <AvatarImage
                         src={
-                          mounted && (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                          mounted && (session?.user as any)?.avatar?.startsWith('http')
+                          (session?.user as any)?.avatar?.startsWith('/uploads') ||
+                          (session?.user as any)?.avatar?.startsWith('http')
                             ? (session?.user as any)?.avatar
                             : undefined
                         }
                         alt={(session?.user as any)?.name || "User"}
                       />
-                      <AvatarFallback className="bg-primary text-white text-xs" suppressHydrationWarning>
-                        {mounted ? ((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U') : 'U'}
+                      <AvatarFallback className="bg-primary text-white text-xs">
+                        {((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
@@ -335,28 +303,83 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         {session?.user?.email}
                       </span>
                     </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    {t("navigation.profile")}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    {t("navigation.settings")}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t("navigation.logout")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <ChevronsUpDown className="ml-auto size-4" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                      <Avatar className="size-8">
+                        <AvatarImage
+                          src={
+                            (session?.user as any)?.avatar?.startsWith('/uploads') ||
+                            (session?.user as any)?.avatar?.startsWith('http')
+                              ? (session?.user as any)?.avatar
+                              : undefined
+                          }
+                          alt={(session?.user as any)?.name || "User"}
+                        />
+                        <AvatarFallback className="bg-primary text-white text-xs">
+                          {((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">
+                          {session?.user?.name || t("common.name")}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {session?.user?.email}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      {t("navigation.profile")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      {t("navigation.settings")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("navigation.logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                suppressHydrationWarning
+              >
+                <Avatar className="size-8">
+                  <AvatarFallback className="bg-primary text-white text-xs">
+                    U
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold" suppressHydrationWarning>
+                    {t("common.name")}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground" suppressHydrationWarning>
+                    {""}
+                  </span>
+                </div>
+                <ChevronsUpDown className="ml-auto size-4" />
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

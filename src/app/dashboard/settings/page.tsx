@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Plus, Edit, Trash2, Building2, Settings as SettingsIcon, Bell, Volume2, Mail, Monitor } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Trash2, Building2, Bell, Volume2, Mail, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Separator } from "@/components/ui/separator";
 import {
   getHolidays,
   createHoliday,
@@ -51,6 +52,8 @@ import { LocalizationSection } from "@/components/features/general-settings/loca
 import { AccessibilitySection } from "@/components/features/general-settings/accessibility-section";
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") || "notifications";
   const { data: session } = useSession();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
   const [holidays, setHolidays] = useState<any[]>([]);
@@ -468,39 +471,260 @@ export default function SettingsPage() {
     });
   };
 
+  // Rendu conditionnel selon l'onglet
+  const renderContent = () => {
+    switch (tab) {
+      case "holidays":
+        return renderHolidaysSection();
+      case "departments":
+        return renderDepartmentsSection();
+      case "general":
+        return renderGeneralSection();
+      case "notifications":
+      default:
+        return renderNotificationsSection();
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-        <p className="text-base text-muted-foreground mt-1">
-          Configuration de l'application et gestion des référentiels
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          {tab === "holidays" && "Jours fériés"}
+          {tab === "departments" && "Départements"}
+          {tab === "general" && "Paramètres généraux"}
+          {tab === "notifications" && "Notifications"}
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          {tab === "holidays" && "Gérez les jours fériés pour le calcul des temps (Gabon)"}
+          {tab === "departments" && "Gérez les départements de votre organisation"}
+          {tab === "general" && "Personnalisez l'apparence, la langue et l'accessibilité"}
+          {tab === "notifications" && "Gérez vos préférences de notification sonore et visuelle"}
         </p>
       </div>
 
-      <Tabs defaultValue="holidays" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto gap-1">
-          <TabsTrigger value="holidays" className="text-xs sm:text-sm">Jours fériés</TabsTrigger>
-          <TabsTrigger value="departments" className="text-xs sm:text-sm">Départements</TabsTrigger>
-          <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
-          <TabsTrigger value="reminders" className="text-xs sm:text-sm">Rappels</TabsTrigger>
-          {["ADMIN", "DIRECTEUR", "HR"].includes((session?.user as any)?.role) && (
-            <TabsTrigger value="users" className="text-xs sm:text-sm">Utilisateurs</TabsTrigger>
-          )}
-          <TabsTrigger value="general" className="text-xs sm:text-sm">Général</TabsTrigger>
-        </TabsList>
+      <Separator />
 
-        {/* Jours fériés */}
-        <TabsContent value="holidays" className="space-y-4">
+      {renderContent()}
+      <ConfirmationDialog />
+    </div>
+  );
+
+  // Section Notifications
+  function renderNotificationsSection() {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold">Préférences de notification</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Configurez vos notifications sonores, emails et bureau
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleResetPreferences}
+            disabled={isSavingPreferences || !preferences}
+            size="sm"
+          >
+            Réinitialiser
+          </Button>
+        </div>
+
+        {!preferences ? (
           <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <CardTitle className="text-lg sm:text-xl">Jours fériés</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Gérez les jours fériés pour le calcul des temps (Gabon)
-                  </CardDescription>
+            <CardContent className="py-12">
+              <p className="text-center text-muted-foreground">Chargement des préférences...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {/* Sons de notification */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Volume2 className="h-5 w-5" />
+                  Sons de notification
+                </CardTitle>
+                <CardDescription>
+                  Configurez les alertes sonores
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Activer/Désactiver le son */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5 flex-1">
+                    <Label htmlFor="sound-enabled" className="text-base font-medium">
+                      Activer les sons
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Jouer un son lors de la réception d'une notification
+                    </p>
+                  </div>
+                  <Switch
+                    id="sound-enabled"
+                    checked={preferences.notificationSoundEnabled}
+                    onCheckedChange={(checked) =>
+                      handleUpdatePreference("notificationSoundEnabled", checked)
+                    }
+                    disabled={isSavingPreferences}
+                  />
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
+
+                {/* Type de son */}
+                {preferences.notificationSoundEnabled && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <Label className="text-base font-medium">Type de son</Label>
+                      <RadioGroup
+                        value={preferences.notificationSoundType}
+                        onValueChange={(value) =>
+                          handleUpdatePreference("notificationSoundType", value)
+                        }
+                        disabled={isSavingPreferences}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="default" id="sound-default" />
+                          <Label htmlFor="sound-default" className="font-normal cursor-pointer">
+                            Par défaut - Son classique de notification
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="soft" id="sound-soft" />
+                          <Label htmlFor="sound-soft" className="font-normal cursor-pointer">
+                            Doux - Son subtil et discret
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="alert" id="sound-alert" />
+                          <Label htmlFor="sound-alert" className="font-normal cursor-pointer">
+                            Alerte - Son plus urgent
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    <Separator />
+
+                    {/* Volume */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="sound-volume" className="text-base font-medium">
+                          Volume ({Math.round(preferences.notificationSoundVolume * 100)}%)
+                        </Label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => testSound()}
+                          disabled={isSavingPreferences}
+                        >
+                          Tester le son
+                        </Button>
+                      </div>
+                      <Slider
+                        id="sound-volume"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={[preferences.notificationSoundVolume * 100]}
+                        onValueChange={([value]) =>
+                          handleUpdatePreference("notificationSoundVolume", value / 100)
+                        }
+                        disabled={isSavingPreferences}
+                        className="w-full"
+                      />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Notifications par email */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Notifications par email
+                </CardTitle>
+                <CardDescription>
+                  Recevez des notifications par email
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5 flex-1">
+                    <Label htmlFor="email-enabled" className="text-base font-medium">
+                      Activer les emails
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Recevoir des notifications importantes par email
+                    </p>
+                  </div>
+                  <Switch
+                    id="email-enabled"
+                    checked={preferences.emailNotificationsEnabled}
+                    onCheckedChange={(checked) =>
+                      handleUpdatePreference("emailNotificationsEnabled", checked)
+                    }
+                    disabled={isSavingPreferences}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notifications bureau */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Monitor className="h-5 w-5" />
+                  Notifications bureau
+                </CardTitle>
+                <CardDescription>
+                  Affichez des notifications sur votre bureau
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-0.5 flex-1">
+                    <Label htmlFor="desktop-enabled" className="text-base font-medium">
+                      Activer les notifications bureau
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Afficher des notifications même quand l'application est en arrière-plan
+                    </p>
+                  </div>
+                  <Switch
+                    id="desktop-enabled"
+                    checked={preferences.desktopNotificationsEnabled}
+                    onCheckedChange={(checked) =>
+                      handleUpdatePreference("desktopNotificationsEnabled", checked)
+                    }
+                    disabled={isSavingPreferences}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Section Jours fériés
+  function renderHolidaysSection() {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="text-lg sm:text-xl">Jours fériés</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  Gérez les jours fériés pour le calcul des temps (Gabon)
+                </CardDescription>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -718,10 +942,14 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
+      );
+    }
 
-        {/* Départements */}
-        <TabsContent value="departments" className="space-y-4">
+    // Section Départements
+    function renderDepartmentsSection() {
+      return (
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -830,266 +1058,40 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
+      );
+    }
 
-        {/* Notifications */}
-        <TabsContent value="notifications" className="space-y-4">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Préférences de notification</h2>
-              <p className="text-muted-foreground mt-1">
-                Gérez vos préférences de notification sonore et visuelle
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={handleResetPreferences}
-              disabled={isSavingPreferences || !preferences}
-              className="mt-1"
-            >
-              Réinitialiser
-            </Button>
+  // Section Général
+  function renderGeneralSection() {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold">Paramètres généraux</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Personnalisez l'apparence, la langue et l'accessibilité
+            </p>
           </div>
-
-          <div className="space-y-0">
-              {!preferences ? (
-                <p className="text-center text-muted-foreground py-8">Chargement des préférences...</p>
-              ) : (
-                <>
-                  {/* Sons de notification */}
-                  <div className="space-y-4 border-t pt-6">
-                    <div>
-                      <h3 className="font-semibold">Sons de notification</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Configurez les alertes sonores
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Activer/Désactiver le son */}
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="sound-enabled">Activer les sons</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Jouer un son lors de la réception d'une notification
-                          </p>
-                        </div>
-                        <Switch
-                          id="sound-enabled"
-                          checked={preferences.notificationSoundEnabled}
-                          onCheckedChange={(checked) =>
-                            handleUpdatePreference("notificationSoundEnabled", checked)
-                          }
-                          disabled={isSavingPreferences}
-                        />
-                      </div>
-
-                      {/* Type de son */}
-                      {preferences.notificationSoundEnabled && (
-                        <>
-                          <div className="space-y-3">
-                            <Label>Type de son</Label>
-                            <RadioGroup
-                              value={preferences.notificationSoundType}
-                              onValueChange={(value) =>
-                                handleUpdatePreference("notificationSoundType", value)
-                              }
-                              disabled={isSavingPreferences}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="default" id="sound-default" />
-                                <Label htmlFor="sound-default" className="font-normal cursor-pointer">
-                                  Par défaut - Son classique de notification
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="soft" id="sound-soft" />
-                                <Label htmlFor="sound-soft" className="font-normal cursor-pointer">
-                                  Doux - Son subtil et discret
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="alert" id="sound-alert" />
-                                <Label htmlFor="sound-alert" className="font-normal cursor-pointer">
-                                  Alerte - Son plus urgent
-                                </Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-
-                          {/* Volume */}
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="sound-volume">
-                                Volume ({Math.round(preferences.notificationSoundVolume * 100)}%)
-                              </Label>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => testSound()}
-                                disabled={isSavingPreferences}
-                              >
-                                Tester le son
-                              </Button>
-                            </div>
-                            <Slider
-                              id="sound-volume"
-                              min={0}
-                              max={100}
-                              step={5}
-                              value={[preferences.notificationSoundVolume * 100]}
-                              onValueChange={([value]) =>
-                                handleUpdatePreference("notificationSoundVolume", value / 100)
-                              }
-                              disabled={isSavingPreferences}
-                              className="w-full"
-                            />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Notifications par email */}
-                  <div className="space-y-4 border-t pt-6">
-                    <div>
-                      <h3 className="font-semibold">Notifications par email</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Recevez des notifications par email
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="email-enabled">Activer les emails</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Recevoir des notifications importantes par email
-                        </p>
-                      </div>
-                      <Switch
-                        id="email-enabled"
-                        checked={preferences.emailNotificationsEnabled}
-                        onCheckedChange={(checked) =>
-                          handleUpdatePreference("emailNotificationsEnabled", checked)
-                        }
-                        disabled={isSavingPreferences}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Notifications bureau */}
-                  <div className="space-y-4 border-t pt-6">
-                    <div>
-                      <h3 className="font-semibold">Notifications bureau</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Affichez des notifications sur votre bureau
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="desktop-enabled">Activer les notifications bureau</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Afficher des notifications même quand l'application est en arrière-plan
-                        </p>
-                      </div>
-                      <Switch
-                        id="desktop-enabled"
-                        checked={preferences.desktopNotificationsEnabled}
-                        onCheckedChange={(checked) =>
-                          handleUpdatePreference("desktopNotificationsEnabled", checked)
-                        }
-                        disabled={isSavingPreferences}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-          </div>
-        </TabsContent>
-
-        {/* Rappels */}
-        <TabsContent value="reminders" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Préférences de rappel</CardTitle>
-              <CardDescription>
-                Configurez vos préférences pour recevoir des rappels de saisie de temps
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground mb-4 text-center">
-                Gérez vos préférences de rappel pour la saisie de temps
-              </p>
-              <Button
-                onClick={() => window.location.href = "/dashboard/settings/reminders"}
-                className="bg-primary hover:bg-primary"
-              >
-                <Bell className="mr-2 h-4 w-4" />
-                Configurer les rappels
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Utilisateurs */}
-        <TabsContent value="users" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {(session?.user as any)?.role === "DIRECTEUR"
-                  ? "Gestion de l'équipe"
-                  : "Gestion des utilisateurs"}
-              </CardTitle>
-              <CardDescription>
-                {(session?.user as any)?.role === "DIRECTEUR"
-                  ? "Accédez à la gestion complète de votre équipe et assignez des managers"
-                  : "Accédez à la page complète de gestion des utilisateurs"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground mb-4 text-center">
-                {(session?.user as any)?.role === "DIRECTEUR"
-                  ? "Gérez votre équipe : créez des utilisateurs, assignez des managers et organisez votre structure"
-                  : "La gestion des utilisateurs dispose d'une interface dédiée avec des fonctionnalités avancées"}
-              </p>
-              <Button
-                onClick={() => window.location.href = "/dashboard/settings/users"}
-                className="bg-primary hover:bg-primary"
-              >
-                {(session?.user as any)?.role === "DIRECTEUR"
-                  ? "Gérer mon équipe"
-                  : "Accéder à la gestion des utilisateurs"}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Général */}
-        <TabsContent value="general" className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Paramètres généraux</h2>
-              <p className="text-muted-foreground mt-1">
-                Personnalisez l'apparence, la langue et l'accessibilité
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={handleResetGeneralSettings}
-              disabled={isSavingGeneralSettings || !generalSettings}
-              className="text-destructive hover:text-destructive mt-1"
-            >
-              Réinitialiser
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleResetGeneralSettings}
+            disabled={isSavingGeneralSettings || !generalSettings}
+            size="sm"
+            className="text-destructive hover:text-destructive"
+          >
+            Réinitialiser
+          </Button>
+        </div>
 
           {!generalSettings ? (
-            <div className="border rounded-lg p-12 text-center">
-              <p className="text-muted-foreground">Chargement des paramètres...</p>
-            </div>
+            <Card>
+              <CardContent className="py-12">
+                <p className="text-center text-muted-foreground">Chargement des paramètres...</p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Appearance Section */}
               <AppearanceSection
                 settings={generalSettings}
@@ -1112,9 +1114,7 @@ export default function SettingsPage() {
               />
             </div>
           )}
-        </TabsContent>
-      </Tabs>
-      <ConfirmationDialog />
-    </div>
-  );
+        </div>
+      );
+    }
 }
