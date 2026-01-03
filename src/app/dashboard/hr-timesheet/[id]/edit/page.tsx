@@ -80,6 +80,7 @@ export default function EditHRTimesheetPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   const {
     register,
@@ -158,6 +159,7 @@ export default function EditHRTimesheetPage() {
       if (result?.data) {
         toast.success("Activité ajoutée !");
         reset();
+        setSelectedCategory(""); // Réinitialiser la catégorie sélectionnée
         setShowActivityForm(false);
         loadTimesheet(); // Recharger pour voir la nouvelle activité
       } else {
@@ -226,8 +228,13 @@ export default function EditHRTimesheetPage() {
     return null;
   }
 
-  // Filtrer les activités opérationnelles du catalogue
-  const operationalActivities = catalog.filter(item => item.type === "OPERATIONAL");
+  // Extraire les catégories uniques du catalogue
+  const categories = Array.from(new Set(catalog.map(item => item.category))).sort();
+
+  // Filtrer les activités par catégorie sélectionnée
+  const filteredActivities = selectedCategory
+    ? catalog.filter(item => item.category === selectedCategory)
+    : catalog;
 
   const groupedActivities = timesheet.activities.reduce((acc, activity) => {
     const category = activity.ActivityCatalog?.category || "Autres";
@@ -312,29 +319,39 @@ export default function EditHRTimesheetPage() {
                   <div className="space-y-2">
                     <Label htmlFor="activityType">Type d'activité *</Label>
                     <Select
-                      value={watch("activityType")}
-                      onValueChange={(value: any) => setValue("activityType", value)}
+                      value={selectedCategory}
+                      onValueChange={(value) => {
+                        setSelectedCategory(value);
+                        // Réinitialiser le nom d'activité quand on change de catégorie
+                        setValue("activityName", "");
+                        setValue("catalogId", undefined);
+                      }}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Sélectionner une catégorie" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="OPERATIONAL">Opérationnelle</SelectItem>
-                        <SelectItem value="REPORTING">Reporting</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="activityName">Nom de l'activité *</Label>
-                    {watch("activityType") === "OPERATIONAL" && operationalActivities.length > 0 ? (
+                    {selectedCategory && filteredActivities.length > 0 ? (
                       <Select
                         value={watch("activityName") || ""}
                         onValueChange={(value) => {
-                          const selectedActivity = operationalActivities.find(act => act.name === value);
+                          const selectedActivity = filteredActivities.find(act => act.name === value);
                           if (selectedActivity) {
                             setValue("activityName", selectedActivity.name);
                             setValue("catalogId", selectedActivity.id);
+                            // Déterminer automatiquement le type depuis le catalogue
+                            setValue("activityType", selectedActivity.type as "OPERATIONAL" | "REPORTING");
                             if (selectedActivity.defaultPeriodicity) {
                               setValue("periodicity", selectedActivity.defaultPeriodicity as any);
                             }
@@ -348,7 +365,7 @@ export default function EditHRTimesheetPage() {
                           <SelectValue placeholder="Sélectionner une activité du catalogue" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px] overflow-y-auto">
-                          {operationalActivities.map((activity) => (
+                          {filteredActivities.map((activity) => (
                             <SelectItem key={activity.id} value={activity.name}>
                               {activity.name}
                             </SelectItem>
