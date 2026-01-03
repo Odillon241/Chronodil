@@ -595,14 +595,14 @@ export default function SettingsPage() {
       <div
         className={`flex items-center gap-3 p-3 border rounded-lg transition-all ${
           isSelected
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-sm'
+            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-xs'
             : 'border-border hover:bg-muted/50 hover:border-blue-300 dark:hover:border-blue-700'
         }`}
       >
         <RadioGroupItem
           value={sound.id}
           id={`sound-${sound.id}`}
-          className="flex-shrink-0"
+          className="shrink-0"
           disabled={disabled}
         />
         <Label
@@ -618,7 +618,7 @@ export default function SettingsPage() {
                 {sound.description}
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               {isSelected && (
                 <Badge variant="default" className="text-xs">
                   Par défaut
@@ -898,7 +898,7 @@ export default function SettingsPage() {
     return (
       <div className="space-y-8">
         {/* Header avec gradient */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 border border-blue-200/50 dark:border-blue-800/50 p-3 md:p-4">
+        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 border border-blue-200/50 dark:border-blue-800/50 p-3 md:p-4">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
@@ -915,7 +915,7 @@ export default function SettingsPage() {
               onClick={handleResetPreferences}
               disabled={isSavingPreferences || !preferences}
               size="sm"
-              className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-blue-200 dark:border-blue-800 hover:bg-white dark:hover:bg-gray-900 h-8 text-xs md:text-sm"
+              className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-xs border-blue-200 dark:border-blue-800 hover:bg-white dark:hover:bg-gray-900 h-8 text-xs md:text-sm"
             >
               <RotateCcw className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
               Réinitialiser
@@ -943,10 +943,10 @@ export default function SettingsPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Carte Sons */}
               <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
+                    <div className="p-3 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
                       <Volume2 className="h-6 w-6 text-white" />
                     </div>
                     <Switch
@@ -1010,10 +1010,10 @@ export default function SettingsPage() {
 
               {/* Carte Email */}
               <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-300 dark:hover:border-amber-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-linear-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25">
+                    <div className="p-3 rounded-xl bg-linear-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25">
                       <Mail className="h-6 w-6 text-white" />
                     </div>
                     <Switch
@@ -1046,10 +1046,10 @@ export default function SettingsPage() {
 
               {/* Carte Bureau */}
               <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10 hover:border-green-300 dark:hover:border-green-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-linear-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/25">
+                    <div className="p-3 rounded-xl bg-linear-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/25">
                       <Monitor className="h-6 w-6 text-white" />
                     </div>
                     <Switch
@@ -1202,10 +1202,10 @@ export default function SettingsPage() {
 
               {/* Carte Push Notifications */}
               <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-300 dark:hover:border-purple-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-linear-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/25">
+                    <div className="p-3 rounded-xl bg-linear-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/25">
                       <Bell className="h-6 w-6 text-white" />
                     </div>
                     <Switch
@@ -1663,7 +1663,7 @@ export default function SettingsPage() {
                             holiday: (date) => isHoliday(date),
                           }}
                           modifiersClassNames={{
-                            holiday: "!bg-amber-100 dark:!bg-amber-900/30 !text-amber-900 dark:!text-amber-100 font-semibold border border-amber-300 dark:border-amber-700",
+                            holiday: "bg-amber-100! dark:bg-amber-900/30! text-amber-900! dark:text-amber-100! font-semibold border border-amber-300 dark:border-amber-700",
                           }}
                           className="rounded-md border"
                         />
@@ -1842,7 +1842,7 @@ export default function SettingsPage() {
                       className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-muted/50 gap-3"
                     >
                       <div className="flex items-start sm:items-center gap-3 flex-1">
-                        <Building2 className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
+                        <Building2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5 sm:mt-0" />
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm sm:text-base">{dept.name}</div>
                           <div className="text-xs sm:text-sm text-muted-foreground">

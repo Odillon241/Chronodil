@@ -240,7 +240,7 @@ export default function ValidateHRTimesheetPage() {
         <Card>
           <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm sm:text-base">Ce timesheet ne peut pas être validé</p>
                 <div className="mt-2">
@@ -275,7 +275,7 @@ export default function ValidateHRTimesheetPage() {
               {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
             </p>
           </div>
-          <div className="flex-shrink-0 w-full sm:w-auto">
+          <div className="shrink-0 w-full sm:w-auto">
             {getStatusBadge(timesheet.status)}
           </div>
         </div>
@@ -285,7 +285,7 @@ export default function ValidateHRTimesheetPage() {
           <Button
             type="button"
             onClick={() => setShowApproveDialog(true)}
-            className="w-full sm:flex-1 shadow-sm"
+            className="w-full sm:flex-1 shadow-xs"
             size="lg"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
@@ -295,7 +295,7 @@ export default function ValidateHRTimesheetPage() {
             type="button"
             variant="destructive"
             onClick={() => setShowRejectDialog(true)}
-            className="w-full sm:flex-1 shadow-sm"
+            className="w-full sm:flex-1 shadow-xs"
             size="lg"
           >
             <XCircle className="h-4 w-4 mr-2" />
@@ -320,7 +320,7 @@ export default function ValidateHRTimesheetPage() {
             <p className="text-sm sm:text-base font-semibold leading-tight">{timesheet.employeeName}</p>
             {timesheet.User && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                <Mail className="h-3 w-3 flex-shrink-0" />
+                <Mail className="h-3 w-3 shrink-0" />
                 <span className="truncate">{timesheet.User.email}</span>
               </div>
             )}

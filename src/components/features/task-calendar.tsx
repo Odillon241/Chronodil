@@ -161,7 +161,7 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
         >
           <div className="flex items-center gap-1.5 text-white">
             <span className="font-medium truncate flex-1">{task.name}</span>
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               {task.isShared && <Users className="h-3 w-3" />}
               {task.reminderDate && <Bell className="h-3 w-3" />}
               {/* Afficher le créateur et les membres assignés */}

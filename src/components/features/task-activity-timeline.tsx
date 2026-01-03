@@ -132,7 +132,7 @@ export function TaskActivityTimeline({ taskId }: TaskActivityTimelineProps) {
             return (
               <div key={activity.id} className="relative flex gap-4 group">
                 {/* Icône avec cercle */}
-                <div className="relative z-10 flex-shrink-0">
+                <div className="relative z-10 shrink-0">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-full ${colorClass}`}>
                     <Icon className="h-5 w-5" />
                   </div>

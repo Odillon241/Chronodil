@@ -319,7 +319,7 @@ export const GanttContentHeader: FC<GanttContentHeaderProps> = ({
 
   return (
     <div
-      className="sticky top-0 z-20 grid w-full shrink-0 bg-backdrop/90 backdrop-blur-sm"
+      className="sticky top-0 z-20 grid w-full shrink-0 bg-backdrop/90 backdrop-blur-xs"
       style={{ height: 'var(--gantt-header-height)' }}
     >
       <div>
@@ -529,7 +529,7 @@ export const GanttSidebarItem: FC<GanttSidebarItemProps> = ({
 
 export const GanttSidebarHeader: FC = () => (
   <div
-    className="sticky top-0 z-10 flex shrink-0 items-end justify-between gap-2.5 border-border/50 border-b bg-backdrop/90 p-2.5 font-medium text-muted-foreground text-xs backdrop-blur-sm"
+    className="sticky top-0 z-10 flex shrink-0 items-end justify-between gap-2.5 border-border/50 border-b bg-backdrop/90 p-2.5 font-medium text-muted-foreground text-xs backdrop-blur-xs"
     style={{ height: 'var(--gantt-header-height)' }}
   >
     {/* <Checkbox className="shrink-0" /> */}
@@ -772,7 +772,7 @@ export const GanttFeatureDragHelper: FC<GanttFeatureDragHelperProps> = ({
   return (
     <div
       className={cn(
-        'group -translate-y-1/2 !cursor-col-resize absolute top-1/2 z-[3] h-full w-6 rounded-md outline-none',
+        'group -translate-y-1/2 cursor-col-resize! absolute top-1/2 z-3 h-full w-6 rounded-md outline-hidden',
         direction === 'left' ? '-left-2.5' : '-right-2.5'
       )}
       ref={setNodeRef}
@@ -818,7 +818,7 @@ export const GanttFeatureItemCard: FC<GanttFeatureItemCardProps> = ({
   useEffect(() => setDragging(isPressed), [isPressed, setDragging]);
 
   return (
-    <Card className="h-full w-full rounded-md bg-background p-2 text-xs shadow-sm">
+    <Card className="h-full w-full rounded-md bg-background p-2 text-xs shadow-xs">
       <div
         className={cn(
           'flex h-full w-full items-center justify-between gap-2 text-left',
@@ -1135,7 +1135,7 @@ export const GanttMarker: FC<
             )}
           >
             {label}
-            <span className="max-h-[0] overflow-hidden opacity-80 transition-all group-hover:max-h-[2rem]">
+            <span className="max-h-0 overflow-hidden opacity-80 transition-all group-hover:max-h-8">
               {formatDate(date, 'MMM dd, yyyy')}
             </span>
           </div>
@@ -1454,7 +1454,7 @@ export const GanttToday: FC<GanttTodayProps> = ({ className }) => {
         )}
       >
         {label}
-        <span className="max-h-[0] overflow-hidden opacity-80 transition-all group-hover:max-h-[2rem]">
+        <span className="max-h-0 overflow-hidden opacity-80 transition-all group-hover:max-h-8">
           {formatDate(date, 'MMM dd, yyyy')}
         </span>
       </div>

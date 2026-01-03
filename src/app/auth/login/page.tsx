@@ -90,7 +90,7 @@ export default function LoginPage() {
       </div>
       {/* Citation inspirante avec effet de frappe */}
       <div className="text-center mb-8 relative z-10 max-w-4xl mx-auto px-4">
-        <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-[5rem] flex items-center justify-center">
+        <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-20 flex items-center justify-center">
           <TypingText
             text={[
               '"Le temps est la ressource la plus précieuse que nous ayons."',
@@ -111,9 +111,9 @@ export default function LoginPage() {
           />
         </div>
         <div className="mt-4 flex items-center justify-center space-x-2">
-          <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+          <div className="w-8 h-px bg-linear-to-r from-transparent via-primary to-transparent"></div>
           <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-          <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+          <div className="w-8 h-px bg-linear-to-r from-transparent via-primary to-transparent"></div>
         </div>
       </div>
 

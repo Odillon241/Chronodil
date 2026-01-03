@@ -387,7 +387,7 @@ export function NotificationComprehensiveTester() {
                     En attente de logs... Exécutez les tests pour voir les détails.
                   </p>
                 ) : (
-                  <pre className="text-xs whitespace-pre-wrap break-words font-mono">
+                  <pre className="text-xs whitespace-pre-wrap wrap-break-word font-mono">
                     {logs.join('\n')}
                   </pre>
                 )}

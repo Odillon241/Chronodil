@@ -96,7 +96,7 @@ export function TimesheetStats({ activities }: TimesheetStatsProps) {
       </Card>
 
       {/* Total heures */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+      <Card className="border-primary/20 bg-linear-to-br from-primary/5 to-primary/10">
         <CardContent className="pt-6">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">

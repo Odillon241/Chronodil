@@ -195,7 +195,7 @@ export function NotificationSoundTester() {
               {testLog.length === 0 ? (
                 <p className="text-xs text-muted-foreground">En attente de logs...</p>
               ) : (
-                <pre className="text-xs whitespace-pre-wrap break-words text-muted-foreground">
+                <pre className="text-xs whitespace-pre-wrap wrap-break-word text-muted-foreground">
                   {testLog.join('\n')}
                 </pre>
               )}

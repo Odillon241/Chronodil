@@ -71,7 +71,7 @@ export const Navbar15 = React.forwardRef<HTMLElement, Navbar15Props>(
       <header
         ref={ref}
         className={cn(
-          'border-b px-4 md:px-6 [&_*]:no-underline',
+          'border-b px-4 md:px-6 **:no-underline',
           className
         )}
         {...props}

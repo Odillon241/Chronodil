@@ -253,7 +253,7 @@ function DroppableColumn({ status, tasks, onEventClick, onEventDelete, onEventTo
   });
 
   return (
-    <div className="flex flex-col w-full sm:w-[300px] md:w-[320px] lg:w-[350px] flex-shrink-0">
+    <div className="flex flex-col w-full sm:w-[300px] md:w-[320px] lg:w-[350px] shrink-0">
       <div
         className="bg-background pb-2 sm:pb-3 mb-2 sm:mb-3 border-b"
         style={{ borderColor: status.color }}

@@ -73,7 +73,7 @@ function TaskItem({ task, onEventClick, onEventDelete, onEventToggle }: {
         >
           {/* Indicateur de priorité */}
           <div
-            className={cn("h-2 w-2 rounded-full flex-shrink-0", getPriorityColor(task.priority))}
+            className={cn("h-2 w-2 rounded-full shrink-0", getPriorityColor(task.priority))}
           />
 
           {/* Nom de la tâche */}
@@ -85,7 +85,7 @@ function TaskItem({ task, onEventClick, onEventDelete, onEventToggle }: {
           </div>
 
           {/* Badges et infos */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {task.dueDate && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <CalendarIcon className="h-3 w-3" />

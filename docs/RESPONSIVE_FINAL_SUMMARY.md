@@ -74,7 +74,7 @@ L'application Chronodil est maintenant **entièrement responsive** sur tous les 
     - Split view responsive (list ↔ conversation)
     - Mobile: conversation OR list (navigation conditionnelle)
     - Desktop: les deux panneaux simultanément
-    - Layout: `grid-cols-1 md:grid-cols-[350px,1fr]`
+    - Layout: `grid-cols-1 md:grid-cols-[350px_1fr]`
 
 12. **Notifications** - [src/app/dashboard/notifications/page.tsx](../src/app/dashboard/notifications/page.tsx)
     - Table → Cards mobile complètes

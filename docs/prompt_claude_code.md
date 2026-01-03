@@ -181,7 +181,7 @@ export const createTimesheet = action(
 ### Styling Tailwind
 ✅ Mobile-first (classes de base pour mobile, `md:`, `lg:` pour desktop)  
 ✅ Ordre sémantique : layout → spacing → typography → colors → effects  
-❌ Éviter les styles arbitraires (`[color:#123456]`)  
+❌ Éviter les styles arbitraires (`text-[#123456]`)  
 
 ### Sécurité
 ✅ TOUJOURS valider les inputs côté serveur  

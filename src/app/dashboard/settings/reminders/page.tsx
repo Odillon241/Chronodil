@@ -281,7 +281,7 @@ export default function ReminderPreferencesPage() {
             <h4 className="text-sm font-semibold">Types de notifications pour les rappels</h4>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
-                <MessageSquare className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <MessageSquare className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                 <div className="space-y-1">
                   <p className="text-xs font-medium">Notification in-app</p>
                   <p className="text-xs text-muted-foreground">
@@ -290,7 +290,7 @@ export default function ReminderPreferencesPage() {
                 </div>
               </div>
               <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
-                <Mail className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <Mail className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                 <div className="space-y-1">
                   <p className="text-xs font-medium">Email</p>
                   <p className="text-xs text-muted-foreground">
@@ -299,7 +299,7 @@ export default function ReminderPreferencesPage() {
                 </div>
               </div>
               <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
-                <Monitor className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                <Monitor className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                 <div className="space-y-1">
                   <p className="text-xs font-medium">Notification desktop</p>
                   <p className="text-xs text-muted-foreground">

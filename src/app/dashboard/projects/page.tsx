@@ -1004,7 +1004,7 @@ export default function ProjectsPage() {
                     <div className="space-y-1 flex-1">
                       <CardTitle className="flex items-center gap-2">
                         <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          className="w-3 h-3 rounded-full shrink-0"
                           style={{ backgroundColor: project.color || "#dd2d4a" }}
                         />
                         <span className="line-clamp-1">{project.name}</span>

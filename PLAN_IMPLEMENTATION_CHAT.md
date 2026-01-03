@@ -163,7 +163,7 @@ interface ChatThreadViewProps {
 **Layout** (page.tsx:333):
 ```tsx
 // Grid adaptatif avec thread
-<div className={`grid w-full h-full ${selectedThreadId ? 'grid-cols-[350px,1fr,350px]' : 'grid-cols-[350px,1fr]'}`}>
+<div className={`grid w-full h-full ${selectedThreadId ? 'grid-cols-[350px_1fr_350px]' : 'grid-cols-[350px_1fr]'}`}>
   {/* Sidebar */}
   <ChatConversationList ... />
 

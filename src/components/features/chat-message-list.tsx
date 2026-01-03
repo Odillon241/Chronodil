@@ -687,13 +687,13 @@ export function ChatMessageList({
         >
           {conversation.type === "PROJECT" && conversation.Project ? (
             <div
-              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white shrink-0"
               style={{ backgroundColor: conversation.Project.color }}
             >
               <FolderKanban className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           ) : conversation.type === "GROUP" ? (
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-green-500 flex items-center justify-center text-white flex-shrink-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           ) : (
@@ -701,7 +701,7 @@ export function ChatMessageList({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="relative">
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
                       <AvatarImage
                         src={
                           conversation.ConversationMember.find((m) => m.User.id !== currentUserId)
@@ -761,7 +761,7 @@ export function ChatMessageList({
           </div>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {onVideoCall && conversation.type === "DIRECT" && (
             <Button
               variant="ghost"
@@ -909,7 +909,7 @@ export function ChatMessageList({
                   key={msg.id}
                   className="bg-white dark:bg-gray-900 rounded-lg p-3 flex items-start gap-2 group hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <Pin className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
+                  <Pin className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-1 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
@@ -926,7 +926,7 @@ export function ChatMessageList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                     onClick={() => handleUnpinMessage(msg.id)}
                   >
                     <PinOff className="h-3 w-3" />
@@ -965,7 +965,7 @@ export function ChatMessageList({
                   >
                     {/* Avatar */}
                     {!isCurrentUser && (
-                      <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
+                      <Avatar className="h-6 w-6 sm:h-8 sm:w-8 shrink-0">
                         <AvatarImage
                           src={msg.User.avatar || msg.User.image || undefined}
                         />
@@ -1044,7 +1044,7 @@ export function ChatMessageList({
                                 </div>
                               )}
 
-                              <div className="text-xs sm:text-sm whitespace-pre-wrap break-words">
+                              <div className="text-xs sm:text-sm whitespace-pre-wrap wrap-break-word">
                                 {renderMessageContent(msg.content)}
                               </div>
 
@@ -1289,7 +1289,7 @@ export function ChatMessageList({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 flex-shrink-0"
+              className="h-6 w-6 shrink-0"
               onClick={() => setReplyingTo(null)}
             >
               <X className="h-4 w-4" />
@@ -1488,7 +1488,7 @@ export function ChatMessageList({
       {/* Dialog d'informations de la conversation - Version enrichie */}
       <Dialog open={showConversationInfo} onOpenChange={setShowConversationInfo}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="flex items-center gap-2">
               {conversation.type === "CHANNEL" ? (
                 <>
@@ -1511,7 +1511,7 @@ export function ChatMessageList({
           </DialogHeader>
           
           <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
+            <TabsList className="grid w-full grid-cols-4 shrink-0">
               <TabsTrigger value="details">Détails</TabsTrigger>
               <TabsTrigger value="members">Membres</TabsTrigger>
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -1845,7 +1845,7 @@ export function ChatMessageList({
                   <h3 className="text-sm font-semibold mb-4">Paramètres de notifications</h3>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4 p-4 border rounded-lg">
-                      <div className="flex-shrink-0 mt-0.5">
+                      <div className="shrink-0 mt-0.5">
                         {isMuted ? (
                           <BellOff className="h-5 w-5 text-red-500" />
                         ) : (

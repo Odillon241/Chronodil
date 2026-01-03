@@ -462,7 +462,7 @@ export function TaskGantt({
                                   {feature.name}
                                 </p>
                                 {/* Afficher le créateur et les membres assignés */}
-                                <div className="flex -space-x-2 flex-shrink-0">
+                                <div className="flex -space-x-2 shrink-0">
                                   {(() => {
                                     const creator = (task as any).Creator || (task as any).User_Task_createdByToUser;
                                     const members = (task as any).TaskMember || [];

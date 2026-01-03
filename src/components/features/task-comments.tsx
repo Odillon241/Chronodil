@@ -158,7 +158,7 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
                 key={comment.id}
                 className="flex gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
               >
-                <Avatar className="h-8 w-8 flex-shrink-0">
+                <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={comment.User.avatar || undefined} />
                   <AvatarFallback className="text-xs">
                     {comment.User.name
@@ -215,7 +215,7 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
                   ) : (
                     <>
                       <div
-                        className="text-sm text-foreground break-words prose prose-sm max-w-none"
+                        className="text-sm text-foreground wrap-break-word prose prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ __html: comment.content }}
                       />
 

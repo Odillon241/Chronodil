@@ -409,7 +409,7 @@ export default function ProfilePage() {
         {/* Colonne gauche - Avatar et infos rapides */}
         <div className="md:col-span-1 flex flex-col items-center space-y-5">
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <Avatar className="h-36 w-36 relative z-0 ring-4 ring-background shadow-lg">
               <AvatarImage 
                 src={
@@ -420,7 +420,7 @@ export default function ProfilePage() {
                 alt={user.name || "User"}
                 className="object-cover"
               />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white text-3xl font-semibold">
+              <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-white text-3xl font-semibold">
                 {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
               </AvatarFallback>
             </Avatar>

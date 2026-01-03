@@ -215,13 +215,13 @@ export function ChatConversationList({
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b space-y-3 sm:space-y-4 flex-shrink-0 w-full min-w-0">
+      <div className="p-3 sm:p-4 border-b space-y-3 sm:space-y-4 shrink-0 w-full min-w-0">
         <div className="flex items-center justify-between gap-2 min-w-0 w-full">
           <h2 className="text-base sm:text-lg font-semibold truncate flex-1 min-w-0">Messages</h2>
           <Button
             size="sm"
             onClick={onNewChat}
-            className="bg-primary hover:bg-primary flex-shrink-0"
+            className="bg-primary hover:bg-primary shrink-0"
           >
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
             <span className="hidden sm:inline">Nouveau</span>
@@ -269,7 +269,7 @@ export function ChatConversationList({
                 >
                   <div className="flex items-start gap-2 sm:gap-3 pr-8 sm:pr-10 min-w-0 w-full">
                     {/* Avatar ou Icône */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       {display.avatar ? (
                         <TooltipProvider>
                           <Tooltip>
@@ -332,7 +332,7 @@ export function ChatConversationList({
                       ) : (
                         <div
                           className={cn(
-                            "h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center text-white flex-shrink-0",
+                            "h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center text-white shrink-0",
                             display.color
                           )}
                         >
@@ -350,7 +350,7 @@ export function ChatConversationList({
                         <h3 className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">
                           {display.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                           {conv.Message.length > 0 && (
                             <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                               {formatDistanceToNow(
@@ -366,14 +366,14 @@ export function ChatConversationList({
                           {conv.unreadCount > 0 && (
                             <Badge
                               variant="destructive"
-                              className="h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] flex items-center justify-center px-1 sm:px-1.5 text-[10px] sm:text-xs flex-shrink-0"
+                              className="h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] flex items-center justify-center px-1 sm:px-1.5 text-[10px] sm:text-xs shrink-0"
                             >
                               {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
                             </Badge>
                           )}
                         </div>
                       </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words overflow-hidden">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 wrap-break-word overflow-hidden">
                         {lastMessage || "Pas de messages"}
                       </p>
                     </button>
@@ -385,7 +385,7 @@ export function ChatConversationList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-2 sm:top-4 right-2 sm:right-4 h-7 w-7 sm:h-8 sm:w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        className="absolute top-2 sm:top-4 right-2 sm:right-4 h-7 w-7 sm:h-8 sm:w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

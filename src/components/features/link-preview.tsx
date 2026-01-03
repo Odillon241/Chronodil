@@ -80,7 +80,7 @@ export function LinkPreview({ url, className }: LinkPreviewProps) {
         )}
       >
         <span className="break-all">{url}</span>
-        <ExternalLink className="h-3 w-3 flex-shrink-0" />
+        <ExternalLink className="h-3 w-3 shrink-0" />
       </a>
     );
   }
@@ -108,7 +108,7 @@ export function LinkPreview({ url, className }: LinkPreviewProps) {
         )}
       >
         <span className="break-all">{url}</span>
-        <ExternalLink className="h-3 w-3 flex-shrink-0" />
+        <ExternalLink className="h-3 w-3 shrink-0" />
       </a>
     );
   }
@@ -127,7 +127,7 @@ export function LinkPreview({ url, className }: LinkPreviewProps) {
       <div className="flex flex-col sm:flex-row">
         {/* Image OpenGraph */}
         {data.image && (
-          <div className="sm:w-1/3 aspect-video sm:aspect-square bg-muted flex-shrink-0">
+          <div className="sm:w-1/3 aspect-video sm:aspect-square bg-muted shrink-0">
             <img
               src={data.image}
               alt={data.title || "Preview image"}
@@ -167,7 +167,7 @@ export function LinkPreview({ url, className }: LinkPreviewProps) {
           {/* URL */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span className="truncate">{new URL(url).hostname}</span>
-            <ExternalLink className="h-3 w-3 flex-shrink-0" />
+            <ExternalLink className="h-3 w-3 shrink-0" />
           </div>
         </div>
       </div>

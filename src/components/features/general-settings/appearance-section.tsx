@@ -99,7 +99,7 @@ export function AppearanceSection({ settings, onUpdate, isSaving }: AppearanceSe
                   disabled={isSaving}
                   className={cn(
                     "relative p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2",
-                    "hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
+                    "hover:scale-105 hover:shadow-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-primary",
                     isSelected
                       ? "border-primary ring-2 ring-primary/30 bg-primary/5"
                       : "border-border hover:border-muted-foreground/50"

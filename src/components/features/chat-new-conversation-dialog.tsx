@@ -363,7 +363,7 @@ export function ChatNewConversationDialog({
                       className="w-full p-3 hover:bg-accent transition-colors text-left flex items-center gap-3 disabled:opacity-50"
                     >
                       <div
-                        className="h-10 w-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                        className="h-10 w-10 rounded-full flex items-center justify-center text-white shrink-0"
                         style={{ backgroundColor: project.color }}
                       >
                         <FolderKanban className="h-5 w-5" />

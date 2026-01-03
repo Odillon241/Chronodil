@@ -299,11 +299,11 @@ export default function ChatPage() {
     return (
       <Card className={`${fullScreenClasses} bg-background border`} suppressHydrationWarning>
         <div className="flex h-full w-full overflow-hidden max-w-full" suppressHydrationWarning>
-          <div className="grid grid-cols-1 md:grid-cols-[350px,1fr] w-full h-full min-w-0 max-w-full" suppressHydrationWarning>
+          <div className="grid grid-cols-1 md:grid-cols-[350px_1fr] w-full h-full min-w-0 max-w-full" suppressHydrationWarning>
             {/* Sidebar Skeleton */}
             <Card className="rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full" suppressHydrationWarning>
               <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full" suppressHydrationWarning>
-                <div className="p-3 sm:p-4 border-b space-y-3 sm:space-y-4 flex-shrink-0 w-full min-w-0">
+                <div className="p-3 sm:p-4 border-b space-y-3 sm:space-y-4 shrink-0 w-full min-w-0">
                   <div className="flex items-center justify-between gap-2 min-w-0 w-full">
                     <Skeleton className="h-5 sm:h-6 w-24" />
                     <Skeleton className="h-8 w-20 sm:w-24" />
@@ -315,7 +315,7 @@ export default function ChatPage() {
                     {Array.from({ length: 6 }).map((_, i) => (
                       <div key={i} className="p-3 sm:p-4 hover:bg-muted/50 transition-colors">
                         <div className="flex gap-2 sm:gap-3 items-start min-w-0">
-                          <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex-shrink-0" />
+                          <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full shrink-0" />
                           <div className="flex-1 min-w-0 space-y-2">
                             <div className="flex items-center justify-between gap-2">
                               <Skeleton className="h-4 w-32 sm:w-40" />
@@ -333,7 +333,7 @@ export default function ChatPage() {
             {/* Main Content Skeleton */}
             <Card className="rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex" suppressHydrationWarning>
               <div className="flex flex-col h-full min-h-0">
-                <div className="p-3 sm:p-4 border-b flex items-center justify-between flex-shrink-0">
+                <div className="p-3 sm:p-4 border-b flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <Skeleton className="h-10 w-10 rounded-full" />
                     <div className="space-y-2 min-w-0 flex-1">
@@ -346,7 +346,7 @@ export default function ChatPage() {
                 <div className="flex-1 p-4 space-y-4 overflow-hidden">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className={`flex gap-2 sm:gap-3 ${i % 2 === 0 ? "flex-row-reverse" : ""}`}>
-                      {i % 2 !== 0 && <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />}
+                      {i % 2 !== 0 && <Skeleton className="h-8 w-8 rounded-full shrink-0" />}
                       <div className="flex-1 space-y-1 max-w-[80%]">
                         {i % 2 !== 0 && <Skeleton className="h-3 w-20" />}
                         <Skeleton className={`h-16 sm:h-20 rounded-lg ${i % 2 === 0 ? "ml-auto" : ""}`} />
@@ -355,7 +355,7 @@ export default function ChatPage() {
                     </div>
                   ))}
                 </div>
-                <div className="p-3 sm:p-4 border-t flex-shrink-0">
+                <div className="p-3 sm:p-4 border-t shrink-0">
                   <div className="flex items-end gap-2">
                     <Skeleton className="h-10 flex-1 rounded-lg" />
                     <Skeleton className="h-10 w-10 rounded-lg" />
@@ -372,7 +372,7 @@ export default function ChatPage() {
   return (
     <Card className={`${fullScreenClasses} bg-background border`} suppressHydrationWarning>
       <div className="flex h-full w-full overflow-hidden max-w-full" suppressHydrationWarning>
-        <div className={`grid w-full h-full min-w-0 max-w-full ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[minmax(0,350px),1fr,minmax(0,350px)]' : 'grid-cols-1 md:grid-cols-[minmax(0,350px),1fr]'}`} suppressHydrationWarning>
+        <div className={`grid w-full h-full min-w-0 max-w-full ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[minmax(0,350px)_1fr_minmax(0,350px)]' : 'grid-cols-1 md:grid-cols-[minmax(0,350px)_1fr]'}`} suppressHydrationWarning>
         {/* Sidebar - Liste des conversations/canaux */}
         <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
           {/* Indicateur de connexion real-time */}

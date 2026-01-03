@@ -83,10 +83,10 @@ export const StatusTabs = React.forwardRef<HTMLDivElement, StatusTabsProps>(
     const buttonClasses = (isSelected: boolean) =>
       cn(
         "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
-        "hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
+        "hover:bg-background/50 focus:outline-hidden focus:ring-2 focus:ring-primary/20",
         "disabled:opacity-50 disabled:pointer-events-none",
         {
-          "bg-background text-foreground shadow-sm": isSelected,
+          "bg-background text-foreground shadow-xs": isSelected,
           "text-muted-foreground hover:text-foreground": !isSelected,
           "px-2 py-1 text-xs": variant === "compact",
           "px-4 py-2": variant === "pills",

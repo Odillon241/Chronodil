@@ -251,7 +251,7 @@ export function LocalizationSection({ settings, onUpdate, isSaving }: Localizati
 
       {/* Info */}
       <div className="flex gap-3 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-        <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
         <p className="text-sm text-amber-900 dark:text-amber-100">
           Ces paramètres seront utilisés pour l'affichage des dates et heures dans l'application.
         </p>

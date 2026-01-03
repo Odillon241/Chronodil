@@ -846,7 +846,7 @@ export default function UsersManagementPage() {
 
       {/* Barre d'actions en masse */}
       {selectedUsers.size > 0 && (
-        <Card className="border-primary/20 bg-primary/5 shadow-sm">
+        <Card className="border-primary/20 bg-primary/5 shadow-xs">
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4">
               {/* En-tête avec compteur et fermeture */}
@@ -1158,7 +1158,7 @@ export default function UsersManagementPage() {
                           aria-label={`Sélectionner ${user.name || user.email}`}
                         />
                       </div>
-                      <Avatar className="h-12 w-12 flex-shrink-0">
+                      <Avatar className="h-12 w-12 shrink-0">
                         <AvatarImage
                           src={
                             user.avatar?.startsWith('/uploads') ||

@@ -267,7 +267,7 @@ export function ChatChannelList({
       >
         <div className="flex items-center gap-2 pr-8 min-w-0 w-full">
           {/* Icône canal */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {channel.isPrivate ? (
               <div className="h-8 w-8 rounded-md bg-orange-500/10 flex items-center justify-center">
                 <Lock className="h-4 w-4 text-orange-500" />
@@ -293,7 +293,7 @@ export function ChatChannelList({
               </h3>
 
               {/* Badges */}
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 {isMuted && (
                   <BellOff className="h-3 w-3 text-muted-foreground" />
                 )}
@@ -309,7 +309,7 @@ export function ChatChannelList({
             </div>
 
             {/* Topic ou dernier message */}
-            <p className="text-xs text-muted-foreground line-clamp-1 break-words">
+            <p className="text-xs text-muted-foreground line-clamp-1 wrap-break-word">
               {channel.topic || lastMessage || "Aucun message"}
             </p>
 
@@ -433,7 +433,7 @@ export function ChatChannelList({
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b space-y-3 flex-shrink-0 w-full min-w-0">
+      <div className="p-3 sm:p-4 border-b space-y-3 shrink-0 w-full min-w-0">
         <div className="flex items-center justify-between gap-2 min-w-0 w-full">
           <h2 className="text-base sm:text-lg font-semibold truncate flex-1 min-w-0">
             Canaux
@@ -444,7 +444,7 @@ export function ChatChannelList({
                 <Button
                   size="sm"
                   onClick={onCreateChannel}
-                  className="bg-primary hover:bg-primary flex-shrink-0"
+                  className="bg-primary hover:bg-primary shrink-0"
                 >
                   <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">Créer</span>
@@ -535,7 +535,7 @@ export function ChatChannelList({
       </div>
 
       {/* Footer stats */}
-      <div className="p-2 border-t flex-shrink-0">
+      <div className="p-2 border-t shrink-0">
         <div className="flex items-center justify-between text-xs text-muted-foreground px-2">
           <span>
             {channels.length} {channels.length > 1 ? "canaux" : "canal"}

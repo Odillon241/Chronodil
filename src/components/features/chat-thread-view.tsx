@@ -176,7 +176,7 @@ export function ChatThreadView({
                     {format(new Date(reply.createdAt), "HH:mm")}
                   </span>
                 </div>
-                <div className="text-sm break-words mt-0.5">{reply.content}</div>
+                <div className="text-sm wrap-break-word mt-0.5">{reply.content}</div>
               </div>
             </div>
           ))}

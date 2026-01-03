@@ -71,7 +71,7 @@ export function TitleWithCount({
   // Styles pour les différentes variantes
   const variantStyles = {
     glass: cn(
-      "inline-flex items-center justify-center min-w-[2rem] h-6 px-2.5 rounded-md",
+      "inline-flex items-center justify-center min-w-8 h-6 px-2.5 rounded-md",
       "bg-blue-100/80 dark:bg-blue-900/40",
       "backdrop-blur-md",
       "border border-blue-200/50 dark:border-blue-700/50",
@@ -80,12 +80,12 @@ export function TitleWithCount({
       "transition-all duration-200"
     ),
     solid: cn(
-      "inline-flex items-center justify-center min-w-[2rem] h-6 px-2.5 rounded-md",
+      "inline-flex items-center justify-center min-w-8 h-6 px-2.5 rounded-md",
       "bg-primary/10 text-primary",
       "text-sm font-medium"
     ),
     outline: cn(
-      "inline-flex items-center justify-center min-w-[2rem] h-6 px-2.5 rounded-md",
+      "inline-flex items-center justify-center min-w-8 h-6 px-2.5 rounded-md",
       "border border-border",
       "bg-transparent",
       "text-sm font-medium text-muted-foreground"

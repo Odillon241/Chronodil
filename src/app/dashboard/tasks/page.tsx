@@ -1160,35 +1160,35 @@ export default function TasksPage() {
                   <p className="text-xs font-semibold text-muted-foreground mb-3">Légende</p>
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-red-600 flex-shrink-0 border-2 border-red-800" />
+                      <div className="w-3 h-3 rounded bg-red-600 shrink-0 border-2 border-red-800" />
                       <span className="font-semibold">🇬🇦 Jour férié (Gabon)</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-red-500 flex-shrink-0" />
+                      <div className="w-3 h-3 rounded bg-red-500 shrink-0" />
                       <span>Urgent</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-orange-500 flex-shrink-0" />
+                      <div className="w-3 h-3 rounded bg-orange-500 shrink-0" />
                       <span>Priorité haute</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-yellow-500 flex-shrink-0" />
+                      <div className="w-3 h-3 rounded bg-yellow-500 shrink-0" />
                       <span>Priorité moyenne</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-green-500 flex-shrink-0" />
+                      <div className="w-3 h-3 rounded bg-green-500 shrink-0" />
                       <span>Priorité basse</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-gray-400 flex-shrink-0" />
+                      <div className="w-3 h-3 rounded bg-gray-400 shrink-0" />
                       <span>Terminé</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Users className="h-3 w-3 flex-shrink-0" />
+                      <Users className="h-3 w-3 shrink-0" />
                       <span>Tâche partagée</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Bell className="h-3 w-3 flex-shrink-0" />
+                      <Bell className="h-3 w-3 shrink-0" />
                       <span>Rappel activé</span>
                     </div>
                   </div>
@@ -1568,7 +1568,7 @@ export default function TasksPage() {
                                       <span className={`font-medium text-sm ${!task.isActive && "line-through text-muted-foreground"}`}>
                                         {task.name}
                                       </span>
-                                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                                      <div className="flex items-center gap-1.5 shrink-0">
                                         {!task.isActive && (
                                           <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                                             Inactive
@@ -1747,7 +1747,7 @@ export default function TasksPage() {
                                   <TableCell className="px-4 py-3">
                                     <div className="flex items-center gap-2 min-w-[120px]">
                                       <div
-                                        className="w-3 h-3 rounded-full flex-shrink-0"
+                                        className="w-3 h-3 rounded-full shrink-0"
                                         style={{
                                           backgroundColor: task.Project?.color || '#6b7280'
                                         }}

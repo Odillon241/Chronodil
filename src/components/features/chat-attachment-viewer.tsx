@@ -270,7 +270,7 @@ export function ChatAttachmentViewer({
           className
         )}
       >
-        <FileIcon className="h-4 w-4 flex-shrink-0" />
+        <FileIcon className="h-4 w-4 shrink-0" />
         
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">{attachment.name}</p>

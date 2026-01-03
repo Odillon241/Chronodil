@@ -154,7 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center justify-center group-data-[collapsible=icon]:justify-center">
         <SidebarMenu className="w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
           <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-            <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:!w-8 group-data-[collapsible=icon]:!justify-center">
+            <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:w-8! group-data-[collapsible=icon]:justify-center!">
               <Link href="/dashboard" className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
                 <div className="flex aspect-square size-8 items-center justify-center">
                   <Image
@@ -230,7 +230,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         isActive={isActive && item.url !== "/dashboard"}
                         className={
                           isActive && item.url === "/dashboard"
-                            ? "bg-primary text-primary-foreground hover:bg-primary/90 [&>*]:text-white"
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90 *:text-white"
                             : ""
                         }
                       >
@@ -268,7 +268,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           {item.url === "/dashboard/chat" && chatUnread > 0 && (
                             <Badge
                               variant="outline"
-                              className="ml-auto min-w-[1.75rem] justify-center rounded-full border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary"
+                              className="ml-auto min-w-7 justify-center rounded-full border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary"
                             >
                               {chatUnread > 99 ? "99+" : chatUnread}
                             </Badge>
@@ -350,7 +350,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                   side="bottom"
                   align="end"
                   sideOffset={4}
