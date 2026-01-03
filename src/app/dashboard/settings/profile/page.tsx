@@ -355,8 +355,8 @@ export default function ProfilePage() {
     <div className="space-y-6">
       {/* En-tête */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Mon Profil</h1>
+        <p className="text-base text-muted-foreground mt-1">
           Gérez vos informations personnelles et vos préférences
         </p>
       </div>

@@ -118,8 +118,8 @@ export default function ReminderPreferencesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Préférences de rappel</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Préférences de rappel</h1>
+        <p className="text-base text-muted-foreground mt-1">
           Configurez vos préférences pour recevoir des rappels de saisie de temps
         </p>
       </div>

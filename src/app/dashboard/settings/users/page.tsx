@@ -362,20 +362,21 @@ export default function UsersManagementPage() {
 
   // Pendant l'hydratation, rendre la structure principale pour éviter les erreurs d'hydratation
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            {((session?.user as any)?.role === "DIRECTEUR")
-              ? "Gestion de l'équipe"
-              : "Gestion des utilisateurs"}
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {((session?.user as any)?.role === "DIRECTEUR")
-              ? "Gérez votre équipe et assignez des managers"
-              : "Gérez les comptes utilisateurs et leurs permissions"}
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {((session?.user as any)?.role === "DIRECTEUR")
+            ? "Gestion de l'équipe"
+            : "Gestion des utilisateurs"}
+        </h1>
+        <p className="text-base text-muted-foreground mt-1">
+          {((session?.user as any)?.role === "DIRECTEUR")
+            ? "Gérez votre équipe et assignez des managers"
+            : "Gérez les comptes utilisateurs et leurs permissions"}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-end gap-3">
         <Dialog
           open={isDialogOpen}
           onOpenChange={(open) => {
@@ -529,8 +530,9 @@ export default function UsersManagementPage() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
 
-        {/* Reset Password Dialog */}
+      {/* Reset Password Dialog */}
         <Dialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
           <DialogContent className="max-w-[95vw] sm:max-w-md">
             <DialogHeader>
