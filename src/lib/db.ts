@@ -1,24 +1,6 @@
 import { PrismaClient } from '../generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 
-// Charger les variables d'environnement si pas déjà fait
-if (!process.env.DATABASE_URL) {
-  try {
-    const path = require('path')
-    const fs = require('fs')
-    const envPath = path.resolve(process.cwd(), '.env.development')
-    if (fs.existsSync(envPath)) {
-      require('dotenv').config({ path: envPath })
-    }
-    // Fallback sur .env
-    if (!process.env.DATABASE_URL) {
-      require('dotenv').config()
-    }
-  } catch {
-    // dotenv peut ne pas être disponible dans tous les environnements
-  }
-}
-
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }

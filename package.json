@@ -61,6 +61,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
+    "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query": "^5.90.16",
     "@tanstack/react-query-devtools": "^5.91.2",
     "@tanstack/react-table": "^8.21.3",
@@ -157,6 +158,8 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
+    "tailwindcss": "4.1.18",
+    "postcss": "^8.5.6",
     "typescript": "^5.9.3",
     "use-sound": "^5.0.0",
     "web-push": "^3.6.7",
@@ -166,7 +169,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/html-to-text": "^9.0.4",
@@ -180,10 +182,8 @@
     "markdown-pdf": "^11.0.0",
     "pandoc": "^0.2.0",
     "playwright": "^1.57.0",
-    "postcss": "^8.5.6",
     "shadcn": "^3.6.2",
     "supabase": "^2.70.5",
-    "tailwindcss": "4.1.18",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0"
   }
