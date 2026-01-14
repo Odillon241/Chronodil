@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, Filter, Edit2, Eye, Info } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit2, Eye, Info, X } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -12,9 +12,8 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { SearchWithFilters, FilterSection, FilterField } from "@/components/ui/search-with-filters";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -46,7 +44,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Activity {
-  id: string;
+  id?: string;
+  _tempId?: string; // ID temporaire pour les activités non encore sauvegardées
   activityType: string;
   activityName: string;
   description?: string;
@@ -205,7 +204,7 @@ export function HRTimesheetActivitiesTable({
   }, [activities]);
 
   const hasActiveFilters =
-    searchQuery ||
+    !!searchQuery ||
     filterCategory !== "all" ||
     filterType !== "all" ||
     filterStatus !== "all" ||
@@ -222,126 +221,97 @@ export function HRTimesheetActivitiesTable({
   return (
     <>
       {/* Barre de recherche et filtres */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <div className="relative max-w-md flex-1">
-            <Input
-              placeholder="Rechercher une activité..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-10"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => setSearchQuery("")}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          
-          {/* Bouton de filtre */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0">
-                <Filter className="h-4 w-4" />
-                {hasActiveFilters && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Catégorie</Label>
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Toutes les catégories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Toutes les catégories</SelectItem>
-                      {uniqueCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+      <div className="p-4 flex items-center justify-between gap-4">
+        <SearchWithFilters
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Rechercher une activité..."
+          variant="with-filter-icon"
+          hasActiveFilters={hasActiveFilters}
+          filterContent={
+            <FilterSection>
+              <FilterField label="Catégorie">
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes les catégories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les catégories</SelectItem>
+                    {uniqueCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FilterField>
 
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tous les types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les types</SelectItem>
-                      <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
-                      <SelectItem value="REPORTING">Reporting</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <FilterField label="Type">
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tous les types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
+                    <SelectItem value="REPORTING">Reporting</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FilterField>
 
-                <div className="space-y-2">
-                  <Label>Statut</Label>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tous les statuts" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les statuts</SelectItem>
-                      <SelectItem value="COMPLETED">Terminé</SelectItem>
-                      <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <FilterField label="Statut">
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tous les statuts" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="COMPLETED">Terminé</SelectItem>
+                    <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FilterField>
 
-                <div className="space-y-2">
-                  <Label>Périodicité</Label>
-                  <Select value={filterPeriodicity} onValueChange={setFilterPeriodicity}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Toutes les périodicités" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Toutes les périodicités</SelectItem>
-                      <SelectItem value="DAILY">Quotidien</SelectItem>
-                      <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
-                      <SelectItem value="MONTHLY">Mensuel</SelectItem>
-                      <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
-                      <SelectItem value="WEEKLY_MONTHLY">Hebdo/Mensuel</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <FilterField label="Périodicité">
+                <Select value={filterPeriodicity} onValueChange={setFilterPeriodicity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes les périodicités" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les périodicités</SelectItem>
+                    <SelectItem value="DAILY">Quotidien</SelectItem>
+                    <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
+                    <SelectItem value="MONTHLY">Mensuel</SelectItem>
+                    <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
+                    <SelectItem value="WEEKLY_MONTHLY">Hebdo/Mensuel</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FilterField>
 
-                {hasActiveFilters && (
-                  <div className="flex justify-end pt-2 border-t">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setSearchQuery("");
-                        setFilterCategory("all");
-                        setFilterType("all");
-                        setFilterStatus("all");
-                        setFilterPeriodicity("all");
-                      }}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Réinitialiser
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-        
+              {hasActiveFilters && (
+                <div className="flex justify-end pt-2 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setFilterCategory("all");
+                      setFilterType("all");
+                      setFilterStatus("all");
+                      setFilterPeriodicity("all");
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Réinitialiser
+                  </Button>
+                </div>
+              )}
+            </FilterSection>
+          }
+        />
+
         {hasActiveFilters && (
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               {filteredDisplayActivities.length} résultat{filteredDisplayActivities.length > 1 ? "s" : ""} sur {activities.length}
             </span>
@@ -351,11 +321,11 @@ export function HRTimesheetActivitiesTable({
 
       {/* Tableau */}
       {filteredDisplayActivities.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg bg-muted/30">
+        <div className="text-center py-12 bg-muted/10 rounded-lg">
           <p className="text-muted-foreground">Aucune activité ne correspond aux filtres</p>
         </div>
       ) : (
-        <div className="rounded-md border overflow-x-auto">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -529,7 +499,7 @@ export function HRTimesheetActivitiesTable({
             </TableHeader>
             <TableBody>
               {filteredDisplayActivities.map((activity) => (
-                <ContextMenu key={activity.id}>
+                <ContextMenu key={activity.id || activity._tempId || crypto.randomUUID()}>
                   <ContextMenuTrigger asChild>
                     <TableRow
                       className="cursor-pointer"
@@ -621,13 +591,13 @@ export function HRTimesheetActivitiesTable({
                             )}
                             {onDelete && (
                               <Button
-                                variant="ghost"
+                                variant="destructive"
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onDelete(activity.id);
+                                  const activityId = activity.id || activity._tempId;
+                                  if (activityId) onDelete(activityId);
                                 }}
-                                className="text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -649,7 +619,10 @@ export function HRTimesheetActivitiesTable({
                         <>
                           {onEdit && <ContextMenuSeparator />}
                           <ContextMenuItem
-                            onClick={() => onDelete(activity.id)}
+                            onClick={() => {
+                              const activityId = activity.id || activity._tempId;
+                              if (activityId) onDelete(activityId);
+                            }}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />

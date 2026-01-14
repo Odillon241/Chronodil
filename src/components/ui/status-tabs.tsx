@@ -72,35 +72,35 @@ export const StatusTabs = React.forwardRef<HTMLDivElement, StatusTabsProps>(
     }
 
     const containerClasses = cn(
-      "inline-flex items-center gap-1 p-1 bg-muted rounded-lg",
+      "inline-flex items-center gap-2 p-1.5 bg-muted rounded-lg",
       {
-        "gap-0.5 p-0.5": variant === "compact",
-        "gap-2 p-2": variant === "pills",
+        "gap-1 p-1": variant === "compact",
+        "gap-3 p-2": variant === "pills",
       },
       className
     )
 
     const buttonClasses = (isSelected: boolean) =>
       cn(
-        "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
+        "px-5 py-2.5 text-lg font-medium rounded-md transition-all duration-200",
         "hover:bg-background/50 focus:outline-hidden focus:ring-2 focus:ring-primary/20",
         "disabled:opacity-50 disabled:pointer-events-none",
         {
-          "bg-background text-foreground shadow-xs": isSelected,
+          "bg-background text-foreground shadow-2xs": isSelected,
           "text-muted-foreground hover:text-foreground": !isSelected,
-          "px-2 py-1 text-xs": variant === "compact",
-          "px-4 py-2": variant === "pills",
+          "px-4 py-2 text-base": variant === "compact",
+          "px-6 py-3 text-lg": variant === "pills",
           "rounded-full": variant === "pills",
         }
       )
 
     const countBadgeClasses = (isSelected: boolean) =>
       cn(
-        "text-xs px-1.5 py-0.5 rounded-full font-medium",
+        "text-base px-2.5 py-0.5 rounded-full font-medium",
         {
           "bg-primary/10 text-primary": isSelected,
           "bg-muted-foreground/10 text-muted-foreground": !isSelected,
-          "px-1 py-0.5 text-[10px]": variant === "compact",
+          "px-2 py-0.5 text-sm": variant === "compact",
         }
       )
 

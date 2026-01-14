@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "../generated/prisma/client";
 import { authActionClient } from "@/lib/safe-action";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -308,100 +308,170 @@ export const createOrGetConversation = authActionClient
   });
 
 /**
- * Récupérer toutes les conversations de l'utilisateur
+ * Récupérer toutes les conversations de l'utilisateur avec pagination
  */
 export const getUserConversations = authActionClient
-  .schema(z.object({}))
-  .action(async ({ ctx }) => {
+  .schema(
+    z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(50).default(20),
+    })
+  )
+  .action(async ({ parsedInput, ctx }) => {
     const userId = ctx.userId;
+    const { page, limit } = parsedInput;
+    const skip = (page - 1) * limit;
 
-  const conversations = await prisma.conversation.findMany({
-    where: {
-      ConversationMember: {
-        some: { userId },
-      },
-    },
-    include: {
-      ConversationMember: {
+    // ⚡ PAGINATION: Récupérer les conversations avec limite
+    const [conversations, totalCount] = await Promise.all([
+      prisma.conversation.findMany({
+        where: {
+          ConversationMember: {
+            some: { userId },
+          },
+        },
         include: {
-          User: {
+          ConversationMember: {
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  avatar: true,
+                  image: true,
+                  role: true,
+                },
+              },
+            },
+          },
+          Project: {
             select: {
               id: true,
               name: true,
-              email: true,
-              avatar: true,
-              image: true,
-              role: true,
+              code: true,
+              color: true,
             },
           },
-        },
-      },
-      Project: {
-        select: {
-          id: true,
-          name: true,
-          code: true,
-          color: true,
-        },
-      },
-      Message: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        include: {
-          User: {
+          Message: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true,
+                  image: true,
+                },
+              },
+            },
+          },
+          _count: {
             select: {
-              id: true,
-              name: true,
-              avatar: true,
-              image: true,
+              Message: true,
             },
           },
         },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.conversation.count({
+        where: {
+          ConversationMember: {
+            some: { userId },
+          },
+        },
+      }),
+    ]);
+
+    // ⚡ FIX N+1: Calculer tous les unreadCount en 1 seule requête groupée
+    const conversationIds = conversations.map((c) => c.id);
+
+    // Récupérer tous les membres avec lastReadAt pour cet utilisateur
+    const userMembers = await prisma.conversationMember.findMany({
+      where: {
+        userId,
+        conversationId: { in: conversationIds },
+      },
+      select: {
+        conversationId: true,
+        lastReadAt: true,
+      },
+    });
+
+    // Créer une map pour accès rapide
+    const memberMap = new Map(
+      userMembers.map((m) => [m.conversationId, m.lastReadAt])
+    );
+
+    // Batch query: Compter tous les messages non lus en 1 seule requête
+    const unreadCountsRaw = await prisma.message.groupBy({
+      by: ["conversationId"],
+      where: {
+        conversationId: { in: conversationIds },
+        senderId: { not: userId },
+        OR: userMembers
+          .filter((m) => m.lastReadAt)
+          .map((m) => ({
+            conversationId: m.conversationId,
+            createdAt: { gt: m.lastReadAt! },
+          })),
       },
       _count: {
-        select: {
-          Message: true,
-        },
+        id: true,
       },
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+    });
 
-  // Calculer les messages non lus pour chaque conversation
-  const conversationsWithUnread = await Promise.all(
-    conversations.map(async (conv) => {
-      const member = conv.ConversationMember.find((m) => m.userId === userId);
-      const unreadCount = member?.lastReadAt
-        ? await prisma.message.count({
-            where: {
-              conversationId: conv.id,
-              createdAt: { gt: member.lastReadAt },
-              senderId: { not: userId },
-            },
-          })
+    // Mapper les résultats pour accès rapide
+    const unreadCountMap = new Map(
+      unreadCountsRaw.map((u) => [u.conversationId, u._count.id])
+    );
+
+    // ⚡ OPTIMISÉ: Mapper les conversations avec leur unreadCount (pas de requête supplémentaire)
+    const conversationsWithUnread = conversations.map((conv) => {
+      const lastReadAt = memberMap.get(conv.id);
+      const unreadCount = lastReadAt
+        ? unreadCountMap.get(conv.id) || 0
         : conv._count.Message;
 
       return {
         ...conv,
         unreadCount,
       };
-    })
-  );
+    });
 
-  return { conversations: conversationsWithUnread };
-});
+    return {
+      conversations: conversationsWithUnread,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasMore: page * limit < totalCount,
+      },
+    };
+  });
 
 /**
- * Récupérer une conversation par ID
+ * Récupérer une conversation par ID avec pagination des messages
  */
 export const getConversationById = authActionClient
-  .schema(z.object({ conversationId: z.string() }))
+  .schema(
+    z.object({
+      conversationId: z.string(),
+      messagesLimit: z.number().min(1).max(100).default(50),
+      messagesCursor: z.string().optional(), // Pour infinite scroll
+    })
+  )
   .action(async ({ parsedInput, ctx }) => {
-    const { conversationId } = parsedInput;
+    const { conversationId, messagesLimit, messagesCursor } = parsedInput;
     const userId = ctx.userId;
 
+    // ⚡ OPTIMISÉ: Récupérer la conversation sans les messages (séparé pour pagination)
     const conversation = await prisma.conversation.findFirst({
       where: {
         id: conversationId,
@@ -435,32 +505,6 @@ export const getConversationById = authActionClient
           },
         },
         Project: true,
-        Message: {
-          orderBy: { createdAt: "asc" },
-          include: {
-            User: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-                image: true,
-              },
-            },
-            Message: {
-              select: {
-                id: true,
-                content: true,
-                senderId: true,
-                User: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
         _count: {
           select: {
             Message: true,
@@ -474,7 +518,64 @@ export const getConversationById = authActionClient
       throw new Error("Conversation introuvable");
     }
 
-    return { conversation };
+    // ⚡ PAGINATION: Charger uniquement les N derniers messages (cursor-based)
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId,
+      },
+      orderBy: { createdAt: "desc" }, // Derniers messages d'abord
+      take: messagesLimit + 1, // +1 pour détecter hasMore
+      ...(messagesCursor && {
+        cursor: { id: messagesCursor },
+        skip: 1, // Skip le cursor lui-même
+      }),
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            image: true,
+          },
+        },
+        Message: {
+          // Message parent (si reply)
+          select: {
+            id: true,
+            content: true,
+            senderId: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Détecter si plus de messages disponibles
+    const hasMoreMessages = messages.length > messagesLimit;
+    const paginatedMessages = hasMoreMessages
+      ? messages.slice(0, messagesLimit)
+      : messages;
+
+    // Inverser l'ordre pour affichage chronologique (plus ancien → plus récent)
+    const messagesAsc = paginatedMessages.reverse();
+
+    return {
+      conversation: {
+        ...conversation,
+        Message: messagesAsc,
+      },
+      pagination: {
+        hasMore: hasMoreMessages,
+        nextCursor: hasMoreMessages
+          ? messages[messagesLimit - 1].id
+          : undefined,
+      },
+    };
   });
 
 // ========================================

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { logTaskActivity, logTaskChanges } from "@/lib/task-activity";
 import { createAuditLog, AuditActions, AuditEntities } from "@/lib/audit";
+import { updateTag } from "next/cache";
 
 const createTaskSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -56,7 +57,7 @@ const updateTaskSchema = z.object({
 export const createTask = actionClient
   .schema(createTaskSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -218,13 +219,20 @@ export const createTask = actionClient
       },
     });
 
+    // ⚡ Next.js 16: Invalider le cache immédiatement (read-your-own-writes)
+    updateTag("tasks");
+    updateTag(`task-${task.id}`);
+    if (task.projectId) {
+      updateTag(`project-${task.projectId}-tasks`);
+    }
+
     return task;
   });
 
 export const updateTask = actionClient
   .schema(updateTaskSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -312,13 +320,20 @@ export const updateTask = actionClient
       },
     });
 
+    // ⚡ Next.js 16: Invalider le cache immédiatement (read-your-own-writes)
+    updateTag("tasks");
+    updateTag(`task-${id}`);
+    if (task.projectId) {
+      updateTag(`project-${task.projectId}-tasks`);
+    }
+
     return updatedTask;
   });
 
 export const deleteTask = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -369,13 +384,20 @@ export const deleteTask = actionClient
       changes: taskData,
     });
 
+    // ⚡ Next.js 16: Invalider le cache immédiatement (read-your-own-writes)
+    updateTag("tasks");
+    updateTag(`task-${parsedInput.id}`);
+    if (taskData.projectId) {
+      updateTag(`project-${taskData.projectId}-tasks`);
+    }
+
     return { success: true };
   });
 
 export const getProjectTasks = actionClient
   .schema(z.object({ projectId: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -416,7 +438,7 @@ export const getProjectTasks = actionClient
 export const getMyTasks = actionClient
   .schema(z.object({ projectId: z.string().optional(), searchQuery: z.string().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -538,7 +560,7 @@ export const getMyTasks = actionClient
 export const getAllTasks = actionClient
   .schema(z.object({ projectId: z.string().optional(), searchQuery: z.string().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -615,7 +637,7 @@ export const getAllTasks = actionClient
 export const getAvailableUsersForSharing = actionClient
   .schema(z.object({ projectId: z.string().optional() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -673,7 +695,7 @@ export const updateTaskStatus = actionClient
     status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]),
   }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -796,6 +818,10 @@ export const updateTaskStatus = actionClient
       newValue: parsedInput.status,
     });
 
+    // ⚡ Next.js 16: Invalider le cache immédiatement (read-your-own-writes)
+    updateTag("tasks");
+    updateTag(`task-${parsedInput.id}`);
+
     return updatedTask;
   });
 
@@ -805,7 +831,7 @@ export const updateTaskPriority = actionClient
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
   }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -862,6 +888,10 @@ export const updateTaskPriority = actionClient
       newValue: parsedInput.priority,
     });
 
+    // ⚡ Next.js 16: Invalider le cache immédiatement (read-your-own-writes)
+    updateTag("tasks");
+    updateTag(`task-${parsedInput.id}`);
+
     return updatedTask;
   });
 
@@ -876,7 +906,7 @@ const evaluateTaskSchema = z.object({
 export const evaluateTask = actionClient
   .schema(evaluateTaskSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -928,7 +958,7 @@ const updateTaskComplexitySchema = z.object({
 export const updateTaskComplexity = actionClient
   .schema(updateTaskComplexitySchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -1043,7 +1073,7 @@ export const getProjectTasksByDueDate = authActionClient
     const { projectId, startDate, endDate } = parsedInput;
 
     // Vérifier que l'utilisateur est membre du projet ou admin
-    const session = await getSession(await headers());
+    const session = await getSession();
     if (!session) {
       throw new Error("Non authentifié");
     }

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock, User, Briefcase, MapPin, Mail } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Clock, User, Briefcase, MapPin, Mail, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { BackButton } from "@/components/features/back-button";
 import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
+import { cn } from "@/lib/utils";
 
 const validationSchema = z.object({
   comments: z.string().optional(),
@@ -205,15 +206,15 @@ export default function ValidateHRTimesheetPage() {
     };
 
     const config = variants[status] || variants.DRAFT;
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+    return <Badge variant={config.variant} className="rounded-full px-3">{config.label}</Badge>;
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
-          <Spinner className="h-6 w-6" />
-          <p className="text-sm sm:text-base text-muted-foreground">Chargement...</p>
+          <Spinner className="h-8 w-8 text-primary" />
+          <p className="text-muted-foreground">Chargement des données de validation...</p>
         </div>
       </div>
     );
@@ -223,278 +224,221 @@ export default function ValidateHRTimesheetPage() {
     return null;
   }
 
-  // Vérifier si le timesheet peut être validé
   const canValidate = timesheet.status === "PENDING" || timesheet.status === "MANAGER_APPROVED";
+  const validationLevel = timesheet.status === "PENDING" ? "Manager" : "Finale (Admin)";
 
-  if (!canValidate) {
-    return (
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-          <Button variant="outline" size="icon" onClick={() => router.back()}>
+  return (
+    <div className="flex flex-col gap-8 pb-10">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}`)} className="h-9 w-9 shadow-sm">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Validation impossible</h1>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">Validation {validationLevel}</h1>
+              {getStatusBadge(timesheet.status)}
+            </div>
+            <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+              Semaine du {format(new Date(timesheet.weekStartDate), "dd MMMM", { locale: fr })} au {format(new Date(timesheet.weekEndDate), "dd MMMM yyyy", { locale: fr })}
+            </p>
           </div>
         </div>
-        <Card>
-          <CardContent className="pt-4 sm:pt-6">
-            <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm sm:text-base">Ce timesheet ne peut pas être validé</p>
-                <div className="mt-2">
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">Statut actuel:</p>
-                  {getStatusBadge(timesheet.status)}
+        {/* Actions rapides en header (optionnel) ou statut */}
+      </div>
+
+      {!canValidate && (
+        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900">
+          <CardContent className="flex items-center gap-4 p-4">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+            <div className="flex-1">
+              <p className="font-medium text-amber-900 dark:text-amber-200">Validation impossible</p>
+              <p className="text-sm text-amber-700 dark:text-amber-400">Ce timesheet n'est pas en attente de votre validation (Statut : {timesheet.status})</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Top Grid Info - 3 Colonnes comme le détail */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Carte Employé */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5 border-b bg-muted/20">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <User className="h-4 w-4" /> Informations Employé
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-border/50">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
+                {timesheet.employeeName.charAt(0).toUpperCase()}
+              </div>
+              <div className="overflow-hidden">
+                <p className="font-semibold text-sm truncate">{timesheet.employeeName}</p>
+                {timesheet.User && <p className="text-xs text-muted-foreground truncate">{timesheet.User.email}</p>}
+              </div>
+            </div>
+            <div className="space-y-3 pt-1 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> Poste</span>
+                <span className="font-medium">{timesheet.position}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-3.5 w-3.5" /> Site</span>
+                <span className="font-medium">{timesheet.site}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Carte Résumé Heures et Activités */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5 border-b bg-muted/20">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Clock className="h-4 w-4" /> Résumé Période
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 flex flex-col items-center justify-center h-48 space-y-4">
+            <div className="flex flex-col items-center">
+              <span className="text-4xl font-bold tracking-tighter text-foreground">{timesheet.totalHours}h</span>
+              <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Total Heures</span>
+            </div>
+            <Separator className="w-1/3" />
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex flex-col items-center">
+                <span className="font-bold">{timesheet.HRActivity.filter(a => a.activityType === 'OPERATIONAL').length}</span>
+                <span className="text-muted-foreground text-xs">Opérationnelles</span>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex flex-col items-center">
+                <span className="font-bold">{timesheet.HRActivity.filter(a => a.activityType === 'REPORTING').length}</span>
+                <span className="text-muted-foreground text-xs">Reporting</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Carte Observations Employé */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5 border-b bg-muted/20">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" /> Observations
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 h-48 overflow-y-auto">
+            {timesheet.employeeObservations ? (
+              <div className="bg-muted/30 p-3 rounded-md border border-border/50 text-sm leading-relaxed text-muted-foreground italic">
+                "{timesheet.employeeObservations}"
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic text-center py-10">Aucune observation de l'employé.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Activities Table */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">Détail des activités</h2>
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <CardContent className="p-0">
+            <HRTimesheetActivitiesTable
+              activities={timesheet.HRActivity}
+              showActions={false}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Zone de Validation (Si applicable) */}
+      {canValidate && (
+        <Card className="border-primary/20 shadow-md bg-gradient-to-br from-background to-muted/20">
+          <CardHeader className="border-b bg-muted/30 pb-4">
+            <CardTitle className="text-lg">Décision de validation</CardTitle>
+            <CardDescription>Veuillez examiner les informations ci-dessus avant de prendre une décision.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+
+            {/* Section Commentaire */}
+            <div className="space-y-3">
+              <Label htmlFor="comments" className="text-base font-medium flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" /> Vos commentaires
+              </Label>
+              <Textarea
+                id="comments"
+                {...register("comments")}
+                placeholder="Ajoutez un commentaire (obligatoire en cas de rejet)..."
+                className="min-h-[120px] resize-none"
+              />
+              {errors.comments && <p className="text-sm text-destructive">{errors.comments.message}</p>}
+            </div>
+
+            {/* Section Actions */}
+            <div className="flex flex-col justify-center space-y-4">
+              <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                <h4 className="font-medium mb-1 text-sm">Validation du Timesheet</h4>
+                <p className="text-xs text-muted-foreground mb-4">
+                  En validant, vous confirmez l'exactitude des heures et activités déclarées.
+                  En cas de rejet, le timesheet sera renvoyé à l'employé pour correction.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    variant="outline"
+                    className="h-auto py-4 flex flex-col gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-all group"
+                    onClick={() => setShowRejectDialog(true)}
+                  >
+                    <ThumbsDown className="h-6 w-6 text-muted-foreground group-hover:text-destructive transition-colors" />
+                    <span className="font-semibold">Rejeter</span>
+                  </Button>
+                  <Button
+                    className="h-auto py-4 flex flex-col gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md shadow-green-900/20 transition-all group"
+                    onClick={() => setShowApproveDialog(true)}
+                  >
+                    <ThumbsUp className="h-6 w-6" />
+                    <span className="font-semibold">Approuver</span>
+                  </Button>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
+      )}
 
-  const validationLevel = timesheet.status === "PENDING" ? "Manager" : "Admin/Odillon";
-
-  return (
-    <div className="flex flex-col gap-4 sm:gap-6">
-      {/* Bouton retour */}
-      <BackButton />
-
-      {/* Header avec boutons de validation */}
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Validation {validationLevel} - Feuille de temps RH
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Semaine du {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
-              {" - "}
-              {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
-            </p>
-          </div>
-          <div className="shrink-0 w-full sm:w-auto">
-            {getStatusBadge(timesheet.status)}
-          </div>
-        </div>
-        
-        {/* Boutons de validation rapide */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 border-t">
-          <Button
-            type="button"
-            onClick={() => setShowApproveDialog(true)}
-            className="w-full sm:flex-1 shadow-xs"
-            size="lg"
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Approuver
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setShowRejectDialog(true)}
-            className="w-full sm:flex-1 shadow-xs"
-            size="lg"
-          >
-            <XCircle className="h-4 w-4 mr-2" />
-            Rejeter
-          </Button>
-        </div>
-      </div>
-
-      {/* Informations générales */}
-      <div className="space-y-4 sm:space-y-6">
-        <div className="space-y-3">
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Informations de l'employé</h2>
-          <Separator />
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-lg border bg-card">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span>Employé</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold leading-tight">{timesheet.employeeName}</p>
-            {timesheet.User && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                <Mail className="h-3 w-3 shrink-0" />
-                <span className="truncate">{timesheet.User.email}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-lg border bg-card">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground">
-              <Briefcase className="h-4 w-4" />
-              <span>Poste</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold leading-tight">{timesheet.position}</p>
-          </div>
-          <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-lg border bg-card">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>Site</span>
-            </div>
-            <p className="text-sm sm:text-base font-semibold leading-tight">{timesheet.site}</p>
-          </div>
-          <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-lg border bg-primary/5 border-primary/20">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-muted-foreground">
-              <Clock className="h-4 w-4 text-primary" />
-              <span>Total heures</span>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-primary leading-tight">{timesheet.totalHours.toFixed(1)}h</p>
-          </div>
-        </div>
-
-        {(timesheet.employeeObservations || (timesheet.managerComments && timesheet.status === "MANAGER_APPROVED")) && (
-          <div className="mt-4 sm:mt-6 space-y-4">
-            {timesheet.employeeObservations && (
-              <div className="space-y-2 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                <p className="text-xs sm:text-sm font-semibold text-foreground">Observations de l'employé</p>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {timesheet.employeeObservations}
-                </p>
-              </div>
-            )}
-            {timesheet.managerComments && timesheet.status === "MANAGER_APPROVED" && (
-              <div className="space-y-2 p-3 sm:p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                <p className="text-xs sm:text-sm font-semibold text-foreground">Commentaires du manager</p>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {timesheet.managerComments}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Détail des activités */}
-      <div className="space-y-4 sm:space-y-6">
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Activités déclarées</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Vérifiez le détail des activités avant validation
-            </p>
-          </div>
-          <Separator />
-        </div>
-        
-        {timesheet.HRActivity.length === 0 ? (
-          <div className="text-center py-8 sm:py-12 border-2 border-dashed rounded-lg bg-muted/30">
-            <AlertCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-amber-600" />
-            <p className="text-sm sm:text-base font-medium text-foreground">Aucune activité enregistrée</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              Vous ne devriez peut-être pas valider un timesheet sans activités
-            </p>
-          </div>
-        ) : (
-          <>
-            <HRTimesheetActivitiesTable
-              activities={timesheet.HRActivity}
-              showActions={false}
-            />
-            
-            {/* Total des heures */}
-            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="p-2.5 sm:p-3 rounded-md bg-primary/10">
-                    <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total heures déclarées</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5">
-                      {timesheet.totalHours.toFixed(1)}h
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Formulaire de validation */}
-      <div className="space-y-4 sm:space-y-6">
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Décision de validation</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Approuvez ou rejetez ce timesheet avec un commentaire optionnel
-            </p>
-          </div>
-          <Separator />
-        </div>
-        
-        <form className="space-y-4 sm:space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="comments" className="text-sm font-medium">
-              Commentaires
-            </Label>
-            <p className="text-xs text-muted-foreground mb-2">
-              Optionnel pour approbation, requis pour rejet
-            </p>
-            <Textarea
-              id="comments"
-              placeholder="Ajoutez vos remarques ou commentaires..."
-              rows={4}
-              className="resize-none"
-              {...register("comments")}
-            />
-            {errors.comments && (
-              <p className="text-xs sm:text-sm text-destructive mt-1">{errors.comments.message}</p>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* Dialog de confirmation d'approbation */}
+      {/* Dialogs de Confirmation */}
       <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Confirmer l'approbation</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Êtes-vous sûr de vouloir approuver ce timesheet ? Cette action notifiera l'employé
-              {timesheet.status === "PENDING" && " et enverra le timesheet pour validation finale."}
-              {timesheet.status === "MANAGER_APPROVED" && " et marquera le timesheet comme définitivement approuvé."}
+            <AlertDialogTitle>Confirmer l'approbation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir approuver ce timesheet ? Cette action est irréversible et notifiera l'employé.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-            <AlertDialogCancel className="w-full sm:w-auto m-0">Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSubmit(handleApprove)}
-              className="w-full sm:w-auto"
-            >
-              Confirmer l'approbation
-            </AlertDialogAction>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubmit(handleApprove)} className="bg-green-600 hover:bg-green-700">Confirmer</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Dialog de confirmation de rejet */}
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Confirmer le rejet</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Êtes-vous sûr de vouloir rejeter ce timesheet ? L'employé devra le corriger et le soumettre à nouveau.
-              Assurez-vous d'avoir fourni un commentaire expliquant la raison du rejet.
+            <AlertDialogTitle>Confirmer le rejet</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir rejeter ce timesheet ? L'employé devra effectuer des corrections.
+              <br /><br />
+              <span className="font-medium text-destructive">Un commentaire expliquant le motif est requis.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-            <AlertDialogCancel className="w-full sm:w-auto m-0">Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSubmit(handleReject)}
-              className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
-            >
-              Confirmer le rejet
-            </AlertDialogAction>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubmit(handleReject)} className="bg-destructive hover:bg-destructive/90">Rejeter le timesheet</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
     </div>
   );
 }

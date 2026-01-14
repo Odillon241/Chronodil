@@ -93,21 +93,27 @@ export default function UsersManagementPage() {
     managerId: "",
   });
 
+  // Référence pour éviter le chargement multiple des données
+  const dataLoadedRef = useRef(false);
+
   // Détecter si on est côté client pour éviter les erreurs d'hydratation
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Extraire les valeurs primitives de la session pour éviter les boucles infinies
+  const sessionUserId = (session?.user as any)?.id;
+  const sessionUserRole = (session?.user as any)?.role;
+
   useEffect(() => {
     // Attendre que la session soit chargée et qu'on soit côté client
-    if (!isClient || !session) return;
+    if (!isClient || !sessionUserId) return;
 
-    const user = session?.user as any;
-    console.log("Session user:", user); // Debug
-    console.log("User role:", user?.role); // Debug
+    // Éviter les chargements multiples
+    if (dataLoadedRef.current) return;
 
     // Permettre l'accès aux ADMIN, DIRECTEUR, et HR
-    if (user && !["ADMIN", "DIRECTEUR", "HR"].includes(user.role)) {
+    if (!["ADMIN", "DIRECTEUR", "HR"].includes(sessionUserRole)) {
       toast.error("Accès non autorisé - Rôle requis: ADMIN, DIRECTEUR ou HR");
       setTimeout(() => {
         window.location.href = "/dashboard/settings";
@@ -116,11 +122,10 @@ export default function UsersManagementPage() {
     }
 
     // Si la session est chargée et le rôle est autorisé, charger les données
-    if (user && ["ADMIN", "DIRECTEUR", "HR"].includes(user.role)) {
-      loadData();
-    }
+    dataLoadedRef.current = true;
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, isClient]);
+  }, [sessionUserId, sessionUserRole, isClient]);
 
   useEffect(() => {
     const filtered = users.filter(
@@ -325,7 +330,7 @@ export default function UsersManagementPage() {
   const handleBulkDelete = async () => {
     const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
     const admins = selectedUsersList.filter((u) => u.role === "ADMIN");
-    
+
     if (admins.length > 0) {
       toast.error("Les comptes administrateurs ne peuvent pas être supprimés");
       return;
@@ -342,7 +347,7 @@ export default function UsersManagementPage() {
         try {
           const deletePromises = selectedUsersList.map((user) => deleteUser({ id: user.id }));
           const results = await Promise.all(deletePromises);
-          
+
           const successCount = results.filter((r) => r?.data).length;
           if (successCount === selectedUsersList.length) {
             toast.success(`${successCount} utilisateur(s) supprimé(s) avec succès`);
@@ -362,7 +367,7 @@ export default function UsersManagementPage() {
 
   const handleBulkRoleChange = async (newRole: "EMPLOYEE" | "MANAGER" | "HR" | "DIRECTEUR" | "ADMIN") => {
     const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
-    
+
     // Vérifier les permissions
     const currentUser = session?.user as any;
     if (newRole === "ADMIN" && currentUser?.role !== "ADMIN") {
@@ -385,7 +390,7 @@ export default function UsersManagementPage() {
             })
           );
           const results = await Promise.all(updatePromises);
-          
+
           const successCount = results.filter((r) => r?.data).length;
           if (successCount === selectedUsersList.length) {
             toast.success(`${successCount} utilisateur(s) mis à jour avec succès`);
@@ -428,7 +433,7 @@ export default function UsersManagementPage() {
             })
           );
           const results = await Promise.all(updatePromises);
-          
+
           const successCount = results.filter((r) => r?.data).length;
           if (successCount === selectedUsersList.length) {
             toast.success(`${successCount} utilisateur(s) mis à jour avec succès`);
@@ -452,8 +457,8 @@ export default function UsersManagementPage() {
   const handleBulkManagerChange = async (managerId: string) => {
     const selectedUsersList = filteredUsers.filter((u) => selectedUsers.has(u.id));
 
-    const managerLabel = managerId === "all-validators" 
-      ? "Tous les validateurs" 
+    const managerLabel = managerId === "all-validators"
+      ? "Tous les validateurs"
       : availableManagers.find(m => m.id === managerId)?.name || "ce manager";
 
     const confirmed = await showConfirmation({
@@ -467,13 +472,13 @@ export default function UsersManagementPage() {
           const updatePromises = selectedUsersList.map((user) =>
             updateUser({
               id: user.id,
-              data: { 
-                managerId: managerId === "all-validators" || managerId === "no-manager" ? null : managerId 
+              data: {
+                managerId: managerId === "all-validators" || managerId === "no-manager" ? null : managerId
               },
             })
           );
           const results = await Promise.all(updatePromises);
-          
+
           const successCount = results.filter((r) => r?.data).length;
           if (successCount === selectedUsersList.length) {
             toast.success(`${successCount} utilisateur(s) mis à jour avec succès`);
@@ -507,7 +512,7 @@ export default function UsersManagementPage() {
         try {
           // Générer un mot de passe temporaire commun
           const tempPassword = `Temp${Math.random().toString(36).slice(-8)}!`;
-          
+
           const resetPromises = selectedUsersList.map((user) =>
             resetUserPassword({
               id: user.id,
@@ -515,7 +520,7 @@ export default function UsersManagementPage() {
             })
           );
           const results = await Promise.all(resetPromises);
-          
+
           const successCount = results.filter((r) => r?.data).length;
           if (successCount === selectedUsersList.length) {
             toast.success(`${successCount} mot(s) de passe réinitialisé(s)`, {
@@ -616,7 +621,7 @@ export default function UsersManagementPage() {
 
   // Pendant l'hydratation, rendre la structure principale pour éviter les erreurs d'hydratation
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -842,11 +847,11 @@ export default function UsersManagementPage() {
         </Dialog>
       </div>
 
-      <Separator />
+      <Separator className="-mx-4 sm:-mx-6 lg:-mx-8 w-auto" />
 
       {/* Barre d'actions en masse */}
       {selectedUsers.size > 0 && (
-        <Card className="border-primary/20 bg-primary/5 shadow-xs">
+        <Card className="border-primary/20 bg-primary/5 shadow-2xs">
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4">
               {/* En-tête avec compteur et fermeture */}
@@ -906,7 +911,7 @@ export default function UsersManagementPage() {
                         )}
                       </SelectContent>
                     </Select>
-                    
+
                     <Select
                       value=""
                       onValueChange={(value) => {
@@ -1021,133 +1026,133 @@ export default function UsersManagementPage() {
               {/* Desktop table view */}
               <div className="hidden md:block overflow-x-auto">
                 <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <div className="flex items-center justify-center">
-                      <Checkbox
-                        ref={selectAllCheckboxRef}
-                        checked={isAllSelected && !isIndeterminate}
-                        onCheckedChange={handleSelectAll}
-                        aria-label="Sélectionner tout"
-                        className={isIndeterminate ? "data-[state=checked]:bg-primary/50" : ""}
-                      />
-                    </div>
-                  </TableHead>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Département</TableHead>
-                  <TableHead>Manager</TableHead>
-                  <TableHead>Statistiques</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow 
-                    key={user.id}
-                    className={selectedUsers.has(user.id) ? "bg-muted/50" : ""}
-                  >
-                    <TableCell>
-                      <div className="flex items-center justify-center">
-                        <Checkbox
-                          checked={selectedUsers.has(user.id)}
-                          onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
-                          aria-label={`Sélectionner ${user.name || user.email}`}
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage 
-                            src={
-                              user.avatar?.startsWith('/uploads') || 
-                              user.avatar?.startsWith('http') 
-                                ? user.avatar 
-                                : undefined
-                            } 
-                            alt={user.name || "User"} 
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">
+                        <div className="flex items-center justify-center">
+                          <Checkbox
+                            ref={selectAllCheckboxRef}
+                            checked={isAllSelected && !isIndeterminate}
+                            onCheckedChange={handleSelectAll}
+                            aria-label="Sélectionner tout"
+                            className={isIndeterminate ? "data-[state=checked]:bg-primary/50" : ""}
                           />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {getInitials(user.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{user.name || "Sans nom"}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getRoleBadgeColor(user.role)}>
-                        {getRoleLabel(user.role)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {user.department ? (
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{user.department.name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.manager ? (
-                        <span className="text-sm">{user.manager.name || "Manager"}</span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-xs space-y-1">
-                        <div>{user._count.timesheetEntries} saisies</div>
-                        <div>{user._count.subordinates} subordonné(s)</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(user)}
-                          title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Modification limitée" : "Modifier"}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openResetPasswordDialog(user)}
-                          title="Réinitialiser le mot de passe"
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user)}
-                          className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                          title={user.role === "ADMIN" ? "Les comptes administrateurs sont protégés" : "Supprimer"}
-                          disabled={user.role === "ADMIN"}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableHead>
+                      <TableHead>Utilisateur</TableHead>
+                      <TableHead>Rôle</TableHead>
+                      <TableHead>Département</TableHead>
+                      <TableHead>Manager</TableHead>
+                      <TableHead>Statistiques</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow
+                        key={user.id}
+                        className={selectedUsers.has(user.id) ? "bg-muted/50" : ""}
+                      >
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            <Checkbox
+                              checked={selectedUsers.has(user.id)}
+                              onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
+                              aria-label={`Sélectionner ${user.name || user.email}`}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage
+                                src={
+                                  user.avatar?.startsWith('/uploads') ||
+                                    user.avatar?.startsWith('http')
+                                    ? user.avatar
+                                    : undefined
+                                }
+                                alt={user.name || "User"}
+                              />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {getInitials(user.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">{user.name || "Sans nom"}</div>
+                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getRoleBadgeColor(user.role)}>
+                            {getRoleLabel(user.role)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {user.department ? (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{user.department.name}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {user.manager ? (
+                            <span className="text-sm">{user.manager.name || "Manager"}</span>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs space-y-1">
+                            <div>{user._count.timesheetEntries} saisies</div>
+                            <div>{user._count.subordinates} subordonné(s)</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(user)}
+                              title={user.email === "admin@chronodil.com" && user.role === "ADMIN" ? "Modification limitée" : "Modifier"}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openResetPasswordDialog(user)}
+                              title="Réinitialiser le mot de passe"
+                            >
+                              <Key className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteUser(user)}
+                              className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                              title={user.role === "ADMIN" ? "Les comptes administrateurs sont protégés" : "Supprimer"}
+                              disabled={user.role === "ADMIN"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Mobile card view */}
               <div className="md:hidden space-y-3">
                 {filteredUsers.map((user) => (
-                  <div 
-                    key={user.id} 
+                  <div
+                    key={user.id}
                     className={`border rounded-lg p-3 space-y-3 ${selectedUsers.has(user.id) ? "bg-muted/50 border-primary/20" : ""}`}
                   >
                     <div className="flex items-start gap-3">
@@ -1162,7 +1167,7 @@ export default function UsersManagementPage() {
                         <AvatarImage
                           src={
                             user.avatar?.startsWith('/uploads') ||
-                            user.avatar?.startsWith('http')
+                              user.avatar?.startsWith('http')
                               ? user.avatar
                               : undefined
                           }
@@ -1229,7 +1234,7 @@ export default function UsersManagementPage() {
                         onClick={() => handleDeleteUser(user)}
                         className="text-red-600 hover:text-red-800 disabled:opacity-50 text-xs"
                         title={user.role === "ADMIN" ? "Les comptes administrateurs sont protégés" : "Supprimer"}
-                          disabled={user.role === "ADMIN"}
+                        disabled={user.role === "ADMIN"}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

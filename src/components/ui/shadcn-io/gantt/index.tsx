@@ -646,8 +646,8 @@ export const GanttColumn: FC<GanttColumnProps> = ({
 
   const top = useThrottle(
     mousePosition.y -
-      (mouseRef.current?.getBoundingClientRect().y ?? 0) -
-      (windowScroll.y ?? 0),
+    (mouseRef.current?.getBoundingClientRect().y ?? 0) -
+    (windowScroll.y ?? 0),
     10
   );
 
@@ -713,8 +713,8 @@ export const GanttCreateMarkerTrigger: FC<GanttCreateMarkerTriggerProps> = ({
   const [windowScroll] = useWindowScroll();
   const x = useThrottle(
     mousePosition.x -
-      (mouseRef.current?.getBoundingClientRect().x ?? 0) -
-      (windowScroll.x ?? 0),
+    (mouseRef.current?.getBoundingClientRect().x ?? 0) -
+    (windowScroll.x ?? 0),
     10
   );
 
@@ -805,11 +805,15 @@ export const GanttFeatureDragHelper: FC<GanttFeatureDragHelperProps> = ({
 
 export type GanttFeatureItemCardProps = Pick<GanttFeature, 'id'> & {
   children?: ReactNode;
+  className?: string; // Added
+  style?: CSSProperties; // Added
 };
 
 export const GanttFeatureItemCard: FC<GanttFeatureItemCardProps> = ({
   id,
   children,
+  className,
+  style,
 }) => {
   const [, setDragging] = useGanttDragging();
   const { attributes, listeners, setNodeRef } = useDraggable({ id });
@@ -818,7 +822,10 @@ export const GanttFeatureItemCard: FC<GanttFeatureItemCardProps> = ({
   useEffect(() => setDragging(isPressed), [isPressed, setDragging]);
 
   return (
-    <Card className="h-full w-full rounded-md bg-background p-2 text-xs shadow-xs">
+    <Card
+      className={cn("h-full w-full rounded-md p-2 text-xs shadow-sm border transition-all", className)} // Removed hardcoded bg-background, added border
+      style={style}
+    >
       <div
         className={cn(
           'flex h-full w-full items-center justify-between gap-2 text-left',
@@ -955,7 +962,13 @@ export const GanttFeatureItem: FC<GanttFeatureItemProps> = ({
           onDragStart={handleItemDragStart}
           sensors={[mouseSensor]}
         >
-          <GanttFeatureItemCard id={feature.id}>
+          <GanttFeatureItemCard
+            id={feature.id}
+            style={{
+              borderLeftColor: feature.status.color,
+            }}
+            className="bg-background border-l-4 border-y border-r border-border shadow-sm hover:brightness-95 transition-all"
+          >
             {children ?? (
               <p className="flex-1 truncate text-xs">{feature.name}</p>
             )}
@@ -1008,29 +1021,29 @@ export const GanttFeatureRow: FC<GanttFeatureRowProps> = ({
   className,
 }) => {
   // Sort features by start date to handle potential overlaps
-  const sortedFeatures = [...features].sort((a, b) => 
+  const sortedFeatures = [...features].sort((a, b) =>
     a.startAt.getTime() - b.startAt.getTime()
   );
 
   // Calculate sub-row positions for overlapping features using a proper algorithm
   const featureWithPositions = [];
   const subRowEndTimes: Date[] = []; // Track when each sub-row becomes free
-  
+
   for (const feature of sortedFeatures) {
     let subRow = 0;
-    
+
     // Find the first sub-row that's free (doesn't overlap)
     while (subRow < subRowEndTimes.length && subRowEndTimes[subRow] > feature.startAt) {
       subRow++;
     }
-    
+
     // Update the end time for this sub-row
     if (subRow === subRowEndTimes.length) {
       subRowEndTimes.push(feature.endAt);
     } else {
       subRowEndTimes[subRow] = feature.endAt;
     }
-    
+
     featureWithPositions.push({ ...feature, subRow });
   }
 
@@ -1038,9 +1051,9 @@ export const GanttFeatureRow: FC<GanttFeatureRowProps> = ({
   const subRowHeight = 36; // Base row height
 
   return (
-    <div 
-      className={cn('relative', className)} 
-      style={{ 
+    <div
+      className={cn('relative', className)}
+      style={{
         height: `${maxSubRows * subRowHeight}px`,
         minHeight: 'var(--gantt-row-height)'
       }}
@@ -1330,7 +1343,7 @@ export const GanttProvider: FC<GanttProviderProps> = ({
 
     // Calculate timeline start date from timelineData
     const timelineStartDate = new Date(timelineData[0].year, 0, 1);
-    
+
     // Calculate the horizontal offset for the feature's start date
     const offset = getOffset(feature.startAt, timelineStartDate, {
       zoom,
@@ -1347,7 +1360,7 @@ export const GanttProvider: FC<GanttProviderProps> = ({
 
     // Scroll to align the feature's start with the right side of the sidebar
     const targetScrollLeft = Math.max(0, offset);
-    
+
     scrollElement.scrollTo({
       left: targetScrollLeft,
       behavior: 'smooth',

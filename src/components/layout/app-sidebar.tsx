@@ -201,9 +201,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           {item.icon && <item.icon />}
                           <span>{item.title}</span>
                           <ChevronRight
-                            className={`ml-auto transition-transform ${
-                              isOpen ? "rotate-90" : ""
-                            }`}
+                            className={`ml-auto transition-transform ${isOpen ? "rotate-90" : ""
+                              }`}
                           />
                         </SidebarMenuButton>
                         {isOpen && (
@@ -287,28 +286,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu suppressHydrationWarning>
               {filteredNavSettings.map((item) => {
-                  const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
+                const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
 
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={item.title}
-                        isActive={isActive}
-                        className={
-                          isActive
-                            ? "bg-primary/10 text-primary hover:bg-primary/15"
-                            : ""
-                        }
-                      >
-                        <Link href={item.url}>
-                          {item.icon && <item.icon />}
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={isActive}
+                      className={
+                        isActive
+                          ? "bg-primary/10 text-primary hover:bg-primary/15"
+                          : ""
+                      }
+                    >
+                      <Link href={item.url}>
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -328,7 +327,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <AvatarImage
                         src={
                           (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                          (session?.user as any)?.avatar?.startsWith('http')
+                            (session?.user as any)?.avatar?.startsWith('http')
                             ? (session?.user as any)?.avatar
                             : undefined
                         }
@@ -361,7 +360,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <AvatarImage
                           src={
                             (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                            (session?.user as any)?.avatar?.startsWith('http')
+                              (session?.user as any)?.avatar?.startsWith('http')
                               ? (session?.user as any)?.avatar
                               : undefined
                           }

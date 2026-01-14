@@ -35,6 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { SearchWithFilters } from "@/components/ui/search-with-filters";
 import { cn } from "@/lib/utils";
 import {
   Send,
@@ -387,21 +388,21 @@ export function ChatMessageList({
       }
 
       console.log("💬 Envoi du message avec attachments:", attachmentsData);
-      
+
       // Utiliser sendMessageWithThread si on répond à un message (pour gérer les threads)
       const result = replyingTo
         ? await sendMessageWithThread({
-            conversationId: conversation.id,
-            content: message.trim() || "(Fichier joint)",
-            replyToId: replyingTo.id,
-            attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
-          })
+          conversationId: conversation.id,
+          content: message.trim() || "(Fichier joint)",
+          replyToId: replyingTo.id,
+          attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
+        })
         : await sendMessage({
-            conversationId: conversation.id,
-            content: message.trim() || "(Fichier joint)",
-            replyToId: undefined,
-            attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
-          });
+          conversationId: conversation.id,
+          content: message.trim() || "(Fichier joint)",
+          replyToId: undefined,
+          attachments: attachmentsData.length > 0 ? attachmentsData : undefined,
+        });
 
       if (result?.data) {
         setMessage("");
@@ -487,7 +488,7 @@ export function ChatMessageList({
         );
         onUpdate();
       } else {
-         toast.error(result?.serverError || "Erreur lors de la modification des notifications");
+        toast.error(result?.serverError || "Erreur lors de la modification des notifications");
       }
     } catch (error) {
       toast.error("Erreur lors de la modification des notifications");
@@ -550,7 +551,7 @@ export function ChatMessageList({
     // Regex pour détecter les mentions @[userId:username]
     const mentionRegex = /@\[([^\]]+):([^\]]+)\]/g;
     const parts = content.split(mentionRegex);
-    
+
     const result = [];
     for (let i = 0; i < parts.length; i++) {
       if (i % 3 === 0) {
@@ -571,7 +572,7 @@ export function ChatMessageList({
         );
       }
     }
-    
+
     return result.length > 0 ? result : content;
   };
 
@@ -635,9 +636,9 @@ export function ChatMessageList({
   // Filtrer les messages selon la recherche
   const filteredMessages = searchQuery
     ? conversation.Message.filter((msg) =>
-        msg.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        msg.User.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      msg.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      msg.User.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : conversation.Message;
 
   const messageGroups = groupMessagesByDate(filteredMessages);
@@ -681,7 +682,7 @@ export function ChatMessageList({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-3 sm:p-4 border-b flex items-center justify-between gap-2">
-        <div 
+        <div
           className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 cursor-pointer hover:bg-muted/50 p-1 -ml-1 rounded-md transition-colors"
           onClick={() => setShowConversationInfo(true)}
         >
@@ -795,7 +796,7 @@ export function ChatMessageList({
                 <Info className="mr-2 h-4 w-4" />
                 {conversation.type === "CHANNEL" ? "Informations du canal" : "Informations de la conversation"}
               </DropdownMenuItem>
-              
+
               {isCurrentUserAdmin && (conversation.type === "GROUP" || conversation.type === "CHANNEL" || conversation.type === "PROJECT") && (
                 <DropdownMenuItem
                   onSelect={() => setShowManageMembers(true)}
@@ -804,9 +805,9 @@ export function ChatMessageList({
                   Gérer les membres
                 </DropdownMenuItem>
               )}
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuItem
                 onSelect={(e) => {
                   e.preventDefault(); // Empêcher la fermeture immédiate pour voir le toast
@@ -827,40 +828,40 @@ export function ChatMessageList({
               </DropdownMenuItem>
 
               {(conversation.type === "CHANNEL" || conversation.type === "GROUP") && (
-                 <>
-                   <DropdownMenuSeparator />
-                   {!isCurrentUserAdmin && onLeaveConversation && (
-                     <DropdownMenuItem
-                       className="text-destructive focus:text-destructive"
-                       onSelect={() => {
-                         setTimeout(() => {
-                           if (confirm("Voulez-vous vraiment quitter ce canal ?")) {
-                             onLeaveConversation(conversation.id);
-                           }
-                         }, 100);
-                       }}
-                     >
-                       <Reply className="mr-2 h-4 w-4 rotate-180" />
-                       Quitter le canal
-                     </DropdownMenuItem>
-                   )}
-                   
-                   {isCurrentUserAdmin && onDeleteConversation && (
-                     <DropdownMenuItem
-                       className="text-destructive focus:text-destructive"
-                       onSelect={() => {
-                         setTimeout(() => {
-                           if (confirm("Voulez-vous vraiment supprimer ce canal ? Cette action est irréversible.")) {
-                             onDeleteConversation(conversation.id);
-                           }
-                         }, 100);
-                       }}
-                     >
-                       <Trash2 className="mr-2 h-4 w-4" />
-                       Supprimer le canal
-                     </DropdownMenuItem>
-                   )}
-                 </>
+                <>
+                  <DropdownMenuSeparator />
+                  {!isCurrentUserAdmin && onLeaveConversation && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() => {
+                        setTimeout(() => {
+                          if (confirm("Voulez-vous vraiment quitter ce canal ?")) {
+                            onLeaveConversation(conversation.id);
+                          }
+                        }, 100);
+                      }}
+                    >
+                      <Reply className="mr-2 h-4 w-4 rotate-180" />
+                      Quitter le canal
+                    </DropdownMenuItem>
+                  )}
+
+                  {isCurrentUserAdmin && onDeleteConversation && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() => {
+                        setTimeout(() => {
+                          if (confirm("Voulez-vous vraiment supprimer ce canal ? Cette action est irréversible.")) {
+                            onDeleteConversation(conversation.id);
+                          }
+                        }, 100);
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Supprimer le canal
+                    </DropdownMenuItem>
+                  )}
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -870,23 +871,14 @@ export function ChatMessageList({
       {/* Search bar */}
       {showSearch && (
         <div className="p-3 border-b bg-muted/50">
-          <div className="relative">
-            <Input
-              placeholder="Rechercher dans les messages..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                onClick={() => setSearchQuery("")}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          <SearchWithFilters
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Rechercher dans les messages..."
+            variant="simple"
+            size="default"
+            inputWidth="w-full"
+          />
           {searchQuery && (
             <p className="text-xs text-muted-foreground mt-2">
               {filteredMessages.length} résultat{filteredMessages.length > 1 ? 's' : ''} trouvé{filteredMessages.length > 1 ? 's' : ''}
@@ -1166,7 +1158,7 @@ export function ChatMessageList({
                       >
                         <span>{formatMessageDate(new Date(msg.createdAt))}</span>
                         {msg.isEdited && <span>• modifié</span>}
-                        
+
                         {/* Thread indicator */}
                         {msg.isThreadRoot && msg.threadCount !== undefined && msg.threadCount > 0 && (
                           <button
@@ -1268,8 +1260,8 @@ export function ChatMessageList({
               {typingUsers.length === 1
                 ? `${typingUsers[0]} est en train d'écrire...`
                 : typingUsers.length === 2
-                ? `${typingUsers[0]} et ${typingUsers[1]} sont en train d'écrire...`
-                : `${typingUsers[0]} et ${typingUsers.length - 1} autres sont en train d'écrire...`}
+                  ? `${typingUsers[0]} et ${typingUsers[1]} sont en train d'écrire...`
+                  : `${typingUsers[0]} et ${typingUsers.length - 1} autres sont en train d'écrire...`}
             </span>
           </div>
         </div>
@@ -1503,13 +1495,13 @@ export function ChatMessageList({
               )}
             </DialogTitle>
             <DialogDescription>
-              {conversation.type === "CHANNEL" 
+              {conversation.type === "CHANNEL"
                 ? "Gérez les paramètres et les détails de ce canal"
                 : "Détails et paramètres de cette conversation"
               }
             </DialogDescription>
           </DialogHeader>
-          
+
           <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <TabsList className="grid w-full grid-cols-4 shrink-0">
               <TabsTrigger value="details">Détails</TabsTrigger>
@@ -1672,7 +1664,7 @@ export function ChatMessageList({
                         )}
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={() => {
                           setIsEditingChannel(false);
@@ -1795,8 +1787,8 @@ export function ChatMessageList({
                     </p>
                   </div>
                   {isCurrentUserAdmin && (conversation.type === "GROUP" || conversation.type === "CHANNEL" || conversation.type === "PROJECT") && (
-                    <Button 
-                      variant="default" 
+                    <Button
+                      variant="default"
                       size="sm"
                       onClick={() => {
                         setShowConversationInfo(false);
@@ -1859,7 +1851,7 @@ export function ChatMessageList({
                               {isMuted ? "Notifications désactivées" : "Notifications activées"}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {isMuted 
+                              {isMuted
                                 ? "Vous ne recevrez pas de notifications pour cette conversation"
                                 : "Vous recevrez des notifications pour tous les nouveaux messages"
                               }
@@ -1876,8 +1868,8 @@ export function ChatMessageList({
                                 if (result?.data) {
                                   setIsMuted(!isMuted);
                                   toast.success(
-                                    !isMuted 
-                                      ? "Notifications désactivées" 
+                                    !isMuted
+                                      ? "Notifications désactivées"
                                       : "Notifications activées"
                                   );
                                   onUpdate();

@@ -21,7 +21,7 @@ const updateCommentSchema = z.object({
 export const createTaskComment = actionClient
   .schema(createCommentSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -130,7 +130,7 @@ export const createTaskComment = actionClient
 export const getTaskComments = actionClient
   .schema(z.object({ taskId: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -162,7 +162,7 @@ export const getTaskComments = actionClient
 export const updateTaskComment = actionClient
   .schema(updateCommentSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {
@@ -206,7 +206,7 @@ export const updateTaskComment = actionClient
 export const deleteTaskComment = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     if (!session) {

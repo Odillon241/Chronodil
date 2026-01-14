@@ -82,7 +82,7 @@ export default function ReminderPreferencesPage() {
     setIsLoading(true);
     try {
       const result = await updateReminderPreferences(data);
-      
+
       if (result?.data?.success) {
         toast.success("Préférences de rappel mises à jour !");
       } else {
@@ -118,7 +118,7 @@ export default function ReminderPreferencesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Préférences de rappel</h1>
         <p className="text-sm sm:text-base text-muted-foreground">
@@ -126,7 +126,7 @@ export default function ReminderPreferencesPage() {
         </p>
       </div>
 
-      <Separator />
+      <Separator className="-mx-4 sm:-mx-6 lg:-mx-8 w-auto" />
 
       {/* Information sur l'intégration avec les notifications */}
       <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
@@ -135,10 +135,10 @@ export default function ReminderPreferencesPage() {
           Intégration avec les notifications
         </AlertTitle>
         <AlertDescription className="text-xs text-blue-800 dark:text-blue-200 mt-1">
-          Les rappels de saisie de temps utilisent le système de notifications de l'application. 
-          Vous recevrez des notifications <strong>in-app</strong> et, selon vos préférences, par <strong>email</strong> ou <strong>desktop</strong>. 
-          <Link 
-            href="/dashboard/settings?tab=notifications" 
+          Les rappels de saisie de temps utilisent le système de notifications de l'application.
+          Vous recevrez des notifications <strong>in-app</strong> et, selon vos préférences, par <strong>email</strong> ou <strong>desktop</strong>.
+          <Link
+            href="/dashboard/settings?tab=notifications"
             className="inline-flex items-center gap-1 ml-1 text-blue-600 dark:text-blue-400 hover:underline font-medium"
           >
             Configurer les notifications
@@ -154,7 +154,7 @@ export default function ReminderPreferencesPage() {
             Rappels de saisie de temps
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
-            Activez ou désactivez les rappels pour vous aider à saisir vos heures de travail. 
+            Activez ou désactivez les rappels pour vous aider à saisir vos heures de travail.
             Les rappels sont envoyés uniquement si vous n'avez pas encore saisi de temps pour la journée.
           </CardDescription>
         </CardHeader>
@@ -181,7 +181,7 @@ export default function ReminderPreferencesPage() {
             {enableReminders && (
               <>
                 <Separator />
-                
+
                 {/* Heure du rappel */}
                 <div className="space-y-3">
                   <Label htmlFor="reminderTime" className="flex items-center gap-2 text-sm sm:text-base font-medium">
@@ -259,18 +259,22 @@ export default function ReminderPreferencesPage() {
           <CardTitle className="text-base sm:text-lg">À propos des rappels</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-3 text-xs sm:text-sm text-muted-foreground">
-            <p>
-              • Les rappels vous aideront à ne pas oublier de saisir vos heures de travail quotidiennes
+          <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+            <p className="flex items-start gap-2">
+              <span className="text-muted-foreground/40 select-none">—</span>
+              <span>Les rappels vous aideront à ne pas oublier de saisir vos heures de travail quotidiennes</span>
             </p>
-            <p>
-              • Vous recevrez une notification à l'heure choisie pour les jours sélectionnés
+            <p className="flex items-start gap-2">
+              <span className="text-muted-foreground/40 select-none">—</span>
+              <span>Vous recevrez une notification à l'heure choisie pour les jours sélectionnés</span>
             </p>
-            <p>
-              • Vous pouvez modifier ces préférences à tout moment
+            <p className="flex items-start gap-2">
+              <span className="text-muted-foreground/40 select-none">—</span>
+              <span>Vous pouvez modifier ces préférences à tout moment</span>
             </p>
-            <p>
-              • Les rappels ne sont envoyés que si vous n'avez pas encore saisi de temps pour la journée
+            <p className="flex items-start gap-2">
+              <span className="text-muted-foreground/40 select-none">—</span>
+              <span>Les rappels ne sont envoyés que si vous n'avez pas encore saisi de temps pour la journée</span>
             </p>
           </div>
 
@@ -278,38 +282,38 @@ export default function ReminderPreferencesPage() {
 
           {/* Types de notifications */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold">Types de notifications pour les rappels</h4>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
-                <MessageSquare className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                <div className="space-y-1">
+            <h4 className="text-sm font-semibold tracking-tight">Types de notifications pour les rappels</h4>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="relative pl-4 py-2 border-l-2 border-muted-foreground/20">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <MessageSquare className="h-3.5 w-3.5 opacity-50" />
                   <p className="text-xs font-medium">Notification in-app</p>
-                  <p className="text-xs text-muted-foreground">
-                    Toujours activée. Apparaît dans le menu notifications.
-                  </p>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Toujours activée. Apparaît dans le menu notifications.
+                </p>
               </div>
-              <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
-                <Mail className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                <div className="space-y-1">
+              <div className="relative pl-4 py-2 border-l-2 border-muted-foreground/20">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Mail className="h-3.5 w-3.5 opacity-50" />
                   <p className="text-xs font-medium">Email</p>
-                  <p className="text-xs text-muted-foreground">
-                    Configurable dans les préférences de notifications.
-                  </p>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Configurable dans les préférences de notifications.
+                </p>
               </div>
-              <div className="flex items-start gap-2 p-3 border rounded-lg bg-muted/30">
-                <Monitor className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                <div className="space-y-1">
+              <div className="relative pl-4 py-2 border-l-2 border-muted-foreground/20">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Monitor className="h-3.5 w-3.5 opacity-50" />
                   <p className="text-xs font-medium">Notification desktop</p>
-                  <p className="text-xs text-muted-foreground">
-                    Configurable dans les préférences de notifications.
-                  </p>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Configurable dans les préférences de notifications.
+                </p>
               </div>
             </div>
-            <Link 
-              href="/dashboard/settings?tab=notifications" 
+            <Link
+              href="/dashboard/settings?tab=notifications"
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
             >
               Configurer les préférences de notifications

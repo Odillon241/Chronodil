@@ -560,7 +560,7 @@ export const resetUserPassword = authActionClient
     })
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userRole } = ctx;
+    const { userRole, userId } = ctx;
 
     if (userRole !== "ADMIN") {
       throw new Error("Seuls les administrateurs peuvent réinitialiser les mots de passe");
@@ -569,99 +569,79 @@ export const resetUserPassword = authActionClient
     // Vérifier que l'utilisateur existe
     const user = await prisma.user.findUnique({
       where: { id: parsedInput.id },
-      select: {
-        id: true,
-        accounts: {
-          select: {
-            id: true,
-            providerId: true,
-            password: true,
-          },
-        },
-      },
     });
 
     if (!user) {
       throw new Error("Utilisateur non trouvé");
     }
 
-    // Créer un hash temporaire via Better Auth
-    // 1. Créer un utilisateur temporaire avec le nouveau mot de passe
-    const tempEmail = `temp_${Date.now()}_${Math.random().toString(36)}@temp.chronodil.local`;
-    const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+    try {
+      // Utiliser Supabase Auth Admin API pour réinitialiser le mot de passe
+      const { createClient } = await import("@supabase/supabase-js");
+      
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    const response = await fetch(`${betterAuthUrl}/api/auth/sign-up/email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: tempEmail,
-        password: parsedInput.newPassword,
-        name: "Temp User",
-      }),
-    });
+      console.log("Debug ResetPassword:", { 
+        urlExists: !!supabaseUrl, 
+        keyExists: !!serviceRoleKey,
+        keyLength: serviceRoleKey?.length,
+        userId: parsedInput.id 
+      });
 
-    if (!response.ok) {
-      throw new Error("Erreur lors de la génération du hash");
-    }
+      if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error("Configuration Supabase manquante (URL ou Service Role Key)");
+      }
 
-    // 2. Récupérer le hash
-    const tempUser = await prisma.user.findUnique({
-      where: { email: tempEmail },
-      select: {
-        id: true,
-        accounts: {
-          select: {
-            id: true,
-            password: true,
-          },
-        },
-      },
-    });
+      const supabaseAdmin = createClient(
+        supabaseUrl,
+        serviceRoleKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
 
-    if (!tempUser || !tempUser.accounts || tempUser.accounts.length === 0) {
-      throw new Error("Erreur lors de la génération du hash");
-    }
+      // Verify user exists first
+      const { data: authUser, error: findError } = await supabaseAdmin.auth.admin.getUserById(parsedInput.id);
+      
+      if (findError || !authUser.user) {
+        console.error("User not found in Supabase Auth:", findError);
+        throw new Error(`Utilisateur introuvable dans Supabase Auth (ID: ${parsedInput.id})`);
+      }
 
-    const newPasswordHash = tempUser.accounts[0].password;
+      console.log("Found Supabase User:", authUser.user.id, authUser.user.email);
 
-    // 3. Mettre à jour le mot de passe de l'utilisateur cible
-    const userAccount = user.accounts.find(acc => acc.providerId === "credential");
-    if (userAccount) {
-      await prisma.account.update({
-        where: { id: userAccount.id },
-        data: {
-          password: newPasswordHash,
-          updatedAt: new Date(),
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        parsedInput.id,
+        { password: parsedInput.newPassword }
+      );
+
+      if (updateError) {
+        throw new Error(`Erreur lors de la réinitialisation: ${updateError.message}`);
+      }
+
+      // Créer un log d'audit
+      await createAuditLog({
+        userId: userId,
+        action: AuditActions.UPDATE,
+        entity: AuditEntities.USER,
+        entityId: parsedInput.id,
+        changes: {
+          action: "password_reset",
         },
       });
-    } else {
-      // Créer un compte si aucun n'existe
-      await prisma.account.create({
-        data: {
-          id: require("nanoid").nanoid(),
-          userId: user.id,
-          accountId: user.id,
-          providerId: "credential",
-          password: newPasswordHash,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
+
+      revalidatePath("/dashboard/settings/users");
+      updateTag(CacheTags.USERS);
+      
+      return {
+        success: true,
+        message: "Mot de passe réinitialisé avec succès",
+        tempPassword: parsedInput.newPassword
+      };
+
+    } catch (error: any) {
+      console.error("Erreur resetUserPassword:", error);
+      throw new Error(error.message || "Erreur lors de la réinitialisation du mot de passe");
     }
-
-    // 4. Nettoyer l'utilisateur temporaire
-    await prisma.account.deleteMany({ where: { userId: tempUser.id } });
-    await prisma.user.delete({ where: { id: tempUser.id } });
-
-    revalidatePath("/dashboard/settings/users");
-    updateTag(CacheTags.USERS);
-    return {
-      success: true,
-      message: "Mot de passe réinitialisé avec succès",
-      tempPassword: parsedInput.newPassword
-    };
   });
 
 // Changer le mot de passe de l'utilisateur connecté

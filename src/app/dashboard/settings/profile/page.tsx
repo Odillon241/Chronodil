@@ -220,7 +220,7 @@ export default function ProfilePage() {
         toast.error("Veuillez sélectionner un fichier image");
         return;
       }
-      
+
       // Valider la taille (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Le fichier ne doit pas dépasser 5MB");
@@ -228,11 +228,11 @@ export default function ProfilePage() {
       }
 
       setSelectedFile(file);
-      
+
       // Créer une URL de prévisualisation
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      
+
       // Afficher le recadreur
       setShowCropper(true);
     }
@@ -261,7 +261,7 @@ export default function ProfilePage() {
       // Si c'est un upload de fichier
       if (avatarType === 'upload' && (selectedFile || croppedImageUrl)) {
         let base64: string;
-        
+
         if (croppedImageUrl) {
           // Utiliser l'image recadrée
           base64 = croppedImageUrl;
@@ -309,21 +309,21 @@ export default function ProfilePage() {
         toast.success("Avatar mis à jour avec succès !");
         setUser(result.data as any);
         setIsAvatarDialogOpen(false);
-        
+
         // Nettoyer l'URL de prévisualisation
         if (previewUrl) {
           URL.revokeObjectURL(previewUrl);
           setPreviewUrl('');
         }
-        
+
         // Réinitialiser l'input de fichier
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-        
+
         // Réinitialiser l'image recadrée
         setCroppedImageUrl('');
-        
+
         // Recharger la page pour mettre à jour la session
         setTimeout(() => {
           window.location.reload();
@@ -392,618 +392,622 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Gérez vos informations personnelles et vos préférences
-          </p>
+    <div className="flex flex-col min-h-full">
+      {/* En-tête fixe */}
+      <div className="sticky top-0 z-10 bg-background pb-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-0">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mon Profil</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Gérez vos informations personnelles et vos préférences
+            </p>
+          </div>
+          <Separator className="-mx-4 sm:-mx-6 lg:-mx-8 w-auto" />
         </div>
-        <Separator />
       </div>
 
-      {/* Carte principale */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
-        {/* Colonne gauche - Avatar et infos rapides */}
-        <div className="md:col-span-1 flex flex-col items-center space-y-5">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <Avatar className="h-36 w-36 relative z-0 ring-4 ring-background shadow-lg">
-              <AvatarImage 
-                src={
-                  user.avatar?.startsWith('/uploads') || user.avatar?.startsWith('http') 
-                    ? user.avatar 
-                    : undefined
-                } 
-                alt={user.name || "User"}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-white text-3xl font-semibold">
-                {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <Button
-              onClick={openAvatarDialog}
-              size="icon"
-              variant="default"
-              className="absolute bottom-0 right-0 h-11 w-11 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-slate-700 hover:bg-slate-800 text-white border-2 border-background z-50"
-              title="Modifier la photo de profil"
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="text-center space-y-2 w-full">
-            <h3 className="font-bold text-xl text-foreground">{user.name || "Utilisateur"}</h3>
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Mail className="h-3.5 w-3.5" />
-              <p className="text-sm truncate max-w-[200px]" title={user.email}>{user.email}</p>
-            </div>
-            <Badge className={`${getRoleBadgeColor(user.role)} text-xs font-semibold px-2.5 py-1 mt-2`}>
-              {getRoleLabel(user.role)}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Colonne droite - Informations détaillées */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg sm:text-xl">Informations personnelles</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  {isEditing
-                    ? "Modifiez vos informations personnelles"
-                    : "Consultez vos informations personnelles"}
-                </CardDescription>
-              </div>
-              {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                  <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                  Modifier
-                </Button>
-              )}
-            </div>
-            <Separator className="mt-4" />
-          </CardHeader>
-          <CardContent>
-            {isEditing ? (
-              // Mode édition
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nom complet *</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="name"
-                        className="pl-10"
-                        placeholder="Jean Dupont"
-                        {...register("name")}
-                      />
-                    </div>
-                    {errors.name && (
-                      <p className="text-sm text-destructive">{errors.name.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type="email"
-                        className="pl-10"
-                        placeholder="jean.dupont@example.com"
-                        {...register("email")}
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="text-sm text-destructive">{errors.email.message}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Un email de confirmation sera envoyé si vous modifiez votre adresse
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="position">Poste</Label>
-                    <div className="relative">
-                      <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="position"
-                        className="pl-10"
-                        placeholder="Ex: Développeur Full-Stack, Chef de projet..."
-                        {...register("position")}
-                      />
-                    </div>
-                    {errors.position && (
-                      <p className="text-sm text-destructive">{errors.position.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="avatar">URL photo de profil</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="avatar"
-                        className="pl-10"
-                        placeholder="https://example.com/photo.jpg"
-                        {...register("avatar")}
-                      />
-                    </div>
-                    {errors.avatar && (
-                      <p className="text-sm text-destructive">{errors.avatar.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    type="submit"
-                    className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
-                    disabled={isSaving}
-                  >
-                    {isSaving ? (
-                      <span className="flex items-center gap-2">
-                        <Spinner />
-                        Enregistrement...
-                      </span>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                        Enregistrer
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                  >
-                    <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    Annuler
-                  </Button>
-                </div>
-              </form>
-            ) : (
-              // Mode consultation
-              <div className="space-y-6">
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <User className="h-4 w-4" />
-                      Nom complet
-                    </div>
-                    <p className="text-sm font-medium pl-6">{user.name || "Non renseigné"}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      Email
-                    </div>
-                    <p className="text-sm font-medium pl-6">{user.email}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Shield className="h-4 w-4" />
-                      Rôle
-                    </div>
-                    <p className="text-sm font-medium pl-6">{getRoleLabel(user.role)}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Briefcase className="h-4 w-4" />
-                      Poste
-                    </div>
-                    <p className="text-sm font-medium pl-6">{user.position || "Non renseigné"}</p>
-                  </div>
-
-                  {user.department && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <Building2 className="h-4 w-4" />
-                        Département
-                      </div>
-                      <p className="text-sm font-medium pl-6">
-                        {user.department.name} ({user.department.code})
-                      </p>
-                    </div>
-                  )}
-
-                  {user.manager && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <UserCog className="h-4 w-4" />
-                        Manager assigné
-                      </div>
-                      <div className="pl-6">
-                        <p className="text-sm font-medium">{user.manager.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.manager.email}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <CalendarDays className="h-4 w-4" />
-                      Membre depuis
-                    </div>
-                    <p className="text-sm font-medium pl-6">
-                      {new Date(user.createdAt).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Informations additionnelles (futures) */}
-                <Separator />
-
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm sm:text-base">Informations contractuelles</h3>
-                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
-                        <Clock className="h-4 w-4" />
-                        Horaires hebdomadaires
-                      </div>
-                      <p className="text-sm font-medium pl-6 text-muted-foreground">
-                        35h/semaine (à configurer)
-                      </p>
-                    </div>
-
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
-                        <CalendarDays className="h-4 w-4" />
-                        Solde congés
-                      </div>
-                      <p className="text-sm font-medium pl-6 text-muted-foreground">
-                        À venir (Phase 2)
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground italic">
-                    Ces informations seront disponibles dans une prochaine mise à jour
-                  </p>
-                </div>
-
-                {/* Section changement de mot de passe */}
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-sm sm:text-base">Sécurité</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
-                        Gérez votre mot de passe pour sécuriser votre compte
-                      </p>
-                    </div>
-                    <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                          <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                          Changer le mot de passe
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Changer le mot de passe</DialogTitle>
-                          <DialogDescription>
-                            Entrez votre mot de passe actuel et choisissez un nouveau mot de passe sécurisé
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmitPassword(handlePasswordChange)} className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="currentPassword">Mot de passe actuel *</Label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                id="currentPassword"
-                                type={showCurrentPassword ? "text" : "password"}
-                                className="pl-10 pr-10"
-                                placeholder="••••••••"
-                                {...registerPassword("currentPassword")}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                              >
-                                {showCurrentPassword ? (
-                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                ) : (
-                                  <Eye className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </Button>
-                            </div>
-                            {passwordErrors.currentPassword && (
-                              <p className="text-sm text-destructive">
-                                {passwordErrors.currentPassword.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="newPassword">Nouveau mot de passe *</Label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                id="newPassword"
-                                type={showNewPassword ? "text" : "password"}
-                                className="pl-10 pr-10"
-                                placeholder="••••••••"
-                                {...registerPassword("newPassword")}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowNewPassword(!showNewPassword)}
-                              >
-                                {showNewPassword ? (
-                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                ) : (
-                                  <Eye className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </Button>
-                            </div>
-                            {passwordErrors.newPassword && (
-                              <p className="text-sm text-destructive">
-                                {passwordErrors.newPassword.message}
-                              </p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              Le mot de passe doit contenir au moins 6 caractères
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Confirmer le nouveau mot de passe *</Label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                id="confirmPassword"
-                                type={showConfirmPassword ? "text" : "password"}
-                                className="pl-10 pr-10"
-                                placeholder="••••••••"
-                                {...registerPassword("confirmPassword")}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              >
-                                {showConfirmPassword ? (
-                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                ) : (
-                                  <Eye className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </Button>
-                            </div>
-                            {passwordErrors.confirmPassword && (
-                              <p className="text-sm text-destructive">
-                                {passwordErrors.confirmPassword.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                            <Button
-                              type="submit"
-                              className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
-                              disabled={isChangingPassword}
-                            >
-                              {isChangingPassword ? (
-                                <span className="flex items-center gap-2">
-                                  <Spinner />
-                                  Modification...
-                                </span>
-                              ) : (
-                                <>
-                                  <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                                  Modifier le mot de passe
-                                </>
-                              )}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => {
-                                setIsPasswordDialogOpen(false);
-                                resetPassword();
-                              }}
-                              disabled={isChangingPassword}
-                              className="w-full sm:w-auto text-xs sm:text-sm"
-                            >
-                              <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                              Annuler
-                            </Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Modal de sélection d'avatar */}
-      <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Modifier votre avatar</DialogTitle>
-            <DialogDescription>
-              Importez une photo depuis votre ordinateur ou sélectionnez un emoji
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {/* Sélection du type d'avatar */}
-            <div className="space-y-2">
-              <Label>Type d'avatar</Label>
-              <Select value={avatarType} onValueChange={(value: 'upload' | 'emoji') => setAvatarType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="upload">
-                    <div className="flex items-center gap-2">
-                      <Upload className="h-4 w-4" />
-                      Importer une photo
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="emoji">
-                    <div className="flex items-center gap-2">
-                      <Smile className="h-4 w-4" />
-                      Emoji
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Aperçu de l'avatar */}
-            <div className="flex justify-center">
-              <Avatar className="h-20 w-20">
-                <AvatarImage 
+      {/* Contenu scrollable */}
+      <div className="flex-1 space-y-6 pb-8">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+          {/* Colonne gauche - Avatar et infos rapides */}
+          <div className="md:col-span-1 flex flex-col items-center space-y-5">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Avatar className="h-36 w-36 relative z-0 ring-4 ring-background shadow-lg">
+                <AvatarImage
                   src={
-                    avatarType === 'upload' && croppedImageUrl
-                      ? croppedImageUrl
-                      : avatarType === 'upload' && previewUrl 
-                        ? previewUrl 
-                        : avatarType === 'upload' && avatarValue.startsWith('/uploads') 
-                          ? avatarValue 
-                          : undefined
-                  } 
-                  alt="Preview"
+                    user.avatar?.startsWith('/uploads') || user.avatar?.startsWith('http')
+                      ? user.avatar
+                      : undefined
+                  }
+                  alt={user.name || "User"}
+                  className="object-cover"
                 />
-                <AvatarFallback className="bg-primary text-white text-xl">
-                  {avatarType === 'emoji' ? avatarValue : getInitials(user?.name)}
+                <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-white text-3xl font-semibold">
+                  {user.avatar && !user.avatar.startsWith('/uploads') && !user.avatar.startsWith('http') ? user.avatar : getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
+              <Button
+                onClick={openAvatarDialog}
+                size="icon"
+                variant="default"
+                className="absolute bottom-0 right-0 h-11 w-11 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 bg-slate-700 hover:bg-slate-800 text-white border-2 border-background z-50"
+                title="Modifier la photo de profil"
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
             </div>
 
-            {/* Champ de saisie */}
-            {avatarType === 'upload' ? (
-              <div className="space-y-2">
-                {!showCropper && (
-                  <>
-                    <Label htmlFor="avatar-file">Sélectionner une image</Label>
-                    <Input
-                      ref={fileInputRef}
-                      id="avatar-file"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="cursor-pointer"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
-                    </p>
-                    {selectedFile && !croppedImageUrl && (
-                      <p className="text-sm text-green-600">
-                        ✓ Fichier sélectionné : {selectedFile.name}
-                      </p>
-                    )}
-                    {croppedImageUrl && (
-                      <p className="text-sm text-blue-600">
-                        ✓ Image recadrée prête à être sauvegardée
-                      </p>
-                    )}
-                  </>
-                )}
-                
-                {showCropper && previewUrl && (
-                  <ImageCropper
-                    src={previewUrl}
-                    onCropComplete={handleCropComplete}
-                    onCancel={handleCropCancel}
-                  />
-                )}
+            <div className="text-center space-y-2 w-full">
+              <h3 className="font-bold text-xl text-foreground">{user.name || "Utilisateur"}</h3>
+              <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <Mail className="h-3.5 w-3.5" />
+                <p className="text-sm truncate max-w-[200px]" title={user.email}>{user.email}</p>
               </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="avatar-emoji">Emoji</Label>
-                <Input
-                  id="avatar-emoji"
-                  placeholder="😊"
-                  value={avatarValue}
-                  onChange={(e) => setAvatarValue(e.target.value)}
-                  maxLength={2}
-                />
-                
-                {/* Sélection d'emojis populaires */}
-                <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Emojis populaires</Label>
-                  <div className="grid grid-cols-10 gap-1 max-h-32 overflow-y-auto">
-                    {popularEmojis.map((emoji, index) => (
-                      <Button
-                        key={index}
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-lg hover:bg-muted"
-                        onClick={() => setAvatarValue(emoji)}
-                      >
-                        {emoji}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Boutons d'action */}
-            <div className="flex flex-col sm:flex-row gap-2 pt-4">
-              <Button
-                onClick={handleAvatarUpdate}
-                className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
-                disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
-              >
-                {isUpdatingAvatar ? (
-                  <span className="flex items-center gap-2">
-                    <Spinner />
-                    Mise à jour...
-                  </span>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    Sauvegarder
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsAvatarDialogOpen(false)}
-                disabled={isUpdatingAvatar}
-                className="w-full sm:w-auto text-xs sm:text-sm"
-              >
-                <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                Annuler
-              </Button>
+              <Badge className={`${getRoleBadgeColor(user.role)} text-xs font-semibold px-2.5 py-1 mt-2`}>
+                {getRoleLabel(user.role)}
+              </Badge>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          {/* Colonne droite - Informations détaillées */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg sm:text-xl">Informations personnelles</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    {isEditing
+                      ? "Modifiez vos informations personnelles"
+                      : "Consultez vos informations personnelles"}
+                  </CardDescription>
+                </div>
+                {!isEditing && (
+                  <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                    Modifier
+                  </Button>
+                )}
+              </div>
+              <Separator className="mt-4" />
+            </CardHeader>
+            <CardContent>
+              {isEditing ? (
+                // Mode édition
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nom complet *</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="name"
+                          className="pl-10"
+                          placeholder="Jean Dupont"
+                          {...register("name")}
+                        />
+                      </div>
+                      {errors.name && (
+                        <p className="text-sm text-destructive">{errors.name.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="email"
+                          type="email"
+                          className="pl-10"
+                          placeholder="jean.dupont@example.com"
+                          {...register("email")}
+                        />
+                      </div>
+                      {errors.email && (
+                        <p className="text-sm text-destructive">{errors.email.message}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Un email de confirmation sera envoyé si vous modifiez votre adresse
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="position">Poste</Label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="position"
+                          className="pl-10"
+                          placeholder="Ex: Développeur Full-Stack, Chef de projet..."
+                          {...register("position")}
+                        />
+                      </div>
+                      {errors.position && (
+                        <p className="text-sm text-destructive">{errors.position.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="avatar">URL photo de profil</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="avatar"
+                          className="pl-10"
+                          placeholder="https://example.com/photo.jpg"
+                          {...register("avatar")}
+                        />
+                      </div>
+                      {errors.avatar && (
+                        <p className="text-sm text-destructive">{errors.avatar.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      type="submit"
+                      className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <span className="flex items-center gap-2">
+                          <Spinner />
+                          Enregistrement...
+                        </span>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                          Enregistrer
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                      disabled={isSaving}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
+                    >
+                      <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      Annuler
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                // Mode consultation
+                <div className="space-y-6">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <User className="h-4 w-4" />
+                        Nom complet
+                      </div>
+                      <p className="text-sm font-medium pl-6">{user.name || "Non renseigné"}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </div>
+                      <p className="text-sm font-medium pl-6">{user.email}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Shield className="h-4 w-4" />
+                        Rôle
+                      </div>
+                      <p className="text-sm font-medium pl-6">{getRoleLabel(user.role)}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Briefcase className="h-4 w-4" />
+                        Poste
+                      </div>
+                      <p className="text-sm font-medium pl-6">{user.position || "Non renseigné"}</p>
+                    </div>
+
+                    {user.department && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <Building2 className="h-4 w-4" />
+                          Département
+                        </div>
+                        <p className="text-sm font-medium pl-6">
+                          {user.department.name} ({user.department.code})
+                        </p>
+                      </div>
+                    )}
+
+                    {user.manager && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <UserCog className="h-4 w-4" />
+                          Manager assigné
+                        </div>
+                        <div className="pl-6">
+                          <p className="text-sm font-medium">{user.manager.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.manager.email}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <CalendarDays className="h-4 w-4" />
+                        Membre depuis
+                      </div>
+                      <p className="text-sm font-medium pl-6">
+                        {new Date(user.createdAt).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Informations additionnelles (futures) */}
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-sm sm:text-base tracking-tight">Informations contractuelles</h3>
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                      <div className="relative pl-4 py-3 border-l-2 border-muted-foreground/20">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-0.5">
+                          <Clock className="h-3.5 w-3.5 opacity-60" />
+                          <span>Horaires hebdomadaires</span>
+                        </div>
+                        <p className="text-sm font-medium">
+                          35h/semaine (à configurer)
+                        </p>
+                      </div>
+
+                      <div className="relative pl-4 py-3 border-l-2 border-muted-foreground/20">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-0.5">
+                          <CalendarDays className="h-3.5 w-3.5 opacity-60" />
+                          <span>Solde congés</span>
+                        </div>
+                        <p className="text-sm font-medium">
+                          À venir (Phase 2)
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground/60">
+                      Ces informations seront disponibles dans une prochaine mise à jour
+                    </p>
+                  </div>
+
+                  {/* Section changement de mot de passe */}
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-sm sm:text-base">Sécurité</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Gérez votre mot de passe pour sécuriser votre compte
+                        </p>
+                      </div>
+                      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                            <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                            Changer le mot de passe
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Changer le mot de passe</DialogTitle>
+                            <DialogDescription>
+                              Entrez votre mot de passe actuel et choisissez un nouveau mot de passe sécurisé
+                            </DialogDescription>
+                          </DialogHeader>
+                          <form onSubmit={handleSubmitPassword(handlePasswordChange)} className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="currentPassword">Mot de passe actuel *</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  id="currentPassword"
+                                  type={showCurrentPassword ? "text" : "password"}
+                                  className="pl-10 pr-10"
+                                  placeholder="••••••••"
+                                  {...registerPassword("currentPassword")}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                >
+                                  {showCurrentPassword ? (
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </div>
+                              {passwordErrors.currentPassword && (
+                                <p className="text-sm text-destructive">
+                                  {passwordErrors.currentPassword.message}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="newPassword">Nouveau mot de passe *</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  id="newPassword"
+                                  type={showNewPassword ? "text" : "password"}
+                                  className="pl-10 pr-10"
+                                  placeholder="••••••••"
+                                  {...registerPassword("newPassword")}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowNewPassword(!showNewPassword)}
+                                >
+                                  {showNewPassword ? (
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </div>
+                              {passwordErrors.newPassword && (
+                                <p className="text-sm text-destructive">
+                                  {passwordErrors.newPassword.message}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                Le mot de passe doit contenir au moins 6 caractères
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="confirmPassword">Confirmer le nouveau mot de passe *</Label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  id="confirmPassword"
+                                  type={showConfirmPassword ? "text" : "password"}
+                                  className="pl-10 pr-10"
+                                  placeholder="••••••••"
+                                  {...registerPassword("confirmPassword")}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                >
+                                  {showConfirmPassword ? (
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </Button>
+                              </div>
+                              {passwordErrors.confirmPassword && (
+                                <p className="text-sm text-destructive">
+                                  {passwordErrors.confirmPassword.message}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                              <Button
+                                type="submit"
+                                className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
+                                disabled={isChangingPassword}
+                              >
+                                {isChangingPassword ? (
+                                  <span className="flex items-center gap-2">
+                                    <Spinner />
+                                    Modification...
+                                  </span>
+                                ) : (
+                                  <>
+                                    <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                    Modifier le mot de passe
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setIsPasswordDialogOpen(false);
+                                  resetPassword();
+                                }}
+                                disabled={isChangingPassword}
+                                className="w-full sm:w-auto text-xs sm:text-sm"
+                              >
+                                <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                Annuler
+                              </Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Modal de sélection d'avatar */}
+        <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Modifier votre avatar</DialogTitle>
+              <DialogDescription>
+                Importez une photo depuis votre ordinateur ou sélectionnez un emoji
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Sélection du type d'avatar */}
+              <div className="space-y-2">
+                <Label>Type d'avatar</Label>
+                <Select value={avatarType} onValueChange={(value: 'upload' | 'emoji') => setAvatarType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upload">
+                      <div className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Importer une photo
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="emoji">
+                      <div className="flex items-center gap-2">
+                        <Smile className="h-4 w-4" />
+                        Emoji
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Aperçu de l'avatar */}
+              <div className="flex justify-center">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage
+                    src={
+                      avatarType === 'upload' && croppedImageUrl
+                        ? croppedImageUrl
+                        : avatarType === 'upload' && previewUrl
+                          ? previewUrl
+                          : avatarType === 'upload' && avatarValue.startsWith('/uploads')
+                            ? avatarValue
+                            : undefined
+                    }
+                    alt="Preview"
+                  />
+                  <AvatarFallback className="bg-primary text-white text-xl">
+                    {avatarType === 'emoji' ? avatarValue : getInitials(user?.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+
+              {/* Champ de saisie */}
+              {avatarType === 'upload' ? (
+                <div className="space-y-2">
+                  {!showCropper && (
+                    <>
+                      <Label htmlFor="avatar-file">Sélectionner une image</Label>
+                      <Input
+                        ref={fileInputRef}
+                        id="avatar-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="cursor-pointer"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
+                      </p>
+                      {selectedFile && !croppedImageUrl && (
+                        <p className="text-sm text-green-600">
+                          ✓ Fichier sélectionné : {selectedFile.name}
+                        </p>
+                      )}
+                      {croppedImageUrl && (
+                        <p className="text-sm text-blue-600">
+                          ✓ Image recadrée prête à être sauvegardée
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {showCropper && previewUrl && (
+                    <ImageCropper
+                      src={previewUrl}
+                      onCropComplete={handleCropComplete}
+                      onCancel={handleCropCancel}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="avatar-emoji">Emoji</Label>
+                  <Input
+                    id="avatar-emoji"
+                    placeholder="😊"
+                    value={avatarValue}
+                    onChange={(e) => setAvatarValue(e.target.value)}
+                    maxLength={2}
+                  />
+
+                  {/* Sélection d'emojis populaires */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">Emojis populaires</Label>
+                    <div className="grid grid-cols-10 gap-1 max-h-32 overflow-y-auto">
+                      {popularEmojis.map((emoji, index) => (
+                        <Button
+                          key={index}
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-lg hover:bg-muted"
+                          onClick={() => setAvatarValue(emoji)}
+                        >
+                          {emoji}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Boutons d'action */}
+              <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                <Button
+                  onClick={handleAvatarUpdate}
+                  className="w-full sm:flex-1 bg-primary hover:bg-primary text-xs sm:text-sm"
+                  disabled={isUpdatingAvatar || (avatarType === 'upload' && !selectedFile && !croppedImageUrl) || (avatarType === 'emoji' && !avatarValue.trim())}
+                >
+                  {isUpdatingAvatar ? (
+                    <span className="flex items-center gap-2">
+                      <Spinner />
+                      Mise à jour...
+                    </span>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      Sauvegarder
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAvatarDialogOpen(false)}
+                  disabled={isUpdatingAvatar}
+                  className="w-full sm:w-auto text-xs sm:text-sm"
+                >
+                  <X className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

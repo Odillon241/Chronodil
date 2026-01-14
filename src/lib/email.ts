@@ -1,24 +1,6 @@
-import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 
-// Configuration Nodemailer (Gmail ou autre SMTP)
-const createTransporter = () => {
-  // Vérifier si les credentials Gmail/SMTP sont configurés
-  if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-  }
-  return null;
-};
-
-// Configuration Resend (fallback)
+// Configuration Resend (service principal)
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface SendEmailOptions {
@@ -27,88 +9,192 @@ interface SendEmailOptions {
   html: string;
 }
 
+interface SendOTPEmailOptions {
+  to: string;
+  otp: string;
+  userName?: string;
+}
+
+/**
+ * Envoie un email via Resend
+ */
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
+  // Log en développement
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n' + '='.repeat(80));
+    console.log('📧 EMAIL ENVOYÉ (MODE DÉVELOPPEMENT)');
+    console.log('='.repeat(80));
+    console.log('À:', to);
+    console.log('Sujet:', subject);
+    console.log('Contenu HTML:', html.substring(0, 500) + '...');
+    console.log('='.repeat(80) + '\n');
+  }
+
+  // Vérifier la configuration Resend
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('⚠️ RESEND_API_KEY non configurée');
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Configuration email manquante (RESEND_API_KEY)');
+    }
+    return { success: false, error: 'API key manquante' };
+  }
+
   try {
-    // En développement : afficher le lien dans la console
-    if (process.env.NODE_ENV === 'development') {
-      console.log('\n' + '='.repeat(80));
-      console.log('📧 EMAIL ENVOYÉ (MODE DÉVELOPPEMENT)');
-      console.log('='.repeat(80));
-      console.log('À:', to);
-      console.log('Sujet:', subject);
-      console.log('Contenu HTML:', html.substring(0, 500) + '...');
+    const { data, error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'Chronodil <onboarding@resend.dev>',
+      to: [to],
+      subject,
+      html,
+    });
 
-      // Extraire le lien de réinitialisation depuis le HTML
-      const urlMatch = html.match(/href="([^"]*reset-password[^"]*)"/);
-      if (urlMatch) {
-        console.log('\n🔗 LIEN DE RÉINITIALISATION:');
-        console.log(urlMatch[1]);
-      }
-      console.log('='.repeat(80) + '\n');
-    }
-
-    // Tentative 1 : Nodemailer (Gmail/SMTP)
-    const transporter = createTransporter();
-    if (transporter) {
-      try {
-        const info = await transporter.sendMail({
-          from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-          to,
-          subject,
-          html,
-        });
-
-        console.log('✅ Email envoyé avec succès via Nodemailer:', info.messageId);
-        return;
-      } catch (nodemailerError: any) {
-        console.error('❌ Erreur Nodemailer:', nodemailerError.message);
-        // Continue vers Resend en fallback
-      }
-    }
-
-    // Tentative 2 : Resend (fallback)
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const { data, error } = await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'Chronodil <onboarding@resend.dev>',
-          to: [to],
-          subject,
-          html,
-        });
-
-        if (error) {
-          console.error('❌ Erreur Resend:', error);
-          // Ne pas throw l'erreur en dev pour permettre le test avec les logs console
-          if (process.env.NODE_ENV === 'production') {
-            throw new Error(`Échec d'envoi d'email via Resend: ${error.message}`);
-          }
-        } else {
-          console.log('✅ Email envoyé avec succès via Resend:', data?.id);
-        }
-      } catch (resendError: any) {
-        console.error('❌ Erreur Resend:', resendError.message);
-        if (process.env.NODE_ENV === 'production') {
-          throw resendError;
-        }
-      }
-    } else {
-      console.warn('⚠️  Aucun service email configuré (Nodemailer ou Resend)');
+    if (error) {
+      console.error('❌ Erreur Resend:', error);
       if (process.env.NODE_ENV === 'production') {
-        throw new Error('Configuration email manquante');
+        throw new Error(`Échec d'envoi d'email: ${error.message}`);
       }
+      return { success: false, error: error.message };
     }
-  } catch (error) {
-    console.error('❌ Erreur lors de l\'envoi d\'email:', error);
 
-    // En production, throw l'erreur
+    console.log('✅ Email envoyé avec succès via Resend:', data?.id);
+    return { success: true, id: data?.id };
+  } catch (error: any) {
+    console.error('❌ Erreur lors de l\'envoi d\'email:', error);
     if (process.env.NODE_ENV === 'production') {
       throw error;
     }
+    return { success: false, error: error.message };
   }
 }
 
 /**
- * Génère le template HTML pour l'email de réinitialisation de mot de passe
+ * Envoie un email OTP via Resend
+ */
+export async function sendOTPEmail({ to, otp, userName }: SendOTPEmailOptions) {
+  const formattedOTP = `${otp.slice(0, 4)}-${otp.slice(4)}`;
+  
+  // Log spécial pour les OTP en développement
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n' + '🔑'.repeat(40));
+    console.log('📧 CODE OTP ENVOYÉ');
+    console.log('🔑'.repeat(40));
+    console.log('Email:', to);
+    console.log('Code OTP:', otp);
+    console.log('Format:', formattedOTP);
+    console.log('🔑'.repeat(40) + '\n');
+  }
+
+  return sendEmail({
+    to,
+    subject: 'Votre code de vérification Chronodil',
+    html: getOTPEmailTemplate(otp, userName),
+  });
+}
+
+/**
+ * Template HTML pour l'email OTP
+ */
+export function getOTPEmailTemplate(otp: string, userName?: string): string {
+  const formattedOTP = `${otp.slice(0, 4)}-${otp.slice(4)}`;
+  
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code de vérification - Chronodil</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px;">
+              <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0;">
+                ⏱️ Chronodil
+              </h1>
+              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
+                Gestion du temps optimisée
+              </p>
+            </td>
+          </tr>
+
+          <!-- Corps -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="color: #111827; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
+                Code de vérification
+              </h2>
+
+              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}
+              </p>
+
+              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                Voici votre code de vérification :
+              </p>
+
+              <!-- Code OTP -->
+              <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 30px; text-align: center; margin: 24px 0; border-radius: 12px; border: 2px solid #10b981;">
+                <h1 style="font-family: 'SF Mono', 'Consolas', monospace; font-size: 42px; letter-spacing: 12px; margin: 0; color: #059669; font-weight: 700;">
+                  ${formattedOTP}
+                </h1>
+              </div>
+
+              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0; text-align: center;">
+                ⏰ Ce code expire dans <strong>1 heure</strong>
+              </p>
+
+              <!-- Informations de sécurité -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin: 0 0 8px 0;">
+                      🔒 <strong>Sécurité</strong>
+                    </p>
+                    <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin: 0;">
+                      Ne partagez jamais ce code. Chronodil ne vous demandera jamais ce code par téléphone ou SMS.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #9ca3af; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0;">
+                Si vous n'avez pas demandé ce code, ignorez cet email.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0;">
+                Cet email a été envoyé par <strong style="color: #6b7280;">Chronodil</strong>
+              </p>
+              <p style="color: #d1d5db; font-size: 11px; margin: 0;">
+                © 2026 ODILLON. Tous droits réservés.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+}
+
+/**
+ * Template HTML pour l'email de réinitialisation de mot de passe (avec lien)
  */
 export function getResetPasswordEmailTemplate(resetUrl: string, userName?: string): string {
   return `
@@ -121,15 +207,13 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
 
-  <!-- Container principal -->
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
 
-        <!-- Card email -->
         <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
 
-          <!-- Header avec logo -->
+          <!-- Header -->
           <tr>
             <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px;">
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -141,7 +225,7 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
             </td>
           </tr>
 
-          <!-- Corps du message -->
+          <!-- Corps -->
           <tr>
             <td style="padding: 40px 40px 30px 40px;">
               <h2 style="color: #111827; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
@@ -150,10 +234,6 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
 
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
                 ${userName ? `Bonjour ${userName},` : 'Bonjour,'}
-              </p>
-
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                Vous avez demandé à réinitialiser votre mot de passe pour votre compte Chronodil.
               </p>
 
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
@@ -180,7 +260,7 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
                 </tr>
               </table>
 
-              <!-- Informations supplémentaires -->
+              <!-- Informations -->
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f9fafb; border-radius: 6px; border-left: 4px solid #10b981;">
                 <tr>
                   <td style="padding: 16px 20px;">
@@ -195,7 +275,7 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
               </table>
 
               <p style="color: #9ca3af; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0;">
-                Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email en toute sécurité. Votre mot de passe ne sera pas modifié.
+                Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
               </p>
             </td>
           </tr>
@@ -207,7 +287,7 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
                 <tr>
                   <td>
                     <p style="color: #9ca3af; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">
-                      Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
+                      Si le bouton ne fonctionne pas, copiez ce lien :
                     </p>
                     <p style="color: #6b7280; font-size: 12px; line-height: 1.5; margin: 0; word-break: break-all;">
                       <a href="${resetUrl}" style="color: #10b981; text-decoration: underline;">${resetUrl}</a>
@@ -224,11 +304,8 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
               <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0;">
                 Cet email a été envoyé par <strong style="color: #6b7280;">Chronodil</strong>
               </p>
-              <p style="color: #9ca3af; font-size: 12px; margin: 0 0 15px 0;">
-                Gestion optimisée du temps et des projets
-              </p>
               <p style="color: #d1d5db; font-size: 11px; margin: 0;">
-                © 2026 Chronodil. Tous droits réservés.
+                © 2026 ODILLON. Tous droits réservés.
               </p>
             </td>
           </tr>

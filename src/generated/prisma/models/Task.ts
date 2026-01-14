@@ -28,10 +28,12 @@ export type AggregateTask = {
 
 export type TaskAvgAggregateOutputType = {
   estimatedHours: number | null
+  overdueDays: number | null
 }
 
 export type TaskSumAggregateOutputType = {
   estimatedHours: number | null
+  overdueDays: number | null
 }
 
 export type TaskMinAggregateOutputType = {
@@ -65,6 +67,14 @@ export type TaskMinAggregateOutputType = {
   activityType: string | null
   activityName: string | null
   periodicity: string | null
+  reminderNotifiedAt: Date | null
+  overdueDays: number | null
+  overdueNotifiedAt: Date | null
+  lastEscalatedAt: Date | null
+  slaDeadline: Date | null
+  slaStatus: string | null
+  isRecurringTemplate: boolean | null
+  recurrenceEndDate: Date | null
 }
 
 export type TaskMaxAggregateOutputType = {
@@ -98,6 +108,14 @@ export type TaskMaxAggregateOutputType = {
   activityType: string | null
   activityName: string | null
   periodicity: string | null
+  reminderNotifiedAt: Date | null
+  overdueDays: number | null
+  overdueNotifiedAt: Date | null
+  lastEscalatedAt: Date | null
+  slaDeadline: Date | null
+  slaStatus: string | null
+  isRecurringTemplate: boolean | null
+  recurrenceEndDate: Date | null
 }
 
 export type TaskCountAggregateOutputType = {
@@ -131,16 +149,27 @@ export type TaskCountAggregateOutputType = {
   activityType: number
   activityName: number
   periodicity: number
+  reminderNotifiedAt: number
+  overdueDays: number
+  overdueNotifiedAt: number
+  lastEscalatedAt: number
+  slaDeadline: number
+  slaStatus: number
+  isRecurringTemplate: number
+  recurrenceEndDate: number
+  recurrenceExceptions: number
   _all: number
 }
 
 
 export type TaskAvgAggregateInputType = {
   estimatedHours?: true
+  overdueDays?: true
 }
 
 export type TaskSumAggregateInputType = {
   estimatedHours?: true
+  overdueDays?: true
 }
 
 export type TaskMinAggregateInputType = {
@@ -174,6 +203,14 @@ export type TaskMinAggregateInputType = {
   activityType?: true
   activityName?: true
   periodicity?: true
+  reminderNotifiedAt?: true
+  overdueDays?: true
+  overdueNotifiedAt?: true
+  lastEscalatedAt?: true
+  slaDeadline?: true
+  slaStatus?: true
+  isRecurringTemplate?: true
+  recurrenceEndDate?: true
 }
 
 export type TaskMaxAggregateInputType = {
@@ -207,6 +244,14 @@ export type TaskMaxAggregateInputType = {
   activityType?: true
   activityName?: true
   periodicity?: true
+  reminderNotifiedAt?: true
+  overdueDays?: true
+  overdueNotifiedAt?: true
+  lastEscalatedAt?: true
+  slaDeadline?: true
+  slaStatus?: true
+  isRecurringTemplate?: true
+  recurrenceEndDate?: true
 }
 
 export type TaskCountAggregateInputType = {
@@ -240,6 +285,15 @@ export type TaskCountAggregateInputType = {
   activityType?: true
   activityName?: true
   periodicity?: true
+  reminderNotifiedAt?: true
+  overdueDays?: true
+  overdueNotifiedAt?: true
+  lastEscalatedAt?: true
+  slaDeadline?: true
+  slaStatus?: true
+  isRecurringTemplate?: true
+  recurrenceEndDate?: true
+  recurrenceExceptions?: true
   _all?: true
 }
 
@@ -360,6 +414,15 @@ export type TaskGroupByOutputType = {
   activityType: string | null
   activityName: string | null
   periodicity: string | null
+  reminderNotifiedAt: Date | null
+  overdueDays: number
+  overdueNotifiedAt: Date | null
+  lastEscalatedAt: Date | null
+  slaDeadline: Date | null
+  slaStatus: string
+  isRecurringTemplate: boolean
+  recurrenceEndDate: Date | null
+  recurrenceExceptions: runtime.JsonValue | null
   _count: TaskCountAggregateOutputType | null
   _avg: TaskAvgAggregateOutputType | null
   _sum: TaskSumAggregateOutputType | null
@@ -416,6 +479,15 @@ export type TaskWhereInput = {
   activityType?: Prisma.StringNullableFilter<"Task"> | string | null
   activityName?: Prisma.StringNullableFilter<"Task"> | string | null
   periodicity?: Prisma.StringNullableFilter<"Task"> | string | null
+  reminderNotifiedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  overdueDays?: Prisma.IntFilter<"Task"> | number
+  overdueNotifiedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  lastEscalatedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  slaDeadline?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  slaStatus?: Prisma.StringFilter<"Task"> | string
+  isRecurringTemplate?: Prisma.BoolFilter<"Task"> | boolean
+  recurrenceEndDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  recurrenceExceptions?: Prisma.JsonNullableFilter<"Task">
   HRActivity?: Prisma.HRActivityListRelationFilter
   User_Task_createdByToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   User_Task_evaluatedByToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -459,6 +531,15 @@ export type TaskOrderByWithRelationInput = {
   activityType?: Prisma.SortOrderInput | Prisma.SortOrder
   activityName?: Prisma.SortOrderInput | Prisma.SortOrder
   periodicity?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminderNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
+  overdueNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastEscalatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  slaDeadline?: Prisma.SortOrderInput | Prisma.SortOrder
+  slaStatus?: Prisma.SortOrder
+  isRecurringTemplate?: Prisma.SortOrder
+  recurrenceEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  recurrenceExceptions?: Prisma.SortOrderInput | Prisma.SortOrder
   HRActivity?: Prisma.HRActivityOrderByRelationAggregateInput
   User_Task_createdByToUser?: Prisma.UserOrderByWithRelationInput
   User_Task_evaluatedByToUser?: Prisma.UserOrderByWithRelationInput
@@ -505,6 +586,15 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<{
   activityType?: Prisma.StringNullableFilter<"Task"> | string | null
   activityName?: Prisma.StringNullableFilter<"Task"> | string | null
   periodicity?: Prisma.StringNullableFilter<"Task"> | string | null
+  reminderNotifiedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  overdueDays?: Prisma.IntFilter<"Task"> | number
+  overdueNotifiedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  lastEscalatedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  slaDeadline?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  slaStatus?: Prisma.StringFilter<"Task"> | string
+  isRecurringTemplate?: Prisma.BoolFilter<"Task"> | boolean
+  recurrenceEndDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  recurrenceExceptions?: Prisma.JsonNullableFilter<"Task">
   HRActivity?: Prisma.HRActivityListRelationFilter
   User_Task_createdByToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   User_Task_evaluatedByToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -548,6 +638,15 @@ export type TaskOrderByWithAggregationInput = {
   activityType?: Prisma.SortOrderInput | Prisma.SortOrder
   activityName?: Prisma.SortOrderInput | Prisma.SortOrder
   periodicity?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminderNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
+  overdueNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastEscalatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  slaDeadline?: Prisma.SortOrderInput | Prisma.SortOrder
+  slaStatus?: Prisma.SortOrder
+  isRecurringTemplate?: Prisma.SortOrder
+  recurrenceEndDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  recurrenceExceptions?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TaskCountOrderByAggregateInput
   _avg?: Prisma.TaskAvgOrderByAggregateInput
   _max?: Prisma.TaskMaxOrderByAggregateInput
@@ -589,6 +688,15 @@ export type TaskScalarWhereWithAggregatesInput = {
   activityType?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
   activityName?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
   periodicity?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
+  reminderNotifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+  overdueDays?: Prisma.IntWithAggregatesFilter<"Task"> | number
+  overdueNotifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+  lastEscalatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+  slaDeadline?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+  slaStatus?: Prisma.StringWithAggregatesFilter<"Task"> | string
+  isRecurringTemplate?: Prisma.BoolWithAggregatesFilter<"Task"> | boolean
+  recurrenceEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
+  recurrenceExceptions?: Prisma.JsonNullableWithAggregatesFilter<"Task">
 }
 
 export type TaskCreateInput = {
@@ -617,6 +725,15 @@ export type TaskCreateInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -660,6 +777,15 @@ export type TaskUncheckedCreateInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -693,6 +819,15 @@ export type TaskUpdateInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -736,6 +871,15 @@ export type TaskUncheckedUpdateInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -774,6 +918,15 @@ export type TaskCreateManyInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUpdateManyMutationInput = {
@@ -802,6 +955,15 @@ export type TaskUpdateManyMutationInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUncheckedUpdateManyInput = {
@@ -835,6 +997,15 @@ export type TaskUncheckedUpdateManyInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskNullableScalarRelationFilter = {
@@ -883,10 +1054,20 @@ export type TaskCountOrderByAggregateInput = {
   activityType?: Prisma.SortOrder
   activityName?: Prisma.SortOrder
   periodicity?: Prisma.SortOrder
+  reminderNotifiedAt?: Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
+  overdueNotifiedAt?: Prisma.SortOrder
+  lastEscalatedAt?: Prisma.SortOrder
+  slaDeadline?: Prisma.SortOrder
+  slaStatus?: Prisma.SortOrder
+  isRecurringTemplate?: Prisma.SortOrder
+  recurrenceEndDate?: Prisma.SortOrder
+  recurrenceExceptions?: Prisma.SortOrder
 }
 
 export type TaskAvgOrderByAggregateInput = {
   estimatedHours?: Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
 }
 
 export type TaskMaxOrderByAggregateInput = {
@@ -920,6 +1101,14 @@ export type TaskMaxOrderByAggregateInput = {
   activityType?: Prisma.SortOrder
   activityName?: Prisma.SortOrder
   periodicity?: Prisma.SortOrder
+  reminderNotifiedAt?: Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
+  overdueNotifiedAt?: Prisma.SortOrder
+  lastEscalatedAt?: Prisma.SortOrder
+  slaDeadline?: Prisma.SortOrder
+  slaStatus?: Prisma.SortOrder
+  isRecurringTemplate?: Prisma.SortOrder
+  recurrenceEndDate?: Prisma.SortOrder
 }
 
 export type TaskMinOrderByAggregateInput = {
@@ -953,10 +1142,19 @@ export type TaskMinOrderByAggregateInput = {
   activityType?: Prisma.SortOrder
   activityName?: Prisma.SortOrder
   periodicity?: Prisma.SortOrder
+  reminderNotifiedAt?: Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
+  overdueNotifiedAt?: Prisma.SortOrder
+  lastEscalatedAt?: Prisma.SortOrder
+  slaDeadline?: Prisma.SortOrder
+  slaStatus?: Prisma.SortOrder
+  isRecurringTemplate?: Prisma.SortOrder
+  recurrenceEndDate?: Prisma.SortOrder
 }
 
 export type TaskSumOrderByAggregateInput = {
   estimatedHours?: Prisma.SortOrder
+  overdueDays?: Prisma.SortOrder
 }
 
 export type TaskScalarRelationFilter = {
@@ -1290,6 +1488,15 @@ export type TaskCreateWithoutHRActivityInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
   HRTimesheet?: Prisma.HRTimesheetCreateNestedOneWithoutTaskInput
@@ -1332,6 +1539,15 @@ export type TaskUncheckedCreateWithoutHRActivityInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutTaskInput
@@ -1380,6 +1596,15 @@ export type TaskUpdateWithoutHRActivityInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
   HRTimesheet?: Prisma.HRTimesheetUpdateOneWithoutTaskNestedInput
@@ -1422,6 +1647,15 @@ export type TaskUncheckedUpdateWithoutHRActivityInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
@@ -1454,6 +1688,15 @@ export type TaskCreateWithoutHRTimesheetInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -1495,6 +1738,15 @@ export type TaskUncheckedCreateWithoutHRTimesheetInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -1562,6 +1814,15 @@ export type TaskScalarWhereInput = {
   activityType?: Prisma.StringNullableFilter<"Task"> | string | null
   activityName?: Prisma.StringNullableFilter<"Task"> | string | null
   periodicity?: Prisma.StringNullableFilter<"Task"> | string | null
+  reminderNotifiedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  overdueDays?: Prisma.IntFilter<"Task"> | number
+  overdueNotifiedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  lastEscalatedAt?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  slaDeadline?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  slaStatus?: Prisma.StringFilter<"Task"> | string
+  isRecurringTemplate?: Prisma.BoolFilter<"Task"> | boolean
+  recurrenceEndDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
+  recurrenceExceptions?: Prisma.JsonNullableFilter<"Task">
 }
 
 export type TaskCreateWithoutProjectInput = {
@@ -1590,6 +1851,15 @@ export type TaskCreateWithoutProjectInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -1631,6 +1901,15 @@ export type TaskUncheckedCreateWithoutProjectInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -1690,6 +1969,15 @@ export type TaskCreateWithoutOther_TaskInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -1732,6 +2020,15 @@ export type TaskUncheckedCreateWithoutOther_TaskInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutTaskInput
@@ -1769,6 +2066,15 @@ export type TaskCreateWithoutTaskInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -1810,6 +2116,15 @@ export type TaskUncheckedCreateWithoutTaskInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -1864,6 +2179,15 @@ export type TaskUpdateWithoutOther_TaskInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -1906,6 +2230,15 @@ export type TaskUncheckedUpdateWithoutOther_TaskInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
@@ -1954,6 +2287,15 @@ export type TaskCreateWithoutTaskActivityInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -1996,6 +2338,15 @@ export type TaskUncheckedCreateWithoutTaskActivityInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutTaskInput
@@ -2044,6 +2395,15 @@ export type TaskUpdateWithoutTaskActivityInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -2086,6 +2446,15 @@ export type TaskUncheckedUpdateWithoutTaskActivityInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
@@ -2118,6 +2487,15 @@ export type TaskCreateWithoutTaskCommentInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -2160,6 +2538,15 @@ export type TaskUncheckedCreateWithoutTaskCommentInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -2208,6 +2595,15 @@ export type TaskUpdateWithoutTaskCommentInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -2250,6 +2646,15 @@ export type TaskUncheckedUpdateWithoutTaskCommentInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -2282,6 +2687,15 @@ export type TaskCreateWithoutTaskMemberInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
@@ -2324,6 +2738,15 @@ export type TaskUncheckedCreateWithoutTaskMemberInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -2372,6 +2795,15 @@ export type TaskUpdateWithoutTaskMemberInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -2414,6 +2846,15 @@ export type TaskUncheckedUpdateWithoutTaskMemberInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -2446,6 +2887,15 @@ export type TaskCreateWithoutUser_Task_createdByToUserInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_evaluatedByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_evaluatedByToUserInput
   HRTimesheet?: Prisma.HRTimesheetCreateNestedOneWithoutTaskInput
@@ -2487,6 +2937,15 @@ export type TaskUncheckedCreateWithoutUser_Task_createdByToUserInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -2530,6 +2989,15 @@ export type TaskCreateWithoutUser_Task_evaluatedByToUserInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutTaskInput
   User_Task_createdByToUser?: Prisma.UserCreateNestedOneWithoutTask_Task_createdByToUserInput
   HRTimesheet?: Prisma.HRTimesheetCreateNestedOneWithoutTaskInput
@@ -2571,6 +3039,15 @@ export type TaskUncheckedCreateWithoutUser_Task_evaluatedByToUserInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedCreateNestedManyWithoutTaskInput
   other_Task?: Prisma.TaskUncheckedCreateNestedManyWithoutTaskInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutTaskInput
@@ -2650,6 +3127,15 @@ export type TaskCreateManyHRTimesheetInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUpdateWithoutHRTimesheetInput = {
@@ -2678,6 +3164,15 @@ export type TaskUpdateWithoutHRTimesheetInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -2719,6 +3214,15 @@ export type TaskUncheckedUpdateWithoutHRTimesheetInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -2756,6 +3260,15 @@ export type TaskUncheckedUpdateManyWithoutHRTimesheetInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskCreateManyProjectInput = {
@@ -2788,6 +3301,15 @@ export type TaskCreateManyProjectInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUpdateWithoutProjectInput = {
@@ -2816,6 +3338,15 @@ export type TaskUpdateWithoutProjectInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -2857,6 +3388,15 @@ export type TaskUncheckedUpdateWithoutProjectInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -2894,6 +3434,15 @@ export type TaskUncheckedUpdateManyWithoutProjectInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskCreateManyTaskInput = {
@@ -2926,6 +3475,15 @@ export type TaskCreateManyTaskInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUpdateWithoutTaskInput = {
@@ -2954,6 +3512,15 @@ export type TaskUpdateWithoutTaskInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
@@ -2995,6 +3562,15 @@ export type TaskUncheckedUpdateWithoutTaskInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -3032,6 +3608,15 @@ export type TaskUncheckedUpdateManyWithoutTaskInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskCreateManyUser_Task_createdByToUserInput = {
@@ -3064,6 +3649,15 @@ export type TaskCreateManyUser_Task_createdByToUserInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskCreateManyUser_Task_evaluatedByToUserInput = {
@@ -3096,6 +3690,15 @@ export type TaskCreateManyUser_Task_evaluatedByToUserInput = {
   activityType?: string | null
   activityName?: string | null
   periodicity?: string | null
+  reminderNotifiedAt?: Date | string | null
+  overdueDays?: number
+  overdueNotifiedAt?: Date | string | null
+  lastEscalatedAt?: Date | string | null
+  slaDeadline?: Date | string | null
+  slaStatus?: string
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUpdateWithoutUser_Task_createdByToUserInput = {
@@ -3124,6 +3727,15 @@ export type TaskUpdateWithoutUser_Task_createdByToUserInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_evaluatedByToUser?: Prisma.UserUpdateOneWithoutTask_Task_evaluatedByToUserNestedInput
   HRTimesheet?: Prisma.HRTimesheetUpdateOneWithoutTaskNestedInput
@@ -3165,6 +3777,15 @@ export type TaskUncheckedUpdateWithoutUser_Task_createdByToUserInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -3202,6 +3823,15 @@ export type TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type TaskUpdateWithoutUser_Task_evaluatedByToUserInput = {
@@ -3230,6 +3860,15 @@ export type TaskUpdateWithoutUser_Task_evaluatedByToUserInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUpdateManyWithoutTaskNestedInput
   User_Task_createdByToUser?: Prisma.UserUpdateOneWithoutTask_Task_createdByToUserNestedInput
   HRTimesheet?: Prisma.HRTimesheetUpdateOneWithoutTaskNestedInput
@@ -3271,6 +3910,15 @@ export type TaskUncheckedUpdateWithoutUser_Task_evaluatedByToUserInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   HRActivity?: Prisma.HRActivityUncheckedUpdateManyWithoutTaskNestedInput
   other_Task?: Prisma.TaskUncheckedUpdateManyWithoutTaskNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutTaskNestedInput
@@ -3308,6 +3956,15 @@ export type TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserInput = {
   activityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activityName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodicity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overdueDays?: Prisma.IntFieldUpdateOperationsInput | number
+  overdueNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastEscalatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  slaStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  isRecurringTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recurrenceEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recurrenceExceptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -3408,6 +4065,15 @@ export type TaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   activityType?: boolean
   activityName?: boolean
   periodicity?: boolean
+  reminderNotifiedAt?: boolean
+  overdueDays?: boolean
+  overdueNotifiedAt?: boolean
+  lastEscalatedAt?: boolean
+  slaDeadline?: boolean
+  slaStatus?: boolean
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: boolean
+  recurrenceExceptions?: boolean
   HRActivity?: boolean | Prisma.Task$HRActivityArgs<ExtArgs>
   User_Task_createdByToUser?: boolean | Prisma.Task$User_Task_createdByToUserArgs<ExtArgs>
   User_Task_evaluatedByToUser?: boolean | Prisma.Task$User_Task_evaluatedByToUserArgs<ExtArgs>
@@ -3452,6 +4118,15 @@ export type TaskSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   activityType?: boolean
   activityName?: boolean
   periodicity?: boolean
+  reminderNotifiedAt?: boolean
+  overdueDays?: boolean
+  overdueNotifiedAt?: boolean
+  lastEscalatedAt?: boolean
+  slaDeadline?: boolean
+  slaStatus?: boolean
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: boolean
+  recurrenceExceptions?: boolean
   User_Task_createdByToUser?: boolean | Prisma.Task$User_Task_createdByToUserArgs<ExtArgs>
   User_Task_evaluatedByToUser?: boolean | Prisma.Task$User_Task_evaluatedByToUserArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Task$HRTimesheetArgs<ExtArgs>
@@ -3490,6 +4165,15 @@ export type TaskSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   activityType?: boolean
   activityName?: boolean
   periodicity?: boolean
+  reminderNotifiedAt?: boolean
+  overdueDays?: boolean
+  overdueNotifiedAt?: boolean
+  lastEscalatedAt?: boolean
+  slaDeadline?: boolean
+  slaStatus?: boolean
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: boolean
+  recurrenceExceptions?: boolean
   User_Task_createdByToUser?: boolean | Prisma.Task$User_Task_createdByToUserArgs<ExtArgs>
   User_Task_evaluatedByToUser?: boolean | Prisma.Task$User_Task_evaluatedByToUserArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Task$HRTimesheetArgs<ExtArgs>
@@ -3528,9 +4212,18 @@ export type TaskSelectScalar = {
   activityType?: boolean
   activityName?: boolean
   periodicity?: boolean
+  reminderNotifiedAt?: boolean
+  overdueDays?: boolean
+  overdueNotifiedAt?: boolean
+  lastEscalatedAt?: boolean
+  slaDeadline?: boolean
+  slaStatus?: boolean
+  isRecurringTemplate?: boolean
+  recurrenceEndDate?: boolean
+  recurrenceExceptions?: boolean
 }
 
-export type TaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "projectId" | "parentId" | "estimatedHours" | "isActive" | "createdAt" | "updatedAt" | "recurrence" | "evaluatedBy" | "evaluationNotes" | "evaluatedAt" | "createdBy" | "dueDate" | "isShared" | "reminderDate" | "reminderTime" | "soundEnabled" | "completedAt" | "priority" | "status" | "hrTimesheetId" | "complexity" | "trainingLevel" | "masteryLevel" | "understandingLevel" | "activityType" | "activityName" | "periodicity", ExtArgs["result"]["task"]>
+export type TaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "projectId" | "parentId" | "estimatedHours" | "isActive" | "createdAt" | "updatedAt" | "recurrence" | "evaluatedBy" | "evaluationNotes" | "evaluatedAt" | "createdBy" | "dueDate" | "isShared" | "reminderDate" | "reminderTime" | "soundEnabled" | "completedAt" | "priority" | "status" | "hrTimesheetId" | "complexity" | "trainingLevel" | "masteryLevel" | "understandingLevel" | "activityType" | "activityName" | "periodicity" | "reminderNotifiedAt" | "overdueDays" | "overdueNotifiedAt" | "lastEscalatedAt" | "slaDeadline" | "slaStatus" | "isRecurringTemplate" | "recurrenceEndDate" | "recurrenceExceptions", ExtArgs["result"]["task"]>
 export type TaskInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   HRActivity?: boolean | Prisma.Task$HRActivityArgs<ExtArgs>
   User_Task_createdByToUser?: boolean | Prisma.Task$User_Task_createdByToUserArgs<ExtArgs>
@@ -3604,6 +4297,15 @@ export type $TaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     activityType: string | null
     activityName: string | null
     periodicity: string | null
+    reminderNotifiedAt: Date | null
+    overdueDays: number
+    overdueNotifiedAt: Date | null
+    lastEscalatedAt: Date | null
+    slaDeadline: Date | null
+    slaStatus: string
+    isRecurringTemplate: boolean
+    recurrenceEndDate: Date | null
+    recurrenceExceptions: runtime.JsonValue | null
   }, ExtArgs["result"]["task"]>
   composites: {}
 }
@@ -4067,6 +4769,15 @@ export interface TaskFieldRefs {
   readonly activityType: Prisma.FieldRef<"Task", 'String'>
   readonly activityName: Prisma.FieldRef<"Task", 'String'>
   readonly periodicity: Prisma.FieldRef<"Task", 'String'>
+  readonly reminderNotifiedAt: Prisma.FieldRef<"Task", 'DateTime'>
+  readonly overdueDays: Prisma.FieldRef<"Task", 'Int'>
+  readonly overdueNotifiedAt: Prisma.FieldRef<"Task", 'DateTime'>
+  readonly lastEscalatedAt: Prisma.FieldRef<"Task", 'DateTime'>
+  readonly slaDeadline: Prisma.FieldRef<"Task", 'DateTime'>
+  readonly slaStatus: Prisma.FieldRef<"Task", 'String'>
+  readonly isRecurringTemplate: Prisma.FieldRef<"Task", 'Boolean'>
+  readonly recurrenceEndDate: Prisma.FieldRef<"Task", 'DateTime'>
+  readonly recurrenceExceptions: Prisma.FieldRef<"Task", 'Json'>
 }
     
 

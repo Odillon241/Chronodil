@@ -7,7 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { NotificationDropdown } from "@/components/features/notification-dropdown";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
-import { CommandPalette } from "@/components/features/command-palette";
+import { GlobalCommand } from "@/components/features/global-command";
+
 import { SettingsProvider } from "@/components/providers/settings-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { Input } from "@/components/ui/input";
@@ -103,7 +104,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </main>
       </SidebarInset>
       <Suspense fallback={null}>
-        <CommandPalette />
+
       </Suspense>
     </SidebarProvider>
   );
@@ -117,7 +118,9 @@ export default function DashboardLayout({
   return (
     <QueryProvider>
       <SettingsProvider>
+
         <DashboardContent>{children}</DashboardContent>
+        <GlobalCommand />
       </SettingsProvider>
     </QueryProvider>
   );

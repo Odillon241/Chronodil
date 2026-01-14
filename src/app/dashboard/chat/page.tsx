@@ -13,9 +13,12 @@ import { ChatConversationList } from "@/components/features/chat-conversation-li
 import { ChatMessageList } from "@/components/features/chat-message-list";
 import { ChatNewConversationDialog } from "@/components/features/chat-new-conversation-dialog";
 import { ChatChannelList } from "@/components/features/chat-channel-list";
-import { ChatCreateChannelDialog } from "@/components/features/chat-create-channel-dialog";
-import { ChatThreadView } from "@/components/features/chat-thread-view";
-import { ChatGlobalSearch } from "@/components/features/chat-global-search";
+// ⚡ DYNAMIC IMPORTS: Réduction bundle initial ~100KB
+import {
+  ChatCreateChannelDialogDynamic,
+  ChatThreadViewDynamic,
+} from "@/components/features/chat-components-dynamic";
+
 import { useChatKeyboardShortcuts } from "@/hooks/use-chat-keyboard-shortcuts";
 import {
   getUserConversations,
@@ -30,7 +33,7 @@ import { useRealtimeChat } from "@/hooks/use-realtime-chat";
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const conversationIdParam = searchParams.get("conversation");
-  
+
   const { data: session } = useSession();
   const currentUser = session?.user;
 
@@ -44,7 +47,7 @@ export default function ChatPage() {
   const [mounted, setMounted] = useState(false);
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
-  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+
   const [channels, setChannels] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<"conversations" | "channels">("conversations");
   const [createChannelDialogOpen, setCreateChannelDialogOpen] = useState(false);
@@ -60,10 +63,9 @@ export default function ChatPage() {
 
   // Raccourcis clavier
   useChatKeyboardShortcuts({
-    onSearch: () => setShowGlobalSearch(true),
+    onSearch: () => { }, // Recherche désactivée
     onNewMessage: () => setNewChatDialogOpen(true),
     onEscape: () => {
-      setShowGlobalSearch(false);
       setNewChatDialogOpen(false);
       setCreateChannelDialogOpen(false);
       if (selectedThreadId) setSelectedThreadId(null);
@@ -73,7 +75,8 @@ export default function ChatPage() {
   // Charger les conversations
   const loadConversations = useCallback(async () => {
     try {
-      const result = await getUserConversations({});
+      // ⚡ PAGINATION: Charger 20 conversations par page
+      const result = await getUserConversations({ page: 1, limit: 20 });
       if (result?.data?.conversations) {
         const allConversations = result.data.conversations;
         const regularConversations = allConversations.filter(
@@ -114,7 +117,11 @@ export default function ChatPage() {
   // Charger une conversation spécifique
   const loadConversation = useCallback(async (conversationId: string) => {
     try {
-      const result = await getConversationById({ conversationId });
+      // ⚡ PAGINATION: Charger 50 derniers messages
+      const result = await getConversationById({
+        conversationId,
+        messagesLimit: 50
+      });
       if (result?.data?.conversation) {
         setSelectedConversation(result.data.conversation);
       } else {
@@ -373,162 +380,148 @@ export default function ChatPage() {
     <Card className={`${fullScreenClasses} bg-background border`} suppressHydrationWarning>
       <div className="flex h-full w-full overflow-hidden max-w-full" suppressHydrationWarning>
         <div className={`grid w-full h-full min-w-0 max-w-full ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[minmax(0,350px)_1fr_minmax(0,350px)]' : 'grid-cols-1 md:grid-cols-[minmax(0,350px)_1fr]'}`} suppressHydrationWarning>
-        {/* Sidebar - Liste des conversations/canaux */}
-        <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
-          {/* Indicateur de connexion real-time */}
-          {!isRealtimeConnected && (
-            <div 
-              className="px-3 py-1.5 bg-destructive/10 border-b border-destructive/20 flex items-center justify-between gap-2 cursor-pointer hover:bg-destructive/20 transition-colors"
-              onClick={reconnectRealtime}
-              title="Cliquez pour reconnecter"
-            >
-              <div className="flex items-center gap-2 text-xs text-destructive">
-                <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                <span>Connexion perdue</span>
+          {/* Sidebar - Liste des conversations/canaux */}
+          <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
+            {/* Indicateur de connexion real-time */}
+            {!isRealtimeConnected && (
+              <div
+                className="px-3 py-1.5 bg-destructive/10 border-b border-destructive/20 flex items-center justify-between gap-2 cursor-pointer hover:bg-destructive/20 transition-colors"
+                onClick={reconnectRealtime}
+                title="Cliquez pour reconnecter"
+              >
+                <div className="flex items-center gap-2 text-xs text-destructive">
+                  <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                  <span>Connexion perdue</span>
+                </div>
+                <span className="text-xs text-destructive/70 underline">Reconnecter</span>
               </div>
-              <span className="text-xs text-destructive/70 underline">Reconnecter</span>
+            )}
+            {/* Toggle view mode */}
+            <div className="p-2 border-b flex gap-2">
+              <Button
+                variant={viewMode === "conversations" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("conversations")}
+                className="flex-1"
+              >
+                Messages
+              </Button>
+              <Button
+                variant={viewMode === "channels" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("channels")}
+                className="flex-1"
+              >
+                Canaux
+              </Button>
             </div>
-          )}
-          {/* Toggle view mode */}
-          <div className="p-2 border-b flex gap-2">
-            <Button
-              variant={viewMode === "conversations" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("conversations")}
-              className="flex-1"
-            >
-              Messages
-            </Button>
-            <Button
-              variant={viewMode === "channels" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("channels")}
-              className="flex-1"
-            >
-              Canaux
-            </Button>
-          </div>
 
-          {viewMode === "conversations" ? (
-            <ChatConversationList
-              conversations={conversations}
-              currentUserId={currentUser.id}
-              selectedConversationId={selectedConversation?.id}
-              onSelectConversation={handleSelectConversation}
-              onNewChat={() => setNewChatDialogOpen(true)}
-              onDeleteConversation={handleDeleteConversation}
-              onLeaveConversation={handleLeaveConversation}
-            />
-          ) : (
-            <ChatChannelList
-              channels={channels}
-              currentUserId={currentUser.id}
-              selectedChannelId={selectedConversation?.id}
-              onSelectChannel={handleSelectConversation}
-              onCreateChannel={() => setCreateChannelDialogOpen(true)}
-              onChannelInfo={handleChannelInfo}
-              onManageMembers={handleManageMembers}
-              onUpdate={loadConversations}
-            />
-          )}
-        </Card>
-
-        {/* Main Content - Messages */}
-        <Card className={`rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
-          {selectedConversation ? (
-            <ChatMessageList
-              conversation={selectedConversation}
-              currentUserId={currentUser.id}
-              currentUserName={currentUser.name || "Utilisateur"}
-              onUpdate={handleRefreshConversation}
-              onThreadClick={(threadId) => setSelectedThreadId(threadId)}
-              onDeleteConversation={handleDeleteConversation}
-              onLeaveConversation={handleLeaveConversation}
-              openInfoOnMount={openChannelInfoOnSelect && selectedConversation.type === "CHANNEL"}
-              openManageMembersOnMount={openManageMembersOnSelect && selectedConversation.type === "CHANNEL"}
-              onInfoOpened={() => setOpenChannelInfoOnSelect(false)}
-              onManageMembersOpened={() => setOpenManageMembersOnSelect(false)}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-8">
-              <div className="max-w-md space-y-4 sm:space-y-6">
-                <div className="bg-muted rounded-full h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center mx-auto">
-                  <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
-                </div>
-                <div className="space-y-2">
-                  <h2 className="text-xl sm:text-2xl font-semibold">
-                    Bienvenue dans la messagerie Chronodil
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Sélectionnez une conversation existante ou créez-en une nouvelle
-                    pour commencer à échanger avec vos collègues.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                  <Button
-                    onClick={() => setNewChatDialogOpen(true)}
-                    className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
-                    size="lg"
-                  >
-                    <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    Nouvelle conversation
-                  </Button>
-                  <Button
-                    onClick={() => setShowGlobalSearch(true)}
-                    variant="outline"
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                    size="lg"
-                  >
-                    Rechercher (Ctrl+K)
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
-        
-        {/* Thread View */}
-        {selectedThreadId && selectedConversation && (
-          <Card className="rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex border-l z-20">
-            <ChatThreadView
-              threadId={selectedThreadId}
-              conversationId={selectedConversation.id}
-              currentUserId={currentUser.id}
-              onClose={() => setSelectedThreadId(null)}
-              onUpdate={handleRefreshConversation}
-            />
+            {viewMode === "conversations" ? (
+              <ChatConversationList
+                conversations={conversations}
+                currentUserId={currentUser.id}
+                selectedConversationId={selectedConversation?.id}
+                onSelectConversation={handleSelectConversation}
+                onNewChat={() => setNewChatDialogOpen(true)}
+                onDeleteConversation={handleDeleteConversation}
+                onLeaveConversation={handleLeaveConversation}
+              />
+            ) : (
+              <ChatChannelList
+                channels={channels}
+                currentUserId={currentUser.id}
+                selectedChannelId={selectedConversation?.id}
+                onSelectChannel={handleSelectConversation}
+                onCreateChannel={() => setCreateChannelDialogOpen(true)}
+                onChannelInfo={handleChannelInfo}
+                onManageMembers={handleManageMembers}
+                onUpdate={loadConversations}
+              />
+            )}
           </Card>
-        )}
-      </div>
 
-      {/* Dialog pour créer une nouvelle conversation */}
-      <ChatNewConversationDialog
-        open={newChatDialogOpen}
-        onOpenChange={setNewChatDialogOpen}
-        users={users}
-        projects={projects}
-        currentUserId={currentUser.id}
-        onConversationCreated={handleConversationCreated}
-      />
+          {/* Main Content - Messages */}
+          <Card className={`rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
+            {selectedConversation ? (
+              <ChatMessageList
+                conversation={selectedConversation}
+                currentUserId={currentUser.id}
+                currentUserName={currentUser.name || "Utilisateur"}
+                onUpdate={handleRefreshConversation}
+                onThreadClick={(threadId) => setSelectedThreadId(threadId)}
+                onDeleteConversation={handleDeleteConversation}
+                onLeaveConversation={handleLeaveConversation}
+                openInfoOnMount={openChannelInfoOnSelect && selectedConversation.type === "CHANNEL"}
+                openManageMembersOnMount={openManageMembersOnSelect && selectedConversation.type === "CHANNEL"}
+                onInfoOpened={() => setOpenChannelInfoOnSelect(false)}
+                onManageMembersOpened={() => setOpenManageMembersOnSelect(false)}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-8">
+                <div className="max-w-md space-y-4 sm:space-y-6">
+                  <div className="bg-muted rounded-full h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center mx-auto">
+                    <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-xl sm:text-2xl font-semibold">
+                      Bienvenue dans la messagerie Chronodil
+                    </h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Sélectionnez une conversation existante ou créez-en une nouvelle
+                      pour commencer à échanger avec vos collègues.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Button
+                      onClick={() => setNewChatDialogOpen(true)}
+                      className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
+                      size="lg"
+                    >
+                      <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                      Nouvelle conversation
+                    </Button>
 
-      {/* Dialog pour créer un nouveau canal */}
-      <ChatCreateChannelDialog
-        open={createChannelDialogOpen}
-        onOpenChange={setCreateChannelDialogOpen}
-        onChannelCreated={handleConversationCreated}
-        users={users}
-        currentUserId={currentUser.id}
-      />
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
 
-      {/* Global Search */}
-      <ChatGlobalSearch
-        open={showGlobalSearch}
-        onOpenChange={setShowGlobalSearch}
-        onSelectResult={(result) => {
-          handleSelectConversation(result.conversationId);
-          setShowGlobalSearch(false);
-        }}
-      />
+          {/* Thread View */}
+          {selectedThreadId && selectedConversation && (
+            <Card className="rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex border-l z-20">
+              <ChatThreadViewDynamic
+                threadId={selectedThreadId}
+                conversationId={selectedConversation.id}
+                currentUserId={currentUser.id}
+                onClose={() => setSelectedThreadId(null)}
+                onUpdate={handleRefreshConversation}
+              />
+            </Card>
+          )}
+        </div>
+
+        {/* Dialog pour créer une nouvelle conversation */}
+        <ChatNewConversationDialog
+          open={newChatDialogOpen}
+          onOpenChange={setNewChatDialogOpen}
+          users={users}
+          projects={projects}
+          currentUserId={currentUser.id}
+          onConversationCreated={handleConversationCreated}
+        />
+
+        {/* Dialog pour créer un nouveau canal */}
+        <ChatCreateChannelDialogDynamic
+          open={createChannelDialogOpen}
+          onOpenChange={setCreateChannelDialogOpen}
+          onChannelCreated={handleConversationCreated}
+          users={users}
+          currentUserId={currentUser.id}
+        />
+
+        {/* Global Search */}
+
       </div>
     </Card>
   );

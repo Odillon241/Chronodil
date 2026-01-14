@@ -219,7 +219,7 @@ export function GenerateReportDialog({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={() => onOpenChange(false)}
               disabled={isGenerating}
             >

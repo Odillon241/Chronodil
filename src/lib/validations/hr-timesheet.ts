@@ -1,28 +1,36 @@
 import { z } from "zod";
 
 // Schéma de base pour une activité RH (sans validation)
+// Note: On utilise z.coerce.date() pour convertir automatiquement les strings ISO en Date
+// car Next.js Server Actions sérialisent les dates en JSON (strings)
 const hrActivityBaseSchema = z.object({
   activityType: z.enum(["OPERATIONAL", "REPORTING"]),
   activityName: z.string().min(1, "Le nom de l'activité est requis"),
   description: z.string().optional(),
   periodicity: z.enum(["DAILY", "WEEKLY", "MONTHLY", "PUNCTUAL", "WEEKLY_MONTHLY"]),
-  weeklyQuantity: z.number().int().min(1).optional(),
-  totalHours: z.number().min(0).optional(),
-  startDate: z.date({
-    error: (issue) => issue.input === undefined ? "La date de début est requise" : "Date invalide",
-  }),
-  endDate: z.date({
-    error: (issue) => issue.input === undefined ? "La date de fin est requise" : "Date invalide",
-  }),
+  // Permettre 0 ou undefined, transformer NaN en undefined
+  weeklyQuantity: z.preprocess(
+    (val) => (val === 0 || Number.isNaN(val) ? undefined : val),
+    z.number().int().min(1).optional()
+  ),
+  totalHours: z.preprocess(
+    (val) => (Number.isNaN(val) ? undefined : val),
+    z.number().min(0).optional()
+  ),
+  startDate: z.coerce.date({ message: "La date de début est requise ou invalide" }),
+  endDate: z.coerce.date({ message: "La date de fin est requise ou invalide" }),
   status: z.enum(["IN_PROGRESS", "COMPLETED"]).default("IN_PROGRESS"),
   catalogId: z.string().optional(),
   // Nouveaux champs pour intégration avec Task
   taskId: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
   complexity: z.enum(["FAIBLE", "MOYEN", "LEV_"]).optional(),
-  estimatedHours: z.number().min(0).optional(),
-  dueDate: z.date().optional(),
-  reminderDate: z.date().optional(),
+  estimatedHours: z.preprocess(
+    (val) => (val === 0 || Number.isNaN(val) ? undefined : val),
+    z.number().min(0).optional()
+  ),
+  dueDate: z.coerce.date().optional(),
+  reminderDate: z.coerce.date().optional(),
   reminderTime: z.string().optional(),
   soundEnabled: z.boolean().default(true),
   sharedWith: z.array(z.string()).optional(), // IDs des utilisateurs avec qui partager
@@ -38,13 +46,10 @@ export const hrActivitySchema = hrActivityBaseSchema.refine(
 );
 
 // Schéma de base pour un timesheet RH (sans validation)
+// Note: On utilise z.coerce.date() pour convertir automatiquement les strings ISO en Date
 const hrTimesheetBaseSchema = z.object({
-  weekStartDate: z.date({
-    error: (issue) => issue.input === undefined ? "La date de début de semaine est requise" : "Date invalide",
-  }),
-  weekEndDate: z.date({
-    error: (issue) => issue.input === undefined ? "La date de fin de semaine est requise" : "Date invalide",
-  }),
+  weekStartDate: z.coerce.date({ message: "La date de début de semaine est requise ou invalide" }),
+  weekEndDate: z.coerce.date({ message: "La date de fin de semaine est requise ou invalide" }),
   employeeName: z.string().min(1, "Le nom de l'employé est requis"),
   position: z.string().min(1, "Le poste est requis"),
   site: z.string().min(1, "Le site est requis"),
@@ -90,8 +95,8 @@ export const revertHRTimesheetStatusSchema = z.object({
 export const hrTimesheetFilterSchema = z.object({
   userId: z.string().optional(),
   status: z.enum(["all", "DRAFT", "PENDING", "MANAGER_APPROVED", "APPROVED", "REJECTED"]).optional(),
-  weekStartDate: z.date().optional(),
-  weekEndDate: z.date().optional(),
+  weekStartDate: z.coerce.date().optional(),
+  weekEndDate: z.coerce.date().optional(),
 });
 
 // Schéma pour obtenir le catalogue d'activités

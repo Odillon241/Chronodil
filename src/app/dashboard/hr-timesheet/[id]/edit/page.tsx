@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { hrActivitySchema, type HRActivityInput } from "@/lib/validations/hr-timesheet";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,11 +19,20 @@ import {
 } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2, Clock, User, Briefcase, MapPin, Check, X, Activity } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowLeft, Plus, Trash2, Save, Edit2, Clock, User, Briefcase, MapPin, Check, X, Activity, Info, History } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -46,9 +55,11 @@ import {
 } from "@/actions/hr-timesheet.actions";
 import { getUserTasksForHRTimesheet } from "@/actions/task.actions";
 import { useRouter, useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface Activity {
-  id: string;
+  id?: string;
+  _tempId?: string; // ID temporaire pour les activités non encore sauvegardées
   activityType: string;
   activityName: string;
   description?: string;
@@ -76,7 +87,19 @@ interface Timesheet {
   totalHours: number;
   status: string;
   employeeObservations?: string | null;
+  employeeSignedAt?: Date | null;
+  managerSignedAt?: Date | null;
+  odillonSignedAt?: Date | null;
   HRActivity: Activity[];
+  User_HRTimesheet_userIdToUser?: {
+    email: string;
+  };
+  User_HRTimesheet_managerSignedByIdToUser?: {
+    name: string;
+  } | null;
+  User_HRTimesheet_odillonSignedByIdToUser?: {
+    name: string;
+  } | null;
 }
 
 interface CatalogItem {
@@ -111,9 +134,12 @@ interface EditableCellProps {
   field: "employeeName" | "position" | "site";
   timesheetId: string;
   onUpdate: (field: string, value: string) => Promise<void>;
+  label: string;
+  icon?: React.ReactNode;
+  align?: "left" | "right";
 }
 
-function EditableCell({ value, field, timesheetId, onUpdate }: EditableCellProps) {
+function EditableCell({ value, field, timesheetId, onUpdate, label, icon, align = "right" }: EditableCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
@@ -171,49 +197,38 @@ function EditableCell({ value, field, timesheetId, onUpdate }: EditableCellProps
     }
   };
 
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-2">
-        <Input
-          ref={inputRef}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={handleKeyDown}
-          disabled={isSaving}
-          className="h-8 text-sm"
-        />
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="h-7 w-7 p-0"
-          >
-            <Check className="h-3.5 w-3.5 text-green-600" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            disabled={isSaving}
-            className="h-7 w-7 p-0"
-          >
-            <X className="h-3.5 w-3.5 text-destructive" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="flex items-center gap-2 group cursor-pointer"
-      onClick={() => setIsEditing(true)}
-    >
-      <span className="font-semibold">{value}</span>
-      <Edit2 className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className={cn("flex items-center py-1 group w-full", align === "right" ? "justify-between" : "justify-start gap-2")}>
+      {(icon || label) && (
+        <span className="text-sm text-muted-foreground flex items-center gap-2">
+          {icon} {label}
+        </span>
+      )}
+      {isEditing ? (
+        <div className={cn("flex items-center gap-2 flex-1 max-w-[200px]", align === "right" && "justify-end")}>
+          <Input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            disabled={isSaving}
+            className={cn("h-8 text-sm", align === "right" ? "text-right" : "text-left")}
+          />
+          <div className="flex items-center gap-0.5">
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600" onClick={handleSave}><Check className="h-3 w-3" /></Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={handleCancel}><X className="h-3 w-3" /></Button>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+          onClick={() => setIsEditing(true)}
+        >
+          <span className={cn("font-medium text-sm", align === "right" ? "text-right" : "text-left")}>{value}</span>
+          <Edit2 className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      )}
     </div>
   );
 }
@@ -229,7 +244,9 @@ export default function EditHRTimesheetPage() {
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // États formulaire
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [inputMode, setInputMode] = useState<"task" | "manual">("task");
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
@@ -244,7 +261,7 @@ export default function EditHRTimesheetPage() {
     reset,
     formState: { errors },
   } = useForm<HRActivityInput>({
-    resolver: zodResolver(hrActivitySchema),
+    resolver: zodResolver(hrActivitySchema) as any,
     defaultValues: {
       activityType: "OPERATIONAL",
       activityName: "",
@@ -253,6 +270,9 @@ export default function EditHRTimesheetPage() {
       startDate: new Date(),
       endDate: new Date(),
       status: "IN_PROGRESS",
+      soundEnabled: true,
+      totalHours: 0,
+      weeklyQuantity: 0,
     },
   });
 
@@ -274,17 +294,6 @@ export default function EditHRTimesheetPage() {
           router.push(`/dashboard/hr-timesheet/${timesheetId}`);
           return;
         }
-
-        console.log("📥 Timesheet chargé:", {
-          activitiesCount: ts.HRActivity.length,
-          activities: ts.HRActivity.map(a => ({
-            id: a.id,
-            name: a.activityName,
-            weeklyQuantity: a.weeklyQuantity,
-            totalHours: a.totalHours,
-          })),
-        });
-
         setTimesheet(ts);
       } else {
         toast.error("Timesheet non trouvé");
@@ -306,22 +315,14 @@ export default function EditHRTimesheetPage() {
         getActivityCategories(),
         getUserTasksForHRTimesheet({}),
       ]);
-      if (catalogResult?.data) {
-        setCatalog(catalogResult.data);
-      }
-      if (categoriesResult?.data) {
-        setCategories(categoriesResult.data);
-      }
-      if (tasksResult?.data) {
-        console.log("✅ Tâches chargées pour édition:", tasksResult.data.length);
-        setAvailableTasks(tasksResult.data as Task[]);
-      }
+      if (catalogResult?.data) setCatalog(catalogResult.data);
+      if (categoriesResult?.data) setCategories(categoriesResult.data);
+      if (tasksResult?.data) setAvailableTasks(tasksResult.data as Task[]);
     } catch (error) {
       console.error("Erreur chargement catalogue:", error);
     }
   };
 
-  // Fonction pour mettre à jour un champ du timesheet
   const handleUpdateField = async (field: string, value: string) => {
     if (!timesheet) return;
 
@@ -333,19 +334,29 @@ export default function EditHRTimesheetPage() {
     });
 
     if (result?.data) {
-      setTimesheet((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          [field]: value,
-        };
-      });
+      setTimesheet((prev) => prev ? { ...prev, [field]: value } : null);
     } else {
       throw new Error(result?.serverError || "Erreur lors de la mise à jour");
     }
   };
 
-  // Gérer la sélection de tâche
+  const handleUpdateObservations = async (value: string) => {
+    if (!timesheet) return;
+    try {
+      const result = await updateHRTimesheet({
+        id: timesheetId,
+        data: { employeeObservations: value }
+      });
+      if (result?.data) {
+        setTimesheet(prev => prev ? { ...prev, employeeObservations: value } : null);
+        toast.success("Observations mises à jour");
+      }
+    } catch (e) {
+      toast.error("Erreur update observations");
+    }
+  }
+
+
   const handleTaskSelect = (taskId: string) => {
     setSelectedTaskId(taskId);
     const task = availableTasks.find(t => t.id === taskId);
@@ -359,9 +370,7 @@ export default function EditHRTimesheetPage() {
     }
   };
 
-  // Fonction pour déterminer le type à partir de la catégorie
   const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
-    // La catégorie "CONTROLE ET REPORTING" correspond au type REPORTING, toutes les autres sont OPERATIONAL
     return category === "CONTROLE ET REPORTING" ? "REPORTING" : "OPERATIONAL";
   };
 
@@ -369,10 +378,9 @@ export default function EditHRTimesheetPage() {
     if (!timesheet) return;
 
     // Si on est en mode édition
-    if (editingActivity) {
+    if (editingActivity && editingActivity.id) {
       setIsSaving(true);
       try {
-        // Transformer l'objet en données de mise à jour
         let updateData: Partial<HRActivityInput> = {
           activityName: data.activityName,
           description: data.description,
@@ -382,9 +390,9 @@ export default function EditHRTimesheetPage() {
           startDate: data.startDate,
           endDate: data.endDate,
           status: data.status,
+          soundEnabled: data.soundEnabled ?? true,
         };
 
-        // Si on est en mode tâche, inclure les champs de la tâche
         if (inputMode === "task" && selectedTaskId) {
           const selectedTask = availableTasks.find(t => t.id === selectedTaskId);
           updateData = {
@@ -395,45 +403,29 @@ export default function EditHRTimesheetPage() {
             estimatedHours: selectedTask?.estimatedHours || undefined,
           };
         } else {
-          // Mode manuel
           const activityType = getTypeFromCategory(selectedCategory);
-          updateData = {
-            ...updateData,
-            activityType,
-          };
-          // Si un catalogId a été sélectionné, l'inclure
-          if (selectedCatalogId) {
-            updateData.catalogId = selectedCatalogId;
-          }
+          updateData = { ...updateData, activityType };
+          if (selectedCatalogId) updateData.catalogId = selectedCatalogId;
         }
-
-        console.log("📤 Mise à jour activité:", {
-          id: editingActivity.id,
-          updateData,
-          weeklyQuantity: updateData.weeklyQuantity,
-          totalHours: updateData.totalHours,
-        });
 
         const result = await updateHRActivity({
           id: editingActivity.id,
           data: updateData,
         });
 
-        if (result?.serverError) {
-          toast.error(result.serverError);
-        } else if (result?.data) {
-          console.log("✅ Activité mise à jour:", {
-            weeklyQuantity: result.data.weeklyQuantity,
-            totalHours: result.data.totalHours,
-          });
+        if (result?.data) {
           toast.success("Activité mise à jour !");
           resetForm();
           loadTimesheet();
         } else {
-          toast.error("Erreur lors de la mise à jour");
+          const errorMsg = result?.serverError || "Erreur lors de la mise à jour";
+          toast.error(errorMsg);
+          console.error("Erreur updateHRActivity:", result);
         }
       } catch (error) {
-        toast.error("Erreur lors de la mise à jour");
+        const errorMsg = error instanceof Error ? error.message : "Erreur lors de la mise à jour";
+        toast.error(errorMsg);
+        console.error("Erreur updateHRActivity catch:", error);
       } finally {
         setIsSaving(false);
       }
@@ -441,37 +433,38 @@ export default function EditHRTimesheetPage() {
     }
 
     // Mode création
-    // Transformer l'objet en HRActivityInput compatible avec le backend
     let activityData: HRActivityInput;
-
     if (inputMode === "task") {
-      // Mode tâche existante
       if (!selectedTaskId) {
         toast.error("Veuillez sélectionner une tâche");
         return;
       }
-
       const selectedTask = availableTasks.find(t => t.id === selectedTaskId);
       activityData = {
         ...data,
-        taskId: selectedTaskId, // ✅ Lier la tâche existante
+        taskId: selectedTaskId,
         priority: selectedTask?.priority,
         complexity: selectedTask?.complexity || undefined,
         estimatedHours: selectedTask?.estimatedHours || undefined,
+        soundEnabled: data.soundEnabled ?? true,
       };
     } else {
-      // Mode saisie manuelle
+      if (!selectedCategory) {
+        toast.error("Veuillez sélectionner une catégorie");
+        return;
+      }
       const activityType = getTypeFromCategory(selectedCategory);
       activityData = {
         ...data,
         activityType,
+        soundEnabled: data.soundEnabled ?? true,
       };
+      if (selectedCatalogId) {
+        activityData.catalogId = selectedCatalogId;
+      }
     }
 
-    console.log("📤 Envoi activité (édition):", {
-      taskId: activityData.taskId,
-      activityName: activityData.activityName,
-    });
+    console.log("📋 Données activité avant soumission:", activityData);
 
     setIsSaving(true);
     try {
@@ -480,20 +473,19 @@ export default function EditHRTimesheetPage() {
         activity: activityData,
       });
 
-      if (result?.serverError) {
-        console.error("❌ Erreur création activité:", result.serverError);
-      }
-
       if (result?.data) {
         toast.success("Activité ajoutée !");
-        console.log("✅ Activité créée avec succès, taskId:", result.data.taskId);
         resetForm();
-        loadTimesheet(); // Recharger pour voir la nouvelle activité
+        loadTimesheet();
       } else {
-        toast.error(result?.serverError || "Erreur lors de l'ajout");
+        const errorMsg = result?.serverError || "Erreur lors de l'ajout";
+        toast.error(errorMsg);
+        console.error("Erreur addHRActivity:", result);
       }
     } catch (error) {
-      toast.error("Erreur lors de l'ajout");
+      const errorMsg = error instanceof Error ? error.message : "Erreur lors de l'ajout";
+      toast.error(errorMsg);
+      console.error("Erreur addHRActivity catch:", error);
     } finally {
       setIsSaving(false);
     }
@@ -501,18 +493,16 @@ export default function EditHRTimesheetPage() {
 
   const handleDeleteActivity = async (activityId: string) => {
     if (!confirm("Supprimer cette activité ?")) return;
-
     try {
       const result = await deleteHRActivity({
         timesheetId,
         activityId,
       });
-
       if (result?.data) {
         toast.success("Activité supprimée");
         loadTimesheet();
       } else {
-        toast.error(result?.serverError || "Erreur lors de la suppression");
+        toast.error(result?.serverError || "Erreur");
       }
     } catch (error) {
       toast.error("Erreur lors de la suppression");
@@ -521,9 +511,8 @@ export default function EditHRTimesheetPage() {
 
   const handleEditActivity = (activity: Activity) => {
     setEditingActivity(activity);
-    setShowActivityForm(true);
+    setIsSheetOpen(true);
 
-    // Pré-remplir le formulaire avec les données de l'activité
     setValue("activityName", activity.activityName);
     setValue("description", activity.description || "");
     setValue("periodicity", activity.periodicity as any);
@@ -534,12 +523,9 @@ export default function EditHRTimesheetPage() {
     setValue("status", activity.status as any);
     setValue("activityType", activity.activityType as any);
 
-    // Déterminer le mode de saisie
     if (activity.taskId) {
-      // Activité liée à une tâche
       setInputMode("task");
       setSelectedTaskId(activity.taskId);
-      // Trouver la tâche pour pré-remplir les champs
       const task = availableTasks.find(t => t.id === activity.taskId);
       if (task) {
         setValue("priority", task.priority);
@@ -547,14 +533,12 @@ export default function EditHRTimesheetPage() {
         setValue("estimatedHours", task.estimatedHours || undefined);
       }
     } else if (activity.ActivityCatalog) {
-      // Activité du catalogue
       setInputMode("manual");
       setSelectedCategory(activity.ActivityCatalog.category);
       const catalogId = activity.ActivityCatalog.id ?? "";
       setSelectedCatalogId(catalogId);
       setValue("catalogId", catalogId);
     } else {
-      // Activité manuelle sans catalogue
       setInputMode("manual");
       setSelectedCategory("");
       setSelectedCatalogId("");
@@ -567,531 +551,434 @@ export default function EditHRTimesheetPage() {
     setSelectedTaskId("");
     setSelectedCatalogId("");
     setEditingActivity(null);
-    setShowActivityForm(false);
+    setIsSheetOpen(false);
     setInputMode("task");
   };
 
-  const calculateActivityDuration = (start: Date, end: Date): number => {
-    const days = differenceInDays(end, start);
-    return days * 24;
-  };
-
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner className="size-6" />
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
+      <div className="flex items-center justify-center p-12">
+        <Spinner className="h-8 w-8 text-primary" />
+        <p className="ml-4 text-muted-foreground">Chargement...</p>
       </div>
     );
   }
 
-  if (!timesheet) {
-    return null;
-  }
+  if (!timesheet) return null;
 
-  // Filtrer les activités du catalogue en fonction de la catégorie sélectionnée
   const filteredActivities = selectedCategory
     ? catalog.filter(item => item.category === selectedCategory)
     : [];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Édition - Semaine du {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
+    <div className="flex flex-col gap-8 max-w-[1600px] mx-auto">
+
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <Button variant="ghost" size="sm" className="-ml-3 h-8 text-muted-foreground" onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}`)}>
+              <ArrowLeft className="mr-2 h-3 w-3" />
+              Retour
+            </Button>
+            <span>/</span>
+            <span>Édition</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            <span className="bg-primary/10 p-2 rounded-lg"><CalendarIcon className="h-6 w-6 text-primary" /></span>
+            Feuille du {format(new Date(timesheet.weekStartDate), "dd MMM", { locale: fr })}
+            <span className="text-muted-foreground mx-1">-</span>
+            {format(new Date(timesheet.weekEndDate), "dd MMM yyyy", { locale: fr })}
           </h1>
-          <p className="text-muted-foreground">
-            Modifiez les activités de votre timesheet hebdomadaire
-          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="outline" className="text-xs uppercase tracking-widest">Brouillon</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">
+              <Edit2 className="h-3 w-3 mr-1" />
+              Mode Édition
+            </Badge>
+          </div>
         </div>
-        <Badge variant="outline">Brouillon</Badge>
+
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          <Button onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}`)} className="shadow-sm">
+            <Save className="h-4 w-4 mr-2" /> Terminer l'édition
+          </Button>
+        </div>
       </div>
 
-      {/* Informations du timesheet */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations générales</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="w-[200px] font-medium">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      Employé
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <EditableCell
-                      value={timesheet.employeeName}
-                      field="employeeName"
-                      timesheetId={timesheetId}
-                      onUpdate={handleUpdateField}
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-muted-foreground" />
-                      Poste
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <EditableCell
-                      value={timesheet.position}
-                      field="position"
-                      timesheetId={timesheetId}
-                      onUpdate={handleUpdateField}
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      Site
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <EditableCell
-                      value={timesheet.site}
-                      field="site"
-                      timesheetId={timesheetId}
-                      onUpdate={handleUpdateField}
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-muted-foreground" />
-                      Nombre d'activités
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-sm">
-                        {timesheet.HRActivity.length} {timesheet.HRActivity.length === 1 ? "activité" : "activités"}
-                      </Badge>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Top Info Section in a Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-      {/* Gestion des activités */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Activités</CardTitle>
-              <CardDescription>
-                Ajoutez ou supprimez des activités pour cette semaine
-              </CardDescription>
+        {/* Employee Card */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <User className="h-4 w-4" /> Informations Employé
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-dashed">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                {timesheet.employeeName.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1">
+                <EditableCell
+                  value={timesheet.employeeName}
+                  field="employeeName"
+                  timesheetId={timesheetId}
+                  onUpdate={handleUpdateField}
+                  label=""
+                  align="left"
+                  icon={null}
+                />
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  resetForm();
-                  setShowActivityForm(true);
-                }}
-                className="bg-primary hover:bg-primary"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {editingActivity ? "Nouvelle activité" : "Nouvelle activité"}
-              </Button>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-1 pt-1">
+              <EditableCell
+                value={timesheet.position}
+                field="position"
+                timesheetId={timesheetId}
+                onUpdate={handleUpdateField}
+                label="Poste"
+                icon={null}
+              />
+              <EditableCell
+                value={timesheet.site}
+                field="site"
+                timesheetId={timesheetId}
+                onUpdate={handleUpdateField}
+                label="Site"
+                icon={<MapPin className="h-3 w-3" />}
+              />
+              <div className="flex items-start justify-between">
+                <span className="text-sm text-muted-foreground">Total Heures</span>
+                <Badge variant="default" className="text-sm font-mono">{timesheet.totalHours} h</Badge>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Formulaire d'ajout/édition d'activité */}
-          {showActivityForm && (
-            <div className="p-4 border rounded-lg bg-muted/50">
-              {editingActivity && (
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 rounded-md">
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    ✏️ Édition de l'activité : {editingActivity.activityName}
-                  </p>
+          </CardContent>
+        </Card>
+
+        {/* Observations Card */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Info className="h-4 w-4" /> Observations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              className="min-h-[120px] bg-muted/30 resize-none text-sm border"
+              placeholder="Ajoutez une note ou une observation pour cette semaine..."
+              defaultValue={timesheet.employeeObservations || ""}
+              onBlur={(e) => handleUpdateObservations(e.target.value)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Validation History / Timeline */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <History className="h-4 w-4" /> Historique
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative border-l border-muted pl-4 ml-1 space-y-4">
+              {timesheet.odillonSignedAt && (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-background" />
+                  <div className="text-sm font-medium">Validation Finale</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(timesheet.odillonSignedAt), "d MMM yyyy", { locale: fr })}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_odillonSignedByIdToUser?.name || "Admin"}</div>
                 </div>
               )}
-              <form onSubmit={handleSubmit(onSubmitActivity)} className="space-y-4">
-                {/* Choix du mode de saisie */}
-                <div className="space-y-2">
-                  <Label>Mode de saisie</Label>
-                  <RadioGroup value={inputMode} onValueChange={(v) => setInputMode(v as "task" | "manual")}>
+
+              {timesheet.managerSignedAt && (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-blue-500 ring-4 ring-background" />
+                  <div className="text-sm font-medium">Validation Manager</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(timesheet.managerSignedAt), "d MMM yyyy", { locale: fr })}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_managerSignedByIdToUser?.name || "Manager"}</div>
+                </div>
+              )}
+
+              {timesheet.employeeSignedAt && (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-slate-400 ring-4 ring-background" />
+                  <div className="text-sm font-medium">Soumission</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(timesheet.employeeSignedAt), "d MMM yyyy", { locale: fr })}
+                  </div>
+                </div>
+              )}
+
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-muted border border-border ring-4 ring-background" />
+                <div className="text-sm font-medium text-muted-foreground">Création</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Activities Section - Full Width */}
+      <div className="space-y-6">
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <CardHeader className="bg-muted/20 border-b py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base font-semibold">Activités Réalisées</CardTitle>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="font-normal">
+                  {timesheet.HRActivity.length} entrées
+                </Badge>
+                <Button onClick={() => { resetForm(); setIsSheetOpen(true); }} size="sm" className="shadow-sm">
+                  <Plus className="h-4 w-4 mr-2" /> Ajouter une activité
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {timesheet.HRActivity.length > 0 ? (
+              <HRTimesheetActivitiesTable
+                activities={timesheet.HRActivity}
+                onDelete={handleDeleteActivity}
+                onEdit={handleEditActivity}
+                showActions={true}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center">
+                  <Briefcase className="h-8 w-8 text-muted-foreground/50" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-medium text-lg text-foreground">Aucune activité</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                    Commencez par ajouter votre première activité en cliquant sur le bouton "Ajouter une activité".
+                  </p>
+                </div>
+                <Button variant="outline" onClick={() => { resetForm(); setIsSheetOpen(true); }}>
+                  Ajouter maintenant
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sheet pour Ajout / Édition */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="sm:max-w-xl w-full flex flex-col h-full p-0">
+          <SheetHeader className="px-6 py-5 border-b">
+            <SheetTitle className="flex items-center gap-2">
+              {editingActivity ? <Edit2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {editingActivity ? "Modifier l'activité" : "Nouvelle activité"}
+            </SheetTitle>
+            <SheetDescription>
+              {editingActivity ? "Modifiez les détails de l'activité existante." : "Remplissez le formulaire pour ajouter une activité à votre feuille de temps."}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            <form id="activity-form" onSubmit={handleSubmit(onSubmitActivity)} className="space-y-6">
+
+              {/* Mode de saisie */}
+              {!editingActivity && (
+                <div className="bg-muted/50 p-4 rounded-lg border">
+                  <RadioGroup value={inputMode} onValueChange={(v) => setInputMode(v as "task" | "manual")} className="flex flex-col gap-3">
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="task" id="mode-task-edit" />
-                      <Label htmlFor="mode-task-edit" className="font-normal cursor-pointer">
-                        Tâche existante
-                      </Label>
+                      <RadioGroupItem value="task" id="mode-task" />
+                      <Label htmlFor="mode-task" className="cursor-pointer font-medium">Lier à une tâche (Recommandé)</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="manual" id="mode-manual-edit" />
-                      <Label htmlFor="mode-manual-edit" className="font-normal cursor-pointer">
-                        Saisie manuelle
-                      </Label>
+                      <RadioGroupItem value="manual" id="mode-manual" />
+                      <Label htmlFor="mode-manual" className="cursor-pointer font-medium">Saisie manuelle</Label>
                     </div>
                   </RadioGroup>
                 </div>
+              )}
 
-                <Separator />
-
-                {/* Sélection de tâche */}
-                {inputMode === "task" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="task">Tâche *</Label>
-                      {availableTasks.length === 0 ? (
-                        <div className="text-center py-4 border rounded-lg bg-muted">
-                          <p className="text-sm text-muted-foreground">
-                            Aucune tâche active disponible. Créez des tâches dans l'onglet "Tâches".
-                          </p>
-                        </div>
-                      ) : (
-                        <Select value={selectedTaskId} onValueChange={handleTaskSelect}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner une tâche" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-[300px]">
-                            {availableTasks.map((task) => (
-                              <SelectItem key={task.id} value={task.id}>
-                                <div className="flex items-center gap-2">
-                                  {task.Project && (
-                                    <div
-                                      className="w-3 h-3 rounded-full"
-                                      style={{ backgroundColor: task.Project.color }}
-                                    />
-                                  )}
-                                  <span>{task.name}</span>
-                                  <Badge variant="outline" className="ml-2 text-xs">
-                                    {task.priority === "URGENT" ? "🔥" :
-                                     task.priority === "HIGH" ? "⬆️" :
-                                     task.priority === "MEDIUM" ? "➡️" : "⬇️"}
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
+              {inputMode === "task" ? (
+                <div className="space-y-3">
+                  <Label>Sélectionner une tâche</Label>
+                  {availableTasks.length === 0 ? (
+                    <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded-md border border-yellow-200">
+                      Aucune tâche disponible. Veuillez utiliser la saisie manuelle.
                     </div>
-
-                    {selectedTaskId && (
-                      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
-                        <CardContent className="pt-4">
-                          {(() => {
-                            const task = availableTasks.find(t => t.id === selectedTaskId);
-                            if (!task) return null;
-                            return (
-                              <div className="space-y-2 text-sm">
-                                <p><strong>Nom:</strong> {task.name}</p>
-                                {task.description && <p><strong>Description:</strong> {task.description}</p>}
-                                {task.Project && <p><strong>Projet:</strong> {task.Project.name}</p>}
-                                <div className="flex gap-2 flex-wrap">
-                                  <Badge>{task.status}</Badge>
-                                  <Badge variant="outline">{task.priority}</Badge>
-                                  {task.complexity && <Badge variant="secondary">{task.complexity}</Badge>}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                )}
-
-                {/* Saisie manuelle */}
-                {inputMode === "manual" && (
-                  <div className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="activityType">Type d'activité *</Label>
-                        <Select
-                          value={selectedCategory}
-                          onValueChange={(value: string) => {
-                            setSelectedCategory(value);
-                            // Déterminer automatiquement le type OPERATIONAL/REPORTING
-                            const activityType = getTypeFromCategory(value);
-                            setValue("activityType", activityType);
-                            // Réinitialiser les champs dépendants
-                            setValue("activityName", "");
-                            setValue("catalogId", undefined);
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner une catégorie" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="activityName">Nom de l'activité *</Label>
-                    {selectedCategory && filteredActivities.length > 0 ? (
+                  ) : (
+                    <Select
+                      value={selectedTaskId}
+                      onValueChange={handleTaskSelect}
+                      disabled={!!editingActivity} // Ne pas changer la tâche en édition
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choisir une tâche..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTasks.map((task) => (
+                          <SelectItem key={task.id} value={task.id}>
+                            {task.name} <span className="text-muted-foreground ml-2 text-xs">({task.priority})</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Catégorie</Label>
                       <Select
-                        value={watch("activityName") || ""}
-                        onValueChange={(value) => {
-                          const selectedActivity = filteredActivities.find(act => act.name === value);
-                          if (selectedActivity) {
-                            setValue("activityName", selectedActivity.name);
-                            setValue("catalogId", selectedActivity.id);
-                            // Déterminer le type à partir de la catégorie
-                            const activityType = getTypeFromCategory(selectedActivity.category);
-                            setValue("activityType", activityType);
-                            if (selectedActivity.defaultPeriodicity) {
-                              setValue("periodicity", selectedActivity.defaultPeriodicity as any);
-                            }
-                            if (selectedActivity.description) {
-                              setValue("description", selectedActivity.description);
-                            }
-                          }
+                        value={selectedCategory}
+                        onValueChange={(val) => {
+                          setSelectedCategory(val);
+                          const activityType = getTypeFromCategory(val);
+                          setValue("activityType", activityType);
                         }}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner une activité du catalogue" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[300px] overflow-y-auto">
-                          {filteredActivities.map((activity) => (
-                            <SelectItem key={activity.id} value={activity.name}>
-                              {activity.name}
-                            </SelectItem>
+                        <SelectTrigger><SelectValue placeholder="Catégorie..." /></SelectTrigger>
+                        <SelectContent>
+                          {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Activité</Label>
+                      <Select
+                        value={selectedCatalogId}
+                        onValueChange={(val) => {
+                          setSelectedCatalogId(val);
+                          const item = catalog.find(c => c.id === val);
+                          if (item) {
+                            setValue("activityName", item.name);
+                            setValue("description", item.description || "");
+                            if (item.defaultPeriodicity) setValue("periodicity", item.defaultPeriodicity as any);
+                          }
+                        }}
+                        disabled={!selectedCategory}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Activité..." /></SelectTrigger>
+                        <SelectContent>
+                          {filteredActivities.map((activ) => (
+                            <SelectItem key={activ.id} value={activ.id}>{activ.name}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    ) : (
-                      <Input
-                        id="activityName"
-                        placeholder="Description de l'activité"
-                        {...register("activityName")}
-                      />
-                    )}
-                    {errors.activityName && (
-                      <p className="text-sm text-destructive">{errors.activityName.message}</p>
-                    )}
+                    </div>
                   </div>
                 </div>
+              )}
 
+              <Separator />
+
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description (optionnel)</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Détails supplémentaires..."
-                    rows={2}
-                    {...register("description")}
-                  />
+                  <Label htmlFor="activityName">Titre de l'activité</Label>
+                  <Input id="activityName" {...register("activityName")} placeholder="Ex: Développement API..." />
+                  {errors.activityName && <p className="text-xs text-destructive">{errors.activityName.message}</p>}
                 </div>
               </div>
-            )}
 
-            {/* Champs communs (toujours visibles) */}
-            <Separator />
-
-            <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="periodicity">Périodicité *</Label>
-                    <Select
-                      value={watch("periodicity")}
-                      onValueChange={(value: any) => setValue("periodicity", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DAILY">Quotidien</SelectItem>
-                        <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
-                        <SelectItem value="MONTHLY">Mensuel</SelectItem>
-                        <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
-                        <SelectItem value="WEEKLY_MONTHLY">Hebdo/Mensuel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Statut *</Label>
-                    <Select
-                      value={watch("status")}
-                      onValueChange={(value: any) => setValue("status", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                        <SelectItem value="COMPLETED">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Périodicité</Label>
+                  <Select onValueChange={(val) => setValue("periodicity", val as any)} value={watch("periodicity")}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DAILY">Quotidienne</SelectItem>
+                      <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
+                      <SelectItem value="MONTHLY">Mensuelle</SelectItem>
+                      <SelectItem value="PUNCTUAL">Ponctuelle</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="weeklyQuantity">Quantité hebdomadaire</Label>
-                    <Input
-                      id="weeklyQuantity"
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="Ex: 5"
-                      {...register("weeklyQuantity", { valueAsNumber: true })}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Nombre de fois que l'activité est effectuée par semaine
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="totalHours">Durée totale (heures)</Label>
-                    <Input
-                      id="totalHours"
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      placeholder="Ex: 8.5"
-                      {...register("totalHours", { valueAsNumber: true })}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Nombre total d'heures consacrées à cette activité
-                    </p>
-                  </div>
+                <div className="space-y-2">
+                  <Label>Statut</Label>
+                  <Select onValueChange={(val) => setValue("status", val as any)} value={watch("status")}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                      <SelectItem value="COMPLETED">Terminé</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="startDate">Date début *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {format(watch("startDate") ?? new Date(), "dd/MM/yyyy", { locale: fr })}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <Calendar
-                          mode="single"
-                          selected={watch("startDate") ?? new Date()}
-                          onSelect={(d) => d && setValue("startDate", d)}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {errors.startDate && (
-                      <p className="text-sm text-destructive">{errors.startDate.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="endDate">Date fin *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {format(watch("endDate") ?? new Date(), "dd/MM/yyyy", { locale: fr })}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <Calendar
-                          mode="single"
-                          selected={watch("endDate") ?? new Date()}
-                          onSelect={(d) => d && setValue("endDate", d)}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {errors.endDate && (
-                      <p className="text-sm text-destructive">{errors.endDate.message}</p>
-                    )}
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Date Début</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {watch("startDate") ? format(watch("startDate") as Date, "dd/MM/yyyy") : "Date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={watch("startDate") as Date | undefined}
+                        onSelect={(date) => date && setValue("startDate", date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="submit"
-                    className="bg-primary hover:bg-primary"
-                    disabled={isSaving}
-                  >
-                    {isSaving ? (
-                      <span className="flex items-center gap-2">
-                        <Spinner />
-                        {editingActivity ? "Mise à jour..." : "Ajout..."}
-                      </span>
-                    ) : editingActivity ? (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Mettre à jour l'activité
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Ajouter l'activité
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={resetForm}
-                  >
-                    Annuler
-                  </Button>
+                <div className="space-y-2">
+                  <Label>Date Fin</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {watch("endDate") ? format(watch("endDate") as Date, "dd/MM/yyyy") : "Date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={watch("endDate") as Date | undefined}
+                        onSelect={(date) => date && setValue("endDate", date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
-              </form>
-            </div>
-          )}
+              </div>
 
-          {/* Liste des activités */}
-          {timesheet.HRActivity.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg bg-muted/30">
-              <p className="text-muted-foreground">Aucune activité ajoutée</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Cliquez sur "Nouvelle activité" pour commencer
-              </p>
-            </div>
-          ) : (
-            <HRTimesheetActivitiesTable
-              activities={timesheet.HRActivity}
-              onDelete={handleDeleteActivity}
-              onEdit={handleEditActivity}
-              showActions={true}
-            />
-          )}
+              <div className="space-y-2">
+                <Label>Total Heures (est.)</Label>
+                <Input type="number" step="0.5" {...register("totalHours", { valueAsNumber: true })} />
+              </div>
 
-          {/* Boutons de navigation */}
-          {timesheet.HRActivity.length > 0 && (
-            <div className="flex gap-2 pt-4">
-              <Button
-                onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}`)}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Terminer l'édition
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push("/dashboard/hr-timesheet")}
-              >
-                Retour à la liste
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              <div className="space-y-2">
+                <Label>Description / Notes</Label>
+                <Textarea {...register("description")} placeholder="Détails supplémentaires..." className="resize-none" rows={3} />
+              </div>
+
+            </form>
+          </div>
+
+          <SheetFooter className="px-6 py-4 border-t mt-auto bg-muted/10">
+            <Button type="button" variant="destructive" onClick={() => setIsSheetOpen(false)} disabled={isSaving}>Annuler</Button>
+            <Button type="submit" form="activity-form" disabled={isSaving}>
+              {isSaving && <Spinner className="mr-2 h-4 w-4" />}
+              {editingActivity ? "Enregistrer les modifications" : "Ajouter l'activité"}
+            </Button>
+          </SheetFooter>
+
+        </SheetContent>
+      </Sheet>
+    </div >
   );
 }
+

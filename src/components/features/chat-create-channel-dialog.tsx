@@ -401,7 +401,7 @@ export function ChatCreateChannelDialog({
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={handleClose}
               disabled={loading}
             >

@@ -147,7 +147,7 @@ export function ProjectCreateDialog({ onSubmit, trigger }: ProjectCreateDialogPr
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={() => setOpen(false)}
               disabled={isLoading}
             >

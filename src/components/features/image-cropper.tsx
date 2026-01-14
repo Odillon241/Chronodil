@@ -44,7 +44,7 @@ export function ImageCropper({ src, onCropComplete, onCancel }: ImageCropperProp
           <span>Recadrer votre image</span>
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
               onClick={onCancel}
               disabled={isProcessing}

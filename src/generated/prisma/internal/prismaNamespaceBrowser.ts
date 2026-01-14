@@ -539,7 +539,16 @@ export const TaskScalarFieldEnum = {
   understandingLevel: 'understandingLevel',
   activityType: 'activityType',
   activityName: 'activityName',
-  periodicity: 'periodicity'
+  periodicity: 'periodicity',
+  reminderNotifiedAt: 'reminderNotifiedAt',
+  overdueDays: 'overdueDays',
+  overdueNotifiedAt: 'overdueNotifiedAt',
+  lastEscalatedAt: 'lastEscalatedAt',
+  slaDeadline: 'slaDeadline',
+  slaStatus: 'slaStatus',
+  isRecurringTemplate: 'isRecurringTemplate',
+  recurrenceEndDate: 'recurrenceEndDate',
+  recurrenceExceptions: 'recurrenceExceptions'
 } as const
 
 export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]

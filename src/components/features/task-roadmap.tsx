@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { CalendarIcon, KanbanSquareIcon, ListIcon, GanttChartSquareIcon, TableIcon } from "lucide-react";
 import { TaskCalendar } from "./task-calendar";
-import { TaskKanban } from "./task-kanban";
+// import { TaskKanban } from "./task-kanban"; // TODO: File deleted
 import { TaskList } from "./task-list";
 import { TaskGantt } from "./task-gantt";
 import { TaskTable } from "./task-table";
@@ -48,10 +48,10 @@ export function TaskRoadmap({
               <CalendarIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Calendrier</span>
             </TabsTrigger>
-            <TabsTrigger value="kanban" className="gap-2">
+            {/* <TabsTrigger value="kanban" className="gap-2">
               <KanbanSquareIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Kanban</span>
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="gantt" className="gap-2">
               <GanttChartSquareIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Gantt</span>
@@ -78,7 +78,7 @@ export function TaskRoadmap({
           />
         </TabsContent>
 
-        <TabsContent value="kanban" className="mt-0 -mx-4 sm:-mx-6">
+        {/* <TabsContent value="kanban" className="mt-0 -mx-4 sm:-mx-6">
           <TaskKanban
             tasks={tasks}
             onEventClick={onEventClick}
@@ -86,7 +86,7 @@ export function TaskRoadmap({
             onEventDelete={onEventDelete}
             onEventToggle={onEventToggle}
           />
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="gantt" className="mt-0 -mx-4 sm:-mx-6">
           <TaskGantt

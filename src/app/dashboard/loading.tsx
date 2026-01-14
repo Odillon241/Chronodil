@@ -1,27 +1,32 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardLoading() {
   return (
-    <div className="flex flex-col gap-4 sm:gap-6">
+    <div className="flex-1 space-y-6">
       {/* Header skeleton */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between space-y-2">
         <div>
-          <Skeleton className="h-8 sm:h-9 w-48 mb-2" />
-          <Skeleton className="h-4 sm:h-5 w-80" />
+          <Skeleton className="h-9 w-64 mb-2" />
+          <Skeleton className="h-5 w-96" />
         </div>
+        <Skeleton className="h-10 w-32" />
       </div>
 
-      {/* Separator skeleton */}
-      <Skeleton className="h-px w-full" />
+      {/* Quick Actions skeleton */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-2 md:pb-0">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-8 w-24 rounded-full" />
+        ))}
+      </div>
 
-      {/* Stats cards skeleton - 3 cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {[...Array(3)].map((_, i) => (
+      {/* Stats cards skeleton - 4 cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-8 rounded-md" />
+              <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
               <Skeleton className="h-8 w-16 mb-2" />
@@ -31,56 +36,36 @@ export default function DashboardLoading() {
         ))}
       </div>
 
-      {/* Tabs skeleton */}
-      <div className="space-y-4">
-        {/* Tabs list skeleton - 3 tabs */}
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-36 rounded-lg" />
-          <Skeleton className="h-10 w-32 rounded-lg" />
-          <Skeleton className="h-10 w-36 rounded-lg" />
-        </div>
-
-        {/* Tab content skeleton - Table */}
-        <Card>
+      {/* Grid skeleton (Chart + Activity) */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        {/* Chart skeleton (col-span-4) */}
+        <Card className="col-span-4">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <Skeleton className="h-6 w-32 mb-2" />
-                <Skeleton className="h-4 w-64" />
-              </div>
-              <Skeleton className="h-9 w-32 rounded-md" />
-            </div>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-hidden rounded-b-lg border">
-              {/* Table header skeleton */}
-              <div className="bg-muted/50 border-b p-4">
-                <div className="grid grid-cols-4 gap-4">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-16 ml-auto" />
-                </div>
-              </div>
-              {/* Table rows skeleton */}
-              <div className="divide-y">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="p-4">
-                    <div className="grid grid-cols-4 gap-4 items-center">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-5 w-5 rounded-full" />
-                        <div className="flex-1">
-                          <Skeleton className="h-4 w-32 mb-1" />
-                          <Skeleton className="h-3 w-24" />
-                        </div>
-                      </div>
-                      <Skeleton className="h-6 w-24 rounded-full" />
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-6 w-20 rounded-full ml-auto" />
-                    </div>
+          <CardContent className="pl-2">
+            <Skeleton className="h-[350px] w-full" />
+          </CardContent>
+        </Card>
+
+        {/* Activity skeleton (col-span-3) */}
+        <Card className="col-span-3">
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="ml-4 space-y-1">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-24" />
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

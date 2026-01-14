@@ -1,42 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTheme } from "next-themes";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { Checkbox } from "@/components/ui/checkbox";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  // Éviter le mismatch d'hydratation en utilisant mounted
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    // Afficher les erreurs de callback si présentes
+    const error = searchParams.get("error");
+    if (error) {
+      toast.error(decodeURIComponent(error));
+    }
 
-  // Utiliser le logo clair par défaut pour éviter le mismatch d'hydratation
-  // Une fois monté, on peut utiliser le thème résolu
-  const logoSrc = mounted && resolvedTheme === "dark" 
-    ? "/assets/media/logo-dark.svg" 
-    : "/assets/media/logo.svg";
-
-  console.log("LoginPage rendered");
+    // Message de succès si confirmation email réussie
+    const message = searchParams.get("message");
+    if (message) {
+      toast.success(decodeURIComponent(message));
+    }
+  }, [searchParams]);
 
   const {
     register,
@@ -55,153 +53,123 @@ export default function LoginPage() {
       });
 
       if (result.error) {
-        toast.error(result.error.message || "Échec de la connexion");
+        // Messages d'erreur personnalisés en français
+        let errorMessage = result.error.message || "Échec de la connexion";
+
+        if (errorMessage.includes("Invalid login credentials")) {
+          errorMessage = "Email ou mot de passe incorrect";
+        } else if (errorMessage.includes("Email not confirmed")) {
+          errorMessage = "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.";
+        } else if (errorMessage.includes("Too many requests")) {
+          errorMessage = "Trop de tentatives. Veuillez réessayer dans quelques minutes.";
+        }
+
+        toast.error(errorMessage);
       } else {
         toast.success("Connexion réussie !");
         router.push("/dashboard");
+        router.refresh();
       }
     } catch (error) {
-      toast.error("Une erreur s'est produite");
+      console.error("Login error:", error);
+      toast.error("Une erreur s'est produite lors de la connexion");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
-      {/* Grille interactive */}
-      <div className="absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 opacity-60">
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 600">
-          {Array.from({ length: 12 * 12 }).map((_, index) => {
-            const x = (index % 12) * 50;
-            const y = Math.floor(index / 12) * 50;
-            return (
-              <rect
-                key={index}
-                x={x}
-                y={y}
-                width={50}
-                height={50}
-                className="stroke-white/50 fill-transparent hover:fill-white/60 transition-colors duration-300"
-              />
-            );
-          })}
-        </svg>
-      </div>
-      {/* Citation inspirante avec effet de frappe */}
-      <div className="text-center mb-8 relative z-10 max-w-4xl mx-auto px-4">
-        <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-20 flex items-center justify-center">
-          <TypingText
-            text={[
-              '"Le temps est la ressource la plus précieuse que nous ayons."',
-              '"Chronodil vous aide à la maîtriser."',
-              '"Optimisez votre productivité avec nous."'
-            ]}
-            as="blockquote"
-            className="text-center font-serif tracking-wide whitespace-nowrap inline-block"
-            typingSpeed={60}
-            pauseDuration={3500}
-            deletingSpeed={30}
-            initialDelay={1200}
-            showCursor={true}
-            cursorCharacter="|"
-            cursorClassName="text-primary font-bold"
-            textColors={['text-gray-800', 'text-primary', 'text-gray-700']}
-            loop={true}
+    <AuthLayout
+      title="Bienvenue"
+      description="Connectez-vous pour accéder à votre espace"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="nom@exemple.com"
+            {...register("email")}
+            disabled={isLoading}
+            autoComplete="email"
+            className="bg-transparent"
           />
+          {errors.email && (
+            <p className="text-sm text-destructive font-medium">{errors.email.message}</p>
+          )}
         </div>
-        <div className="mt-4 flex items-center justify-center space-x-2">
-          <div className="w-8 h-px bg-linear-to-r from-transparent via-primary to-transparent"></div>
-          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-          <div className="w-8 h-px bg-linear-to-r from-transparent via-primary to-transparent"></div>
-        </div>
-      </div>
-
-      <Card className="w-full max-w-md relative z-10">
-        <CardHeader className="space-y-3 p-4 pb-3">
-          <div className="flex items-center justify-center">
-            <Image
-              src={logoSrc}
-              alt="Chronodil Logo"
-              width={180}
-              height={60}
-              className="h-14 w-auto"
-              priority
-            />
-          </div>
-          <div className="space-y-2">
-            <CardDescription className="text-center font-heading text-base">
-              Connectez-vous à votre compte
-            </CardDescription>
-            <Separator className="mt-1" />
-          </div>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 p-4 pt-3">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nom@exemple.com"
-                {...register("email")}
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                {...register("password")}
-                disabled={isLoading}
-              />
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium underline"
-              >
-                Mot de passe oublié ?
-              </Link>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-3 p-4 pt-3">
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary/90 transition-colors"
-              disabled={isLoading}
-              size="lg"
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Mot de passe</Label>
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
             >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Spinner />
-                  Connexion...
-                </span>
-              ) : "Se connecter"}
-            </Button>
-            <div className="w-full">
-              <Separator className="mb-3" />
-              <p className="text-sm text-center text-muted-foreground">
-                Vous n'avez pas de compte ?{" "}
-                <Link href="/auth/register" className="text-primary hover:text-primary/80 font-medium transition-colors underline">
-                  S'inscrire
-                </Link>
-              </p>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
-      
-      {/* Pied de page avec copyright */}
-      <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
-        <span>&copy; 2026 by </span>
-        <span className="font-semibold">ODILLON</span>
-      </footer>
+              Mot de passe oublié ?
+            </Link>
+          </div>
+          <Input
+            id="password"
+            type="password"
+            {...register("password")}
+            disabled={isLoading}
+            autoComplete="current-password"
+            className="bg-transparent"
+          />
+          {errors.password && (
+            <p className="text-sm text-destructive font-medium">{errors.password.message}</p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading}
+          size="lg"
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Spinner className="h-4 w-4" />
+              Connexion...
+            </span>
+          ) : "Se connecter"}
+        </Button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Ou
+            </span>
+          </div>
+        </div>
+
+        <div className="text-center text-sm">
+          Vous n'avez pas de compte ?{" "}
+          <Link href="/auth/register" className="text-primary hover:text-primary/80 font-medium transition-colors hover:underline">
+            S'inscrire
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/40">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginForm />
+    </Suspense>
   );
 }

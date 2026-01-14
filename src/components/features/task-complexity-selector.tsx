@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TaskComplexity } from '@/generated/prisma';
+import { TaskComplexity } from "../../generated/prisma/enums";
 import { TaskComplexityBadge } from './task-complexity-badge';
 
 interface TaskComplexitySelectorProps {

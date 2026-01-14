@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Zap, Gauge, AlertCircle } from 'lucide-react';
-import { TaskComplexity } from '@/generated/prisma';
+import { TaskComplexity } from '../../generated/prisma/enums';
 
 interface TaskComplexityBadgeProps {
   complexity: TaskComplexity;

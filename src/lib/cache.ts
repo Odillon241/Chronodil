@@ -17,6 +17,7 @@ export const CacheTags = {
   VALIDATIONS: "validations",
   DEPARTMENTS: "departments",
   NOTIFICATIONS: "notifications",
+  HR_TIMESHEETS: "hr-timesheets",
 } as const;
 
 // Durées de revalidation (en secondes)

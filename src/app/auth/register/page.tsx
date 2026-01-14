@@ -1,40 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTheme } from "next-themes";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { signUp } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import TypingText from "@/components/ui/shadcn-io/typing-text";
 import { toast } from "sonner";
+import { CheckCircle2 } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-// Note: dynamic='force-dynamic' supprimé pour compatibilité avec cacheComponents (PPR)
-// La page Client Component reste dynamique par nature
+function SuccessState({ email }: { email: string }) {
+  return (
+    <AuthLayout title="Inscription réussie !" description="Votre compte a été créé">
+      <div className="flex flex-col items-center space-y-6 text-center">
+        <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
+          <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-500" />
+        </div>
+
+        <Alert className="bg-muted/50 border-primary/20">
+          <AlertTitle className="text-foreground">Compte créé avec succès</AlertTitle>
+          <AlertDescription className="mt-2 text-muted-foreground">
+            Un email de confirmation pourrait vous être envoyé à <span className="font-semibold text-foreground">{email}</span>.
+          </AlertDescription>
+        </Alert>
+
+        <Link href="/auth/login" className="w-full">
+          <Button className="w-full" size="lg">
+            Se connecter maintenant
+          </Button>
+        </Link>
+      </div>
+    </AuthLayout>
+  );
+}
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Éviter le mismatch d'hydratation
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Utiliser le logo clair par défaut pour éviter le mismatch d'hydratation
-  const logoSrc = mounted && resolvedTheme === "dark" 
-    ? "/assets/media/logo-dark.svg" 
-    : "/assets/media/logo.svg";
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const {
     register,
@@ -54,165 +64,136 @@ export default function RegisterPage() {
       });
 
       if (result.error) {
-        toast.error(result.error.message || "Échec de l'inscription");
-      } else {
-        toast.success("Inscription réussie ! Vérifiez votre email pour confirmer votre compte.");
-        router.push("/auth/login");
+        let errorMessage = result.error.message || "Échec de l'inscription";
+
+        if (errorMessage.includes("User already registered")) {
+          errorMessage = "Un compte existe déjà avec cet email. Essayez de vous connecter.";
+        } else if (errorMessage.includes("Password should be at least")) {
+          errorMessage = "Le mot de passe doit contenir au moins 6 caractères";
+        } else if (errorMessage.includes("Unable to validate email")) {
+          errorMessage = "Adresse email invalide";
+        }
+
+        toast.error(errorMessage);
+      } else if (result.success) {
+        setRegisteredEmail(data.email);
+        setRegistrationSuccess(true);
+        toast.success("Inscription réussie ! Vous pouvez maintenant vous connecter.");
       }
     } catch (error) {
-      toast.error("Une erreur s'est produite");
+      console.error("Registration error:", error);
+      toast.error("Une erreur s'est produite lors de l'inscription");
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden" style={{ backgroundColor: 'hsl(141, 78.9%, 90%)' }}>
-      {/* Grille interactive */}
-      <div className="absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 opacity-60">
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 600">
-          {Array.from({ length: 12 * 12 }).map((_, index) => {
-            const x = (index % 12) * 50;
-            const y = Math.floor(index / 12) * 50;
-            return (
-              <rect
-                key={index}
-                x={x}
-                y={y}
-                width={50}
-                height={50}
-                className="stroke-white/50 fill-transparent hover:fill-white/60 transition-colors duration-300"
-              />
-            );
-          })}
-        </svg>
-      </div>
-      {/* Citation inspirante avec effet de frappe */}
-      <div className="text-center mb-8 relative z-10 max-w-2xl mx-auto px-4">
-        <div className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed min-h-20 flex items-center justify-center">
-          <TypingText
-            text={[
-              '"Le temps est la ressource la plus précieuse que nous ayons."',
-              '"Chronodil vous aide à la maîtriser."',
-              '"Optimisez votre productivité avec nous."'
-            ]}
-            as="blockquote"
-            className="text-center font-serif tracking-wide"
-            typingSpeed={60}
-            pauseDuration={3500}
-            deletingSpeed={30}
-            initialDelay={1200}
-            showCursor={true}
-            cursorCharacter="|"
-            cursorClassName="text-primary font-bold"
-            textColors={['text-gray-800', 'text-primary', 'text-gray-700']}
-            loop={true}
-          />
-        </div>
-        <div className="mt-4 flex items-center justify-center space-x-2">
-          <div className="w-8 h-px bg-linear-to-r from-transparent via-primary to-transparent"></div>
-          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-          <div className="w-8 h-px bg-linear-to-r from-transparent via-primary to-transparent"></div>
-        </div>
-      </div>
+  if (registrationSuccess) {
+    return <SuccessState email={registeredEmail} />;
+  }
 
-      <Card className="w-full max-w-md relative z-10">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <Image
-              src={logoSrc}
-              alt="Chronodil Logo"
-              width={180}
-              height={60}
-              className="h-16 w-auto"
-              priority
-            />
+  return (
+    <AuthLayout
+      title="Créer un compte"
+      description="Commencez à gérer votre temps efficacement"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Nom complet</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Jean Dupont"
+            {...register("name")}
+            disabled={isLoading}
+            autoComplete="name"
+            className="bg-transparent"
+          />
+          {errors.name && (
+            <p className="text-sm text-destructive font-medium">{errors.name.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="nom@exemple.com"
+            {...register("email")}
+            disabled={isLoading}
+            autoComplete="email"
+            className="bg-transparent"
+          />
+          {errors.email && (
+            <p className="text-sm text-destructive font-medium">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Mot de passe</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Minimum 8 caractères"
+            {...register("password")}
+            disabled={isLoading}
+            autoComplete="new-password"
+            className="bg-transparent"
+          />
+          {errors.password && (
+            <p className="text-sm text-destructive font-medium">{errors.password.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="Répétez le mot de passe"
+            {...register("confirmPassword")}
+            disabled={isLoading}
+            autoComplete="new-password"
+            className="bg-transparent"
+          />
+          {errors.confirmPassword && (
+            <p className="text-sm text-destructive font-medium">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full mt-2"
+          disabled={isLoading}
+          size="lg"
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Spinner className="h-4 w-4" />
+              Inscription...
+            </span>
+          ) : "S'inscrire"}
+        </Button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
           </div>
-          <CardDescription className="text-center font-heading">
-            Inscrivez-vous pour commencer à gérer vos temps
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom complet</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Jean Dupont"
-                {...register("name")}
-                disabled={isLoading}
-              />
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nom@exemple.com"
-                {...register("email")}
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                {...register("password")}
-                disabled={isLoading}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                {...register("confirmPassword")}
-                disabled={isLoading}
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Spinner />
-                  Inscription...
-                </span>
-              ) : "S'inscrire"}
-            </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Vous avez déjà un compte ?{" "}
-              <Link href="/auth/login" className="text-primary hover:text-primary font-medium">
-                Se connecter
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
-      
-      {/* Pied de page avec copyright */}
-      <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-600 flex items-center space-x-2 z-10">
-        <span>&copy; 2026 by </span>
-        <span className="font-semibold">ODILLON</span>
-      </footer>
-    </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Ou
+            </span>
+          </div>
+        </div>
+
+        <div className="text-center text-sm">
+          Vous avez déjà un compte ?{" "}
+          <Link href="/auth/login" className="text-primary hover:text-primary/80 font-medium transition-colors hover:underline">
+            Se connecter
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }

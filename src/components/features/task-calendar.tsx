@@ -78,28 +78,18 @@ const getEvent = (date: Date): GabonEvent | null => {
   return GABON_EVENTS.find(e => e.date === dateStr) || null;
 };
 
-const isHoliday = (date: Date): { isHoliday: boolean; name?: string; type?: string; emoji?: string } => {
-  const event = getEvent(date);
-  return {
-    isHoliday: event?.type === 'holiday',
-    name: event?.name,
-    type: event?.type,
-    emoji: event?.emoji,
-  };
-};
-
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case "URGENT":
-      return "bg-red-500 border-red-600";
+      return "bg-red-500 hover:bg-red-600";
     case "HIGH":
-      return "bg-orange-500 border-orange-600";
+      return "bg-orange-500 hover:bg-orange-600";
     case "MEDIUM":
-      return "bg-yellow-500 border-yellow-600";
+      return "bg-amber-500 hover:bg-amber-600";
     case "LOW":
-      return "bg-green-500 border-green-600";
+      return "bg-emerald-500 hover:bg-emerald-600";
     default:
-      return "bg-blue-500 border-blue-600";
+      return "bg-blue-500 hover:bg-blue-600";
   }
 };
 
@@ -136,7 +126,6 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
 
   const isFirstDay = currentDateNorm.getTime() === startDateNorm.getTime();
   const isLastDay = currentDateNorm.getTime() === dueDateNorm.getTime();
-  const isMiddleDay = !isFirstDay && !isLastDay;
 
   return (
     <ContextMenu>
@@ -146,66 +135,29 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
           {...listeners}
           {...attributes}
           className={cn(
-            "group relative px-2 py-1 mb-1 text-xs cursor-pointer transition-all",
+            "group relative px-2 py-0.5 mb-1 text-xs cursor-pointer transition-all rounded shadow-sm",
             priorityColor,
-            isCompleted && "opacity-60 line-through",
-            isDragging && "opacity-50",
-            // Arrondir les coins selon la position dans la période
-            isFirstDay && "rounded-l border-l-4",
-            isLastDay && "rounded-r border-r-4",
-            isMiddleDay && "border-l-0 border-r-0",
-            // Ajouter un indicateur visuel pour les jours intermédiaires
-            isMiddleDay && "border-t-2 border-b-2"
+            isCompleted && "opacity-60 grayscale",
+            isDragging && "opacity-50 scale-95",
+            "mx-0.5 text-white"
           )}
           onClick={() => onEventClick(task)}
         >
-          <div className="flex items-center gap-1.5 text-white">
-            <span className="font-medium truncate flex-1">{task.name}</span>
-            <div className="flex items-center gap-1 shrink-0">
-              {task.isShared && <Users className="h-3 w-3" />}
-              {task.reminderDate && <Bell className="h-3 w-3" />}
-              {/* Afficher le créateur et les membres assignés */}
-              <div className="flex -space-x-1.5">
-                {task.Creator && (
-                  <Avatar
-                    className="h-4 w-4 border border-white/30"
-                    title={`${task.Creator.name} (Créateur)`}
-                  >
-                    <AvatarImage src={task.Creator.avatar || undefined} />
-                    <AvatarFallback className="text-[8px] bg-white/20 text-white">
-                      {task.Creator.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                {/* Afficher les membres assignés (max 2 membres supplémentaires) */}
-                {task.TaskMember?.filter((member) => member.User.id !== task.Creator?.id).slice(0, 2).map((member) => (
-                  <Avatar
-                    key={member.id}
-                    className="h-4 w-4 border border-white/30"
-                    title={member.User.name}
-                  >
+          <div className="flex items-center gap-1.5 h-full">
+            <span className="font-medium truncate flex-1 leading-tight">{task.name}</span>
+            {(isFirstDay || isLastDay) && (
+              <div className="flex items-center gap-0.5 shrink-0 opacity-80 scale-90">
+                {task.TaskMember?.filter((m) => m.User.id !== task.Creator?.id).slice(0, 2).map((member) => (
+                  <Avatar key={member.id} className="h-3 w-3 border border-white/20">
                     <AvatarImage src={member.User.avatar || undefined} />
-                    <AvatarFallback className="text-[8px] bg-white/20 text-white">
-                      {member.User.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
+                    <AvatarFallback className="text-[6px] bg-white/20 text-white">
+                      {member.User.name?.[0]}
                     </AvatarFallback>
                   </Avatar>
                 ))}
-                {/* Indicateur "+N" si plus de 2 membres */}
-                {task.TaskMember && task.TaskMember.filter((m) => m.User.id !== task.Creator?.id).length > 2 && (
-                  <div className="h-4 w-4 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
-                    <span className="text-[7px] font-bold text-white">
-                      +{task.TaskMember.filter((m) => m.User.id !== task.Creator?.id).length - 2}
-                    </span>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
           </div>
-          {task.Project && (
-            <div className="text-white/90 text-[10px] truncate mt-0.5">
-              {task.Project.name}
-            </div>
-          )}
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
@@ -213,7 +165,7 @@ function DraggableTask({ task, onEventClick, onEventDelete, onEventToggle, curre
           const isCreator = task.Creator?.id === currentUserId;
           const isAdmin = currentUserRole === "ADMIN";
           const canModify = isCreator || isAdmin;
-          
+
           return (
             <>
               {canModify && (
@@ -271,86 +223,43 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
     data: { date },
   });
 
-  const eventInfo = isHoliday(date);
   const isTodayDate = isToday(date);
   const event = getEvent(date);
 
-  // Limiter l'affichage à 3 tâches maximum (comme shadcn roadmap)
-  const MAX_VISIBLE_TASKS = event ? 2 : 3; // Moins d'espace si événement
+  // Limiter l'affichage à 3 tâches maximum
+  const MAX_VISIBLE_TASKS = 3;
   const visibleTasks = tasks.slice(0, MAX_VISIBLE_TASKS);
   const remainingCount = Math.max(0, tasks.length - MAX_VISIBLE_TASKS);
-
-  // Couleurs selon le type d'événement
-  const getEventBgColor = () => {
-    if (!event) return "";
-    switch (event.type) {
-      case 'holiday':
-        return "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900";
-      case 'religious':
-        return "bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900";
-      case 'celebration':
-        return "bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-900";
-      case 'cultural':
-        return "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900";
-      default:
-        return "";
-    }
-  };
-
-  const getEventBadgeVariant = (): "default" | "destructive" | "outline" | "secondary" => {
-    if (!event) return "default";
-    switch (event.type) {
-      case 'holiday':
-        return "destructive";
-      case 'religious':
-        return "secondary";
-      case 'celebration':
-        return "outline";
-      case 'cultural':
-        return "secondary";
-      default:
-        return "default";
-    }
-  };
 
   return (
     <div
       ref={setNodeRef}
       onDoubleClick={() => onDayDoubleClick(date)}
       className={cn(
-        "min-h-[100px] sm:min-h-[120px] border-r border-b p-1 sm:p-2 transition-colors",
-        !isCurrentMonth && "bg-muted/30",
-        isOver && "bg-primary/10 border-primary",
-        getEventBgColor(),
-        isTodayDate && "ring-2 ring-primary ring-inset"
+        "min-h-[100px] sm:min-h-[120px] border-r border-b p-1 transition-colors relative group",
+        !isCurrentMonth && "bg-muted/10 text-muted-foreground",
+        isOver && "bg-primary/5 ring-1 ring-inset ring-primary/20",
+        isTodayDate && "bg-primary/5"
       )}
     >
-      <div className="flex items-center justify-between mb-1">
+      {/* Header du jour */}
+      <div className="flex items-center justify-between mb-1 px-1">
         <span className={cn(
-          "text-sm font-medium",
-          !isCurrentMonth && "text-muted-foreground",
-          isTodayDate && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
+          "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full transition-all",
+          isTodayDate
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "text-muted-foreground group-hover:text-foreground group-hover:bg-muted"
         )}>
-          {format(date, 'd', { locale: fr })}
+          {format(date, 'd')}
         </span>
         {event && (
-          <span className="text-base" title={event.name}>
-            {event.emoji}
-          </span>
+          <div className="flex items-center" title={event.name}>
+            <span className="text-sm cursor-help">{event.emoji}</span>
+          </div>
         )}
       </div>
 
-      {event && (
-        <Badge
-          variant={getEventBadgeVariant()}
-          className="text-[9px] sm:text-[10px] mb-1 w-full justify-center px-1 py-0 h-auto leading-tight"
-          title={`${event.name} - ${event.type}`}
-        >
-          <span className="truncate">{event.name}</span>
-        </Badge>
-      )}
-
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {visibleTasks.map((task) => (
           <DraggableTask
             key={task.id}
@@ -365,17 +274,15 @@ function DroppableDay({ date, tasks, isCurrentMonth, onEventClick, onDayDoubleCl
         ))}
 
         {remainingCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full h-auto py-1 px-2 text-[10px] hover:bg-primary/10"
+          <div
+            className="text-[10px] text-muted-foreground pl-2 cursor-pointer hover:text-primary transition-colors font-medium py-0.5"
             onClick={(e) => {
               e.stopPropagation();
               onDayDoubleClick(date);
             }}
           >
-            +{remainingCount} autre{remainingCount > 1 ? 's' : ''}
-          </Button>
+            +{remainingCount} autres
+          </div>
         )}
       </div>
     </div>
@@ -404,7 +311,6 @@ export function TaskCalendar({
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   // Grouper les tâches par jour
-  // Les tâches avec estimatedHours s'affichent sur plusieurs jours consécutifs
   const tasksByDay = useMemo(() => {
     const grouped = new Map<string, Task[]>();
 
@@ -415,21 +321,17 @@ export function TaskCalendar({
         // Calculer la date de début en fonction des heures estimées
         let startDate: Date;
         if (task.estimatedHours && task.estimatedHours > 0) {
-          // Si estimatedHours existe, calculer startDate = dueDate - estimatedHours
           const durationMs = task.estimatedHours * 60 * 60 * 1000;
           startDate = new Date(dueDate.getTime() - durationMs);
         } else {
-          // Par défaut, afficher sur 1 jour uniquement
           startDate = dueDate;
         }
 
-        // Générer toutes les dates entre startDate et dueDate
         const currentDate = new Date(startDate);
-        currentDate.setHours(0, 0, 0, 0); // Normaliser à minuit
+        currentDate.setHours(0, 0, 0, 0);
         const endDate = new Date(dueDate);
-        endDate.setHours(0, 0, 0, 0); // Normaliser à minuit
+        endDate.setHours(0, 0, 0, 0);
 
-        // Limiter à 60 jours maximum pour éviter les boucles infinies
         let dayCount = 0;
         const maxDays = 60;
 
@@ -441,7 +343,6 @@ export function TaskCalendar({
           }
           grouped.get(dayKey)!.push(task);
 
-          // Avancer d'un jour
           currentDate.setDate(currentDate.getDate() + 1);
           dayCount++;
         }
@@ -473,13 +374,11 @@ export function TaskCalendar({
     setActiveTask(null);
   };
 
-  const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-  // Générer les années (5 ans avant et après l'année courante)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
-  // Mois en français
   const months = [
     { value: 0, label: 'Janvier' },
     { value: 1, label: 'Février' },
@@ -508,132 +407,23 @@ export function TaskCalendar({
   return (
     <div className="space-y-4">
       {/* En-tête avec navigation améliorée */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <CalendarIcon className="h-5 w-5" />
-          <div className="flex items-center gap-2">
-            <Select
-              value={currentMonth.getMonth().toString()}
-              onValueChange={handleMonthChange}
-            >
-              <SelectTrigger className="w-[130px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map(month => (
-                  <SelectItem key={month.value} value={month.value.toString()}>
-                    {month.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
 
-            <Select
-              value={currentMonth.getFullYear().toString()}
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger className="w-[100px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map(year => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentMonth(new Date())}
-          >
-            Aujourd'hui
-          </Button>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentMonth(prev => subYears(prev, 1))}
-              title="Année précédente"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-              title="Mois précédent"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-              title="Mois suivant"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentMonth(prev => addYears(prev, 1))}
-              title="Année suivante"
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Légende des événements */}
-      <div className="flex flex-wrap items-center gap-3 text-xs border rounded-lg p-3 bg-muted/30">
-        <span className="font-medium text-muted-foreground">Légende:</span>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-red-200 dark:bg-red-900 border border-red-400 dark:border-red-700"></div>
-          <span>Jours fériés 🇬🇦</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-purple-200 dark:bg-purple-900 border border-purple-400 dark:border-purple-700"></div>
-          <span>Fêtes religieuses ✝️</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-pink-200 dark:bg-pink-900 border border-pink-400 dark:border-pink-700"></div>
-          <span>Célébrations 💝</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-amber-200 dark:bg-amber-900 border border-amber-400 dark:border-amber-700"></div>
-          <span>Événements culturels 🌍</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-900 border-2 border-primary"></div>
-          <span>Aujourd'hui</span>
-        </div>
-      </div>
 
       {/* Calendrier */}
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="border rounded-lg overflow-x-auto bg-card">
-          <div className="min-w-[640px]">
+        <div className="border rounded-lg overflow-x-auto bg-card shadow-sm">
+          <div className="min-w-[700px]">
             {/* En-tête des jours de la semaine */}
-            <div className="grid grid-cols-7 bg-muted/50">
+            <div className="grid grid-cols-7 bg-muted/30 border-b">
               {weekDays.map(day => (
-                <div key={day} className="p-2 text-center text-sm font-semibold border-r last:border-r-0">
+                <div key={day} className="py-2 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {day}
                 </div>
               ))}
             </div>
 
             {/* Grille des jours */}
-            <div className="grid grid-cols-7">
+            <div className="grid grid-cols-7 bg-background">
               {calendarDays.map(day => {
                 const dayKey = format(day, 'yyyy-MM-dd');
                 const dayTasks = tasksByDay.get(dayKey) || [];
@@ -660,8 +450,8 @@ export function TaskCalendar({
         {/* Overlay de drag */}
         <DragOverlay>
           {activeTask && (
-            <Card className={cn("p-2 text-xs cursor-grabbing", getPriorityColor(activeTask.priority))}>
-              <div className="text-white font-medium">{activeTask.name}</div>
+            <Card className={cn("p-2 text-xs cursor-grabbing opacity-90 shadow-xl scale-105", getPriorityColor(activeTask.priority))}>
+              <div className="text-white font-medium truncate">{activeTask.name}</div>
             </Card>
           )}
         </DragOverlay>

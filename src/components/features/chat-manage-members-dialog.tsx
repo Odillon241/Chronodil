@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, UserPlus, Trash2, Crown } from "lucide-react";
+import { SearchWithFilters } from "@/components/ui/search-with-filters";
+import { UserPlus, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { addMembersToConversation, removeMemberFromConversation } from "@/actions/chat.actions";
 import { getAllUsersForChat } from "@/actions/user.actions";
@@ -173,15 +174,15 @@ export function ChatManageMembersDialog({
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Rechercher un membre..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8"
-                  />
-                </div>
+                <SearchWithFilters
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Rechercher un membre..."
+                  variant="simple"
+                  size="sm"
+                  inputWidth="flex-1"
+                  className="flex-1"
+                />
                 <Button
                   size="icon"
                   variant="outline"

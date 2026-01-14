@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-// ⚡ Next.js 16 Best Practice: proxy.ts (remplace middleware.ts)
+// ⚡ Next.js 16 Proxy (remplace middleware.ts qui est déprécié en v16)
 // Gère 2 responsabilités:
 // 1. Protection des routes dashboard (authentification via Supabase)
 // 2. Détection de la locale utilisateur (i18n)
@@ -10,9 +10,9 @@ import { createServerClient } from '@supabase/ssr';
 const DEFAULT_LOCALE = 'fr';
 const LOCALE_COOKIE = 'NEXT_LOCALE';
 
-export default async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Créer une réponse initiale
   let response = NextResponse.next({
     request: {
@@ -21,6 +21,7 @@ export default async function proxy(request: NextRequest) {
   });
 
   // Créer le client Supabase pour le middleware
+  // Configuration officielle recommandée par Supabase pour le middleware
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -30,14 +31,15 @@ export default async function proxy(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          // Mettre à jour les cookies de la requête
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
+          // Créer une nouvelle réponse avec les cookies mis à jour
           response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request,
           });
+          // Appliquer les cookies à la réponse
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -46,19 +48,28 @@ export default async function proxy(request: NextRequest) {
     }
   );
 
-  // Récupérer la session utilisateur
+  // IMPORTANT: Appeler getUser() pour rafraîchir le token et valider la session
+  // Ne JAMAIS faire confiance à getSession() dans le middleware (peut être spoofé)
   const { data: { user }, error } = await supabase.auth.getUser();
 
-  // 1. PROTECTION AUTH: Vérifier l'authentification pour les routes dashboard
+  // 1. PROTECTION AUTH: Bloquer l'accès non authentifié au dashboard
   if (pathname.startsWith('/dashboard')) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+    if (!user || error) {
+      const loginUrl = new URL("/auth/login", request.url);
+      // Ajouter l'URL de redirection après login
+      loginUrl.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
   // 2. Rediriger les utilisateurs connectés depuis les pages auth vers dashboard
-  if (pathname.startsWith('/auth/') && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (pathname.startsWith('/auth/') && user && !error) {
+    // Vérifier s'il y a une URL de redirection
+    const redirectTo = request.nextUrl.searchParams.get('redirectTo');
+    const dashboardUrl = redirectTo && redirectTo.startsWith('/dashboard')
+      ? new URL(redirectTo, request.url)
+      : new URL("/dashboard", request.url);
+    return NextResponse.redirect(dashboardUrl);
   }
 
   // 3. DÉTECTION LOCALE: Configurer le cookie de langue

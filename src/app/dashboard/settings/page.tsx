@@ -71,7 +71,7 @@ export default function SettingsPage() {
   const [isHolidayDialogOpen, setIsHolidayDialogOpen] = useState(false);
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
   const [isInitializingHolidays, setIsInitializingHolidays] = useState(false);
-  
+
   // Calendar state for holidays
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
 
@@ -91,7 +91,7 @@ export default function SettingsPage() {
   // Notification preferences
   const [preferences, setPreferences] = useState<any>(null);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
-  
+
   // État local pour le slider de volume (pour interaction fluide)
   const [localVolume, setLocalVolume] = useState<number>(50);
   const [isTestingSound, setIsTestingSound] = useState(false);
@@ -101,7 +101,7 @@ export default function SettingsPage() {
     vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     autoSubscribe: false,
   });
-  
+
   // Hook de notification avec les préférences actuelles
   // Pour le test, on force toujours l'activation du son
   const {
@@ -129,15 +129,15 @@ export default function SettingsPage() {
   // Fonction de test améliorée qui utilise le son sélectionné avec le volume actuel
   const testSound = async (soundType?: string) => {
     if (isTestingSound) return; // Éviter les tests multiples simultanés
-    
+
     setIsTestingSound(true);
     let typeToTest = soundType || preferences?.notificationSoundType || 'new-notification-3-398649';
-    
+
     // Migration des anciennes valeurs vers les nouvelles
     if (LEGACY_SOUND_MAPPING[typeToTest]) {
       typeToTest = LEGACY_SOUND_MAPPING[typeToTest];
     }
-    
+
     const currentVolume = localVolume / 100;
 
     console.log('[SettingsPage] Test du son:', typeToTest, {
@@ -149,7 +149,7 @@ export default function SettingsPage() {
     try {
       // Chercher d'abord dans les sons disponibles, puis dans tous les sons comme fallback
       let sound = availableSounds.find(s => s.id === typeToTest);
-      
+
       if (!sound) {
         sound = NOTIFICATION_SOUNDS.find(s => s.id === typeToTest);
       }
@@ -185,8 +185,8 @@ export default function SettingsPage() {
           if (!hasResolved) {
             hasResolved = true;
             cleanup();
-            const errorMsg = audio.error 
-              ? `Erreur ${audio.error.code}: ${audio.error.message}` 
+            const errorMsg = audio.error
+              ? `Erreur ${audio.error.code}: ${audio.error.message}`
               : 'Erreur de chargement';
             reject(new Error(errorMsg));
           }
@@ -237,7 +237,7 @@ export default function SettingsPage() {
         error: error.message,
         errorName: error.name,
       });
-      
+
       // Messages d'erreur plus explicites
       if (error.name === 'NotAllowedError') {
         toast.error('Permission audio requise', {
@@ -259,7 +259,7 @@ export default function SettingsPage() {
       setIsTestingSound(false);
     }
   };
-  
+
   // Mettre à jour l'état local quand les préférences changent
   useEffect(() => {
     if (preferences?.notificationSoundVolume !== undefined) {
@@ -410,10 +410,10 @@ export default function SettingsPage() {
         // Migration des anciennes valeurs de son vers les nouvelles
         const legacySoundMapping: Record<string, string> = {
           'default': 'new-notification-3-398649',
-          'soft': 'notification-reussie', 
+          'soft': 'notification-reussie',
           'alert': 'notification',
         };
-        
+
         const prefs = { ...preferencesResult.data };
         if (prefs.notificationSoundType && legacySoundMapping[prefs.notificationSoundType]) {
           const newSoundType = legacySoundMapping[prefs.notificationSoundType];
@@ -422,7 +422,7 @@ export default function SettingsPage() {
           // Sauvegarder la migration en BD (en background)
           updateUserPreferences({ notificationSoundType: newSoundType }).catch(console.error);
         }
-        
+
         setPreferences(prefs);
       }
 
@@ -521,7 +521,7 @@ export default function SettingsPage() {
       // Si on active les notifications de bureau, demander la permission
       if (key === "desktopNotificationsEnabled" && value === true) {
         console.log('[Desktop Notifications] Activating desktop notifications...');
-        
+
         if (!('Notification' in window)) {
           console.error('[Desktop Notifications] Notifications API not supported');
           toast.error("Les notifications ne sont pas supportées par ce navigateur");
@@ -536,7 +536,7 @@ export default function SettingsPage() {
           console.log('[Desktop Notifications] Requesting permission...');
           const permissionResult = await requestPermission();
           console.log('[Desktop Notifications] Permission result:', permissionResult);
-          
+
           if (permissionResult !== 'granted') {
             toast.error("Permission refusée. Les notifications de bureau ne peuvent pas être activées.");
             setIsSavingPreferences(false);
@@ -580,12 +580,12 @@ export default function SettingsPage() {
   };
 
   // Composant réutilisable pour les cartes de sons en liste
-  function SoundOptionCard({ 
-    sound, 
-    isSelected, 
-    onTest, 
-    disabled 
-  }: { 
+  function SoundOptionCard({
+    sound,
+    isSelected,
+    onTest,
+    disabled
+  }: {
     sound: typeof NOTIFICATION_SOUNDS[0];
     isSelected: boolean;
     onTest: () => void;
@@ -593,11 +593,10 @@ export default function SettingsPage() {
   }) {
     return (
       <div
-        className={`flex items-center gap-3 p-3 border rounded-lg transition-all ${
-          isSelected
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-xs'
-            : 'border-border hover:bg-muted/50 hover:border-blue-300 dark:hover:border-blue-700'
-        }`}
+        className={`flex items-center gap-3 p-3 border rounded-lg transition-all ${isSelected
+          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-2xs'
+          : 'border-border hover:bg-muted/50 hover:border-blue-300 dark:hover:border-blue-700'
+          }`}
       >
         <RadioGroupItem
           value={sound.id}
@@ -747,7 +746,7 @@ export default function SettingsPage() {
   ];
 
   // Dates variables pour 2025-2030 (Pâques, Ascension, Pentecôte, fêtes musulmanes)
-  const variableHolidaysByYear: Record<number, Array<{name: string, month: number, day: number, description: string}>> = {
+  const variableHolidaysByYear: Record<number, Array<{ name: string, month: number, day: number, description: string }>> = {
     2025: [
       { name: "Fête de fin du Ramadan (Aïd al-Fitr)", month: 3, day: 30, description: "Fête marquant la fin du mois de Ramadan" },
       { name: "Lundi de Pâques", month: 4, day: 21, description: "Lendemain du dimanche de Pâques" },
@@ -774,7 +773,7 @@ export default function SettingsPage() {
   const handleInitializeGabonHolidays = async (year: number) => {
     const variableHolidays = variableHolidaysByYear[year] || [];
     const totalHolidays = gabonHolidaysTemplate.length + variableHolidays.length;
-    
+
     const confirmed = await showConfirmation({
       title: `Ajouter les jours fériés du Gabon pour ${year}`,
       description: `Voulez-vous ajouter les ${totalHolidays} jours fériés du Gabon pour ${year} ?\n\nNote : Les dates variables (Pâques, fêtes musulmanes) ${variableHolidays.length === 0 ? 'ne sont pas disponibles pour cette année. Seules les dates fixes seront ajoutées.' : 'seront également ajoutées.'}`,
@@ -785,7 +784,7 @@ export default function SettingsPage() {
         try {
           let added = 0;
           let skipped = 0;
-          
+
           // Ajouter les jours fériés fixes
           for (const holiday of gabonHolidaysTemplate) {
             try {
@@ -811,7 +810,7 @@ export default function SettingsPage() {
               }
             }
           }
-          
+
           // Ajouter les jours fériés variables si disponibles
           for (const holiday of variableHolidays) {
             try {
@@ -837,7 +836,7 @@ export default function SettingsPage() {
               }
             }
           }
-          
+
           if (added > 0) {
             toast.success(`${added} jour${added > 1 ? 's' : ''} férié${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''} pour ${year}${skipped > 0 ? ` (${skipped} déjà existant${skipped > 1 ? 's' : ''})` : ''} !`);
           } else if (skipped > 0) {
@@ -870,7 +869,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
           {tab === "holidays" && "Jours fériés"}
@@ -886,7 +885,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Separator />
+      <Separator className="-mx-4 sm:-mx-6 lg:-mx-8 w-auto mb-6" />
 
       {renderContent()}
       <ConfirmationDialog />
@@ -897,12 +896,12 @@ export default function SettingsPage() {
   function renderNotificationsSection() {
     return (
       <div className="space-y-8">
-        {/* Header avec gradient */}
-        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 border border-blue-200/50 dark:border-blue-800/50 p-3 md:p-4">
+        {/* Header minimaliste */}
+        <div className="relative overflow-hidden rounded-lg bg-muted/30 border border-border p-3 md:p-4">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-1.5 md:p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
-                <Bell className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-1.5 md:p-2 rounded-lg bg-muted">
+                <Bell className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
               </div>
               <div>
                 <p className="text-xs md:text-sm text-muted-foreground max-w-2xl">
@@ -915,7 +914,7 @@ export default function SettingsPage() {
               onClick={handleResetPreferences}
               disabled={isSavingPreferences || !preferences}
               size="sm"
-              className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-xs border-blue-200 dark:border-blue-800 hover:bg-white dark:hover:bg-gray-900 h-8 text-xs md:text-sm"
+              className="h-8 text-xs md:text-sm"
             >
               <RotateCcw className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
               Réinitialiser
@@ -942,12 +941,11 @@ export default function SettingsPage() {
             {/* Grille des options principales */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Carte Sons */}
-              <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+              <Card className="group relative overflow-hidden border transition-all duration-200 hover:border-foreground/20">
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
-                      <Volume2 className="h-6 w-6 text-white" />
+                    <div className="p-3 rounded-lg bg-muted">
+                      <Volume2 className="h-6 w-6 text-foreground" />
                     </div>
                     <Switch
                       checked={preferences.notificationSoundEnabled}
@@ -967,13 +965,13 @@ export default function SettingsPage() {
                   {preferences.notificationSoundEnabled ? (
                     <>
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400">
+                        <Badge variant="outline" className="bg-primary/10 border-primary/30 text-primary">
                           <CheckCircle2 className="h-3 w-3 mr-1.5" />
                           Activé
                         </Badge>
                         <div className="flex items-center gap-2">
                           <Volume2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                          <span className="text-lg font-bold text-foreground">
                             {Math.round(localVolume)}%
                           </span>
                         </div>
@@ -984,7 +982,7 @@ export default function SettingsPage() {
                           size="sm"
                           onClick={() => testSound(preferences.notificationSoundType || 'new-notification-3-398649')}
                           disabled={isSavingPreferences || !preferences.notificationSoundEnabled || isTestingSound}
-                          className="w-full hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                          className="w-full"
                         >
                           {isTestingSound ? (
                             <>
@@ -1009,12 +1007,11 @@ export default function SettingsPage() {
               </Card>
 
               {/* Carte Email */}
-              <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-300 dark:hover:border-amber-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-linear-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+              <Card className="group relative overflow-hidden border transition-all duration-200 hover:border-foreground/20">
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-linear-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25">
-                      <Mail className="h-6 w-6 text-white" />
+                    <div className="p-3 rounded-lg bg-muted">
+                      <Mail className="h-6 w-6 text-foreground" />
                     </div>
                     <Switch
                       checked={preferences.emailNotificationsEnabled}
@@ -1032,7 +1029,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="relative z-10">
                   {preferences.emailNotificationsEnabled ? (
-                    <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400">
+                    <Badge variant="outline" className="bg-primary/10 border-primary/30 text-primary">
                       <CheckCircle2 className="h-3 w-3 mr-1.5" />
                       Activé
                     </Badge>
@@ -1045,12 +1042,11 @@ export default function SettingsPage() {
               </Card>
 
               {/* Carte Bureau */}
-              <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10 hover:border-green-300 dark:hover:border-green-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-linear-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+              <Card className="group relative overflow-hidden border transition-all duration-200 hover:border-foreground/20">
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-linear-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/25">
-                      <Monitor className="h-6 w-6 text-white" />
+                    <div className="p-3 rounded-lg bg-muted">
+                      <Monitor className="h-6 w-6 text-foreground" />
                     </div>
                     <Switch
                       checked={preferences.desktopNotificationsEnabled}
@@ -1069,7 +1065,7 @@ export default function SettingsPage() {
                 <CardContent className="relative z-10 space-y-4">
                   <div className="flex items-center justify-between">
                     {preferences.desktopNotificationsEnabled ? (
-                      <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400">
+                      <Badge variant="outline" className="bg-primary/10 border-primary/30 text-primary">
                         <CheckCircle2 className="h-3 w-3 mr-1.5" />
                         Activé
                       </Badge>
@@ -1116,10 +1112,10 @@ export default function SettingsPage() {
                           if (currentPermission === 'granted') {
                             try {
                               console.log('[Desktop Notifications] Creating notification...');
-                              
+
                               // Utiliser une icône qui existe vraiment
                               const iconUrl = "/assets/media/icône du logoicône logo de chronodil.svg";
-                              
+
                               const notification = new Notification("🔔 Test de notification", {
                                 body: "Ceci est une notification de test depuis Chronodil. Si vous voyez ce message, les notifications fonctionnent correctement !",
                                 icon: iconUrl,
@@ -1128,41 +1124,41 @@ export default function SettingsPage() {
                                 requireInteraction: false, // La notification se ferme automatiquement
                                 silent: false, // Permettre le son système si activé
                               } as any);
-                              
+
                               console.log('[Desktop Notifications] Notification created:', {
                                 title: notification.title,
                                 body: notification.body,
                                 icon: iconUrl,
                               });
-                              
+
                               // Gérer les événements de la notification
                               notification.onclick = () => {
                                 console.log('[Desktop Notifications] Notification clicked');
                                 window.focus(); // Focus sur la fenêtre
                                 notification.close();
                               };
-                              
+
                               notification.onshow = () => {
                                 console.log('[Desktop Notifications] Notification displayed');
                                 toast.success("Notification de test envoyée et affichée !");
                               };
-                              
+
                               notification.onerror = (error) => {
                                 console.error('[Desktop Notifications] Notification error:', error);
                                 toast.error("Erreur lors de l'affichage de la notification");
                               };
-                              
+
                               notification.onclose = () => {
                                 console.log('[Desktop Notifications] Notification closed');
                               };
-                              
+
                               // Fermer automatiquement après 10 secondes
                               setTimeout(() => {
                                 if (notification) {
                                   notification.close();
                                 }
                               }, 10000);
-                              
+
                             } catch (error) {
                               console.error('[Desktop Notifications] Error creating notification:', error);
                               toast.error(`Erreur lors de l'envoi de la notification: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
@@ -1183,16 +1179,16 @@ export default function SettingsPage() {
                     <div className="text-xs text-muted-foreground">
                       {(() => {
                         // Utiliser la permission réelle du navigateur pour l'affichage
-                        const browserPermission = typeof window !== 'undefined' && 'Notification' in window 
-                          ? Notification.permission 
+                        const browserPermission = typeof window !== 'undefined' && 'Notification' in window
+                          ? Notification.permission
                           : permission;
-                        
+
                         return browserPermission === 'granted' ? (
-                          <span className="text-green-600 dark:text-green-400">✓ Permission accordée</span>
+                          <span className="text-primary">✓ Permission accordée</span>
                         ) : browserPermission === 'denied' ? (
-                          <span className="text-red-600 dark:text-red-400">✗ Permission refusée - Activez dans les paramètres du navigateur</span>
+                          <span className="text-destructive">✗ Permission refusée - Activez dans les paramètres du navigateur</span>
                         ) : (
-                          <span className="text-amber-600 dark:text-amber-400">⚠ Permission en attente - Cliquez sur "Tester" pour demander</span>
+                          <span className="text-muted-foreground">⚠ Permission en attente - Cliquez sur "Tester" pour demander</span>
                         );
                       })()}
                     </div>
@@ -1201,12 +1197,11 @@ export default function SettingsPage() {
               </Card>
 
               {/* Carte Push Notifications */}
-              <Card className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-300 dark:hover:border-purple-700 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-linear-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0" />
+              <Card className="group relative overflow-hidden border transition-all duration-200 hover:border-foreground/20">
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-linear-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/25">
-                      <Bell className="h-6 w-6 text-white" />
+                    <div className="p-3 rounded-lg bg-muted">
+                      <Bell className="h-6 w-6 text-foreground" />
                     </div>
                     <Switch
                       checked={pushSubscription.isSubscribed}
@@ -1239,7 +1234,7 @@ export default function SettingsPage() {
                 <CardContent className="relative z-10 space-y-4">
                   <div className="flex items-center justify-between">
                     {pushSubscription.isSubscribed ? (
-                      <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400">
+                      <Badge variant="outline" className="bg-primary/10 border-primary/30 text-primary">
                         <CheckCircle2 className="h-3 w-3 mr-1.5" />
                         Abonné
                       </Badge>
@@ -1275,8 +1270,8 @@ export default function SettingsPage() {
                   </div>
                   {!pushSubscription.isSupported && (
                     <div className="text-xs text-muted-foreground">
-                      <span className="text-amber-600 dark:text-amber-400">
-                        {pushSubscription.error?.includes('VAPID') 
+                      <span className="text-muted-foreground">
+                        {pushSubscription.error?.includes('VAPID')
                           ? '⚠ Configuration serveur requise (clés VAPID)'
                           : '⚠ Non supporté par ce navigateur'
                         }
@@ -1285,14 +1280,14 @@ export default function SettingsPage() {
                   )}
                   {pushSubscription.isSupported && pushSubscription.permission === 'denied' && (
                     <div className="text-xs text-muted-foreground">
-                      <span className="text-red-600 dark:text-red-400">
+                      <span className="text-destructive">
                         ✗ Permission refusée - Activez dans les paramètres du navigateur
                       </span>
                     </div>
                   )}
                   {pushSubscription.isSupported && pushSubscription.permission === 'default' && !pushSubscription.isSubscribed && (
                     <div className="text-xs text-muted-foreground">
-                      <span className="text-amber-600 dark:text-amber-400">
+                      <span className="text-muted-foreground">
                         ⚠ Activez pour recevoir des notifications même si l'application est fermée
                       </span>
                     </div>
@@ -1324,7 +1319,7 @@ export default function SettingsPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <Tabs defaultValue="all" className="w-full">
                       <TabsList className="grid w-full grid-cols-4 mb-4">
                         <TabsTrigger value="all" className="text-xs sm:text-sm">
@@ -1340,7 +1335,7 @@ export default function SettingsPage() {
                           Alerte
                         </TabsTrigger>
                       </TabsList>
-                      
+
                       {/* Onglet : Tous les sons */}
                       <TabsContent value="all" className="space-y-2">
                         <RadioGroup
@@ -1378,12 +1373,12 @@ export default function SettingsPage() {
                           )}
                         </RadioGroup>
                       </TabsContent>
-                      
+
                       {/* Onglets par catégorie */}
                       {(['classic', 'success', 'error'] as SoundCategory[]).map((category) => {
                         const soundsInCategory = soundsByCategory[category];
                         if (soundsInCategory.length === 0) return null;
-                        
+
                         return (
                           <TabsContent key={category} value={category} className="space-y-2">
                             <RadioGroup
@@ -1486,12 +1481,12 @@ export default function SettingsPage() {
   function renderHolidaysSection() {
     // Convertir les jours fériés en dates pour le calendrier
     const holidayDates = holidays.map((holiday) => startOfDay(new Date(holiday.date)));
-    
+
     // Fonction pour vérifier si une date est un jour férié
     const isHoliday = (date: Date) => {
       return holidayDates.some((holidayDate) => isSameDay(date, holidayDate));
     };
-    
+
     // Obtenir le nom du jour férié pour une date donnée
     const getHolidayName = (date: Date) => {
       const holiday = holidays.find((h) => isSameDay(new Date(h.date), date));
@@ -1502,376 +1497,376 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 mb-6">
           <div className="flex flex-col sm:flex-row gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={isInitializingHolidays}
+                  className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white text-xs sm:text-sm"
+                >
+                  {isInitializingHolidays ? "Ajout en cours..." : "🇬🇦 Initialiser jours fériés"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="end">
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm">Choisir l'année</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[2025, 2026, 2027, 2028, 2029, 2030].map((year) => (
                       <Button
+                        key={year}
                         variant="outline"
+                        onClick={() => handleInitializeGabonHolidays(year)}
                         disabled={isInitializingHolidays}
-                        className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-white text-xs sm:text-sm"
+                        className="w-full"
                       >
-                        {isInitializingHolidays ? "Ajout en cours..." : "🇬🇦 Initialiser jours fériés"}
+                        {year}
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-4" align="end">
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-sm">Choisir l'année</h4>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[2025, 2026, 2027, 2028, 2029, 2030].map((year) => (
-                            <Button
-                              key={year}
-                              variant="outline"
-                              onClick={() => handleInitializeGabonHolidays(year)}
-                              disabled={isInitializingHolidays}
-                              className="w-full"
-                            >
-                              {year}
-                            </Button>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          8 dates fixes + 5 dates variables (selon l'année)
-                        </p>
-                        <p className="text-xs text-amber-600 dark:text-amber-500">
-                          💡 Astuce : Vous pouvez ajouter plusieurs années
-                        </p>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                  <Dialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
-                        <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                        Ajouter
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Nouveau jour férié</DialogTitle>
-                      <DialogDescription>
-                        Ajoutez un jour férié au calendrier
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateHoliday} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Nom *</Label>
-                        <Input
-                          id="name"
-                          value={holidayForm.name}
-                          onChange={(e) => setHolidayForm({ ...holidayForm, name: e.target.value })}
-                          placeholder="Ex: Noël"
-                          required
-                        />
-                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    8 dates fixes + 5 dates variables (selon l'année)
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-500">
+                    💡 Astuce : Vous pouvez ajouter plusieurs années
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Dialog open={isHolidayDialogOpen} onOpenChange={setIsHolidayDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
+                  <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  Ajouter
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Nouveau jour férié</DialogTitle>
+                  <DialogDescription>
+                    Ajoutez un jour férié au calendrier
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateHoliday} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nom *</Label>
+                    <Input
+                      id="name"
+                      value={holidayForm.name}
+                      onChange={(e) => setHolidayForm({ ...holidayForm, name: e.target.value })}
+                      placeholder="Ex: Noël"
+                      required
+                    />
+                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Date *</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start">
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {format(holidayForm.date, "dd/MM/yyyy", { locale: fr })}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={holidayForm.date}
-                              onSelect={(d: Date | undefined) => d && setHolidayForm({ ...holidayForm, date: d })}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                          id="description"
-                          value={holidayForm.description}
-                          onChange={(e) => setHolidayForm({ ...holidayForm, description: e.target.value })}
-                          placeholder="Description optionnelle..."
-                          rows={2}
-                        />
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => setIsHolidayDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
-                          Annuler
+                  <div className="space-y-2">
+                    <Label>Date *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {format(holidayForm.date, "dd/MM/yyyy", { locale: fr })}
                         </Button>
-                        <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
-                          Ajouter
-                        </Button>
-                      </div>
-                    </form>
-                    </DialogContent>
-                  </Dialog>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={holidayForm.date}
+                          onSelect={(d: Date | undefined) => d && setHolidayForm({ ...holidayForm, date: d })}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={holidayForm.description}
+                      onChange={(e) => setHolidayForm({ ...holidayForm, description: e.target.value })}
+                      placeholder="Description optionnelle..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                    <Button type="button" variant="outline" onClick={() => setIsHolidayDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
+                      Annuler
+                    </Button>
+                    <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
+                      Ajouter
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         <div>
-              {holidays.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">Aucun jour férié défini</p>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        disabled={isInitializingHolidays}
-                        className="border-primary text-primary hover:bg-primary hover:text-white"
-                      >
-                        🇬🇦 Initialiser avec les jours fériés du Gabon
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-4" align="center">
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-sm">Choisir l'année</h4>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[2025, 2026, 2027, 2028, 2029, 2030].map((year) => (
-                            <Button
-                              key={year}
-                              variant="outline"
-                              onClick={() => handleInitializeGabonHolidays(year)}
-                              disabled={isInitializingHolidays}
-                              className="w-full"
-                            >
-                              {year}
-                            </Button>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          8 dates fixes + 5 dates variables (selon l'année)
-                        </p>
-                        <p className="text-xs text-amber-600 dark:text-amber-500">
-                          💡 Astuce : Vous pouvez ajouter plusieurs années
-                        </p>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Calendrier avec jours fériés marqués */}
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="w-full lg:w-auto">
-                      <div className="flex flex-col items-center lg:items-start">
-                        <h3 className="text-sm font-medium mb-3">Calendrier des jours fériés</h3>
-                        <Calendar
-                          mode="single"
-                          selected={selectedCalendarDate}
-                          onSelect={setSelectedCalendarDate}
-                          locale={fr}
-                          modifiers={{
-                            holiday: (date) => isHoliday(date),
-                          }}
-                          modifiersClassNames={{
-                            holiday: "bg-amber-100! dark:bg-amber-900/30! text-amber-900! dark:text-amber-100! font-semibold border border-amber-300 dark:border-amber-700",
-                          }}
-                          className="rounded-md border"
-                        />
-                        <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                          <div className="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700"></div>
-                          <span>Jour férié</span>
-                        </div>
-                        {selectedCalendarDate && isHoliday(selectedCalendarDate) && (
-                          <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
-                            <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
-                              {getHolidayName(selectedCalendarDate)}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+          {holidays.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">Aucun jour férié défini</p>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={isInitializingHolidays}
+                    className="border-primary text-primary hover:bg-primary hover:text-white"
+                  >
+                    🇬🇦 Initialiser avec les jours fériés du Gabon
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4" align="center">
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Choisir l'année</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[2025, 2026, 2027, 2028, 2029, 2030].map((year) => (
+                        <Button
+                          key={year}
+                          variant="outline"
+                          onClick={() => handleInitializeGabonHolidays(year)}
+                          disabled={isInitializingHolidays}
+                          className="w-full"
+                        >
+                          {year}
+                        </Button>
+                      ))}
                     </div>
-
-                    {/* Liste des jours fériés */}
-                    <div className="flex-1">
-                      {/* Desktop table view */}
-                      <div className="hidden md:block border rounded-lg overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b bg-muted/50">
-                              <th className="text-left p-3 font-medium text-sm">Nom</th>
-                              <th className="text-left p-3 font-medium text-sm">Date</th>
-                              <th className="text-left p-3 font-medium text-sm">Description</th>
-                              <th className="text-right p-3 font-medium text-sm">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {holidays.map((holiday) => (
-                              <tr key={holiday.id} className="border-b last:border-0 hover:bg-muted/30">
-                                <td className="p-3 font-medium text-sm">{holiday.name}</td>
-                                <td className="p-3 text-sm text-muted-foreground">
-                                  {format(new Date(holiday.date), "dd/MM/yyyy")}
-                                </td>
-                                <td className="p-3 text-sm text-muted-foreground">
-                                  {holiday.description || "-"}
-                                </td>
-                                <td className="p-3 text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteHoliday(holiday.id)}
-                                    className="text-red-600 hover:text-red-800"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      8 dates fixes + 5 dates variables (selon l'année)
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-500">
+                      💡 Astuce : Vous pouvez ajouter plusieurs années
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Calendrier avec jours fériés marqués */}
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="w-full lg:w-auto">
+                  <div className="flex flex-col items-center lg:items-start">
+                    <h3 className="text-sm font-medium mb-3">Calendrier des jours fériés</h3>
+                    <Calendar
+                      mode="single"
+                      selected={selectedCalendarDate}
+                      onSelect={setSelectedCalendarDate}
+                      locale={fr}
+                      modifiers={{
+                        holiday: (date) => isHoliday(date),
+                      }}
+                      modifiersClassNames={{
+                        holiday: "bg-amber-100! dark:bg-amber-900/30! text-amber-900! dark:text-amber-100! font-semibold border border-amber-300 dark:border-amber-700",
+                      }}
+                      className="rounded-md border"
+                    />
+                    <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700"></div>
+                      <span>Jour férié</span>
+                    </div>
+                    {selectedCalendarDate && isHoliday(selectedCalendarDate) && (
+                      <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
+                        <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
+                          {getHolidayName(selectedCalendarDate)}
+                        </p>
                       </div>
+                    )}
+                  </div>
+                </div>
 
-                      {/* Mobile card view */}
-                      <div className="md:hidden space-y-2">
+                {/* Liste des jours fériés */}
+                <div className="flex-1">
+                  {/* Desktop table view */}
+                  <div className="hidden md:block border rounded-lg overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="text-left p-3 font-medium text-sm">Nom</th>
+                          <th className="text-left p-3 font-medium text-sm">Date</th>
+                          <th className="text-left p-3 font-medium text-sm">Description</th>
+                          <th className="text-right p-3 font-medium text-sm">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {holidays.map((holiday) => (
-                          <div key={holiday.id} className="border rounded-lg p-3 space-y-2">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="font-medium text-sm">{holiday.name}</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {format(new Date(holiday.date), "dd/MM/yyyy")}
-                                </div>
-                              </div>
+                          <tr key={holiday.id} className="border-b last:border-0 hover:bg-muted/30">
+                            <td className="p-3 font-medium text-sm">{holiday.name}</td>
+                            <td className="p-3 text-sm text-muted-foreground">
+                              {format(new Date(holiday.date), "dd/MM/yyyy")}
+                            </td>
+                            <td className="p-3 text-sm text-muted-foreground">
+                              {holiday.description || "-"}
+                            </td>
+                            <td className="p-3 text-right">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteHoliday(holiday.id)}
-                                className="text-red-600 hover:text-red-800 -mt-1 -mr-2"
+                                className="text-red-600 hover:text-red-800"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                            </div>
-                            {holiday.description && (
-                              <div className="text-xs text-muted-foreground border-t pt-2">
-                                {holiday.description}
-                              </div>
-                            )}
-                          </div>
+                            </td>
+                          </tr>
                         ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile card view */}
+                  <div className="md:hidden space-y-2">
+                    {holidays.map((holiday) => (
+                      <div key={holiday.id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{holiday.name}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {format(new Date(holiday.date), "dd/MM/yyyy")}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteHoliday(holiday.id)}
+                            className="text-red-600 hover:text-red-800 -mt-1 -mr-2"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {holiday.description && (
+                          <div className="text-xs text-muted-foreground border-t pt-2">
+                            {holiday.description}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-    // Section Départements
-    function renderDepartmentsSection() {
-      return (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <CardTitle className="text-lg sm:text-xl">Départements</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
-                    Gérez les départements de votre organisation
-                  </CardDescription>
-                </div>
-                <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
-                      <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                      Ajouter
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Nouveau département</DialogTitle>
-                      <DialogDescription>
-                        Créez un nouveau département
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateDepartment} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="dept-name">Nom *</Label>
-                        <Input
-                          id="dept-name"
-                          value={departmentForm.name}
-                          onChange={(e) => setDepartmentForm({ ...departmentForm, name: e.target.value })}
-                          placeholder="Ex: Développement"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="dept-code">Code *</Label>
-                        <Input
-                          id="dept-code"
-                          value={departmentForm.code}
-                          onChange={(e) => setDepartmentForm({ ...departmentForm, code: e.target.value.toUpperCase() })}
-                          placeholder="Ex: DEV"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="dept-description">Description</Label>
-                        <Textarea
-                          id="dept-description"
-                          value={departmentForm.description}
-                          onChange={(e) => setDepartmentForm({ ...departmentForm, description: e.target.value })}
-                          placeholder="Description optionnelle..."
-                          rows={2}
-                        />
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => setIsDepartmentDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
-                          Annuler
-                        </Button>
-                        <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
-                          Créer
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+  // Section Départements
+  function renderDepartmentsSection() {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="text-lg sm:text-xl">Départements</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  Gérez les départements de votre organisation
+                </CardDescription>
               </div>
-            </CardHeader>
-            <CardContent>
-              {departments.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Aucun département défini</p>
-              ) : (
-                <div className="space-y-2">
-                  {departments.map((dept) => (
-                    <div
-                      key={dept.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-muted/50 gap-3"
-                    >
-                      <div className="flex items-start sm:items-center gap-3 flex-1">
-                        <Building2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5 sm:mt-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm sm:text-base">{dept.name}</div>
-                          <div className="text-xs sm:text-sm text-muted-foreground">
-                            Code: {dept.code} • {dept._count.User} utilisateur(s) • {dept._count.Project} projet(s)
-                          </div>
-                          {dept.description && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {dept.description}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteDepartment(dept.id)}
-                        className="self-end sm:self-center"
-                      >
-                        <Trash2 className="h-4 w-4" />
+              <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
+                    <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    Ajouter
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Nouveau département</DialogTitle>
+                    <DialogDescription>
+                      Créez un nouveau département
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateDepartment} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dept-name">Nom *</Label>
+                      <Input
+                        id="dept-name"
+                        value={departmentForm.name}
+                        onChange={(e) => setDepartmentForm({ ...departmentForm, name: e.target.value })}
+                        placeholder="Ex: Développement"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dept-code">Code *</Label>
+                      <Input
+                        id="dept-code"
+                        value={departmentForm.code}
+                        onChange={(e) => setDepartmentForm({ ...departmentForm, code: e.target.value.toUpperCase() })}
+                        placeholder="Ex: DEV"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dept-description">Description</Label>
+                      <Textarea
+                        id="dept-description"
+                        value={departmentForm.description}
+                        onChange={(e) => setDepartmentForm({ ...departmentForm, description: e.target.value })}
+                        placeholder="Description optionnelle..."
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                      <Button type="button" variant="outline" onClick={() => setIsDepartmentDialogOpen(false)} className="w-full sm:w-auto text-xs sm:text-sm">
+                        Annuler
+                      </Button>
+                      <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary text-xs sm:text-sm">
+                        Créer
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {departments.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">Aucun département défini</p>
+            ) : (
+              <div className="space-y-2">
+                {departments.map((dept) => (
+                  <div
+                    key={dept.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-muted/50 gap-3"
+                  >
+                    <div className="flex items-start sm:items-center gap-3 flex-1">
+                      <Building2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5 sm:mt-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm sm:text-base">{dept.name}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">
+                          Code: {dept.code} • {dept._count.User} utilisateur(s) • {dept._count.Project} projet(s)
+                        </div>
+                        {dept.description && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {dept.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteDepartment(dept.id)}
+                      className="self-end sm:self-center"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Section Général
   function renderGeneralSection() {
@@ -1889,40 +1884,40 @@ export default function SettingsPage() {
           </Button>
         </div>
 
-          {!generalSettings ? (
-            <Card>
-              <CardContent className="py-12">
-                <div className="flex flex-col items-center gap-4">
-                  <Spinner className="size-6" />
-                  <p className="text-center text-muted-foreground">Chargement des paramètres...</p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {/* Appearance Section */}
-              <AppearanceSection
-                settings={generalSettings}
-                onUpdate={handleUpdateGeneralSetting}
-                isSaving={isSavingGeneralSettings}
-              />
+        {!generalSettings ? (
+          <Card>
+            <CardContent className="py-12">
+              <div className="flex flex-col items-center gap-4">
+                <Spinner className="size-6" />
+                <p className="text-center text-muted-foreground">Chargement des paramètres...</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {/* Appearance Section */}
+            <AppearanceSection
+              settings={generalSettings}
+              onUpdate={handleUpdateGeneralSetting}
+              isSaving={isSavingGeneralSettings}
+            />
 
-              {/* Localization Section */}
-              <LocalizationSection
-                settings={generalSettings}
-                onUpdate={handleUpdateGeneralSetting}
-                isSaving={isSavingGeneralSettings}
-              />
+            {/* Localization Section */}
+            <LocalizationSection
+              settings={generalSettings}
+              onUpdate={handleUpdateGeneralSetting}
+              isSaving={isSavingGeneralSettings}
+            />
 
-              {/* Accessibility Section */}
-              <AccessibilitySection
-                settings={generalSettings}
-                onUpdate={handleUpdateGeneralSetting}
-                isSaving={isSavingGeneralSettings}
-              />
-            </div>
-          )}
-        </div>
-      );
-    }
+            {/* Accessibility Section */}
+            <AccessibilitySection
+              settings={generalSettings}
+              onUpdate={handleUpdateGeneralSetting}
+              isSaving={isSavingGeneralSettings}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
 }

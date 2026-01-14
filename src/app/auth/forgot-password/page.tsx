@@ -1,39 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { resetPassword } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { AuthLayout, AuthLogo } from "@/components/auth";
 import { toast } from "sonner";
-import { Loader2, Mail } from "lucide-react";
-
-// ============================================================================
-// Constantes
-// ============================================================================
-
-const QUOTES = [
-  '"Réinitialisez votre mot de passe en toute sécurité."',
-  '"Votre sécurité est notre priorité."',
-  '"Un code de vérification vous sera envoyé."',
-];
-
-// ============================================================================
-// Schéma de validation
-// ============================================================================
+import { Loader2, Mail, ArrowLeft } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -41,69 +20,55 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-// ============================================================================
-// Composant Email Envoyé
-// ============================================================================
-
-interface EmailSentStateProps {
-  email: string;
-  onResend: () => void;
-  onContinue: () => void;
-}
-
-function EmailSentState({ email, onResend, onContinue }: EmailSentStateProps) {
+function EmailSentState({ email, onResend, isResending }: { email: string, onResend: () => void, isResending: boolean }) {
   return (
-    <AuthLayout showBackground={false}>
-      <Card className="w-full max-w-md relative z-10">
-        <CardHeader className="space-y-1">
-          <div className="mb-4">
-            <AuthLogo />
-          </div>
-          <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-primary/10 p-3">
-              <Mail className="h-8 w-8 text-primary" />
-            </div>
-          </div>
-          <CardTitle className="text-center">Code envoyé !</CardTitle>
-          <CardDescription className="text-center font-heading mt-4">
-            Un code de vérification a été envoyé à
-            <br />
-            <strong className="text-foreground">{email}</strong>
-            <br />
-            <br />
-            Vérifiez votre boîte de réception et entrez le code sur la page
-            suivante.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="button" className="w-full" onClick={onContinue}>
-            Entrer le code
-          </Button>
-          <Link href="/auth/login" className="w-full">
-            <Button type="button" variant="outline" className="w-full">
+    <AuthLayout title="Email envoyé !" description="Vérifiez votre boîte de réception">
+      <div className="flex flex-col items-center space-y-6 text-center">
+        <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/20">
+          <Mail className="h-10 w-10 text-blue-600 dark:text-blue-500" />
+        </div>
+
+        <Alert className="bg-muted/50 border-primary/20 text-left">
+          <AlertTitle>Lien de réinitialisation envoyé</AlertTitle>
+          <AlertDescription className="mt-2 text-muted-foreground text-sm">
+            Un email a été envoyé à <span className="font-semibold text-foreground">{email}</span>. Cliquez sur le lien pour définir un nouveau mot de passe.
+            <br className="my-2" />
+            <span className="text-xs italic opacity-80">(Le lien expire dans 1 heure)</span>
+          </AlertDescription>
+        </Alert>
+
+        <div className="w-full space-y-4 pt-2">
+          <Link href="/auth/login" className="w-full block">
+            <Button variant="outline" className="w-full">
               Retour à la connexion
             </Button>
           </Link>
-          <button
-            type="button"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+
+          <Button
+            variant="ghost"
             onClick={onResend}
+            disabled={isResending}
+            className="text-muted-foreground hover:text-primary"
+            size="sm"
           >
-            Renvoyer le code
-          </button>
-        </CardFooter>
-      </Card>
+            {isResending ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Envoi...
+              </span>
+            ) : (
+              "Vous n'avez rien reçu ? Renvoyer l'email"
+            )}
+          </Button>
+        </div>
+      </div>
     </AuthLayout>
   );
 }
 
-// ============================================================================
-// Composant Formulaire
-// ============================================================================
-
 export default function ForgotPasswordPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -115,126 +80,104 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const sendResetEmail = async (emailToSend: string) => {
-    setIsLoading(true);
+  const sendResetEmail = async (emailToSend: string, isResend = false) => {
+    if (isResend) {
+      setIsResending(true);
+    } else {
+      setIsLoading(true);
+    }
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailToSend }),
-      });
+      const { error } = await resetPassword(emailToSend);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        toast.error(
-          result.error?.message || "Erreur lors de l'envoi de l'email"
-        );
+      if (error) {
+        let errorMessage = error.message;
+        if (errorMessage.includes("User not found")) {
+          errorMessage = "Aucun compte n'est associé à cet email";
+        } else if (errorMessage.includes("rate limit")) {
+          errorMessage = "Trop de demandes. Veuillez patienter quelques minutes.";
+        }
+        toast.error(errorMessage);
         return false;
       }
-
       return true;
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Reset password error:", error);
       toast.error("Une erreur s'est produite");
       return false;
     } finally {
       setIsLoading(false);
+      setIsResending(false);
     }
   };
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setEmail(data.email);
     const success = await sendResetEmail(data.email);
-
     if (success) {
       setEmailSent(true);
-      toast.success("Code envoyé ! Vérifiez votre boîte de réception.");
+      toast.success("Email envoyé ! Vérifiez votre boîte de réception.");
     }
   };
 
   const handleResend = async () => {
     if (email) {
-      const success = await sendResetEmail(email);
+      const success = await sendResetEmail(email, true);
       if (success) {
-        toast.success("Un nouveau code a été envoyé !");
+        toast.success("Un nouvel email a été envoyé !");
       }
     }
   };
 
-  const handleContinue = () => {
-    router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}`);
-  };
-
-  // Si l'email a été envoyé avec succès
   if (emailSent) {
-    return (
-      <EmailSentState
-        email={email}
-        onResend={handleResend}
-        onContinue={handleContinue}
-      />
-    );
+    return <EmailSentState email={email} onResend={handleResend} isResending={isResending} />;
   }
 
-  // Formulaire de demande de réinitialisation
   return (
-    <AuthLayout quotes={QUOTES}>
-      <Card className="w-full max-w-md relative z-10">
-        <CardHeader className="space-y-1">
-          <div className="mb-4">
-            <AuthLogo />
-          </div>
-          <CardTitle className="text-center">Mot de passe oublié ?</CardTitle>
-          <CardDescription className="text-center font-heading">
-            Entrez votre email pour recevoir un code de vérification
-          </CardDescription>
-        </CardHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nom@exemple.com"
-                {...register("email")}
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Envoi en cours...
-                </>
-              ) : (
-                "Envoyer le code"
-              )}
-            </Button>
-
-            <p className="text-sm text-center text-muted-foreground">
-              Vous vous souvenez de votre mot de passe ?{" "}
-              <Link
-                href="/auth/login"
-                className="text-primary hover:text-primary/80 font-medium"
-              >
-                Se connecter
-              </Link>
+    <AuthLayout
+      title="Mot de passe oublié ?"
+      description="Nous allons vous aider à le récupérer"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="nom@exemple.com"
+            {...register("email")}
+            disabled={isLoading}
+            autoComplete="email"
+            className="bg-transparent"
+          />
+          {errors.email && (
+            <p className="text-sm text-destructive font-medium">
+              {errors.email.message}
             </p>
-          </CardFooter>
-        </form>
-      </Card>
+          )}
+        </div>
+
+        <Button type="submit" className="w-full mt-2" disabled={isLoading} size="lg">
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Envoi en cours...
+            </span>
+          ) : (
+            "Envoyer le lien de réinitialisation"
+          )}
+        </Button>
+
+        <div className="pt-4 text-center">
+          <Link
+            href="/auth/login"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour à la connexion
+          </Link>
+        </div>
+      </form>
     </AuthLayout>
   );
 }

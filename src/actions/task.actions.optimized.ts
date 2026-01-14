@@ -38,7 +38,7 @@ export const getMyTasksOptimized = actionClient
     })
   )
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -188,7 +188,7 @@ export const getAllTasksOptimized = actionClient
     })
   )
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -290,7 +290,7 @@ export const getAllTasksOptimized = actionClient
 export const getTaskByIdOptimized = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");
@@ -453,7 +453,7 @@ export const getTasksByProjectIdOptimized = actionClient
     })
   )
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
 
     if (!session) {
       throw new Error("Non authentifié");

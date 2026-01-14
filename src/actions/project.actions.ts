@@ -119,6 +119,7 @@ export const getProjects = authActionClient
           select: {
             id: true,
             name: true,
+            code: true,
           },
         },
         User: {
@@ -126,6 +127,7 @@ export const getProjects = authActionClient
             id: true,
             name: true,
             email: true,
+            role: true,
           },
         },
         ProjectMember: {
@@ -188,6 +190,7 @@ export const getProjectById = authActionClient
           select: {
             id: true,
             name: true,
+            code: true,
           },
         },
         User: {
@@ -195,6 +198,7 @@ export const getProjectById = authActionClient
             id: true,
             name: true,
             email: true,
+            role: true,
           },
         },
         ProjectMember: {

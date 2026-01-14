@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar, CheckCircle } from "lucide-react";
+import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar, CheckCircle, Info, History } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -13,8 +13,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
@@ -28,7 +26,6 @@ import {
 import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
 import { useRouter, useParams } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { BackButton } from "@/components/features/back-button";
 import { useSession } from "@/lib/auth-client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -187,7 +184,6 @@ export default function HRTimesheetDetailPage() {
       const result = await exportHRTimesheetToExcel({ timesheetId });
 
       if (result?.data) {
-        // Convertir base64 en blob
         const byteCharacters = atob(result.data.fileData);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -196,7 +192,6 @@ export default function HRTimesheetDetailPage() {
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: result.data.mimeType });
 
-        // Créer un lien de téléchargement
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -221,17 +216,13 @@ export default function HRTimesheetDetailPage() {
   const handleApprove = async (data: ValidationInput) => {
     try {
       let result;
-
-      // Déterminer quelle action utiliser selon le statut
       if (timesheet?.status === "PENDING") {
-        // Validation manager
         result = await managerApproveHRTimesheet({
           timesheetId,
           action: "approve",
           comments: data.comments,
         });
       } else if (timesheet?.status === "MANAGER_APPROVED") {
-        // Validation Odillon/Admin
         result = await odillonApproveHRTimesheet({
           timesheetId,
           action: "approve",
@@ -259,17 +250,13 @@ export default function HRTimesheetDetailPage() {
 
     try {
       let result;
-
-      // Déterminer quelle action utiliser selon le statut
       if (timesheet?.status === "PENDING") {
-        // Rejet manager
         result = await managerApproveHRTimesheet({
           timesheetId,
           action: "reject",
           comments: data.comments,
         });
       } else if (timesheet?.status === "MANAGER_APPROVED") {
-        // Rejet Odillon/Admin
         result = await odillonApproveHRTimesheet({
           timesheetId,
           action: "reject",
@@ -297,306 +284,277 @@ export default function HRTimesheetDetailPage() {
       APPROVED: { variant: "default", label: "Approuvé" },
       REJECTED: { variant: "destructive", label: "Rejeté" },
     };
-
     const config = variants[status] || variants.DRAFT;
-
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner className="size-6" />
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
+      <div className="flex items-center justify-center p-20">
+        <Spinner className="h-8 w-8 text-primary" />
       </div>
     );
   }
 
-  if (!timesheet) {
-    return null;
-  }
+  if (!timesheet) return null;
 
   const canValidateTimesheet = canValidate && (timesheet.status === "PENDING" || timesheet.status === "MANAGER_APPROVED");
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Bouton retour */}
-      <BackButton />
-
-      {/* Header amélioré */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Feuille de temps RH
-            </h1>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>
-                Semaine du {format(new Date(timesheet.weekStartDate), "dd/MM/yyyy", { locale: fr })}
-                {" - "}
-                {format(new Date(timesheet.weekEndDate), "dd/MM/yyyy", { locale: fr })}
-              </span>
-            </div>
+    <div className="flex flex-col gap-8 max-w-[1600px] mx-auto">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <Button variant="ghost" size="sm" className="-ml-3 h-8 text-muted-foreground" onClick={() => router.push('/dashboard/hr-timesheet')}>
+              <ArrowLeft className="mr-2 h-3 w-3" />
+              Retour
+            </Button>
+            <span>/</span>
+            <span>Détails</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            <span className="bg-primary/10 p-2 rounded-lg"><Calendar className="h-6 w-6 text-primary" /></span>
+            Feuille du {format(new Date(timesheet.weekStartDate), "dd MMM", { locale: fr })}
+            <span className="text-muted-foreground mx-1">-</span>
+            {format(new Date(timesheet.weekEndDate), "dd MMM yyyy", { locale: fr })}
+          </h1>
+          <div className="flex items-center gap-2 mt-2">
+            {getStatusBadge(timesheet.status)}
+            <span className="text-sm text-muted-foreground ml-2 flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" /> Mis à jour il y a quelques instants
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {getStatusBadge(timesheet.status)}
+
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          {/* Actions Toolbar */}
           {timesheet.status === "DRAFT" && (
             <>
-              <Button
-                onClick={handleSubmitTimesheet}
-                className="bg-primary hover:bg-primary"
-              >
+              <Button onClick={handleSubmitTimesheet} className="shadow-sm">
                 <FileText className="h-4 w-4 mr-2" />
-                Soumettre pour validation
+                Soumettre
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}
-                title="Modifier"
-              >
+              <Button variant="outline" size="icon" onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}>
                 <Edit className="h-4 w-4" />
               </Button>
             </>
           )}
           {canValidateTimesheet && (
-            <>
-              <Button
-                onClick={() => setShowApproveDialog(true)}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Approuver
+            <div className="flex gap-2 bg-muted/40 p-1 rounded-md border">
+              <Button size="sm" onClick={() => setShowApproveDialog(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-none h-8">
+                <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Approuver
               </Button>
-              <Button
-                variant="destructive"
-                onClick={() => setShowRejectDialog(true)}
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Rejeter
+              <Button size="sm" variant="ghost" onClick={() => setShowRejectDialog(true)} className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8">
+                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Rejeter
               </Button>
-            </>
+            </div>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleExportExcel}
-            disabled={isExporting}
-            title="Exporter Excel"
-          >
-            <Download className="h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={handleExportExcel} disabled={isExporting} className="h-9">
+            {isExporting ? <Spinner className="h-3 w-3 mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+            Export
           </Button>
         </div>
       </div>
 
-      {/* Informations générales */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations générales</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="w-[200px] font-medium">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      Employé
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-semibold">{timesheet.employeeName}</p>
-                      {timesheet.User_HRTimesheet_userIdToUser && (
-                        <p className="text-sm text-muted-foreground">{timesheet.User_HRTimesheet_userIdToUser.email}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-muted-foreground" />
-                      Poste
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-semibold">{timesheet.position}</p>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      Site
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-semibold">{timesheet.site}</p>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-muted-foreground" />
-                      Nombre d'activités
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-sm">
-                        {timesheet.HRActivity.length} {timesheet.HRActivity.length === 1 ? "activité" : "activités"}
-                      </Badge>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
+      {/* Top Info Section in a Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          {timesheet.employeeObservations && (
-            <>
-              <Separator className="my-4" />
-              <div>
-                <p className="text-sm font-medium mb-2">Observations de l'employé</p>
-                <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
-                  {timesheet.employeeObservations}
-                </p>
+        {/* Employee Card */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <User className="h-4 w-4" /> Informations Employé
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-dashed">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                {timesheet.employeeName.charAt(0).toUpperCase()}
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {timesheet.status === "REJECTED" && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-2">
-              <XCircle className="h-5 w-5 text-destructive mt-0.5" />
               <div>
-                <p className="font-medium text-destructive">Timesheet rejeté</p>
-                {(timesheet.managerComments || timesheet.odillonComments) && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Raison: {timesheet.managerComments || timesheet.odillonComments}
-                  </p>
-                )}
+                <div className="font-semibold">{timesheet.employeeName}</div>
+                <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_userIdToUser?.email || "Email non disponible"}</div>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div className="flex items-start justify-between">
+                <span className="text-sm text-muted-foreground">Poste</span>
+                <span className="text-sm font-medium text-right ml-4">{timesheet.position}</span>
+              </div>
+              <div className="flex items-start justify-between">
+                <span className="text-sm text-muted-foreground">Site</span>
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-sm font-medium">{timesheet.site}</span>
+                </div>
+              </div>
+              <div className="flex items-start justify-between">
+                <span className="text-sm text-muted-foreground">Total Heures</span>
+                <Badge variant="default" className="text-sm font-mono">{timesheet.totalHours} h</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Liste des activités en tableau */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Activités</CardTitle>
-              <CardDescription>
-                Détail des activités réalisées durant la semaine
-              </CardDescription>
-            </div>
-            {timesheet.status === "DRAFT" && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Gérer les activités
-              </Button>
+        {/* Observations Card */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Info className="h-4 w-4" /> Observations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {timesheet.employeeObservations ? (
+              <p className="text-sm text-foreground/80 italic bg-muted/30 p-3 rounded-md border min-h-[80px]">
+                "{timesheet.employeeObservations}"
+              </p>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[100px] text-muted-foreground text-sm italic border border-dashed rounded-md bg-muted/10">
+                Aucune observation saisie.
+              </div>
             )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <HRTimesheetActivitiesTable
-            activities={timesheet.HRActivity}
-            onDelete={timesheet.status === "DRAFT" ? handleDeleteActivity : undefined}
-            showActions={timesheet.status === "DRAFT"}
-          />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Dialog de confirmation d'approbation */}
+        {/* Validation History / Timeline */}
+        <Card className="border-border/50 shadow-sm h-full">
+          <CardHeader className="pb-3 pt-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <History className="h-4 w-4" /> Historique
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative border-l border-muted pl-4 ml-1 space-y-4">
+              {timesheet.odillonSignedAt && (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-background" />
+                  <div className="text-sm font-medium">Validation Finale</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(timesheet.odillonSignedAt), "d MMM yyyy", { locale: fr })}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_odillonSignedByIdToUser?.name || "Admin"}</div>
+                </div>
+              )}
+
+              {timesheet.managerSignedAt && (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-blue-500 ring-4 ring-background" />
+                  <div className="text-sm font-medium">Validation Manager</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(timesheet.managerSignedAt), "d MMM yyyy", { locale: fr })}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_managerSignedByIdToUser?.name || "Manager"}</div>
+                </div>
+              )}
+
+              {timesheet.employeeSignedAt && (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-slate-400 ring-4 ring-background" />
+                  <div className="text-sm font-medium">Soumission</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(timesheet.employeeSignedAt), "d MMM yyyy", { locale: fr })}
+                  </div>
+                </div>
+              )}
+
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-muted border border-border ring-4 ring-background" />
+                <div className="text-sm font-medium text-muted-foreground">Création</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Activities Section - Full Width */}
+      <div className="space-y-6">
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <CardHeader className="bg-muted/20 border-b py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base font-semibold">Activités Réalisées</CardTitle>
+              </div>
+              <Badge variant="secondary" className="font-normal">
+                {timesheet.HRActivity.length} entrées
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <HRTimesheetActivitiesTable
+              activities={timesheet.HRActivity}
+              onDelete={timesheet.status === "DRAFT" ? handleDeleteActivity : undefined}
+              showActions={timesheet.status === "DRAFT"}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Rejection Info Block */}
+        {timesheet.status === "REJECTED" && (
+          <div className="bg-destructive/5 border border-destructive/20 rounded-md p-4 flex gap-4">
+            <XCircle className="h-6 w-6 text-destructive shrink-0" />
+            <div>
+              <h3 className="font-medium text-destructive">Feuille de temps rejetée</h3>
+              <p className="text-sm text-destructive/80 mt-1">
+                {(timesheet.managerComments || timesheet.odillonComments) || "Aucun motif spécifié."}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Approve Dialog */}
       <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+        <AlertDialogContent className="sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Confirmer l'approbation</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Êtes-vous sûr de vouloir approuver ce timesheet ? Cette action notifiera l'employé
-              {timesheet.status === "PENDING" && " et enverra le timesheet pour validation finale."}
-              {timesheet.status === "MANAGER_APPROVED" && " et marquera le timesheet comme définitivement approuvé."}
+            <AlertDialogTitle>Confirmer l'approbation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action validera la feuille de temps et la transmettra à l'étape suivante.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <form onSubmit={handleSubmit(handleApprove)} className="space-y-4">
+          <form onSubmit={handleSubmit(handleApprove)} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="approve-comments" className="text-sm font-medium">
-                Commentaires (optionnel)
-              </Label>
+              <Label htmlFor="approve-comments">Commentaire (Facultatif)</Label>
               <Textarea
                 id="approve-comments"
-                placeholder="Ajoutez vos remarques ou commentaires..."
-                rows={4}
+                placeholder="Ex: RAS, validé..."
                 className="resize-none"
                 {...register("comments")}
               />
-              {errors.comments && (
-                <p className="text-xs sm:text-sm text-destructive mt-1">{errors.comments.message}</p>
-              )}
             </div>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-              <AlertDialogCancel className="w-full sm:w-auto m-0" onClick={() => reset()}>Annuler</AlertDialogCancel>
-              <AlertDialogAction
-                type="submit"
-                className="w-full sm:w-auto"
-              >
-                Confirmer l'approbation
-              </AlertDialogAction>
+            <AlertDialogFooter>
+              <AlertDialogCancel type="button" onClick={() => reset()}>Annuler</AlertDialogCancel>
+              <AlertDialogAction type="submit" className="bg-emerald-600 hover:bg-emerald-700">Approuver</AlertDialogAction>
             </AlertDialogFooter>
           </form>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Dialog de confirmation de rejet */}
+      {/* Reject Dialog */}
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg">
+        <AlertDialogContent className="sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Confirmer le rejet</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Êtes-vous sûr de vouloir rejeter ce timesheet ? L'employé devra le corriger et le soumettre à nouveau.
-              Assurez-vous d'avoir fourni un commentaire expliquant la raison du rejet.
+            <AlertDialogTitle>Rejeter la feuille de temps</AlertDialogTitle>
+            <AlertDialogDescription>
+              La feuille sera renvoyée à l'employé pour correction. Un motif est obligatoire.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <form onSubmit={handleSubmit(handleReject)} className="space-y-4">
+          <form onSubmit={handleSubmit(handleReject)} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="reject-comments" className="text-sm font-medium">
-                Commentaire de rejet *
-              </Label>
+              <Label htmlFor="reject-comments">Motif du rejet <span className="text-destructive">*</span></Label>
               <Textarea
                 id="reject-comments"
-                placeholder="Expliquez pourquoi vous rejetez cette feuille de temps..."
-                rows={4}
+                placeholder="Ex: Heures incorrectes le mardi..."
                 className="resize-none"
                 {...register("comments")}
               />
-              {errors.comments && (
-                <p className="text-xs sm:text-sm text-destructive mt-1">{errors.comments.message}</p>
-              )}
+              {errors.comments && <p className="text-xs text-destructive">{errors.comments.message}</p>}
             </div>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-              <AlertDialogCancel className="w-full sm:w-auto m-0" onClick={() => reset()}>Annuler</AlertDialogCancel>
-              <AlertDialogAction
-                type="submit"
-                className="w-full sm:w-auto bg-destructive hover:bg-destructive/90"
-              >
-                Confirmer le rejet
-              </AlertDialogAction>
+            <AlertDialogFooter>
+              <AlertDialogCancel type="button" onClick={() => reset()}>Annuler</AlertDialogCancel>
+              <AlertDialogAction type="submit" className="bg-destructive hover:bg-destructive/90">Rejeter</AlertDialogAction>
             </AlertDialogFooter>
           </form>
         </AlertDialogContent>

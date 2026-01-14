@@ -6,11 +6,11 @@ import { getMyTasks, getAllTasks } from "@/actions/task.actions";
 
 export type Task = any; // Type à définir selon votre schéma Prisma
 
-export type ViewMode = "table" | "calendar" | "kanban" | "gantt";
+export type ViewMode = "list" | "calendar" | "kanban" | "gantt";
 
 export interface TasksContextType {
   // Données
-  userTasks: Task[]; // Tâches de l'utilisateur connecté (pour tableau et kanban)
+  userTasks: Task[]; // Tâches de l'utilisateur connecté (pour liste et kanban)
   allTasks: Task[]; // Toutes les tâches (pour calendrier et gantt)
   filteredTasks: Task[];
   isLoading: boolean;
@@ -20,7 +20,7 @@ export interface TasksContextType {
   statusFilter: string;
   priorityFilter: string;
   selectedProject: string;
-  userFilter: "my" | "all"; // Filtre utilisateur pour tableau et kanban
+  userFilter: "my" | "all"; // Filtre utilisateur pour liste et kanban
   startDateFilter: string | undefined;
   endDateFilter: string | undefined;
 
@@ -67,17 +67,17 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
   const [userFilter, setUserFilter] = useState<"my" | "all">("my"); // Par défaut, afficher mes tâches
   const [startDateFilter, setStartDateFilter] = useState<string | undefined>(undefined);
   const [endDateFilter, setEndDateFilter] = useState<string | undefined>(undefined);
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   // Fonction pour charger les tâches (optimisée : charge uniquement ce qui est nécessaire)
   const loadTasks = useCallback(async () => {
     setIsLoading(true);
     try {
       // Charger les tâches selon la vue active pour optimiser les performances
-      // Pour tableau et kanban : charger uniquement userTasks
+      // Pour liste et kanban : charger uniquement userTasks
       // Pour calendrier et gantt : charger uniquement allTasks
-      
-      const needsUserTasks = viewMode === "table" || viewMode === "kanban";
+
+      const needsUserTasks = viewMode === "list" || viewMode === "kanban";
       const needsAllTasks = viewMode === "calendar" || viewMode === "gantt";
 
       const promises: Promise<any>[] = [];
@@ -145,10 +145,10 @@ export function TasksProvider({ children, initialProjectId = "" }: TasksProvider
 
   // Filtrer les tâches en temps réel selon la vue
   useEffect(() => {
-    // Pour tableau et kanban : utiliser userFilter pour choisir entre userTasks et allTasks
+    // Pour liste et kanban : utiliser userFilter pour choisir entre userTasks et allTasks
     // Pour calendrier et gantt : toujours utiliser allTasks
     let sourceTasks: Task[];
-    if (viewMode === "table" || viewMode === "kanban") {
+    if (viewMode === "list" || viewMode === "kanban") {
       sourceTasks = userFilter === "my" ? userTasks : allTasks;
     } else {
       sourceTasks = allTasks;

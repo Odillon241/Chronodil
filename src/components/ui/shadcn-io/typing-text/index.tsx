@@ -119,7 +119,7 @@ const TypingText = ({
 
           setCurrentTextIndex(prev => (prev + 1) % textArray.length);
           setCurrentCharIndex(0);
-          timeout = setTimeout(() => {}, pauseDuration);
+          timeout = setTimeout(() => { }, pauseDuration);
         } else {
           timeout = setTimeout(() => {
             setDisplayedText(prev => prev.slice(0, -1));
@@ -134,7 +134,7 @@ const TypingText = ({
             },
             variableSpeed ? getRandomSpeed() : typingSpeed
           );
-        } else if (textArray.length > 1) {
+        } else if (textArray.length > 1 || loop) {
           timeout = setTimeout(() => {
             setIsDeleting(true);
           }, pauseDuration);
@@ -183,11 +183,10 @@ const TypingText = ({
     showCursor && (
       <span
         ref={cursorRef}
-        className={`inline-block opacity-100 ${shouldHideCursor ? 'hidden' : ''} ${
-          cursorCharacter === '|' 
-            ? `h-5 w-px translate-y-1 bg-foreground ${cursorClassName}` 
+        className={`inline-block opacity-100 ${shouldHideCursor ? 'hidden' : ''} ${cursorCharacter === '|'
+            ? `h-5 w-[1px] translate-y-1 bg-foreground ${cursorClassName}`
             : `ml-1 ${cursorClassName}`
-        }`}
+          }`}
       >
         {cursorCharacter === '|' ? '' : cursorCharacter}
       </span>

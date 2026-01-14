@@ -18,7 +18,7 @@ const getAuditLogsSchema = z.object({
 export const getAuditLogs = actionClient
   .schema(getAuditLogsSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     // Seul l'administrateur peut voir les audits
@@ -54,7 +54,7 @@ export const getAuditLogs = actionClient
 export const getAuditStats = actionClient
   .schema(z.object({}))
   .action(async () => {
-    const session = await getSession(await headers());
+    const session = await getSession();
     const userRole = getUserRole(session);
 
     // Seul l'administrateur peut voir les statistiques d'audit

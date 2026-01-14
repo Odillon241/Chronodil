@@ -1,0 +1,159 @@
+{
+  "$schema": "https://antigravity.google/schemas/agents.json",
+  "version": "2.0.0",
+  "name": "ODILLON Agent Suite",
+  "description": "Suite d'agents spécialisés pour le développement Next.js/TypeScript",
+
+  "orchestrator": {
+    "model": "gemini-2.5-pro",
+    "role": "Coordinateur principal qui délègue les tâches aux agents spécialisés",
+    "maxConcurrentAgents": 5,
+    "taskQueue": true,
+    "priorityLevels": ["critical", "high", "normal", "low"],
+    "autoAssign": true,
+    "fallbackBehavior": "queue"
+  },
+
+  "sharedMemory": {
+    "enabled": true,
+    "store": ".antigravity/memory/",
+    "maxSize": "100MB",
+    "ttl": "7d",
+    "syncInterval": 30
+  },
+
+  "sharedContext": {
+    "projectType": "nextjs-app-router",
+    "language": "typescript",
+    "styling": "tailwindcss",
+    "database": "postgresql",
+    "orm": "prisma",
+    "testing": ["vitest", "playwright"],
+    "deployment": "vercel"
+  },
+
+  "agents": [
+    {
+      "id": "architect",
+      "name": "Architect Agent",
+      "file": "agents/architect.md",
+      "trigger": "@architect",
+      "priority": "high"
+    },
+    {
+      "id": "developer",
+      "name": "Developer Agent",
+      "file": "agents/developer.md",
+      "trigger": "@dev",
+      "priority": "normal"
+    },
+    {
+      "id": "reviewer",
+      "name": "Code Reviewer Agent",
+      "file": "agents/reviewer.md",
+      "trigger": "@review",
+      "priority": "high"
+    },
+    {
+      "id": "debugger",
+      "name": "Debugger Agent",
+      "file": "agents/debugger.md",
+      "trigger": "@debug",
+      "priority": "critical"
+    },
+    {
+      "id": "tester",
+      "name": "Testing Agent",
+      "file": "agents/tester.md",
+      "trigger": "@test",
+      "priority": "normal"
+    },
+    {
+      "id": "documenter",
+      "name": "Documentation Agent",
+      "file": "agents/documenter.md",
+      "trigger": "@docs",
+      "priority": "low"
+    },
+    {
+      "id": "security",
+      "name": "Security Agent",
+      "file": "agents/security.md",
+      "trigger": "@security",
+      "priority": "critical"
+    },
+    {
+      "id": "optimizer",
+      "name": "Performance Optimizer Agent",
+      "file": "agents/optimizer.md",
+      "trigger": "@perf",
+      "priority": "normal"
+    },
+    {
+      "id": "database",
+      "name": "Database Agent",
+      "file": "agents/database.md",
+      "trigger": "@db",
+      "priority": "high"
+    },
+    {
+      "id": "devops",
+      "name": "DevOps Agent",
+      "file": "agents/devops.md",
+      "trigger": "@devops",
+      "priority": "normal"
+    }
+  ],
+
+  "swarm": {
+    "enabled": true,
+    "patterns": {
+      "feature": {
+        "description": "Développement complet d'une feature",
+        "agents": ["architect", "developer", "tester", "reviewer"],
+        "workflow": "sequential"
+      },
+      "bugfix": {
+        "description": "Correction de bug critique",
+        "agents": ["debugger", "developer", "tester"],
+        "workflow": "sequential"
+      },
+      "security-audit": {
+        "description": "Audit de sécurité complet",
+        "agents": ["security", "reviewer"],
+        "workflow": "parallel"
+      },
+      "release": {
+        "description": "Préparation d'une release",
+        "agents": ["tester", "security", "documenter", "devops"],
+        "workflow": "sequential"
+      },
+      "optimization": {
+        "description": "Optimisation globale",
+        "agents": ["optimizer", "database", "reviewer"],
+        "workflow": "parallel"
+      }
+    }
+  },
+
+  "communication": {
+    "protocol": "structured-json",
+    "handoff": {
+      "includeContext": true,
+      "includeSummary": true,
+      "includeArtifacts": true
+    },
+    "reporting": {
+      "onComplete": true,
+      "onError": true,
+      "onBlocked": true
+    }
+  },
+
+  "artifacts": {
+    "outputDir": "artifacts/",
+    "types": ["code", "documentation", "reports", "diagrams"],
+    "versioning": true,
+    "cleanup": "7d"
+  }
+}

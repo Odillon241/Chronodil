@@ -205,7 +205,7 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="destructive"
                           onClick={handleCancelEdit}
                         >
                           Annuler
