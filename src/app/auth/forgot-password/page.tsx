@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,9 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Mail, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -20,57 +20,9 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-function EmailSentState({ email, onResend, isResending }: { email: string, onResend: () => void, isResending: boolean }) {
-  return (
-    <AuthLayout title="Email envoyé !" description="Vérifiez votre boîte de réception">
-      <div className="flex flex-col items-center space-y-6 text-center">
-        <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/20">
-          <Mail className="h-10 w-10 text-blue-600 dark:text-blue-500" />
-        </div>
-
-        <Alert className="bg-muted/50 border-primary/20 text-left">
-          <AlertTitle>Lien de réinitialisation envoyé</AlertTitle>
-          <AlertDescription className="mt-2 text-muted-foreground text-sm">
-            Un email a été envoyé à <span className="font-semibold text-foreground">{email}</span>. Cliquez sur le lien pour définir un nouveau mot de passe.
-            <br className="my-2" />
-            <span className="text-xs italic opacity-80">(Le lien expire dans 1 heure)</span>
-          </AlertDescription>
-        </Alert>
-
-        <div className="w-full space-y-4 pt-2">
-          <Link href="/auth/login" className="w-full block">
-            <Button variant="outline" className="w-full">
-              Retour à la connexion
-            </Button>
-          </Link>
-
-          <Button
-            variant="ghost"
-            onClick={onResend}
-            disabled={isResending}
-            className="text-muted-foreground hover:text-primary"
-            size="sm"
-          >
-            {isResending ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Envoi...
-              </span>
-            ) : (
-              "Vous n'avez rien reçu ? Renvoyer l'email"
-            )}
-          </Button>
-        </div>
-      </div>
-    </AuthLayout>
-  );
-}
-
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [email, setEmail] = useState("");
 
   const {
     register,
@@ -80,15 +32,11 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const sendResetEmail = async (emailToSend: string, isResend = false) => {
-    if (isResend) {
-      setIsResending(true);
-    } else {
-      setIsLoading(true);
-    }
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    setIsLoading(true);
 
     try {
-      const { error } = await resetPassword(emailToSend);
+      const { error } = await resetPassword(data.email);
 
       if (error) {
         let errorMessage = error.message;
@@ -98,40 +46,19 @@ export default function ForgotPasswordPage() {
           errorMessage = "Trop de demandes. Veuillez patienter quelques minutes.";
         }
         toast.error(errorMessage);
-        return false;
+        return;
       }
-      return true;
+
+      toast.success("Code envoyé ! Vérifiez votre boîte de réception.");
+      // Rediriger vers la page de vérification OTP
+      router.push(`/auth/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch (error) {
       console.error("Reset password error:", error);
       toast.error("Une erreur s'est produite");
-      return false;
     } finally {
       setIsLoading(false);
-      setIsResending(false);
     }
   };
-
-  const onSubmit = async (data: ForgotPasswordFormData) => {
-    setEmail(data.email);
-    const success = await sendResetEmail(data.email);
-    if (success) {
-      setEmailSent(true);
-      toast.success("Email envoyé ! Vérifiez votre boîte de réception.");
-    }
-  };
-
-  const handleResend = async () => {
-    if (email) {
-      const success = await sendResetEmail(email, true);
-      if (success) {
-        toast.success("Un nouvel email a été envoyé !");
-      }
-    }
-  };
-
-  if (emailSent) {
-    return <EmailSentState email={email} onResend={handleResend} isResending={isResending} />;
-  }
 
   return (
     <AuthLayout
@@ -164,7 +91,7 @@ export default function ForgotPasswordPage() {
               Envoi en cours...
             </span>
           ) : (
-            "Envoyer le lien de réinitialisation"
+            "Envoyer le code de vérification"
           )}
         </Button>
 
