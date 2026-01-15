@@ -140,6 +140,37 @@ export async function signIn(credentials: { email: string; password: string }): 
 }
 
 /**
+ * Connexion avec Google OAuth
+ */
+export async function signInWithGoogle(): Promise<{
+  error?: AuthError | null;
+  data?: { provider: string; url: string | null } | null;
+}> {
+  const supabase = createClient();
+  
+  console.log("[Auth] Attempting Google OAuth signIn...");
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  });
+
+  if (error) {
+    console.error("[Auth] Google OAuth error:", error.message);
+  } else {
+    console.log("[Auth] Google OAuth redirect initiated");
+  }
+
+  return { data, error };
+}
+
+/**
  * Inscription avec email et mot de passe
  * Utilise l'Admin API via notre route API pour créer des utilisateurs pré-confirmés
  */

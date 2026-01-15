@@ -50,15 +50,15 @@ function normalizeSoundId(soundId: string): string {
 function getSoundUrl(soundId: string, extension: string = 'mp3'): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const bucketName = 'notification-sounds';
-  
+
   // Utiliser Supabase Storage si l'URL est disponible
   if (supabaseUrl) {
     // Normaliser l'ID pour correspondre au nom de fichier dans Supabase (sans accents)
     const normalizedId = normalizeSoundId(soundId);
-    
+
     return `${supabaseUrl}/storage/v1/object/public/${bucketName}/${normalizedId}.${extension}`;
   }
-  
+
   // Fallback vers les fichiers locaux si Supabase n'est pas configuré
   return `/sounds/${soundId}.${extension}`;
 }
@@ -74,10 +74,10 @@ export const NOTIFICATION_SOUNDS: NotificationSound[] = [
     file: getSoundUrl('new-notification-info', 'mp3'),
     category: 'classic'
   },
-  { 
-    id: 'notification', 
-    name: 'Notification classique', 
-    description: 'Son de notification standard et familier', 
+  {
+    id: 'notification',
+    name: 'Notification classique',
+    description: 'Son de notification standard et familier',
     file: getSoundUrl('notification', 'wav'),
     category: 'classic'
   },
@@ -104,7 +104,7 @@ export const NOTIFICATION_SOUNDS: NotificationSound[] = [
     file: getSoundUrl('new-notification-info', 'mp3'), // Fallback vers le son par défaut
     category: 'classic'
   },
-  
+
   // Catégorie : Succès
   {
     id: 'taskCompleted',
@@ -120,12 +120,12 @@ export const NOTIFICATION_SOUNDS: NotificationSound[] = [
     file: getSoundUrl('new-notification-success', 'mp3'), // Utiliser le son de succès
     category: 'success'
   },
-  
+
   // Catégorie : Erreur/Alerte
-  { 
-    id: 'error', 
-    name: 'Erreur', 
-    description: 'Son d\'alerte d\'erreur', 
+  {
+    id: 'error',
+    name: 'Erreur',
+    description: 'Son d\'alerte d\'erreur',
     file: getSoundUrl('notification', 'wav'), // Utiliser le son classique en fallback
     category: 'error'
   },
@@ -187,7 +187,7 @@ export function useAvailableSounds() {
         const audioFiles = files.filter(file => {
           // Exclure les fichiers cachés et placeholders
           if (file.name.startsWith('.')) return false;
-          
+
           const ext = file.name.split('.').pop()?.toLowerCase();
           return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext || '');
         });
@@ -198,14 +198,14 @@ export function useAvailableSounds() {
         const soundsFromBucket: NotificationSound[] = audioFiles.map(file => {
           const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
           const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${file.name}`;
-          
+
           // Chercher si ce son existe dans NOTIFICATION_SOUNDS pour récupérer ses métadonnées
-          const existingSound = NOTIFICATION_SOUNDS.find(s => 
+          const existingSound = NOTIFICATION_SOUNDS.find(s =>
             normalizeSoundId(s.id) === normalizeSoundId(nameWithoutExt)
           );
 
           const formattedName = existingSound?.name || formatSoundName(nameWithoutExt);
-          
+
           return {
             id: nameWithoutExt,
             name: formattedName,
@@ -233,18 +233,18 @@ export function useAvailableSounds() {
   function formatSoundName(id: string): string {
     // Supprimer les suffixes numériques communs (ex: -372475, _123456)
     let cleanName = id.replace(/[-_]\d{4,}$/, '');
-    
+
     // Supprimer les préfixes courants
     cleanName = cleanName
       .replace(/^notification[-_]?/i, '')
       .replace(/^sound[-_]?/i, '')
       .replace(/^new[-_]?/i, '');
-    
+
     // Si le nom est vide après nettoyage, utiliser l'ID original
     if (!cleanName.trim()) {
       cleanName = id;
     }
-    
+
     // Formater : remplacer tirets/underscores par espaces et capitaliser
     return cleanName
       .replace(/[-_]/g, ' ')
@@ -342,49 +342,49 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
   // Utiliser un chemin vide au début pour éviter le chargement automatique au refresh
   // L'option 'format' indique à Howler.js le format attendu même avec un chemin vide
   const [playNotification] = useSound(
-    soundsReady ? SOUND_FILES.notification : '', 
-    { 
-      volume, 
+    soundsReady ? SOUND_FILES.notification : '',
+    {
+      volume,
       interrupt: false,
       format: ['mp3'], // Évite le warning "No file extension was found"
     }
   );
   const [playTaskAssigned] = useSound(
-    soundsReady ? SOUND_FILES.taskAssigned : '', 
-    { 
-      volume, 
+    soundsReady ? SOUND_FILES.taskAssigned : '',
+    {
+      volume,
       interrupt: false,
       format: ['mp3'],
     }
   );
   const [playTaskCompleted] = useSound(
-    soundsReady ? SOUND_FILES.taskCompleted : '', 
-    { 
-      volume, 
+    soundsReady ? SOUND_FILES.taskCompleted : '',
+    {
+      volume,
       interrupt: false,
       format: ['mp3'],
     }
   );
   const [playTaskUpdated] = useSound(
-    soundsReady ? SOUND_FILES.taskUpdated : '', 
-    { 
-      volume, 
+    soundsReady ? SOUND_FILES.taskUpdated : '',
+    {
+      volume,
       interrupt: false,
       format: ['mp3'],
     }
   );
   const [playError] = useSound(
-    soundsReady ? SOUND_FILES.error : '', 
-    { 
-      volume, 
+    soundsReady ? SOUND_FILES.error : '',
+    {
+      volume,
       interrupt: false,
       format: ['wav', 'mp3'], // error utilise .wav
     }
   );
   const [playSuccess] = useSound(
-    soundsReady ? SOUND_FILES.success : '', 
-    { 
-      volume, 
+    soundsReady ? SOUND_FILES.success : '',
+    {
+      volume,
       interrupt: false,
       format: ['mp3'],
     }
@@ -564,108 +564,83 @@ export function useNotificationSound(options?: NotificationSoundOptions) {
     // Pour les tests (forcePlay = true), ignorer les vérifications soundEnabled et mounted
     if (!forcePlay) {
       if (!soundEnabled || !mounted) {
-        console.warn('[playSoundById] Son désactivé ou non monté', { soundEnabled, mounted });
         return;
-      }
-    } else {
-      // Pour les tests, on force même si mounted est false (peut être appelé avant le montage)
-      if (!mounted) {
-        console.log('[playSoundById] Force play avant montage, on continue quand même');
       }
     }
 
     const sound = NOTIFICATION_SOUNDS.find(s => s.id === soundId);
     if (!sound) {
-      console.warn(`[playSoundById] Son non trouvé dans NOTIFICATION_SOUNDS: ${soundId}`);
-      // Essayer de trouver dans SOUND_FILES comme fallback
+      console.warn(`[playSoundById] Son non trouvé: ${soundId}`);
       if (Object.keys(SOUND_FILES).includes(soundId)) {
-        console.log('[playSoundById] Son trouvé dans SOUND_FILES, utilisation de playSoundByType');
         playSoundByType(soundId as keyof SoundFiles);
       }
       return;
     }
 
-    console.log('[playSoundById] Lecture du son:', { soundId, url: sound.file, volume, forcePlay, soundEnabled, mounted });
-
-    // Créer un élément audio temporaire pour jouer le son
+    // Créer un élément audio temporaire
     const audio = new Audio(sound.file);
-    // Utiliser le volume fourni, ou 1.0 par défaut pour les tests
-    audio.volume = forcePlay ? (volume || 1.0) : volume;
-    
-    // Gérer les erreurs de chargement
-    audio.addEventListener('error', (e) => {
-      console.error('[playSoundById] Erreur audio:', {
-        soundId,
-        url: sound.file,
-        error: e,
-        errorCode: audio.error?.code,
-        errorMessage: audio.error?.message,
-      });
-    });
+    audio.volume = volume;
 
-    audio.addEventListener('loadstart', () => {
-      console.log('[playSoundById] Chargement du son démarré:', soundId);
-    });
+    return audio.play();
+  }, [soundEnabled, mounted, volume, playSoundByType]);
 
-    audio.addEventListener('canplay', () => {
-      console.log('[playSoundById] Son prêt à être joué:', soundId);
-    });
+  const testSound = useCallback(async (soundIdOrObject?: string | { id: string; name: string; file: string }) => {
+    let sound: { id: string; name: string; file: string } | undefined;
 
-    audio.addEventListener('loadeddata', () => {
-      console.log('[playSoundById] Données audio chargées:', soundId);
-    });
+    if (typeof soundIdOrObject === 'object' && soundIdOrObject !== null) {
+      // Objet son passé directement (depuis useAvailableSounds)
+      sound = soundIdOrObject;
+    } else {
+      // ID passé, chercher dans NOTIFICATION_SOUNDS
+      const targetId = soundIdOrObject || 'new-notification-info';
+      const foundSound = NOTIFICATION_SOUNDS.find(s => s.id === targetId);
 
-    // Essayer de jouer le son
-    const playPromise = audio.play();
-    
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          console.log('[playSoundById] Son joué avec succès:', soundId);
-        })
-        .catch((error) => {
-          console.error('[playSoundById] Erreur lors de la lecture:', {
-            soundId,
-            url: sound.file,
-            error: error.message,
-            errorName: error.name,
-            errorCode: audio.error?.code,
-            errorMessage: audio.error?.message,
-          });
-          
-          // Si l'erreur est due à une interaction utilisateur requise, essayer de rejouer
-          if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
-            console.warn('[playSoundById] Interaction utilisateur requise, le son sera joué au prochain clic');
-          }
-        });
+      if (foundSound) {
+        sound = foundSound;
+      } else {
+        // Fallback: construire l'URL Supabase directement
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (supabaseUrl) {
+          sound = {
+            id: targetId,
+            name: targetId.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            file: `${supabaseUrl}/storage/v1/object/public/notification-sounds/${targetId}.mp3`,
+          };
+        }
+      }
     }
-  }, [soundEnabled, mounted, soundsReady, volume, playSoundByType]);
 
-  const testSound = useCallback((soundType?: keyof SoundFiles | string) => {
-    console.log('[testSound] Test du son:', soundType);
-
-    if (!soundType) {
-      // Par défaut, utiliser le son par défaut
-      playSoundById('new-notification-info', true);
+    if (!sound) {
+      console.error('[testSound] Son introuvable et pas de fallback Supabase');
       return;
     }
 
-    // Pour les tests, toujours utiliser playSoundById qui peut forcer la lecture
-    // Cela fonctionne pour tous les sons, qu'ils soient dans SOUND_FILES ou non
-    const sound = NOTIFICATION_SOUNDS.find(s => s.id === soundType);
-    if (sound) {
-      // Son trouvé dans NOTIFICATION_SOUNDS, utiliser playSoundById
-      playSoundById(soundType, true);
-    } else {
-      // Si le son n'est pas trouvé, essayer avec playSoundByType comme fallback
-      // mais seulement si c'est une clé valide de SOUND_FILES
-      if (Object.keys(SOUND_FILES).includes(soundType)) {
-        playSoundByType(soundType as keyof SoundFiles);
+    try {
+      const audio = new Audio(sound.file);
+      audio.volume = volume;
+
+      await audio.play();
+
+      const { toast } = await import('sonner');
+      toast.success('Test du son', {
+        description: `🔊 ${sound.name}`,
+        duration: 2000,
+      });
+    } catch (error: any) {
+      console.error('[testSound] Erreur:', error);
+      const { toast } = await import('sonner');
+
+      if (error.name === 'NotAllowedError') {
+        toast.error('Permission audio requise', {
+          description: 'Cliquez à nouveau pour autoriser la lecture',
+        });
       } else {
-        console.warn('[testSound] Son non trouvé:', soundType);
+        toast.error('Erreur de lecture', {
+          description: error.message || 'Impossible de lire le son',
+        });
       }
     }
-  }, [playSoundByType, playSoundById]);
+  }, [volume]);
 
   return {
     permission,

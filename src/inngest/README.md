@@ -227,7 +227,7 @@ pnpx inngest-cli@latest dev
 
 **Vérifications:**
 1. ✅ Push notifications configurées (VAPID keys dans `.env`)
-2. ✅ Email configuré (Resend API key dans `.env`)
+2. ✅ Email configuré (SMTP ou Supabase Edge Function)
 3. ✅ Utilisateur a `desktopNotificationsEnabled = true`
 4. ✅ Utilisateur a `emailNotificationsEnabled = true`
 

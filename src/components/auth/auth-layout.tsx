@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import TypingText from "@/components/ui/shadcn-io/typing-text";
+import { AuroraBackground } from "@/components/ui/shadcn-io/aurora-background";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -27,7 +28,7 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
     : "/assets/media/logo.svg";
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-8 bg-muted/40">
+    <AuroraBackground className="p-4 md:p-8">
       <div className="w-full max-w-md mx-auto space-y-6">
         <div className="flex flex-col items-center space-y-2 text-center">
           <Link href="/" className="mb-4 transition-opacity hover:opacity-90">
@@ -69,7 +70,7 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
           </div>
         </div>
 
-        <Card className="border-border/50 shadow-lg backdrop-blur-sm bg-background/95">
+        <Card className="border border-border backdrop-blur-sm bg-background/95">
           <CardHeader className="space-y-1 text-center pb-2">
             <CardTitle className="text-2xl font-bold tracking-tight">{title}</CardTitle>
             {description && (
@@ -87,6 +88,6 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
           &copy; {new Date().getFullYear()} ODILLON. Tous droits réservés.
         </p>
       </div>
-    </div>
+    </AuroraBackground>
   );
 }

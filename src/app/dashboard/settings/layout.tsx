@@ -42,7 +42,7 @@ const settingsNavigation = [
   },
   {
     title: "Notifications",
-    href: "/dashboard/settings?tab=notifications",
+    href: "/dashboard/settings/notifications",
     icon: Bell,
     description: "Préférences de notification",
     keywords: [
@@ -77,7 +77,7 @@ const settingsNavigation = [
   },
   {
     title: "Général",
-    href: "/dashboard/settings?tab=general",
+    href: "/dashboard/settings/general",
     icon: Settings,
     description: "Apparence et accessibilité",
     keywords: [
@@ -95,7 +95,7 @@ const settingsNavigation = [
   },
   {
     title: "Jours fériés",
-    href: "/dashboard/settings?tab=holidays",
+    href: "/dashboard/settings/holidays",
     icon: Calendar,
     description: "Gestion des jours fériés",
     keywords: [
@@ -112,7 +112,7 @@ const settingsNavigation = [
   },
   {
     title: "Départements",
-    href: "/dashboard/settings?tab=departments",
+    href: "/dashboard/settings/departments",
     icon: Building2,
     description: "Gestion des départements",
     keywords: [
@@ -221,15 +221,17 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
 
   // Déterminer l'item actif
   const getActiveItem = () => {
-    if (pathname === "/dashboard/settings/profile") return "/dashboard/settings/profile";
-    if (pathname === "/dashboard/settings/users") return "/dashboard/settings/users";
-    if (pathname === "/dashboard/settings/reminders") return "/dashboard/settings/reminders";
-    // Pour la page principale, vérifier les query params
-    if (pathname === "/dashboard/settings") {
-      const tab = searchParams.get("tab") || "notifications";
-      return `/dashboard/settings?tab=${tab}`;
-    }
-    return "/dashboard/settings?tab=notifications";
+    // Vérifier directement les routes de page
+    if (pathname.startsWith("/dashboard/settings/profile")) return "/dashboard/settings/profile";
+    if (pathname.startsWith("/dashboard/settings/users")) return "/dashboard/settings/users";
+    if (pathname.startsWith("/dashboard/settings/reminders")) return "/dashboard/settings/reminders";
+    if (pathname.startsWith("/dashboard/settings/notifications")) return "/dashboard/settings/notifications";
+    if (pathname.startsWith("/dashboard/settings/holidays")) return "/dashboard/settings/holidays";
+    if (pathname.startsWith("/dashboard/settings/departments")) return "/dashboard/settings/departments";
+    if (pathname.startsWith("/dashboard/settings/general")) return "/dashboard/settings/general";
+
+    // Par défaut, profil
+    return "/dashboard/settings/profile";
   };
 
   const activeHref = getActiveItem();
@@ -247,10 +249,11 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9 bg-muted/50 border-transparent focus:border-border focus:bg-background transition-all"
+              className="h-9 pl-9 bg-muted/50 border-border focus:ring-1 focus:ring-primary/20 focus:bg-background transition-all"
             />
           </div>
         </div>
+        <Separator />
         {/* Navigation - Défilable */}
         <ScrollArea className="flex-1">
           <nav className="py-2">
@@ -259,8 +262,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                 const Icon = item.icon;
                 const isActive =
                   item.href === activeHref ||
-                  (item.href.startsWith("/dashboard/settings?tab=") && pathname === "/dashboard/settings" && activeHref === item.href) ||
-                  (item.href !== "/dashboard/settings" && !item.href.includes("?tab=") && pathname.startsWith(item.href));
+                  pathname.startsWith(item.href);
 
                 return (
                   <Link

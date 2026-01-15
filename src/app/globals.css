@@ -56,11 +56,22 @@
     --color-sidebar-ring: hsl(217.2 91.2% 59.8%);
 
     /* Radius */
-    --radius: 0.5rem;
+    --radius: 0.675rem;
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+
+    /* Shadows */
+    --shadow: none;
+    --shadow-2xs: none;
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --shadow-xl: none;
+    --shadow-2xl: none;
+    --shadow-inner: none;
 }
 
 /* Dark Theme */

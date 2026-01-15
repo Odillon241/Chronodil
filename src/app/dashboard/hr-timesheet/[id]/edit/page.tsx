@@ -902,6 +902,15 @@ export default function EditHRTimesheetPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {watch("periodicity") === "WEEKLY" && (
+                  <div className="space-y-2">
+                    <Label>Quantité hebdomadaire</Label>
+                    <Input type="number" {...register("weeklyQuantity", { valueAsNumber: true })} />
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Statut</Label>
                   <Select onValueChange={(val) => setValue("status", val as any)} value={watch("status")}>
@@ -911,6 +920,10 @@ export default function EditHRTimesheetPage() {
                       <SelectItem value="COMPLETED">Terminé</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Total Heures (est.)</Label>
+                  <Input type="number" step="0.5" {...register("totalHours", { valueAsNumber: true })} />
                 </div>
               </div>
 
@@ -955,10 +968,7 @@ export default function EditHRTimesheetPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Total Heures (est.)</Label>
-                <Input type="number" step="0.5" {...register("totalHours", { valueAsNumber: true })} />
-              </div>
+
 
               <div className="space-y-2">
                 <Label>Description / Notes</Label>

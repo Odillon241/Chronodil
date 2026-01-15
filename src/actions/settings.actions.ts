@@ -11,18 +11,20 @@ import { Prisma } from "../generated/prisma/client";
 // Jours fériés
 const holidaySchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
-  date: z.date(),
-  description: z.string().optional(),
+  date: z.coerce.date(), // coerce permet de convertir string -> Date automatiquement
+  description: z.string().optional().default(""),
   isRecurring: z.boolean().default(false),
 });
+
 
 const updateHolidaySchema = z.object({
   id: z.string(),
   name: z.string().optional(),
-  date: z.date().optional(),
+  date: z.coerce.date().optional(),
   description: z.string().optional(),
   isRecurring: z.boolean().optional(),
 });
+
 
 export const getHolidays = actionClient
   .schema(z.object({ year: z.number().optional() }))

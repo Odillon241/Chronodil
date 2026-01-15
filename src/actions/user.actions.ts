@@ -84,6 +84,81 @@ export const updateMyProfile = authActionClient
     return user;
   });
 
+// Mettre à jour l'email de l'utilisateur (avec Supabase Auth)
+export const updateMyEmail = authActionClient
+  .schema(
+    z.object({
+      newEmail: z.string().email("Email invalide"),
+    })
+  )
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId, user } = ctx;
+    
+    // Vérifier que le nouvel email est différent
+    if (parsedInput.newEmail === user.email) {
+      throw new Error("Le nouvel email est identique à l'actuel");
+    }
+    
+    // Vérifier que l'email n'est pas déjà utilisé dans Prisma
+    const existingUser = await prisma.user.findUnique({
+      where: { email: parsedInput.newEmail },
+    });
+    
+    if (existingUser) {
+      throw new Error("Cet email est déjà utilisé par un autre compte");
+    }
+    
+    try {
+      // Utiliser Supabase Auth Admin API pour changer l'email
+      const { createClient } = await import("@supabase/supabase-js");
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        { email: parsedInput.newEmail }
+      );
+      
+      if (error) {
+        throw new Error(`Erreur Supabase: ${error.message}`);
+      }
+      
+      // Mettre à jour l'email dans Prisma
+      await prisma.user.update({
+        where: { id: userId },
+        data: { email: parsedInput.newEmail },
+      });
+      
+      // Créer un log d'audit
+      await createAuditLog({
+        userId: userId,
+        action: AuditActions.UPDATE,
+        entity: AuditEntities.USER,
+        entityId: userId,
+        changes: {
+          action: "email_change",
+          previousEmail: user.email,
+          newEmail: parsedInput.newEmail,
+        },
+      });
+      
+      revalidatePath("/dashboard/settings");
+      revalidatePath("/dashboard");
+      updateTag(CacheTags.USERS);
+      
+      return { 
+        success: true, 
+        message: "Votre adresse email a été mise à jour" 
+      };
+    } catch (error: any) {
+      console.error("[updateMyEmail] Error:", error);
+      throw new Error(error.message || "Erreur lors du changement d'email");
+    }
+  });
+
 // Récupérer tous les utilisateurs (Admin/HR/DIRECTEUR)
 export const getUsers = authActionClient
   .schema(

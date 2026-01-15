@@ -1,7 +1,8 @@
-import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 
-// Configuration Resend (service principal)
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Configuration Supabase pour l'envoi d'emails via Edge Function
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 interface SendEmailOptions {
   to: string;
@@ -16,7 +17,10 @@ interface SendOTPEmailOptions {
 }
 
 /**
- * Envoie un email via Resend
+ * Envoie un email via Supabase Edge Function ou SMTP configuré
+ * Note: Les emails d'authentification (OTP, reset password) sont gérés 
+ * nativement par Supabase via les templates configurés dans le dashboard.
+ * Cette fonction est utilisée pour les emails de notification transactionnels.
  */
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
   // Log en développement
@@ -30,38 +34,51 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
     console.log('='.repeat(80) + '\n');
   }
 
-  // Vérifier la configuration Resend
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('⚠️ RESEND_API_KEY non configurée');
+  // Vérifier la configuration Supabase
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn('⚠️ Supabase non configuré pour les emails');
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('Configuration email manquante (RESEND_API_KEY)');
+      console.error('Configuration email manquante (SUPABASE_SERVICE_ROLE_KEY)');
     }
-    return { success: false, error: 'API key manquante' };
+    return { success: false, error: 'Configuration Supabase manquante' };
   }
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Chronodil <onboarding@resend.dev>',
-      to: [to],
-      subject,
-      html,
+    // Appeler l'Edge Function send-email si déployée
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({ to, subject, html }),
     });
 
-    if (error) {
-      console.error('❌ Erreur Resend:', error);
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error(`Échec d'envoi d'email: ${error.message}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Erreur Edge Function send-email:', errorText);
+      
+      // En développement, on continue sans erreur
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[Email] Email logué en mode développement (Edge Function non disponible)');
+        return { success: true, id: 'dev-mode' };
       }
-      return { success: false, error: error.message };
+      
+      return { success: false, error: errorText };
     }
 
-    console.log('✅ Email envoyé avec succès via Resend:', data?.id);
+    const data = await response.json();
+    console.log('✅ Email envoyé avec succès via Supabase:', data?.id);
     return { success: true, id: data?.id };
   } catch (error: any) {
     console.error('❌ Erreur lors de l\'envoi d\'email:', error);
-    if (process.env.NODE_ENV === 'production') {
-      throw error;
+    
+    // En développement, on continue sans erreur
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Email] Email logué en mode développement (erreur réseau)');
+      return { success: true, id: 'dev-mode' };
     }
+    
     return { success: false, error: error.message };
   }
 }
@@ -95,89 +112,81 @@ export async function sendOTPEmail({ to, otp, userName }: SendOTPEmailOptions) {
  */
 export function getOTPEmailTemplate(otp: string, userName?: string): string {
   const formattedOTP = `${otp.slice(0, 4)}-${otp.slice(4)}`;
-  
+
   return `
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>Code de vérification - Chronodil</title>
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { border-collapse: collapse !important; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; background-color: #ffffff; color: #1f2937; -webkit-font-smoothing: antialiased; }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+<body style="margin: 0; padding: 0; background-color: #ffffff; color: #1f2937;">
 
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
+      <td align="center" style="padding: 60px 20px;">
 
-        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; text-align: left;">
 
-          <!-- Header -->
+          <!-- Logo Odillon -->
           <tr>
-            <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px;">
-              <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0;">
-                ⏱️ Chronodil
-              </h1>
-              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
-                Gestion du temps optimisée
-              </p>
+            <td style="padding-bottom: 40px; border-bottom: 1px solid #f3f4f6;">
+              <img src="https://kucajoobtwptpdanuvnj.supabase.co/storage/v1/object/public/public/logo-odillon.png" alt="ODILLON" height="45" style="display: block; border: 0;">
             </td>
           </tr>
 
-          <!-- Corps -->
+          <!-- Contenu principal -->
           <tr>
-            <td style="padding: 40px;">
-              <h2 style="color: #111827; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
+            <td style="padding: 48px 0;">
+              <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 24px 0; color: #111827; font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
                 Code de vérification
-              </h2>
+              </h1>
 
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}
+              <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 32px 0; font-family: 'Inter', sans-serif;">
+                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}<br><br>
+                Voici votre code de vérification pour <strong>Chronodil</strong>.
               </p>
 
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                Voici votre code de vérification :
-              </p>
-
-              <!-- Code OTP -->
-              <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 30px; text-align: center; margin: 24px 0; border-radius: 12px; border: 2px solid #10b981;">
-                <h1 style="font-family: 'SF Mono', 'Consolas', monospace; font-size: 42px; letter-spacing: 12px; margin: 0; color: #059669; font-weight: 700;">
-                  ${formattedOTP}
-                </h1>
-              </div>
-
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0; text-align: center;">
-                ⏰ Ce code expire dans <strong>1 heure</strong>
-              </p>
-
-              <!-- Informations de sécurité -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+              <!-- Section Code OTP -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
                 <tr>
-                  <td style="padding: 16px 20px;">
-                    <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin: 0 0 8px 0;">
-                      🔒 <strong>Sécurité</strong>
+                  <td>
+                    <p style="font-size: 13px; font-weight: 600; color: #111827; margin: 0 0 12px 0; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em;">
+                      Votre code de vérification
                     </p>
-                    <p style="color: #92400e; font-size: 14px; line-height: 1.5; margin: 0;">
-                      Ne partagez jamais ce code. Chronodil ne vous demandera jamais ce code par téléphone ou SMS.
-                    </p>
+                    <div style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 24px; text-align: center;">
+                      <span style="font-family: 'Inter', monospace; font-size: 32px; font-weight: 700; color: #95c11f; letter-spacing: 0.2em;">
+                        ${formattedOTP}
+                      </span>
+                    </div>
                   </td>
                 </tr>
               </table>
 
-              <p style="color: #9ca3af; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0;">
-                Si vous n'avez pas demandé ce code, ignorez cet email.
-              </p>
+              <!-- Bloc Sécurité Minimaliste -->
+              <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #f3f4f6;">
+                <p style="font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0; font-family: 'Inter', sans-serif;">
+                  Ce code est valable 60 minutes. S'il ne fonctionne plus, vous devrez refaire une demande.<br><br>
+                  <em>Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email en toute sécurité.</em>
+                </p>
+              </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0;">
-                Cet email a été envoyé par <strong style="color: #6b7280;">Chronodil</strong>
-              </p>
-              <p style="color: #d1d5db; font-size: 11px; margin: 0;">
-                © 2026 ODILLON. Tous droits réservés.
+            <td style="padding-top: 24px; border-top: 1px solid #f3f4f6;">
+              <p style="font-size: 12px; color: #d1d5db; margin: 0; font-family: 'Inter', sans-serif;">
+                © 2026 ODILLON Ingénierie d'Entreprises • Chronodil
               </p>
             </td>
           </tr>
@@ -203,109 +212,81 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>Réinitialisation de mot de passe - Chronodil</title>
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { border-collapse: collapse !important; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; background-color: #ffffff; color: #1f2937; -webkit-font-smoothing: antialiased; }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+<body style="margin: 0; padding: 0; background-color: #ffffff; color: #1f2937;">
 
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
+      <td align="center" style="padding: 60px 20px;">
 
-        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; text-align: left;">
 
-          <!-- Header -->
+          <!-- Logo Odillon -->
           <tr>
-            <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px;">
-              <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                ⏱️ Chronodil
-              </h1>
-              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
-                Gestion du temps optimisée
-              </p>
+            <td style="padding-bottom: 40px; border-bottom: 1px solid #f3f4f6;">
+              <img src="https://kucajoobtwptpdanuvnj.supabase.co/storage/v1/object/public/public/logo-odillon.png" alt="ODILLON" height="45" style="display: block; border: 0;">
             </td>
           </tr>
 
-          <!-- Corps -->
+          <!-- Contenu principal -->
           <tr>
-            <td style="padding: 40px 40px 30px 40px;">
-              <h2 style="color: #111827; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
-                Réinitialisation de votre mot de passe
-              </h2>
+            <td style="padding: 48px 0;">
+              <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 24px 0; color: #111827; font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
+                Réinitialisation de mot de passe
+              </h1>
 
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}
+              <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 32px 0; font-family: 'Inter', sans-serif;">
+                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}<br><br>
+                Une demande de réinitialisation de mot de passe a été faite pour votre compte <strong>Chronodil</strong>.
               </p>
 
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+              <!-- Bouton -->
+              <p style="font-size: 15px; color: #4b5563; margin: 0 0 20px 0; font-family: 'Inter', sans-serif;">
                 Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :
               </p>
 
-              <!-- Bouton CTA -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
                 <tr>
-                  <td align="center" style="padding: 0 0 30px 0;">
-                    <a href="${resetUrl}"
-                       style="display: inline-block;
-                              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                              color: #ffffff;
-                              font-size: 16px;
-                              font-weight: 600;
-                              text-decoration: none;
-                              padding: 14px 40px;
-                              border-radius: 6px;
-                              box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                  <td>
+                    <a href="${resetUrl}" style="display: inline-block; background-color: #95c11f; color: #000000; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 8px;">
                       Réinitialiser mon mot de passe
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <!-- Informations -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f9fafb; border-radius: 6px; border-left: 4px solid #10b981;">
-                <tr>
-                  <td style="padding: 16px 20px;">
-                    <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 8px 0;">
-                      ⏰ <strong>Ce lien est valable pendant 1 heure.</strong>
-                    </p>
-                    <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0;">
-                      🔒 Pour des raisons de sécurité, le lien ne peut être utilisé qu'une seule fois.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="color: #9ca3af; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0;">
-                Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
+              <!-- Lien alternatif -->
+              <p style="font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0 0 8px 0; font-family: 'Inter', sans-serif;">
+                Si le bouton ne fonctionne pas, copiez ce lien :
               </p>
-            </td>
-          </tr>
+              <p style="font-size: 12px; color: #6b7280; line-height: 1.5; margin: 0 0 32px 0; word-break: break-all; font-family: 'Inter', sans-serif;">
+                <a href="${resetUrl}" style="color: #95c11f; text-decoration: underline;">${resetUrl}</a>
+              </p>
 
-          <!-- Lien alternatif -->
-          <tr>
-            <td style="padding: 0 40px 40px 40px;">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                <tr>
-                  <td>
-                    <p style="color: #9ca3af; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">
-                      Si le bouton ne fonctionne pas, copiez ce lien :
-                    </p>
-                    <p style="color: #6b7280; font-size: 12px; line-height: 1.5; margin: 0; word-break: break-all;">
-                      <a href="${resetUrl}" style="color: #10b981; text-decoration: underline;">${resetUrl}</a>
-                    </p>
-                  </td>
-                </tr>
-              </table>
+              <!-- Bloc Sécurité Minimaliste -->
+              <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #f3f4f6;">
+                <p style="font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0; font-family: 'Inter', sans-serif;">
+                  Ce lien est valable 60 minutes. S'il ne fonctionne plus, vous devrez refaire une demande.<br><br>
+                  <em>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email en toute sécurité.</em>
+                </p>
+              </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0;">
-                Cet email a été envoyé par <strong style="color: #6b7280;">Chronodil</strong>
-              </p>
-              <p style="color: #d1d5db; font-size: 11px; margin: 0;">
-                © 2026 ODILLON. Tous droits réservés.
+            <td style="padding-top: 24px; border-top: 1px solid #f3f4f6;">
+              <p style="font-size: 12px; color: #d1d5db; margin: 0; font-family: 'Inter', sans-serif;">
+                © 2026 ODILLON Ingénierie d'Entreprises • Chronodil
               </p>
             </td>
           </tr>
@@ -347,88 +328,72 @@ export async function sendNotificationEmail(to: string, options: NotificationEma
  * Template HTML pour les emails de notification génériques
  */
 export function getNotificationEmailTemplate(options: NotificationEmailOptions): string {
-  const { title, message, link, type = 'info', userName } = options;
-  
-  // Icônes et couleurs selon le type
-  const typeConfig: Record<string, { icon: string; color: string; bgColor: string }> = {
-    info: { icon: 'ℹ️', color: '#3b82f6', bgColor: '#eff6ff' },
-    success: { icon: '✅', color: '#10b981', bgColor: '#f0fdf4' },
-    warning: { icon: '⚠️', color: '#f59e0b', bgColor: '#fffbeb' },
-    error: { icon: '❌', color: '#ef4444', bgColor: '#fef2f2' },
-    task_assigned: { icon: '📋', color: '#8b5cf6', bgColor: '#f5f3ff' },
-    task_completed: { icon: '🎉', color: '#10b981', bgColor: '#f0fdf4' },
-    message: { icon: '💬', color: '#06b6d4', bgColor: '#ecfeff' },
-    reminder: { icon: '⏰', color: '#f97316', bgColor: '#fff7ed' },
-  };
-  
-  const config = typeConfig[type] || typeConfig.info;
+  const { title, message, link, userName } = options;
+
   const actionUrl = link ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chronodil.com'}${link}` : null;
-  
+
   return `
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>${title} - Chronodil</title>
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { border-collapse: collapse !important; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; background-color: #ffffff; color: #1f2937; -webkit-font-smoothing: antialiased; }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+<body style="margin: 0; padding: 0; background-color: #ffffff; color: #1f2937;">
 
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
+      <td align="center" style="padding: 60px 20px;">
 
-        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 540px; text-align: left;">
 
-          <!-- Header -->
+          <!-- Logo Odillon -->
           <tr>
-            <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px;">
-              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0;">
-                ⏱️ Chronodil
-              </h1>
+            <td style="padding-bottom: 40px; border-bottom: 1px solid #f3f4f6;">
+              <img src="https://kucajoobtwptpdanuvnj.supabase.co/storage/v1/object/public/public/logo-odillon.png" alt="ODILLON" height="45" style="display: block; border: 0;">
             </td>
           </tr>
 
-          <!-- Corps -->
+          <!-- Contenu principal -->
           <tr>
-            <td style="padding: 40px;">
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}
-              </p>
+            <td style="padding: 48px 0;">
+              <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 24px 0; color: #111827; font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
+                ${title}
+              </h1>
 
-              <p style="color: #6b7280; font-size: 14px; margin: 0 0 20px 0;">
-                Vous avez reçu une nouvelle notification :
+              <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 32px 0; font-family: 'Inter', sans-serif;">
+                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}<br><br>
+                Vous avez reçu une nouvelle notification sur <strong>Chronodil</strong>.
               </p>
 
               <!-- Notification Card -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${config.bgColor}; border-radius: 8px; border-left: 4px solid ${config.color};">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
                 <tr>
-                  <td style="padding: 20px;">
-                    <h2 style="color: #111827; font-size: 18px; font-weight: 600; margin: 0 0 10px 0;">
-                      ${config.icon} ${title}
-                    </h2>
-                    <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0;">
-                      ${message}
-                    </p>
+                  <td>
+                    <div style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 24px;">
+                      <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin: 0; font-family: 'Inter', sans-serif;">
+                        ${message}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               </table>
 
               ${actionUrl ? `
-              <!-- Bouton CTA -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
+              <!-- Bouton -->
+              <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td align="center">
-                    <a href="${actionUrl}"
-                       style="display: inline-block;
-                              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                              color: #ffffff;
-                              font-size: 16px;
-                              font-weight: 600;
-                              text-decoration: none;
-                              padding: 14px 40px;
-                              border-radius: 6px;
-                              box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                  <td>
+                    <a href="${actionUrl}" style="display: inline-block; background-color: #95c11f; color: #000000; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 8px;">
                       Voir dans Chronodil
                     </a>
                   </td>
@@ -436,17 +401,20 @@ export function getNotificationEmailTemplate(options: NotificationEmailOptions):
               </table>
               ` : ''}
 
+              <!-- Bloc info -->
+              <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #f3f4f6;">
+                <p style="font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0; font-family: 'Inter', sans-serif;">
+                  Vous recevez cet email car vous avez activé les notifications email sur Chronodil.
+                </p>
+              </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="background-color: #f9fafb; padding: 20px 40px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0 0 8px 0;">
-                Vous recevez cet email car vous avez activé les notifications email sur Chronodil.
-              </p>
-              <p style="color: #d1d5db; font-size: 11px; margin: 0;">
-                © 2026 ODILLON. Tous droits réservés.
+            <td style="padding-top: 24px; border-top: 1px solid #f3f4f6;">
+              <p style="font-size: 12px; color: #d1d5db; margin: 0; font-family: 'Inter', sans-serif;">
+                © 2026 ODILLON Ingénierie d'Entreprises • Chronodil
               </p>
             </td>
           </tr>

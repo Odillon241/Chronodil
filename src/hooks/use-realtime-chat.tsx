@@ -202,6 +202,9 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
           }
         )
         .subscribe((status) => {
+          // Ignorer les callbacks si le composant est démonté (React Strict Mode)
+          if (!isMounted) return;
+
           console.log('📡 Statut de la subscription real-time Chat:', status);
 
           if (status === 'SUBSCRIBED') {

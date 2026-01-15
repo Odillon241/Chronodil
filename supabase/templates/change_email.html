@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
         rel="stylesheet">
-    <title>Réinitialisation de mot de passe - Chronodil</title>
+    <title>Confirmation de changement d'email - Chronodil</title>
     <style>
         /* Reset pour les clients mail */
         body,
@@ -65,30 +65,38 @@
                         <td style="padding: 48px 0;">
                             <h1
                                 style="font-size: 24px; font-weight: 700; margin: 0 0 24px 0; color: #111827; font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
-                                Réinitialisation de mot de passe
+                                Confirmation de changement d'email
                             </h1>
 
                             <p
                                 style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 32px 0; font-family: 'Inter', sans-serif;">
                                 Bonjour,<br><br>
-                                Une demande de réinitialisation de mot de passe a été faite pour votre compte
+                                Vous avez demandé à changer l'adresse email associée à votre compte
                                 <strong>Chronodil</strong>.
                             </p>
 
-                            <!-- Section Code OTP (Vérification) -->
+                            <!-- Section Changement d'email -->
                             <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
                                 <tr>
                                     <td>
-                                        <p
-                                            style="font-size: 13px; font-weight: 600; color: #111827; margin: 0 0 12px 0; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em;">
-                                            Votre code de vérification
-                                        </p>
                                         <div
-                                            style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 24px; text-align: center;">
-                                            <span
-                                                style="font-family: 'Inter', monospace; font-size: 32px; font-weight: 700; color: #95c11f; letter-spacing: 0.2em;">
-                                                {{ .Token }}
-                                            </span>
+                                            style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 24px;">
+                                            <p
+                                                style="font-size: 13px; font-weight: 600; color: #111827; margin: 0 0 8px 0; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em;">
+                                                Ancien email
+                                            </p>
+                                            <p
+                                                style="font-size: 15px; color: #6b7280; margin: 0 0 16px 0; font-family: 'Inter', sans-serif;">
+                                                {{ .Email }}
+                                            </p>
+                                            <p
+                                                style="font-size: 13px; font-weight: 600; color: #111827; margin: 0 0 8px 0; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em;">
+                                                Nouvel email
+                                            </p>
+                                            <p
+                                                style="font-size: 15px; color: #95c11f; font-weight: 600; margin: 0; font-family: 'Inter', sans-serif;">
+                                                {{ .NewEmail }}
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>
@@ -97,13 +105,13 @@
                             <!-- Bouton - Radius 8px -->
                             <p
                                 style="font-size: 15px; color: #4b5563; margin: 0 0 20px 0; font-family: 'Inter', sans-serif;">
-                                Vous pouvez également cliquer sur le bouton ci-dessous :
+                                Cliquez sur le bouton ci-dessous pour confirmer ce changement :
                             </p>
 
                             <table border="0" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td>
-                                        <a href="{{ .SiteURL }}/auth/verify-otp?email={{ .Email }}" style="display: inline-block;
+                                        <a href="{{ .ConfirmationURL }}" style="display: inline-block;
                               background-color: #95c11f;
                               color: #000000;
                               font-family: 'Inter', sans-serif;
@@ -112,7 +120,7 @@
                               text-decoration: none;
                               padding: 14px 28px;
                               border-radius: 8px;">
-                                            Réinitialiser via le lien
+                                            Confirmer le changement d'email
                                         </a>
                                     </td>
                                 </tr>
@@ -122,10 +130,10 @@
                             <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #f3f4f6;">
                                 <p
                                     style="font-size: 13px; color: #9ca3af; line-height: 1.5; margin: 0; font-family: 'Inter', sans-serif;">
-                                    Ce code est valable 60 minutes. S'il ne fonctionne plus, vous devrez refaire une
+                                    Ce lien est valable 24 heures. Passé ce délai, vous devrez refaire une
                                     demande.<br><br>
-                                    <em>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email
-                                        en toute sécurité.</em>
+                                    <em>Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.
+                                        Votre adresse email actuelle restera inchangée.</em>
                                 </p>
                             </div>
                         </td>
