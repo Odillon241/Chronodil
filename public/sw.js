@@ -3,7 +3,7 @@
  * Gère les push notifications et le cache offline basique
  */
 
-const CACHE_NAME = 'chronodil-v1';
+const CACHE_NAME = 'chronodil-v2';
 
 // Fichiers à mettre en cache pour le mode offline
 const STATIC_ASSETS = [
@@ -14,7 +14,7 @@ const STATIC_ASSETS = [
 // Installation du Service Worker
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installation...');
-  
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -35,7 +35,7 @@ self.addEventListener('install', (event) => {
 // Activation du Service Worker
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activation...');
-  
+
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
@@ -59,7 +59,7 @@ self.addEventListener('activate', (event) => {
 // Gestion des push notifications
 self.addEventListener('push', (event) => {
   console.log('[Service Worker] Push reçu:', event);
-  
+
   let data = {
     title: 'Chronodil',
     body: 'Vous avez une nouvelle notification',
@@ -70,7 +70,7 @@ self.addEventListener('push', (event) => {
       url: '/dashboard/notifications',
     },
   };
-  
+
   // Parser les données du push si disponibles
   if (event.data) {
     try {
@@ -84,7 +84,7 @@ self.addEventListener('push', (event) => {
       data.body = event.data.text() || data.body;
     }
   }
-  
+
   const options = {
     body: data.body,
     icon: data.icon,
@@ -104,7 +104,7 @@ self.addEventListener('push', (event) => {
       },
     ],
   };
-  
+
   event.waitUntil(
     self.registration.showNotification(data.title, options)
   );
@@ -113,17 +113,17 @@ self.addEventListener('push', (event) => {
 // Gestion des clics sur les notifications
 self.addEventListener('notificationclick', (event) => {
   console.log('[Service Worker] Notification cliquée:', event);
-  
+
   event.notification.close();
-  
+
   const action = event.action;
   const notificationData = event.notification.data || {};
   const url = notificationData.url || '/dashboard/notifications';
-  
+
   if (action === 'close') {
     return;
   }
-  
+
   // Ouvrir ou focus sur l'application
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
@@ -154,12 +154,12 @@ self.addEventListener('notificationclose', (event) => {
 // Gestion des fetch (cache-first pour les assets statiques)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  
+
   // Ne pas intercepter les requêtes vers des domaines externes
   if (url.origin !== self.location.origin) {
     return;
   }
-  
+
   // Cache-first pour les sons et assets statiques
   if (url.pathname.startsWith('/sounds/') || url.pathname.startsWith('/assets/')) {
     event.respondWith(
@@ -182,7 +182,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-  
+
   // Network-first pour les autres requêtes (pages, API, etc.)
   // Ne pas intercepter pour permettre le fonctionnement normal de Next.js
 });
@@ -190,7 +190,7 @@ self.addEventListener('fetch', (event) => {
 // Message depuis le client
 self.addEventListener('message', (event) => {
   console.log('[Service Worker] Message reçu:', event.data);
-  
+
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }

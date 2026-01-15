@@ -215,7 +215,7 @@ export async function sendPushNotificationsForNotifications(
 }
 
 /**
- * Créer une notification en base de données et envoyer la push notification
+ * Créer une notification en base de données et envoyer la push notification + email
  * Fonction utilitaire centralisée
  */
 export async function createAndSendNotification(params: {
@@ -225,8 +225,10 @@ export async function createAndSendNotification(params: {
   type?: string;
   link?: string | null;
   sendPush?: boolean;
-}): Promise<{ notification: any; pushResult?: any }> {
+  sendEmail?: boolean;
+}): Promise<{ notification: any; pushResult?: any; emailResult?: any }> {
   const { nanoid } = await import("nanoid");
+  const { sendNotificationEmail } = await import("@/lib/email");
 
   const notification = await prisma.notification.create({
     data: {
@@ -251,8 +253,37 @@ export async function createAndSendNotification(params: {
     });
   }
 
-  return { notification, pushResult };
+  // Envoyer l'email si activé (par défaut: oui)
+  let emailResult = undefined;
+  if (params.sendEmail !== false) {
+    try {
+      // Récupérer les préférences utilisateur
+      const user = await prisma.user.findUnique({
+        where: { id: params.userId },
+        select: { email: true, name: true, emailNotificationsEnabled: true },
+      });
+
+      if (user?.emailNotificationsEnabled && user.email) {
+        emailResult = await sendNotificationEmail(user.email, {
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          type: notification.type,
+          userName: user.name || undefined,
+        });
+        console.log(`[Email] Notification email envoyé à ${user.email}`);
+      } else {
+        console.log(`[Email] Skip - Emails désactivés ou email manquant pour l'utilisateur ${params.userId}`);
+      }
+    } catch (error) {
+      console.error("[Email] Erreur lors de l'envoi de l'email de notification:", error);
+      // Ne pas faire échouer toute l'opération si l'email échoue
+    }
+  }
+
+  return { notification, pushResult, emailResult };
 }
+
 
 /**
  * Créer des notifications pour plusieurs utilisateurs

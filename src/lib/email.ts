@@ -320,3 +320,144 @@ export function getResetPasswordEmailTemplate(resetUrl: string, userName?: strin
 </html>
   `;
 }
+
+/**
+ * Interface pour les options de notification email
+ */
+interface NotificationEmailOptions {
+  title: string;
+  message: string;
+  link?: string | null;
+  type?: string;
+  userName?: string;
+}
+
+/**
+ * Envoie un email de notification
+ */
+export async function sendNotificationEmail(to: string, options: NotificationEmailOptions) {
+  return sendEmail({
+    to,
+    subject: `🔔 ${options.title} - Chronodil`,
+    html: getNotificationEmailTemplate(options),
+  });
+}
+
+/**
+ * Template HTML pour les emails de notification génériques
+ */
+export function getNotificationEmailTemplate(options: NotificationEmailOptions): string {
+  const { title, message, link, type = 'info', userName } = options;
+  
+  // Icônes et couleurs selon le type
+  const typeConfig: Record<string, { icon: string; color: string; bgColor: string }> = {
+    info: { icon: 'ℹ️', color: '#3b82f6', bgColor: '#eff6ff' },
+    success: { icon: '✅', color: '#10b981', bgColor: '#f0fdf4' },
+    warning: { icon: '⚠️', color: '#f59e0b', bgColor: '#fffbeb' },
+    error: { icon: '❌', color: '#ef4444', bgColor: '#fef2f2' },
+    task_assigned: { icon: '📋', color: '#8b5cf6', bgColor: '#f5f3ff' },
+    task_completed: { icon: '🎉', color: '#10b981', bgColor: '#f0fdf4' },
+    message: { icon: '💬', color: '#06b6d4', bgColor: '#ecfeff' },
+    reminder: { icon: '⏰', color: '#f97316', bgColor: '#fff7ed' },
+  };
+  
+  const config = typeConfig[type] || typeConfig.info;
+  const actionUrl = link ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chronodil.com'}${link}` : null;
+  
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} - Chronodil</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px;">
+              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0;">
+                ⏱️ Chronodil
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Corps -->
+          <tr>
+            <td style="padding: 40px;">
+              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                ${userName ? `Bonjour ${userName},` : 'Bonjour,'}
+              </p>
+
+              <p style="color: #6b7280; font-size: 14px; margin: 0 0 20px 0;">
+                Vous avez reçu une nouvelle notification :
+              </p>
+
+              <!-- Notification Card -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${config.bgColor}; border-radius: 8px; border-left: 4px solid ${config.color};">
+                <tr>
+                  <td style="padding: 20px;">
+                    <h2 style="color: #111827; font-size: 18px; font-weight: 600; margin: 0 0 10px 0;">
+                      ${config.icon} ${title}
+                    </h2>
+                    <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0;">
+                      ${message}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              ${actionUrl ? `
+              <!-- Bouton CTA -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
+                <tr>
+                  <td align="center">
+                    <a href="${actionUrl}"
+                       style="display: inline-block;
+                              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                              color: #ffffff;
+                              font-size: 16px;
+                              font-weight: 600;
+                              text-decoration: none;
+                              padding: 14px 40px;
+                              border-radius: 6px;
+                              box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                      Voir dans Chronodil
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="background-color: #f9fafb; padding: 20px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0 0 8px 0;">
+                Vous recevez cet email car vous avez activé les notifications email sur Chronodil.
+              </p>
+              <p style="color: #d1d5db; font-size: 11px; margin: 0;">
+                © 2026 ODILLON. Tous droits réservés.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+}
