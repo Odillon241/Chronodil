@@ -276,8 +276,8 @@ export type ReportTemplateWhereInput = {
   createdById?: Prisma.StringFilter<"ReportTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"ReportTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReportTemplate"> | Date | string
-  User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   Report?: Prisma.ReportListRelationFilter
+  User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ReportTemplateOrderByWithRelationInput = {
@@ -294,8 +294,8 @@ export type ReportTemplateOrderByWithRelationInput = {
   createdById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  User?: Prisma.UserOrderByWithRelationInput
   Report?: Prisma.ReportOrderByRelationAggregateInput
+  User?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ReportTemplateWhereUniqueInput = Prisma.AtLeast<{
@@ -315,8 +315,8 @@ export type ReportTemplateWhereUniqueInput = Prisma.AtLeast<{
   createdById?: Prisma.StringFilter<"ReportTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"ReportTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReportTemplate"> | Date | string
-  User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   Report?: Prisma.ReportListRelationFilter
+  User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type ReportTemplateOrderByWithAggregationInput = {
@@ -372,8 +372,8 @@ export type ReportTemplateCreateInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt: Date | string
-  User: Prisma.UserCreateNestedOneWithoutReportTemplateInput
   Report?: Prisma.ReportCreateNestedManyWithoutReportTemplateInput
+  User: Prisma.UserCreateNestedOneWithoutReportTemplateInput
 }
 
 export type ReportTemplateUncheckedCreateInput = {
@@ -406,8 +406,8 @@ export type ReportTemplateUpdateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  User?: Prisma.UserUpdateOneRequiredWithoutReportTemplateNestedInput
   Report?: Prisma.ReportUpdateManyWithoutReportTemplateNestedInput
+  User?: Prisma.UserUpdateOneRequiredWithoutReportTemplateNestedInput
 }
 
 export type ReportTemplateUncheckedUpdateInput = {
@@ -869,8 +869,8 @@ export type ReportTemplateSelect<ExtArgs extends runtime.Types.Extensions.Intern
   createdById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   Report?: boolean | Prisma.ReportTemplate$ReportArgs<ExtArgs>
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ReportTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reportTemplate"]>
 
@@ -926,8 +926,8 @@ export type ReportTemplateSelectScalar = {
 
 export type ReportTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "frequency" | "format" | "templateContent" | "variables" | "isActive" | "isDefault" | "sortOrder" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["reportTemplate"]>
 export type ReportTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   Report?: boolean | Prisma.ReportTemplate$ReportArgs<ExtArgs>
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ReportTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReportTemplateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -940,8 +940,8 @@ export type ReportTemplateIncludeUpdateManyAndReturn<ExtArgs extends runtime.Typ
 export type $ReportTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ReportTemplate"
   objects: {
-    User: Prisma.$UserPayload<ExtArgs>
     Report: Prisma.$ReportPayload<ExtArgs>[]
+    User: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1351,8 +1351,8 @@ readonly fields: ReportTemplateFieldRefs;
  */
 export interface Prisma__ReportTemplateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   Report<T extends Prisma.ReportTemplate$ReportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReportTemplate$ReportArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

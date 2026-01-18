@@ -281,8 +281,8 @@ export type ReportWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  ReportTemplate?: Prisma.XOR<Prisma.ReportTemplateNullableScalarRelationFilter, Prisma.ReportTemplateWhereInput> | null
   HRTimesheet?: Prisma.XOR<Prisma.HRTimesheetNullableScalarRelationFilter, Prisma.HRTimesheetWhereInput> | null
+  ReportTemplate?: Prisma.XOR<Prisma.ReportTemplateNullableScalarRelationFilter, Prisma.ReportTemplateWhereInput> | null
   ReportRecipient?: Prisma.ReportRecipientListRelationFilter
 }
 
@@ -301,8 +301,8 @@ export type ReportOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   User?: Prisma.UserOrderByWithRelationInput
-  ReportTemplate?: Prisma.ReportTemplateOrderByWithRelationInput
   HRTimesheet?: Prisma.HRTimesheetOrderByWithRelationInput
+  ReportTemplate?: Prisma.ReportTemplateOrderByWithRelationInput
   ReportRecipient?: Prisma.ReportRecipientOrderByRelationAggregateInput
 }
 
@@ -324,8 +324,8 @@ export type ReportWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  ReportTemplate?: Prisma.XOR<Prisma.ReportTemplateNullableScalarRelationFilter, Prisma.ReportTemplateWhereInput> | null
   HRTimesheet?: Prisma.XOR<Prisma.HRTimesheetNullableScalarRelationFilter, Prisma.HRTimesheetWhereInput> | null
+  ReportTemplate?: Prisma.XOR<Prisma.ReportTemplateNullableScalarRelationFilter, Prisma.ReportTemplateWhereInput> | null
   ReportRecipient?: Prisma.ReportRecipientListRelationFilter
 }, "id">
 
@@ -381,8 +381,8 @@ export type ReportCreateInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   User: Prisma.UserCreateNestedOneWithoutReportInput
-  ReportTemplate?: Prisma.ReportTemplateCreateNestedOneWithoutReportInput
   HRTimesheet?: Prisma.HRTimesheetCreateNestedOneWithoutReportInput
+  ReportTemplate?: Prisma.ReportTemplateCreateNestedOneWithoutReportInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutReportInput
 }
 
@@ -415,8 +415,8 @@ export type ReportUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   User?: Prisma.UserUpdateOneRequiredWithoutReportNestedInput
-  ReportTemplate?: Prisma.ReportTemplateUpdateOneWithoutReportNestedInput
   HRTimesheet?: Prisma.HRTimesheetUpdateOneWithoutReportNestedInput
+  ReportTemplate?: Prisma.ReportTemplateUpdateOneWithoutReportNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutReportNestedInput
 }
 
@@ -782,8 +782,8 @@ export type ReportCreateWithoutReportRecipientInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   User: Prisma.UserCreateNestedOneWithoutReportInput
-  ReportTemplate?: Prisma.ReportTemplateCreateNestedOneWithoutReportInput
   HRTimesheet?: Prisma.HRTimesheetCreateNestedOneWithoutReportInput
+  ReportTemplate?: Prisma.ReportTemplateCreateNestedOneWithoutReportInput
 }
 
 export type ReportUncheckedCreateWithoutReportRecipientInput = {
@@ -830,8 +830,8 @@ export type ReportUpdateWithoutReportRecipientInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   User?: Prisma.UserUpdateOneRequiredWithoutReportNestedInput
-  ReportTemplate?: Prisma.ReportTemplateUpdateOneWithoutReportNestedInput
   HRTimesheet?: Prisma.HRTimesheetUpdateOneWithoutReportNestedInput
+  ReportTemplate?: Prisma.ReportTemplateUpdateOneWithoutReportNestedInput
 }
 
 export type ReportUncheckedUpdateWithoutReportRecipientInput = {
@@ -919,8 +919,8 @@ export type ReportCreateWithoutUserInput = {
   reportType?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
-  ReportTemplate?: Prisma.ReportTemplateCreateNestedOneWithoutReportInput
   HRTimesheet?: Prisma.HRTimesheetCreateNestedOneWithoutReportInput
+  ReportTemplate?: Prisma.ReportTemplateCreateNestedOneWithoutReportInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutReportInput
 }
 
@@ -1116,8 +1116,8 @@ export type ReportUpdateWithoutUserInput = {
   reportType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ReportTemplate?: Prisma.ReportTemplateUpdateOneWithoutReportNestedInput
   HRTimesheet?: Prisma.HRTimesheetUpdateOneWithoutReportNestedInput
+  ReportTemplate?: Prisma.ReportTemplateUpdateOneWithoutReportNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutReportNestedInput
 }
 
@@ -1198,8 +1198,8 @@ export type ReportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   createdAt?: boolean
   updatedAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Report$HRTimesheetArgs<ExtArgs>
+  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   ReportRecipient?: boolean | Prisma.Report$ReportRecipientArgs<ExtArgs>
   _count?: boolean | Prisma.ReportCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["report"]>
@@ -1219,8 +1219,8 @@ export type ReportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdAt?: boolean
   updatedAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Report$HRTimesheetArgs<ExtArgs>
+  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
 }, ExtArgs["result"]["report"]>
 
 export type ReportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1238,8 +1238,8 @@ export type ReportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdAt?: boolean
   updatedAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Report$HRTimesheetArgs<ExtArgs>
+  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
 }, ExtArgs["result"]["report"]>
 
 export type ReportSelectScalar = {
@@ -1261,28 +1261,28 @@ export type ReportSelectScalar = {
 export type ReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "content" | "format" | "period" | "includeSummary" | "fileSize" | "createdById" | "templateId" | "reportType" | "hrTimesheetId" | "createdAt" | "updatedAt", ExtArgs["result"]["report"]>
 export type ReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Report$HRTimesheetArgs<ExtArgs>
+  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   ReportRecipient?: boolean | Prisma.Report$ReportRecipientArgs<ExtArgs>
   _count?: boolean | Prisma.ReportCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReportIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Report$HRTimesheetArgs<ExtArgs>
+  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
 }
 export type ReportIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
   HRTimesheet?: boolean | Prisma.Report$HRTimesheetArgs<ExtArgs>
+  ReportTemplate?: boolean | Prisma.Report$ReportTemplateArgs<ExtArgs>
 }
 
 export type $ReportPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Report"
   objects: {
     User: Prisma.$UserPayload<ExtArgs>
-    ReportTemplate: Prisma.$ReportTemplatePayload<ExtArgs> | null
     HRTimesheet: Prisma.$HRTimesheetPayload<ExtArgs> | null
+    ReportTemplate: Prisma.$ReportTemplatePayload<ExtArgs> | null
     ReportRecipient: Prisma.$ReportRecipientPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1694,8 +1694,8 @@ readonly fields: ReportFieldRefs;
 export interface Prisma__ReportClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  ReportTemplate<T extends Prisma.Report$ReportTemplateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Report$ReportTemplateArgs<ExtArgs>>): Prisma.Prisma__ReportTemplateClient<runtime.Types.Result.GetResult<Prisma.$ReportTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   HRTimesheet<T extends Prisma.Report$HRTimesheetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Report$HRTimesheetArgs<ExtArgs>>): Prisma.Prisma__HRTimesheetClient<runtime.Types.Result.GetResult<Prisma.$HRTimesheetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  ReportTemplate<T extends Prisma.Report$ReportTemplateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Report$ReportTemplateArgs<ExtArgs>>): Prisma.Prisma__ReportTemplateClient<runtime.Types.Result.GetResult<Prisma.$ReportTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   ReportRecipient<T extends Prisma.Report$ReportRecipientArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Report$ReportRecipientArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportRecipientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2135,25 +2135,6 @@ export type ReportDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
- * Report.ReportTemplate
- */
-export type Report$ReportTemplateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ReportTemplate
-   */
-  select?: Prisma.ReportTemplateSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ReportTemplate
-   */
-  omit?: Prisma.ReportTemplateOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ReportTemplateInclude<ExtArgs> | null
-  where?: Prisma.ReportTemplateWhereInput
-}
-
-/**
  * Report.HRTimesheet
  */
 export type Report$HRTimesheetArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2170,6 +2151,25 @@ export type Report$HRTimesheetArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   include?: Prisma.HRTimesheetInclude<ExtArgs> | null
   where?: Prisma.HRTimesheetWhereInput
+}
+
+/**
+ * Report.ReportTemplate
+ */
+export type Report$ReportTemplateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReportTemplate
+   */
+  select?: Prisma.ReportTemplateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReportTemplate
+   */
+  omit?: Prisma.ReportTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReportTemplateInclude<ExtArgs> | null
+  where?: Prisma.ReportTemplateWhereInput
 }
 
 /**

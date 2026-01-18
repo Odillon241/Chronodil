@@ -165,7 +165,7 @@ export function ChatChannelList({
           onUpdate();
         }
       } else {
-         toast.error(result?.serverError || "Erreur lors de la modification des notifications");
+        toast.error(result?.serverError || "Erreur lors de la modification des notifications");
       }
     } catch (error) {
       toast.error("Erreur lors de la modification des notifications");
@@ -175,7 +175,7 @@ export function ChatChannelList({
   const handleLeaveChannel = async (channelId: string, channelName: string) => {
     const confirmed = confirm(
       `Êtes-vous sûr de vouloir quitter le canal "${channelName}" ?\n\n` +
-        "Vous ne recevrez plus de notifications de ce canal."
+      "Vous ne recevrez plus de notifications de ce canal."
     );
 
     if (confirmed) {
@@ -195,11 +195,11 @@ export function ChatChannelList({
   const handleDeleteChannel = async (channelId: string, channelName: string) => {
     const confirmed = confirm(
       `⚠️ ATTENTION : Êtes-vous sûr de vouloir supprimer définitivement le canal "${channelName}" ?\n\n` +
-        "Cette action est IRRÉVERSIBLE et supprimera :\n" +
-        "• Tous les messages du canal\n" +
-        "• Tous les membres du canal\n" +
-        "• Toutes les pièces jointes\n\n" +
-        "Tapez OUI pour confirmer la suppression."
+      "Cette action est IRRÉVERSIBLE et supprimera :\n" +
+      "• Tous les messages du canal\n" +
+      "• Tous les membres du canal\n" +
+      "• Toutes les pièces jointes\n\n" +
+      "Tapez OUI pour confirmer la suppression."
     );
 
     if (confirmed) {

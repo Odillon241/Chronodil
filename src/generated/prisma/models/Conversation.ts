@@ -246,13 +246,13 @@ export type ConversationWhereInput = {
   purpose?: Prisma.StringNullableFilter<"Conversation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
+  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   Project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
   ConversationMember?: Prisma.ConversationMemberListRelationFilter
   Message?: Prisma.MessageListRelationFilter
-  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
   ScheduledMessage?: Prisma.ScheduledMessageListRelationFilter
-  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
 }
 
 export type ConversationOrderByWithRelationInput = {
@@ -269,13 +269,13 @@ export type ConversationOrderByWithRelationInput = {
   purpose?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  ChannelPermission?: Prisma.ChannelPermissionOrderByRelationAggregateInput
+  ChatAuditLog?: Prisma.ChatAuditLogOrderByRelationAggregateInput
   User?: Prisma.UserOrderByWithRelationInput
   Project?: Prisma.ProjectOrderByWithRelationInput
   ConversationMember?: Prisma.ConversationMemberOrderByRelationAggregateInput
   Message?: Prisma.MessageOrderByRelationAggregateInput
-  ChannelPermission?: Prisma.ChannelPermissionOrderByRelationAggregateInput
   ScheduledMessage?: Prisma.ScheduledMessageOrderByRelationAggregateInput
-  ChatAuditLog?: Prisma.ChatAuditLogOrderByRelationAggregateInput
 }
 
 export type ConversationWhereUniqueInput = Prisma.AtLeast<{
@@ -295,13 +295,13 @@ export type ConversationWhereUniqueInput = Prisma.AtLeast<{
   purpose?: Prisma.StringNullableFilter<"Conversation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
+  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   Project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
   ConversationMember?: Prisma.ConversationMemberListRelationFilter
   Message?: Prisma.MessageListRelationFilter
-  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
   ScheduledMessage?: Prisma.ScheduledMessageListRelationFilter
-  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
 }, "id">
 
 export type ConversationOrderByWithAggregationInput = {
@@ -354,13 +354,13 @@ export type ConversationCreateInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateInput = {
@@ -377,11 +377,11 @@ export type ConversationUncheckedCreateInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUpdateInput = {
@@ -396,13 +396,13 @@ export type ConversationUpdateInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateInput = {
@@ -419,11 +419,11 @@ export type ConversationUncheckedUpdateInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateManyInput = {
@@ -712,12 +712,12 @@ export type ConversationCreateWithoutConversationMemberInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutConversationMemberInput = {
@@ -734,10 +734,10 @@ export type ConversationUncheckedCreateWithoutConversationMemberInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
-  Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
   ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
   ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
+  Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutConversationMemberInput = {
@@ -768,12 +768,12 @@ export type ConversationUpdateWithoutConversationMemberInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutConversationMemberInput = {
@@ -790,10 +790,10 @@ export type ConversationUncheckedUpdateWithoutConversationMemberInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
   ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
   ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
+  Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateWithoutMessageInput = {
@@ -808,12 +808,12 @@ export type ConversationCreateWithoutMessageInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutMessageInput = {
@@ -830,10 +830,10 @@ export type ConversationUncheckedCreateWithoutMessageInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
-  ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
   ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
   ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
+  ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutMessageInput = {
@@ -864,12 +864,12 @@ export type ConversationUpdateWithoutMessageInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutMessageInput = {
@@ -886,10 +886,10 @@ export type ConversationUncheckedUpdateWithoutMessageInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
   ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
   ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
+  ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateWithoutChannelPermissionInput = {
@@ -904,12 +904,12 @@ export type ConversationCreateWithoutChannelPermissionInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutChannelPermissionInput = {
@@ -926,10 +926,10 @@ export type ConversationUncheckedCreateWithoutChannelPermissionInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutChannelPermissionInput = {
@@ -960,12 +960,12 @@ export type ConversationUpdateWithoutChannelPermissionInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutChannelPermissionInput = {
@@ -982,10 +982,10 @@ export type ConversationUncheckedUpdateWithoutChannelPermissionInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateWithoutChatAuditLogInput = {
@@ -1000,11 +1000,11 @@ export type ConversationCreateWithoutChatAuditLogInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
 }
 
@@ -1022,9 +1022,9 @@ export type ConversationUncheckedCreateWithoutChatAuditLogInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
 }
 
@@ -1056,11 +1056,11 @@ export type ConversationUpdateWithoutChatAuditLogInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
 }
 
@@ -1078,9 +1078,9 @@ export type ConversationUncheckedUpdateWithoutChatAuditLogInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
 }
 
@@ -1096,12 +1096,12 @@ export type ConversationCreateWithoutScheduledMessageInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutScheduledMessageInput = {
@@ -1118,10 +1118,10 @@ export type ConversationUncheckedCreateWithoutScheduledMessageInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
-  ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-  Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
   ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
   ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
+  ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+  Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutScheduledMessageInput = {
@@ -1152,12 +1152,12 @@ export type ConversationUpdateWithoutScheduledMessageInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutScheduledMessageInput = {
@@ -1174,10 +1174,10 @@ export type ConversationUncheckedUpdateWithoutScheduledMessageInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-  Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
   ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
   ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
+  ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+  Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateWithoutProjectInput = {
@@ -1192,12 +1192,12 @@ export type ConversationCreateWithoutProjectInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   User?: Prisma.UserCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutProjectInput = {
@@ -1213,11 +1213,11 @@ export type ConversationUncheckedCreateWithoutProjectInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutProjectInput = {
@@ -1277,12 +1277,12 @@ export type ConversationCreateWithoutUserInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
   Project?: Prisma.ProjectCreateNestedOneWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutUserInput = {
@@ -1298,11 +1298,11 @@ export type ConversationUncheckedCreateWithoutUserInput = {
   purpose?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutConversationInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutConversationInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutUserInput = {
@@ -1358,12 +1358,12 @@ export type ConversationUpdateWithoutProjectInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   User?: Prisma.UserUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutProjectInput = {
@@ -1379,11 +1379,11 @@ export type ConversationUncheckedUpdateWithoutProjectInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateManyWithoutProjectInput = {
@@ -1428,12 +1428,12 @@ export type ConversationUpdateWithoutUserInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
   Project?: Prisma.ProjectUpdateOneWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutUserInput = {
@@ -1449,11 +1449,11 @@ export type ConversationUncheckedUpdateWithoutUserInput = {
   purpose?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutConversationNestedInput
   ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutConversationNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateManyWithoutUserInput = {
@@ -1477,19 +1477,19 @@ export type ConversationUncheckedUpdateManyWithoutUserInput = {
  */
 
 export type ConversationCountOutputType = {
+  ChannelPermission: number
+  ChatAuditLog: number
   ConversationMember: number
   Message: number
-  ChannelPermission: number
   ScheduledMessage: number
-  ChatAuditLog: number
 }
 
 export type ConversationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ChannelPermission?: boolean | ConversationCountOutputTypeCountChannelPermissionArgs
+  ChatAuditLog?: boolean | ConversationCountOutputTypeCountChatAuditLogArgs
   ConversationMember?: boolean | ConversationCountOutputTypeCountConversationMemberArgs
   Message?: boolean | ConversationCountOutputTypeCountMessageArgs
-  ChannelPermission?: boolean | ConversationCountOutputTypeCountChannelPermissionArgs
   ScheduledMessage?: boolean | ConversationCountOutputTypeCountScheduledMessageArgs
-  ChatAuditLog?: boolean | ConversationCountOutputTypeCountChatAuditLogArgs
 }
 
 /**
@@ -1500,6 +1500,20 @@ export type ConversationCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types
    * Select specific fields to fetch from the ConversationCountOutputType
    */
   select?: Prisma.ConversationCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ConversationCountOutputType without action
+ */
+export type ConversationCountOutputTypeCountChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelPermissionWhereInput
+}
+
+/**
+ * ConversationCountOutputType without action
+ */
+export type ConversationCountOutputTypeCountChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChatAuditLogWhereInput
 }
 
 /**
@@ -1519,22 +1533,8 @@ export type ConversationCountOutputTypeCountMessageArgs<ExtArgs extends runtime.
 /**
  * ConversationCountOutputType without action
  */
-export type ConversationCountOutputTypeCountChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChannelPermissionWhereInput
-}
-
-/**
- * ConversationCountOutputType without action
- */
 export type ConversationCountOutputTypeCountScheduledMessageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ScheduledMessageWhereInput
-}
-
-/**
- * ConversationCountOutputType without action
- */
-export type ConversationCountOutputTypeCountChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChatAuditLogWhereInput
 }
 
 
@@ -1552,13 +1552,13 @@ export type ConversationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   purpose?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  ChannelPermission?: boolean | Prisma.Conversation$ChannelPermissionArgs<ExtArgs>
+  ChatAuditLog?: boolean | Prisma.Conversation$ChatAuditLogArgs<ExtArgs>
   User?: boolean | Prisma.Conversation$UserArgs<ExtArgs>
   Project?: boolean | Prisma.Conversation$ProjectArgs<ExtArgs>
   ConversationMember?: boolean | Prisma.Conversation$ConversationMemberArgs<ExtArgs>
   Message?: boolean | Prisma.Conversation$MessageArgs<ExtArgs>
-  ChannelPermission?: boolean | Prisma.Conversation$ChannelPermissionArgs<ExtArgs>
   ScheduledMessage?: boolean | Prisma.Conversation$ScheduledMessageArgs<ExtArgs>
-  ChatAuditLog?: boolean | Prisma.Conversation$ChatAuditLogArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversation"]>
 
@@ -1616,13 +1616,13 @@ export type ConversationSelectScalar = {
 
 export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "name" | "description" | "projectId" | "createdBy" | "isPrivate" | "isShared" | "category" | "topic" | "purpose" | "createdAt" | "updatedAt", ExtArgs["result"]["conversation"]>
 export type ConversationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ChannelPermission?: boolean | Prisma.Conversation$ChannelPermissionArgs<ExtArgs>
+  ChatAuditLog?: boolean | Prisma.Conversation$ChatAuditLogArgs<ExtArgs>
   User?: boolean | Prisma.Conversation$UserArgs<ExtArgs>
   Project?: boolean | Prisma.Conversation$ProjectArgs<ExtArgs>
   ConversationMember?: boolean | Prisma.Conversation$ConversationMemberArgs<ExtArgs>
   Message?: boolean | Prisma.Conversation$MessageArgs<ExtArgs>
-  ChannelPermission?: boolean | Prisma.Conversation$ChannelPermissionArgs<ExtArgs>
   ScheduledMessage?: boolean | Prisma.Conversation$ScheduledMessageArgs<ExtArgs>
-  ChatAuditLog?: boolean | Prisma.Conversation$ChatAuditLogArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ConversationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1637,13 +1637,13 @@ export type ConversationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types
 export type $ConversationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Conversation"
   objects: {
+    ChannelPermission: Prisma.$ChannelPermissionPayload<ExtArgs>[]
+    ChatAuditLog: Prisma.$ChatAuditLogPayload<ExtArgs>[]
     User: Prisma.$UserPayload<ExtArgs> | null
     Project: Prisma.$ProjectPayload<ExtArgs> | null
     ConversationMember: Prisma.$ConversationMemberPayload<ExtArgs>[]
     Message: Prisma.$MessagePayload<ExtArgs>[]
-    ChannelPermission: Prisma.$ChannelPermissionPayload<ExtArgs>[]
     ScheduledMessage: Prisma.$ScheduledMessagePayload<ExtArgs>[]
-    ChatAuditLog: Prisma.$ChatAuditLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2053,13 +2053,13 @@ readonly fields: ConversationFieldRefs;
  */
 export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  ChannelPermission<T extends Prisma.Conversation$ChannelPermissionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ChannelPermissionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ChatAuditLog<T extends Prisma.Conversation$ChatAuditLogArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ChatAuditLogArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   User<T extends Prisma.Conversation$UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$UserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   Project<T extends Prisma.Conversation$ProjectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ProjectArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   ConversationMember<T extends Prisma.Conversation$ConversationMemberArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ConversationMemberArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Message<T extends Prisma.Conversation$MessageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$MessageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  ChannelPermission<T extends Prisma.Conversation$ChannelPermissionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ChannelPermissionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ScheduledMessage<T extends Prisma.Conversation$ScheduledMessageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ScheduledMessageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  ChatAuditLog<T extends Prisma.Conversation$ChatAuditLogArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$ChatAuditLogArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2498,6 +2498,54 @@ export type ConversationDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
+ * Conversation.ChannelPermission
+ */
+export type Conversation$ChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelPermission
+   */
+  select?: Prisma.ChannelPermissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelPermission
+   */
+  omit?: Prisma.ChannelPermissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelPermissionInclude<ExtArgs> | null
+  where?: Prisma.ChannelPermissionWhereInput
+  orderBy?: Prisma.ChannelPermissionOrderByWithRelationInput | Prisma.ChannelPermissionOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelPermissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChannelPermissionScalarFieldEnum | Prisma.ChannelPermissionScalarFieldEnum[]
+}
+
+/**
+ * Conversation.ChatAuditLog
+ */
+export type Conversation$ChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChatAuditLog
+   */
+  select?: Prisma.ChatAuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChatAuditLog
+   */
+  omit?: Prisma.ChatAuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChatAuditLogInclude<ExtArgs> | null
+  where?: Prisma.ChatAuditLogWhereInput
+  orderBy?: Prisma.ChatAuditLogOrderByWithRelationInput | Prisma.ChatAuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.ChatAuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatAuditLogScalarFieldEnum | Prisma.ChatAuditLogScalarFieldEnum[]
+}
+
+/**
  * Conversation.User
  */
 export type Conversation$UserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2584,30 +2632,6 @@ export type Conversation$MessageArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
- * Conversation.ChannelPermission
- */
-export type Conversation$ChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChannelPermission
-   */
-  select?: Prisma.ChannelPermissionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChannelPermission
-   */
-  omit?: Prisma.ChannelPermissionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChannelPermissionInclude<ExtArgs> | null
-  where?: Prisma.ChannelPermissionWhereInput
-  orderBy?: Prisma.ChannelPermissionOrderByWithRelationInput | Prisma.ChannelPermissionOrderByWithRelationInput[]
-  cursor?: Prisma.ChannelPermissionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ChannelPermissionScalarFieldEnum | Prisma.ChannelPermissionScalarFieldEnum[]
-}
-
-/**
  * Conversation.ScheduledMessage
  */
 export type Conversation$ScheduledMessageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2629,30 +2653,6 @@ export type Conversation$ScheduledMessageArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.ScheduledMessageScalarFieldEnum | Prisma.ScheduledMessageScalarFieldEnum[]
-}
-
-/**
- * Conversation.ChatAuditLog
- */
-export type Conversation$ChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChatAuditLog
-   */
-  select?: Prisma.ChatAuditLogSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChatAuditLog
-   */
-  omit?: Prisma.ChatAuditLogOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChatAuditLogInclude<ExtArgs> | null
-  where?: Prisma.ChatAuditLogWhereInput
-  orderBy?: Prisma.ChatAuditLogOrderByWithRelationInput | Prisma.ChatAuditLogOrderByWithRelationInput[]
-  cursor?: Prisma.ChatAuditLogWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ChatAuditLogScalarFieldEnum | Prisma.ChatAuditLogScalarFieldEnum[]
 }
 
 /**

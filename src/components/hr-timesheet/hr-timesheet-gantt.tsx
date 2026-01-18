@@ -67,7 +67,7 @@ const groupTimesheetsBySite = (timesheets: HRTimesheet[]) => {
 };
 
 export function HRTimesheetGantt({ timesheets, onView, onAddNew }: HRTimesheetGanttProps) {
-    const [range, setRange] = useState<Range>("monthly");
+    const [range, setRange] = useState<Range>("daily");
     const [zoom, setZoom] = useState(100);
 
     const groupedTimesheets = useMemo(() => groupTimesheetsBySite(timesheets), [timesheets]);
@@ -128,11 +128,11 @@ export function HRTimesheetGantt({ timesheets, onView, onAddNew }: HRTimesheetGa
                     </Select>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={() => setZoom(z => Math.max(50, z - 10))}>
+                    <Button variant="outline" size="icon" type="button" onClick={() => setZoom(z => Math.max(50, z - 10))}>
                         <ZoomOut className="h-4 w-4" />
                     </Button>
                     <span className="text-sm font-medium w-12 text-center">{zoom}%</span>
-                    <Button variant="outline" size="icon" onClick={() => setZoom(z => Math.min(200, z + 10))}>
+                    <Button variant="outline" size="icon" type="button" onClick={() => setZoom(z => Math.min(200, z + 10))}>
                         <ZoomIn className="h-4 w-4" />
                     </Button>
                 </div>

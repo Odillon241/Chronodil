@@ -1,18 +1,9 @@
 "use client";
 
-import { Calendar as CalendarIcon, List, CalendarDays, ChartGantt } from "lucide-react";
+import { List, CalendarDays, ChartGantt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SearchWithFilters, FilterSection, FilterField } from "@/components/ui/search-with-filters";
 import { StatusTabOption } from "@/components/ui/status-tabs";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
 import { cn } from "@/lib/utils";
 
 export type ViewMode = "list" | "calendar" | "kanban" | "gantt";
@@ -60,19 +51,18 @@ export function TasksToolbar({
   onViewModeChange,
 }: TasksToolbarProps) {
 
-  // Extra filters logic for the popover (keeping existing logic but in new layout)
-  const hasActiveFilters =
-    priorityFilter !== "all" ||
-    userFilter !== "my" ||
-    !!startDateFilter ||
-    !!endDateFilter;
+  const userOptions = [
+    { id: "my", label: "Mes tâches", value: "my" },
+    { id: "all", label: "Toutes les tâches", value: "all" },
+  ];
 
-  const resetFilters = () => {
-    onPriorityChange("all");
-    onUserFilterChange("my");
-    onStartDateChange(undefined);
-    onEndDateChange(undefined);
-  };
+  const priorityOptions = [
+    { id: "all", label: "Toutes les priorités", value: "all" },
+    { id: "LOW", label: "Basse", value: "LOW" },
+    { id: "MEDIUM", label: "Moyenne", value: "MEDIUM" },
+    { id: "HIGH", label: "Haute", value: "HIGH" },
+    { id: "URGENT", label: "Urgente", value: "URGENT" },
+  ];
 
   return (
     <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -105,7 +95,7 @@ export function TasksToolbar({
       </div>
 
       {/* View Switcher */}
-      <div className="flex items-center border rounded-lg p-1 bg-muted/20">
+      <div className="flex items-center border rounded-lg p-1 bg-muted/20 gap-1">
         <Button
           variant={viewMode === "list" ? "secondary" : "ghost"}
           size="sm"
@@ -135,75 +125,31 @@ export function TasksToolbar({
         </Button>
       </div>
 
-      {/* Barre de recherche et Filtres avancés */}
-      <SearchWithFilters
-        value={searchQuery}
-        onChange={onSearchChange}
+      {/* Barre de recherche et Filtres avec FilterButtonGroup */}
+      <FilterButtonGroup
+        searchValue={searchQuery}
+        onSearchChange={onSearchChange}
         placeholder="Rechercher..."
-        variant="with-filter-button"
-        hasActiveFilters={hasActiveFilters}
-        filterContent={
-          <FilterSection>
-            <FilterField label="Utilisateur">
-              <Select value={userFilter} onValueChange={(value) => onUserFilterChange(value as "my" | "all")}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrer par utilisateur" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="my">Mes tâches</SelectItem>
-                  <SelectItem value="all">Toutes les tâches</SelectItem>
-                </SelectContent>
-              </Select>
-            </FilterField>
 
-            <FilterField label="Priorité">
-              <Select value={priorityFilter} onValueChange={onPriorityChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Toutes les priorités" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les priorités</SelectItem>
-                  <SelectItem value="LOW">Basse</SelectItem>
-                  <SelectItem value="MEDIUM">Moyenne</SelectItem>
-                  <SelectItem value="HIGH">Haute</SelectItem>
-                  <SelectItem value="URGENT">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </FilterField>
+        // Premier Filtre: Utilisateur
+        firstFilterLabel="Utilisateur"
+        filterOptions={userOptions}
+        selectedFilter={userFilter}
+        onFilterChange={(val) => onUserFilterChange(val as "my" | "all")}
 
-            <div className="grid grid-cols-2 gap-2">
-              <FilterField label="Début">
-                <Input
-                  id="start-date"
-                  type="date"
-                  value={startDateFilter || ""}
-                  onChange={(e) => onStartDateChange(e.target.value || undefined)}
-                  className="text-xs h-8"
-                />
-              </FilterField>
-              <FilterField label="Fin">
-                <Input
-                  id="end-date"
-                  type="date"
-                  value={endDateFilter || ""}
-                  onChange={(e) => onEndDateChange(e.target.value || undefined)}
-                  className="text-xs h-8"
-                />
-              </FilterField>
-            </div>
+        // Second Filtre: Priorité
+        secondFilterLabel="Priorité"
+        secondFilterOptions={priorityOptions}
+        selectedSecondFilter={priorityFilter}
+        onSecondFilterChange={onPriorityChange}
 
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={resetFilters}
-              >
-                Réinitialiser les filtres
-              </Button>
-            )}
-          </FilterSection>
-        }
+        // Filtre Date
+        startDate={startDateFilter}
+        endDate={endDateFilter}
+        onDateChange={(start, end) => {
+          onStartDateChange(start || undefined);
+          onEndDateChange(end || undefined);
+        }}
       />
     </div>
   );

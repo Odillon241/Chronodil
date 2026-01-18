@@ -12,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SearchWithFilters } from "@/components/ui/search-with-filters";
-import { UserPlus, Trash2, Crown } from "lucide-react";
+import { UserPlus, Trash2, Crown, Search } from "lucide-react";
 import { toast } from "sonner";
 import { addMembersToConversation, removeMemberFromConversation } from "@/actions/chat.actions";
 import { getAllUsersForChat } from "@/actions/user.actions";
@@ -40,8 +39,9 @@ export function ChatManageMembersDialog({
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  const filteredMembers = members.filter((member) =>
-    member.User.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const safeMembers = members || [];
+  const filteredMembers = safeMembers.filter((member) =>
+    member?.User?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const loadAllUsers = async () => {
@@ -174,15 +174,15 @@ export function ChatManageMembersDialog({
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <SearchWithFilters
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Rechercher un membre..."
-                  variant="simple"
-                  size="sm"
-                  inputWidth="flex-1"
-                  className="flex-1"
-                />
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Rechercher un membre..."
+                    className="pl-9 h-9"
+                  />
+                </div>
                 <Button
                   size="icon"
                   variant="outline"

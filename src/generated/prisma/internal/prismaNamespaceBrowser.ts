@@ -191,7 +191,9 @@ export const ConversationMemberScalarFieldEnum = {
   isAdmin: 'isAdmin',
   isMuted: 'isMuted',
   isArchived: 'isArchived',
-  archivedAt: 'archivedAt'
+  archivedAt: 'archivedAt',
+  isPinned: 'isPinned',
+  pinnedAt: 'pinnedAt'
 } as const
 
 export type ConversationMemberScalarFieldEnum = (typeof ConversationMemberScalarFieldEnum)[keyof typeof ConversationMemberScalarFieldEnum]

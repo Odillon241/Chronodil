@@ -111,6 +111,7 @@ export type CalendarFeature = {
   endAt: Date;
   status: {
     color: string;
+    backgroundColor?: string;
   };
 };
 
@@ -122,7 +123,7 @@ type CalendarContextValue = {
 
 const CalendarContext = createContext<CalendarContextValue>({
   currentDate: new Date(),
-  setCurrentDate: () => {},
+  setCurrentDate: () => { },
   features: [],
 });
 
@@ -347,19 +348,20 @@ export const CalendarHeader: FC<CalendarHeaderProps> = ({ className }) => {
 
 export type CalendarBodyProps = {
   features: CalendarFeature[];
-  children: (props: { feature: CalendarFeature }) => ReactNode;
+  onFeatureClick?: (feature: CalendarFeature) => void;
   className?: string;
 };
 
 export const CalendarBody: FC<CalendarBodyProps> = ({
   features,
-  children,
+  onFeatureClick,
   className,
 }) => {
   const { currentDate } = useContext(CalendarContext);
   const id = useId();
 
-  const calendarDays = useMemo(() => {
+  // Build calendar grid data
+  const { calendarDays, calendarWeeks } = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
     const daysInMonth = getDaysInMonth(currentDate);
@@ -368,7 +370,6 @@ export const CalendarBody: FC<CalendarBodyProps> = ({
     const days: Array<{
       date: Date;
       isCurrentMonth: boolean;
-      features: CalendarFeature[];
     }> = [];
 
     // Add previous month days to fill the first week
@@ -378,34 +379,15 @@ export const CalendarBody: FC<CalendarBodyProps> = ({
       days.push({
         date: prevDate,
         isCurrentMonth: false,
-        features: [],
       });
     }
 
     // Add current month days
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-      const dayFeatures = features.filter((feature) => {
-        // Vérifier si la date actuelle est dans la période du feature
-        // Utilise le début et la fin du jour pour la comparaison
-        const dayStart = new Date(date);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(date);
-        dayEnd.setHours(23, 59, 59, 999);
-
-        const featureStart = new Date(feature.startAt);
-        featureStart.setHours(0, 0, 0, 0);
-        const featureEnd = new Date(feature.endAt);
-        featureEnd.setHours(23, 59, 59, 999);
-
-        // Le feature est visible si le jour chevauche la période du feature
-        return dayStart <= featureEnd && dayEnd >= featureStart;
-      });
-
       days.push({
         date,
         isCurrentMonth: true,
-        features: dayFeatures,
       });
     }
 
@@ -418,69 +400,260 @@ export const CalendarBody: FC<CalendarBodyProps> = ({
         days.push({
           date: nextDate,
           isCurrentMonth: false,
-          features: [],
         });
       }
     }
 
-    return days;
-  }, [currentDate, features]);
+    // Group days into weeks
+    const weeks: Array<typeof days> = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
+    }
+
+    return { calendarDays: days, calendarWeeks: weeks };
+  }, [currentDate]);
+
+  // Calculate feature bars with positioning
+  type FeatureBar = {
+    feature: CalendarFeature;
+    rowIndex: number;
+    colStart: number; // 0-6 within the week
+    colSpan: number;
+    lane: number;
+    isStart: boolean;
+    isEnd: boolean;
+  };
+
+  const featureBarsByRow = useMemo(() => {
+    const barsByRow: Map<number, FeatureBar[]> = new Map();
+
+    // For each feature, calculate which rows (weeks) it spans
+    features.forEach((feature) => {
+      const featureStart = new Date(feature.startAt);
+      featureStart.setHours(0, 0, 0, 0);
+      const featureEnd = new Date(feature.endAt);
+      featureEnd.setHours(23, 59, 59, 999);
+
+      calendarWeeks.forEach((week, rowIndex) => {
+        const weekStart = new Date(week[0].date);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(week[6].date);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        // Check if feature overlaps this week
+        if (featureStart <= weekEnd && featureEnd >= weekStart) {
+          // Calculate colStart and colSpan within this week
+          let colStart = 0;
+          if (featureStart > weekStart) {
+            // Feature starts mid-week
+            for (let i = 0; i < 7; i++) {
+              const dayDate = new Date(week[i].date);
+              dayDate.setHours(0, 0, 0, 0);
+              if (isSameDay(dayDate, featureStart) || dayDate > featureStart) {
+                colStart = i;
+                break;
+              }
+            }
+          }
+
+          let colEnd = 6;
+          if (featureEnd < weekEnd) {
+            // Feature ends mid-week
+            for (let i = 6; i >= 0; i--) {
+              const dayDate = new Date(week[i].date);
+              dayDate.setHours(23, 59, 59, 999);
+              if (isSameDay(dayDate, featureEnd) || dayDate < featureEnd) {
+                colEnd = i;
+                break;
+              }
+            }
+          }
+
+          const colSpan = colEnd - colStart + 1;
+          const isStart = featureStart >= weekStart && featureStart <= weekEnd;
+          const isEnd = featureEnd >= weekStart && featureEnd <= weekEnd;
+
+          const bar: FeatureBar = {
+            feature,
+            rowIndex,
+            colStart,
+            colSpan,
+            lane: 0, // Will be calculated
+            isStart,
+            isEnd,
+          };
+
+          if (!barsByRow.has(rowIndex)) {
+            barsByRow.set(rowIndex, []);
+          }
+          barsByRow.get(rowIndex)!.push(bar);
+        }
+      });
+    });
+
+    // Calculate lanes for each row to avoid overlaps
+    barsByRow.forEach((bars) => {
+      // Sort bars by colStart for consistent lane assignment
+      bars.sort((a, b) => a.colStart - b.colStart || a.colSpan - b.colSpan);
+
+      // Track which lanes are occupied at each column
+      const laneOccupancy: Map<number, Set<number>> = new Map();
+
+      bars.forEach((bar) => {
+        // Find the first available lane for this bar
+        let lane = 0;
+        let laneFound = false;
+
+        while (!laneFound) {
+          laneFound = true;
+          for (let col = bar.colStart; col < bar.colStart + bar.colSpan; col++) {
+            const occupied = laneOccupancy.get(col) || new Set();
+            if (occupied.has(lane)) {
+              laneFound = false;
+              lane++;
+              break;
+            }
+          }
+        }
+
+        bar.lane = lane;
+
+        // Mark this lane as occupied for all columns this bar spans
+        for (let col = bar.colStart; col < bar.colStart + bar.colSpan; col++) {
+          if (!laneOccupancy.has(col)) {
+            laneOccupancy.set(col, new Set());
+          }
+          laneOccupancy.get(col)!.add(lane);
+        }
+      });
+    });
+
+    return barsByRow;
+  }, [features, calendarWeeks]);
+
+  // Calculate max lanes per row for height allocation
+  const maxLanesPerRow = useMemo(() => {
+    const result: Map<number, number> = new Map();
+    featureBarsByRow.forEach((bars, rowIndex) => {
+      const maxLane = Math.max(...bars.map((b) => b.lane), -1) + 1;
+      result.set(rowIndex, maxLane);
+    });
+    return result;
+  }, [featureBarsByRow]);
 
   return (
-    <div className={cn('grid flex-1 grid-cols-7', className)}>
-      {calendarDays.map((day, index) => {
-        const event = getEvent(day.date);
-        const isTodayDate = isToday(day.date);
-        const MAX_VISIBLE_FEATURES = event ? 2 : 3;
-        const visibleFeatures = day.features.slice(0, MAX_VISIBLE_FEATURES);
-        const remainingCount = Math.max(0, day.features.length - MAX_VISIBLE_FEATURES);
+    <div className={cn('flex flex-col flex-1', className)}>
+      {calendarWeeks.map((week, rowIndex) => {
+        const rowBars = featureBarsByRow.get(rowIndex) || [];
+        const maxLanes = maxLanesPerRow.get(rowIndex) || 0;
+        // Minimum 2 lanes (56px) pour uniformité, même sans features
+        const barsHeight = Math.max(maxLanes, 2) * 28;
 
         return (
-          <div
-            className={cn(
-              'min-h-[120px] border-border/50 border-b border-r p-2',
-              !day.isCurrentMonth && 'bg-muted/20',
-              getEventBgColor(event),
-              isTodayDate && 'ring-2 ring-inset ring-primary'
-            )}
-            key={`${id}-${index}`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <div
-                className={cn(
-                  'text-sm',
-                  !day.isCurrentMonth && 'text-muted-foreground',
-                  isTodayDate && 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold'
-                )}
-              >
-                {format(day.date, 'd')}
-              </div>
-              {event && (
-                <span className="text-sm" title={event.name}>
-                  {event.emoji}
-                </span>
-              )}
+          <div key={`${id}-row-${rowIndex}`} className="flex flex-col flex-1">
+            {/* Day cells grid - header area with date numbers */}
+            <div className="grid grid-cols-7">
+              {week.map((day, colIndex) => {
+                const event = getEvent(day.date);
+                const isTodayDate = isToday(day.date);
+
+                return (
+                  <div
+                    className={cn(
+                      'min-h-[48px] border-border/50 border-r p-2',
+                      // !day.isCurrentMonth && 'bg-muted/20',
+                      getEventBgColor(event),
+                      isTodayDate && 'ring-2 ring-inset ring-primary'
+                    )}
+                    key={`${id}-${rowIndex}-${colIndex}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div
+                        className={cn(
+                          'text-sm',
+                          !day.isCurrentMonth && 'text-muted-foreground',
+                          isTodayDate && 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold'
+                        )}
+                      >
+                        {format(day.date, 'd')}
+                      </div>
+                      {event && (
+                        <span className="text-sm" title={event.name}>
+                          {event.emoji}
+                        </span>
+                      )}
+                    </div>
+                    {event && (
+                      <Badge
+                        variant={getEventBadgeVariant(event)}
+                        className="text-[9px] mt-1 w-full justify-center px-1 py-0 h-auto leading-tight truncate"
+                        title={`${event.name} - ${event.type}`}
+                      >
+                        {event.name}
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            {event && (
-              <Badge
-                variant={getEventBadgeVariant(event)}
-                className="text-[9px] mb-1 w-full justify-center px-1 py-0 h-auto leading-tight truncate"
-                title={`${event.name} - ${event.type}`}
-              >
-                {event.name}
-              </Badge>
-            )}
-
-            <div className="space-y-1">
-              {visibleFeatures.map((feature) => (
-                <div key={feature.id}>{children({ feature })}</div>
+            {/* Feature bars layer - always shown with minimum height for uniformity */}
+            <div
+              className="relative grid grid-cols-7 border-border/50 border-b"
+              style={{ minHeight: `${barsHeight + 8}px` }}
+            >
+              {/* Background columns for visual consistency */}
+              {week.map((day, colIndex) => (
+                <div
+                  key={`${id}-bg-${rowIndex}-${colIndex}`}
+                  className={cn(
+                    'border-border/50 border-r h-full'
+                    // !day.isCurrentMonth && 'bg-muted/20'
+                  )}
+                />
               ))}
-              {remainingCount > 0 && (
-                <div className="text-[10px] text-center text-muted-foreground py-1 hover:bg-muted/50 rounded cursor-pointer">
-                  +{remainingCount} autre{remainingCount > 1 ? 's' : ''}
-                </div>
-              )}
+              {/* Feature bars positioned absolutely */}
+              {rowBars.map((bar) => {
+                const leftPercent = (bar.colStart / 7) * 100;
+                const widthPercent = (bar.colSpan / 7) * 100;
+
+                return (
+                  <div
+                    key={`${bar.feature.id}-${rowIndex}`}
+                    className={cn(
+                      'absolute cursor-pointer truncate px-3 py-1.5 text-xs font-semibold hover:opacity-90 flex items-center justify-center text-center transition-all',
+                      bar.isStart && bar.isEnd && 'rounded-md',
+                      bar.isStart && !bar.isEnd && 'rounded-l-md',
+                      !bar.isStart && bar.isEnd && 'rounded-r-md',
+                      !bar.isStart && !bar.isEnd && 'rounded-none'
+                    )}
+                    style={{
+                      left: `calc(${leftPercent}% + 4px)`,
+                      width: `calc(${widthPercent}% - 8px)`,
+                      top: `${bar.lane * 28 + 4}px`,
+                      height: '24px',
+                      backgroundColor: bar.feature.status.backgroundColor || bar.feature.status.color,
+                      color: bar.feature.status.backgroundColor ? bar.feature.status.color : '#fff',
+                      border: `1px solid ${bar.feature.status.color}40`, // 25% opacity border
+                    }}
+                    onClick={() => onFeatureClick?.(bar.feature)}
+                    title={bar.feature.name}
+                  >
+                    {/* Animated Bubble */}
+                    <span className="relative flex h-2 w-2 mr-2">
+                      <span
+                        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                        style={{ backgroundColor: bar.feature.status.color }}
+                      ></span>
+                      <span
+                        className="relative inline-flex rounded-full h-2 w-2"
+                        style={{ backgroundColor: bar.feature.status.color }}
+                      ></span>
+                    </span>
+                    {bar.feature.name}
+                  </div>
+                );
+              })}
             </div>
           </div>
         );

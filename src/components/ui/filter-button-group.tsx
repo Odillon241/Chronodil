@@ -1,23 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Filter, Calendar, Search, X } from "lucide-react"
+import { Filter, Calendar, Search, X, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 interface FilterOption {
@@ -29,9 +23,9 @@ interface FilterOption {
 interface FilterButtonGroupProps {
   searchValue: string
   onSearchChange: (value: string) => void
-  filterOptions: FilterOption[]
-  selectedFilter: string
-  onFilterChange: (value: string) => void
+  filterOptions?: FilterOption[]
+  selectedFilter?: string
+  onFilterChange?: (value: string) => void
   startDate?: string
   endDate?: string
   onDateChange?: (startDate: string, endDate: string) => void
@@ -43,12 +37,18 @@ interface FilterButtonGroupProps {
   onSecondFilterChange?: (value: string) => void
   firstFilterLabel?: string
   secondFilterLabel?: string
+  extraFilters?: {
+    label: string
+    options: FilterOption[]
+    selected: string
+    onChange: (value: string) => void
+  }[]
 }
 
 export function FilterButtonGroup({
   searchValue,
   onSearchChange,
-  filterOptions,
+  filterOptions = [],
   selectedFilter,
   onFilterChange,
   startDate,
@@ -56,35 +56,34 @@ export function FilterButtonGroup({
   onDateChange,
   placeholder = "Rechercher...",
   className,
-  secondFilterOptions,
+  secondFilterOptions = [],
   selectedSecondFilter,
   onSecondFilterChange,
   firstFilterLabel = "Filtrer par",
   secondFilterLabel = "Action",
+  extraFilters = [],
 }: FilterButtonGroupProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isDateOpen, setIsDateOpen] = useState(false)
 
-  // Calculer le nombre de filtres actifs
+  // Calculer le nombre de filtres actifs (hors dates et recherche)
+  const extraFiltersCount = extraFilters.filter(f => f.selected && f.selected !== "all" && f.selected !== "").length
   const activeFiltersCount = [
     selectedFilter && selectedFilter !== "all" && selectedFilter !== "",
     selectedSecondFilter && selectedSecondFilter !== "all" && selectedSecondFilter !== "",
-    startDate,
-    endDate,
-  ].filter(Boolean).length
+  ].filter(Boolean).length + extraFiltersCount
 
   const handleClear = () => {
-    onSearchChange("")
-    onFilterChange("all")
+    if (onFilterChange) onFilterChange("all")
     if (onSecondFilterChange) {
       onSecondFilterChange("all")
     }
-    if (onDateChange) {
-      onDateChange("", "")
-    }
+    extraFilters.forEach(f => f.onChange("all"))
     setIsFilterOpen(false)
   }
 
-  const hasActiveFilters = activeFiltersCount > 0 || searchValue.length > 0
+  const hasActiveFilters = activeFiltersCount > 0
+  const hasFilterOptions = filterOptions.length > 0 || secondFilterOptions.length > 0 || extraFilters.length > 0
 
   return (
     <div className={cn("flex flex-col sm:flex-row items-stretch sm:items-center gap-2", className)}>
@@ -109,119 +108,187 @@ export function FilterButtonGroup({
         )}
       </div>
 
-      {/* Bouton de filtre avec popover */}
-      <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-9 gap-2 shrink-0">
-            <Filter className="h-4 w-4" />
-            <span className="hidden sm:inline">Filtres</span>
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs font-medium">
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80" align="end">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm">Filtres</h4>
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={handleClear}>
-                  Tout effacer
+      {/* Date Picker Button (si onDateChange est fourni) */}
+      {onDateChange && (
+        <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-2 shrink-0 justify-start font-normal", (!startDate && !endDate) && "text-muted-foreground")}>
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {startDate || endDate ? (
+                  <>
+                    {startDate ? new Date(startDate).toLocaleDateString() : "Début"} - {endDate ? new Date(endDate).toLocaleDateString() : "Fin"}
+                  </>
+                ) : (
+                  "Pick a date"
+                )}
+              </span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-4" align="end">
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Période</h4>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="start-date" className="text-xs">Date de début</Label>
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={startDate || ""}
+                    onChange={(e) => onDateChange(e.target.value, endDate || "")}
+                    className="h-8"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="end-date" className="text-xs">Date de fin</Label>
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={endDate || ""}
+                    onChange={(e) => onDateChange(startDate || "", e.target.value)}
+                    className="h-8"
+                  />
+                </div>
+              </div>
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs h-8"
+                  onClick={() => {
+                    onDateChange("", "")
+                    setIsDateOpen(false)
+                  }}
+                >
+                  Effacer les dates
+                </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+
+      {/* Bouton de filtre avec popover (seulement si des options sont fournies) */}
+      {hasFilterOptions && (
+        <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-2 shrink-0 border-dashed">
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline">Filtres</span>
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs font-medium rounded-sm">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="end">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h4 className="font-semibold text-sm">Filtres</h4>
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={handleClear}
+                >
+                  Effacer
+                  <X className="ml-1 h-3 w-3" />
                 </Button>
               )}
             </div>
 
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="filter-select" className="text-xs font-medium text-muted-foreground">{firstFilterLabel}</Label>
-                <Select value={selectedFilter} onValueChange={onFilterChange}>
-                  <SelectTrigger className="h-9 focus:ring-muted focus:border-muted-foreground/30">
-                    <SelectValue placeholder="Sélectionner un filtre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filterOptions.map((option) => (
-                      <SelectItem key={option.id} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Deuxième filtre si fourni */}
-              {secondFilterOptions && onSecondFilterChange && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="second-filter-select" className="text-xs font-medium text-muted-foreground">{secondFilterLabel}</Label>
-                  <Select value={selectedSecondFilter || "all"} onValueChange={onSecondFilterChange}>
-                    <SelectTrigger className="h-9 focus:ring-muted focus:border-muted-foreground/30">
-                      <SelectValue placeholder="Toutes les actions" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {secondFilterOptions.map((option) => (
-                        <SelectItem key={option.id} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            <div className="p-2 max-h-[300px] overflow-y-auto">
+              {/* Filtre 1 (Primary) */}
+              {filterOptions.length > 0 && (
+                <div className="space-y-1">
+                  <h5 className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {firstFilterLabel}
+                  </h5>
+                  {filterOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className={cn(
+                        "flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors",
+                        selectedFilter === option.value ? "bg-accent/50 text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                      )}
+                      onClick={() => onFilterChange?.(option.value)}
+                    >
+                      <div className={cn(
+                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                        selectedFilter === option.value ? "bg-primary text-primary-foreground" : "opacity-30"
+                      )}>
+                        {selectedFilter === option.value && <Check className="h-3 w-3" />}
+                      </div>
+                      <span>{option.label}</span>
+                    </div>
+                  ))}
                 </div>
               )}
 
-              {/* Filtres de date si fournis */}
-              {onDateChange && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Période</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label htmlFor="start-date" className="text-xs text-muted-foreground">
-                        Début
-                      </Label>
-                      <div className="relative">
-                        <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="start-date"
-                          type="date"
-                          value={startDate || ""}
-                          onChange={(e) => onDateChange(e.target.value, endDate || "")}
-                          className="pl-8 h-9 text-xs focus-visible:ring-muted focus-visible:border-muted-foreground/30"
-                        />
+              {/* Filtre 2 (Secondary) */}
+              {secondFilterOptions.length > 0 && onSecondFilterChange && (
+                <>
+                  {filterOptions.length > 0 && <Separator className="my-2" />}
+                  <div className="space-y-1">
+                    <h5 className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {secondFilterLabel}
+                    </h5>
+                    {secondFilterOptions.map((option) => (
+                      <div
+                        key={option.id}
+                        className={cn(
+                          "flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors",
+                          selectedSecondFilter === option.value ? "bg-accent/50 text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                        )}
+                        onClick={() => onSecondFilterChange(option.value)}
+                      >
+                        <div className={cn(
+                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                          selectedSecondFilter === option.value ? "bg-primary text-primary-foreground" : "opacity-30"
+                        )}>
+                          {selectedSecondFilter === option.value && <Check className="h-3 w-3" />}
+                        </div>
+                        <span>{option.label}</span>
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="end-date" className="text-xs text-muted-foreground">
-                        Fin
-                      </Label>
-                      <div className="relative">
-                        <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="end-date"
-                          type="date"
-                          value={endDate || ""}
-                          onChange={(e) => onDateChange(startDate || "", e.target.value)}
-                          className="pl-8 h-9 text-xs focus-visible:ring-muted focus-visible:border-muted-foreground/30"
-                        />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Extra Filters */}
+              {extraFilters.map((filter, idx) => (
+                <div key={idx}>
+                  {(filterOptions.length > 0 || secondFilterOptions.length > 0 || idx > 0) && <Separator className="my-2" />}
+                  <div className="space-y-1">
+                    <h5 className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {filter.label}
+                    </h5>
+                    {filter.options.map((option) => (
+                      <div
+                        key={option.id}
+                        className={cn(
+                          "flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors",
+                          filter.selected === option.value ? "bg-accent/50 text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                        )}
+                        onClick={() => filter.onChange(option.value)}
+                      >
+                        <div className={cn(
+                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                          filter.selected === option.value ? "bg-primary text-primary-foreground" : "opacity-30"
+                        )}>
+                          {filter.selected === option.value && <Check className="h-3 w-3" />}
+                        </div>
+                        <span>{option.label}</span>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              )}
+              ))}
             </div>
-
-            <div className="flex justify-end pt-2 border-t">
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-8 px-4 font-normal"
-                onClick={() => setIsFilterOpen(false)}
-              >
-                Appliquer
-              </Button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   )
 }

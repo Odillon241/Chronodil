@@ -66,16 +66,23 @@ export default function AuditPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
   const [totalLogs, setTotalLogs] = useState(0);
-  const [filters, setFilters] = useState({ entity: "all", action: "all", search: "" });
+  const [filters, setFilters] = useState({ entity: "all", action: "all", search: "", startDate: "", endDate: "" });
 
-  useEffect(() => { loadData(); }, [filters.entity, filters.action, currentPage]);
+  useEffect(() => { loadData(); }, [filters.entity, filters.action, filters.startDate, filters.endDate, currentPage]);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
       const offset = (currentPage - 1) * itemsPerPage;
       const [logsResult, statsResult] = await Promise.all([
-        getAuditLogs({ entity: filters.entity === "all" ? undefined : filters.entity, action: filters.action === "all" ? undefined : filters.action, limit: itemsPerPage, offset }),
+        getAuditLogs({
+          entity: filters.entity === "all" ? undefined : filters.entity,
+          action: filters.action === "all" ? undefined : filters.action,
+          startDate: filters.startDate || undefined,
+          endDate: filters.endDate || undefined,
+          limit: itemsPerPage,
+          offset
+        }),
         getAuditStats({}),
       ]);
       if (logsResult?.data) { setLogs(logsResult.data); setTotalLogs(statsResult?.data?.total || logsResult.data.length); }
@@ -384,6 +391,9 @@ export default function AuditPage() {
         ]}
         selectedSecondFilter={filters.action}
         onSecondFilterChange={(v) => { setFilters({ ...filters, action: v }); setCurrentPage(1); }}
+        startDate={filters.startDate}
+        endDate={filters.endDate}
+        onDateChange={(start, end) => { setFilters(prev => ({ ...prev, startDate: start, endDate: end })); setCurrentPage(1); }}
         firstFilterLabel="Entité"
         secondFilterLabel="Action"
         placeholder="Rechercher..."

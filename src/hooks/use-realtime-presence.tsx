@@ -24,7 +24,7 @@ interface PresenceData {
 export function useRealtimePresence() {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id;
-  
+
   const [presenceMap, setPresenceMap] = useState<Map<string, PresenceData>>(new Map());
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isSubscribedRef = useRef(false);
@@ -84,7 +84,7 @@ export function useRealtimePresence() {
     setPresenceMap((prev) => {
       const newMap = new Map(prev);
       const existing = newMap.get(userId) || { userId, lastSeenAt: null, isOnline: false };
-      
+
       const updated: PresenceData = {
         ...existing,
         ...data,
@@ -137,10 +137,10 @@ export function useRealtimePresence() {
           // Écouter les événements Presence
           .on("presence", { event: "sync" }, () => {
             if (!isMountedRef.current || !channelRef.current) return;
-            
+
             const state = channelRef.current.presenceState();
             console.log("🔄 Sync Presence - Utilisateurs en ligne:", Object.keys(state).length);
-            
+
             // Mettre à jour tous les utilisateurs trackés
             Object.entries(state).forEach(([key, presences]) => {
               if (presences && presences.length > 0) {
@@ -155,9 +155,9 @@ export function useRealtimePresence() {
           })
           .on("presence", { event: "join" }, ({ key, newPresences }) => {
             if (!isMountedRef.current) return;
-            
+
             console.log("✅ Utilisateur rejoint:", key);
-            
+
             if (newPresences && newPresences.length > 0) {
               const presenceData = newPresences[0] as any;
               const userId = presenceData.user_id || key;
@@ -169,9 +169,9 @@ export function useRealtimePresence() {
           })
           .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
             if (!isMountedRef.current) return;
-            
+
             console.log("❌ Utilisateur quitte:", key);
-            
+
             if (leftPresences && leftPresences.length > 0) {
               const presenceData = leftPresences[0] as any;
               const userId = presenceData.user_id || key;
@@ -193,7 +193,7 @@ export function useRealtimePresence() {
             },
             (payload: RealtimePostgresChangesPayload<Record<string, any>>) => {
               if (!isMountedRef.current) return;
-              
+
               retryCountRef.current = 0;
               const user = payload.new as any;
 
@@ -237,7 +237,7 @@ export function useRealtimePresence() {
                       console.warn("Erreur heartbeat présence:", error);
                     }
                   }
-                }, 30000); // Toutes les 30 secondes
+                }, 10000); // Toutes les 10 secondes (réduit de 30s pour plus de réactivité)
               }
             } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
               isSubscribedRef.current = false;
@@ -263,7 +263,7 @@ export function useRealtimePresence() {
                   if (!isMountedRef.current) return;
 
                   retryCountRef.current++;
-                  
+
                   // Nettoyer l'ancien channel
                   if (channelRef.current) {
                     try {
@@ -273,9 +273,9 @@ export function useRealtimePresence() {
                     }
                     channelRef.current = null;
                   }
-                  
+
                   isSubscribedRef.current = false;
-                  
+
                   // Réessayer seulement si on n'a pas atteint le max
                   if (retryCountRef.current <= maxRetries) {
                     setupChannel();
@@ -327,7 +327,7 @@ export function useRealtimePresence() {
 
         return newMap;
       });
-    }, 30000); // Vérifier toutes les 30 secondes
+    }, 15000); // Vérifier toutes les 15 secondes (réduit de 30s)
 
     // Cleanup
     return () => {

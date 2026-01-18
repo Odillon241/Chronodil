@@ -551,3 +551,427 @@ function getPeriodicityLabel(periodicity: string): string {
   };
   return labels[periodicity] || periodicity;
 }
+
+// ============================================================================
+// EXPORT BULK - Export multiple timesheets by status for managers
+// ============================================================================
+
+const exportBulkSchema = z.object({
+  statuses: z.array(z.enum(["PENDING", "MANAGER_APPROVED", "APPROVED", "REJECTED"])).min(1),
+  // Optional filters
+  searchQuery: z.string().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+});
+
+export const exportBulkHRTimesheets = authActionClient
+  .schema(exportBulkSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { statuses, searchQuery, dateFrom, dateTo } = parsedInput;
+    const { userId } = ctx;
+
+    // Vérifier les permissions - Seuls les managers et admins peuvent exporter en bulk
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    const canExportBulk = ["ADMIN", "HR", "MANAGER", "DIRECTEUR"].includes(user.role);
+    if (!canExportBulk) {
+      throw new Error("Vous n'êtes pas autorisé à exporter les feuilles de temps en masse");
+    }
+
+    // Construire les filtres
+    const whereClause: any = {
+      status: { in: statuses },
+    };
+
+    // Filtre par date
+    if (dateFrom || dateTo) {
+      whereClause.weekStartDate = {};
+      if (dateFrom) {
+        whereClause.weekStartDate.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        whereClause.weekStartDate.lte = new Date(dateTo);
+      }
+    }
+
+    // Filtre par recherche
+    if (searchQuery) {
+      whereClause.OR = [
+        { employeeName: { contains: searchQuery, mode: "insensitive" } },
+        { position: { contains: searchQuery, mode: "insensitive" } },
+        { site: { contains: searchQuery, mode: "insensitive" } },
+      ];
+    }
+
+    // Récupérer tous les timesheets correspondants
+    const timesheets = await prisma.hRTimesheet.findMany({
+      where: whereClause,
+      include: {
+        User_HRTimesheet_userIdToUser: true,
+        HRActivity: {
+          include: {
+            ActivityCatalog: true,
+          },
+          orderBy: {
+            startDate: "asc",
+          },
+        },
+      },
+      orderBy: [
+        { status: "asc" },
+        { weekStartDate: "desc" },
+      ],
+    });
+
+    if (timesheets.length === 0) {
+      throw new Error("Aucune feuille de temps à exporter avec ces critères");
+    }
+
+    // Créer le workbook Excel
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Chronodil";
+    workbook.created = new Date();
+
+    // Grouper les timesheets par statut
+    const groupedByStatus = timesheets.reduce((acc, ts) => {
+      const status = ts.status;
+      if (!acc[status]) {
+        acc[status] = [];
+      }
+      acc[status].push(ts);
+      return acc;
+    }, {} as Record<string, typeof timesheets>);
+
+    const statusOrder = ["PENDING", "MANAGER_APPROVED", "APPROVED", "REJECTED"];
+    const statusSheetNames: Record<string, string> = {
+      PENDING: "À valider",
+      MANAGER_APPROVED: "Validés Manager",
+      APPROVED: "Approuvés",
+      REJECTED: "Rejetés",
+    };
+
+    const statusColors: Record<string, { header: string; title: string; light: string }> = {
+      PENDING: { header: "FFF59E0B", title: "FFFEF3C7", light: "FFFFFBEB" },
+      MANAGER_APPROVED: { header: "FF3B82F6", title: "FFBFDBFE", light: "FFEFF6FF" },
+      APPROVED: { header: "FF10B981", title: "FFD1FAE5", light: "FFECFDF5" },
+      REJECTED: { header: "FFEF4444", title: "FFFECACA", light: "FFFEF2F2" },
+    };
+
+    // Créer une feuille par statut
+    for (const status of statusOrder) {
+      const statusTimesheets = groupedByStatus[status];
+      if (!statusTimesheets || statusTimesheets.length === 0) continue;
+
+      const sheetName = statusSheetNames[status] || status;
+      const colors = statusColors[status];
+      const worksheet = workbook.addWorksheet(sheetName, {
+        properties: { tabColor: { argb: colors.header } },
+      });
+
+      // Configuration de la mise en page
+      worksheet.pageSetup = {
+        paperSize: 9,
+        orientation: "landscape",
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+      };
+
+      // Colonnes fixes pour tout le document
+      worksheet.columns = [
+        { key: "A", width: 5 },
+        { key: "B", width: 22 },
+        { key: "C", width: 18 },
+        { key: "D", width: 18 },
+        { key: "E", width: 12 },
+        { key: "F", width: 12 },
+        { key: "G", width: 10 },
+        { key: "H", width: 10 },
+        { key: "I", width: 12 },
+        { key: "J", width: 25 },
+      ];
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // TITRE PRINCIPAL
+      // ═══════════════════════════════════════════════════════════════════════
+      worksheet.mergeCells("A1:J1");
+      const titleCell = worksheet.getCell("A1");
+      titleCell.value = `📋 FEUILLES DE TEMPS RH - ${sheetName.toUpperCase()}`;
+      titleCell.font = { size: 16, bold: true, color: { argb: "FFFFFFFF" } };
+      titleCell.alignment = { horizontal: "center", vertical: "middle" };
+      titleCell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: colors.header },
+      };
+      worksheet.getRow(1).height = 30;
+
+      // Sous-titre avec statistiques
+      worksheet.mergeCells("A2:J2");
+      const subtitleCell = worksheet.getCell("A2");
+      const totalHoursAll = statusTimesheets.reduce((sum: number, ts: any) => sum + (ts.totalHours || 0), 0);
+      const totalActivitiesAll = statusTimesheets.reduce((sum: number, ts: any) => sum + (ts.HRActivity?.length || 0), 0);
+      subtitleCell.value = `${statusTimesheets.length} feuille(s) • ${totalHoursAll}h total • ${totalActivitiesAll} activité(s) • Exporté le ${format(new Date(), "dd/MM/yyyy à HH:mm", { locale: fr })}`;
+      subtitleCell.font = { size: 10, italic: true, color: { argb: "FF6B7280" } };
+      subtitleCell.alignment = { horizontal: "center", vertical: "middle" };
+      subtitleCell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: colors.light },
+      };
+      worksheet.getRow(2).height = 22;
+
+      worksheet.addRow([]);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // POUR CHAQUE FEUILLE DE TEMPS
+      // ═══════════════════════════════════════════════════════════════════════
+      statusTimesheets.forEach((ts: any, tsIndex: number) => {
+        // Séparateur entre les feuilles
+        if (tsIndex > 0) {
+          worksheet.addRow([]);
+          const separatorRow = worksheet.addRow([]);
+          separatorRow.height = 5;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // EN-TÊTE DE LA FEUILLE DE TEMPS
+        // ─────────────────────────────────────────────────────────────────────
+        worksheet.mergeCells(`A${worksheet.lastRow!.number + 1}:J${worksheet.lastRow!.number + 1}`);
+        const tsHeaderRow = worksheet.addRow([
+          `▶ ${ts.employeeName} — ${ts.position} — ${ts.site}`,
+        ]);
+        tsHeaderRow.font = { size: 12, bold: true, color: { argb: "FF1F2937" } };
+        tsHeaderRow.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: colors.title },
+        };
+        tsHeaderRow.height = 24;
+        tsHeaderRow.alignment = { vertical: "middle", indent: 1 };
+        tsHeaderRow.eachCell((cell) => {
+          cell.border = {
+            top: { style: "medium", color: { argb: colors.header } },
+            bottom: { style: "thin", color: { argb: colors.header } },
+          };
+        });
+
+        // Infos de la feuille
+        const infoRow = worksheet.addRow([
+          "",
+          `📅 Semaine: ${format(ts.weekStartDate, "dd/MM/yyyy", { locale: fr })} → ${format(ts.weekEndDate, "dd/MM/yyyy", { locale: fr })}`,
+          "",
+          "",
+          `⏱️ ${ts.totalHours}h`,
+          "",
+          `📊 ${ts.HRActivity?.length || 0} activité(s)`,
+        ]);
+        infoRow.font = { size: 9, color: { argb: "FF4B5563" } };
+        infoRow.height = 18;
+        infoRow.getCell(5).font = { size: 9, bold: true, color: { argb: "FF059669" } };
+        infoRow.getCell(7).font = { size: 9, bold: true, color: { argb: "FF3B82F6" } };
+
+        // Observations si présentes
+        if (ts.employeeObservations) {
+          const obsRow = worksheet.addRow([
+            "",
+            `💬 ${ts.employeeObservations}`,
+          ]);
+          obsRow.font = { size: 8, italic: true, color: { argb: "FF6B7280" } };
+          obsRow.height = 16;
+          worksheet.mergeCells(`B${obsRow.number}:J${obsRow.number}`);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TABLEAU DES ACTIVITÉS
+        // ─────────────────────────────────────────────────────────────────────
+        if (ts.HRActivity && ts.HRActivity.length > 0) {
+          // En-têtes des activités
+          const activityHeaderRow = worksheet.addRow([
+            "",
+            "Activité",
+            "Catégorie",
+            "Type",
+            "Périodicité",
+            "Début",
+            "Fin",
+            "Heures",
+            "Statut",
+            "Description",
+          ]);
+          activityHeaderRow.font = { bold: true, size: 9, color: { argb: "FFFFFFFF" } };
+          activityHeaderRow.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FF374151" },
+          };
+          activityHeaderRow.height = 18;
+          activityHeaderRow.alignment = { horizontal: "center", vertical: "middle" };
+          activityHeaderRow.eachCell((cell, colNumber) => {
+            if (colNumber > 1) {
+              cell.border = {
+                top: { style: "thin", color: { argb: "FF6B7280" } },
+                left: { style: "thin", color: { argb: "FF6B7280" } },
+                bottom: { style: "thin", color: { argb: "FF6B7280" } },
+                right: { style: "thin", color: { argb: "FF6B7280" } },
+              };
+            }
+          });
+
+          // Lignes des activités
+          ts.HRActivity.forEach((activity: any, actIndex: number) => {
+            const activityRow = worksheet.addRow([
+              "",
+              activity.activityName || "Sans nom",
+              activity.ActivityCatalog?.category || "Autres",
+              activity.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting",
+              getPeriodicityLabel(activity.periodicity),
+              format(activity.startDate, "dd/MM", { locale: fr }),
+              format(activity.endDate, "dd/MM", { locale: fr }),
+              activity.totalHours,
+              activity.status === "COMPLETED" ? "✓ Terminé" : "◯ En cours",
+              activity.description || "",
+            ]);
+
+            activityRow.font = { size: 8 };
+            activityRow.height = 16;
+            activityRow.alignment = { vertical: "middle" };
+
+            // Alternance de couleurs pour les activités
+            if (actIndex % 2 === 0) {
+              activityRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFF9FAFB" },
+              };
+            }
+
+            // Style du type
+            const typeCell = activityRow.getCell(4);
+            if (activity.activityType === "OPERATIONAL") {
+              typeCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFDBEAFE" },
+              };
+              typeCell.font = { size: 8, color: { argb: "FF1E40AF" } };
+            } else {
+              typeCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFEF3C7" },
+              };
+              typeCell.font = { size: 8, color: { argb: "FF92400E" } };
+            }
+
+            // Style des heures
+            const hoursCell = activityRow.getCell(8);
+            hoursCell.alignment = { horizontal: "center" };
+            hoursCell.font = { size: 8, bold: true, color: { argb: "FF059669" } };
+
+            // Style du statut
+            const statusCell = activityRow.getCell(9);
+            if (activity.status === "COMPLETED") {
+              statusCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD1FAE5" },
+              };
+              statusCell.font = { size: 8, color: { argb: "FF065F46" } };
+            } else {
+              statusCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFEF3C7" },
+              };
+              statusCell.font = { size: 8, color: { argb: "FF92400E" } };
+            }
+
+            // Bordures fines
+            activityRow.eachCell((cell, colNumber) => {
+              if (colNumber > 1) {
+                cell.border = {
+                  top: { style: "thin", color: { argb: "FFE5E7EB" } },
+                  left: { style: "thin", color: { argb: "FFE5E7EB" } },
+                  bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+                  right: { style: "thin", color: { argb: "FFE5E7EB" } },
+                };
+              }
+            });
+          });
+
+          // Sous-total pour cette feuille
+          const subtotalRow = worksheet.addRow([
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Sous-total:",
+            `${ts.totalHours}h`,
+          ]);
+          subtotalRow.font = { size: 9, bold: true };
+          subtotalRow.getCell(7).alignment = { horizontal: "right" };
+          subtotalRow.getCell(8).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFD1FAE5" },
+          };
+          subtotalRow.getCell(8).font = { size: 9, bold: true, color: { argb: "FF065F46" } };
+          subtotalRow.getCell(8).alignment = { horizontal: "center" };
+        }
+      });
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // RÉCAPITULATIF FINAL
+      // ═══════════════════════════════════════════════════════════════════════
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+
+      worksheet.mergeCells(`A${worksheet.lastRow!.number + 1}:J${worksheet.lastRow!.number + 1}`);
+      const recapHeaderRow = worksheet.addRow(["📊 RÉCAPITULATIF"]);
+      recapHeaderRow.font = { size: 12, bold: true, color: { argb: "FFFFFFFF" } };
+      recapHeaderRow.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1F2937" },
+      };
+      recapHeaderRow.height = 24;
+      recapHeaderRow.alignment = { horizontal: "center", vertical: "middle" };
+
+      const recapRow = worksheet.addRow([
+        "",
+        `Total feuilles: ${statusTimesheets.length}`,
+        "",
+        `Total heures: ${totalHoursAll}h`,
+        "",
+        `Total activités: ${totalActivitiesAll}`,
+      ]);
+      recapRow.font = { size: 11, bold: true };
+      recapRow.height = 22;
+      recapRow.getCell(2).font = { size: 11, bold: true, color: { argb: "FF3B82F6" } };
+      recapRow.getCell(4).font = { size: 11, bold: true, color: { argb: "FF059669" } };
+      recapRow.getCell(6).font = { size: 11, bold: true, color: { argb: "FF8B5CF6" } };
+    }
+
+    // Générer le buffer Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+
+    const fileName = `Export_Feuilles_Temps_${format(new Date(), "yyyy-MM-dd_HHmm")}.xlsx`;
+
+    return {
+      fileData: base64,
+      fileName,
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      count: timesheets.length,
+    };
+  });

@@ -2480,3 +2480,184 @@ export const globalSearch = authActionClient
     return { results: results.slice(0, 100) }; // Limiter à 100 résultats
   });
 
+// ========================================
+// ACTIONS POUR LES PRÉFÉRENCES DE CONVERSATION
+// ========================================
+
+/**
+ * Schéma pour les actions sur une conversation
+ */
+const conversationActionSchema = z.object({
+  conversationId: z.string(),
+});
+
+/**
+ * Épingler/Désépingler une conversation
+ */
+export const togglePinConversation = authActionClient
+  .schema(conversationActionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    const member = await prisma.conversationMember.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+    });
+
+    if (!member) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    const updatedMember = await prisma.conversationMember.update({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+      data: {
+        isPinned: !member.isPinned,
+        pinnedAt: !member.isPinned ? new Date() : null,
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return {
+      isPinned: updatedMember.isPinned,
+      message: updatedMember.isPinned
+        ? "Conversation épinglée"
+        : "Conversation désépinglée",
+    };
+  });
+
+/**
+ * Archiver/Désarchiver une conversation
+ */
+export const toggleArchiveConversation = authActionClient
+  .schema(conversationActionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    const member = await prisma.conversationMember.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+    });
+
+    if (!member) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    const updatedMember = await prisma.conversationMember.update({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+      data: {
+        isArchived: !member.isArchived,
+        archivedAt: !member.isArchived ? new Date() : null,
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return {
+      isArchived: updatedMember.isArchived,
+      message: updatedMember.isArchived
+        ? "Conversation archivée"
+        : "Conversation désarchivée",
+    };
+  });
+
+/**
+ * Marquer une conversation comme lue
+ */
+export const markConversationAsRead = authActionClient
+  .schema(conversationActionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    await prisma.conversationMember.update({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+      data: {
+        lastReadAt: new Date(),
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { message: "Conversation marquée comme lue" };
+  });
+
+/**
+ * Marquer une conversation comme non lue
+ */
+export const markConversationAsUnread = authActionClient
+  .schema(conversationActionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    // Mettre lastReadAt à une date très ancienne pour marquer comme non lu
+    await prisma.conversationMember.update({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+      data: {
+        lastReadAt: null,
+      },
+    });
+
+    revalidatePath("/dashboard/chat");
+    return { message: "Conversation marquée comme non lue" };
+  });
+
+/**
+ * Obtenir les préférences d'un membre pour une conversation
+ */
+export const getConversationMemberPreferences = authActionClient
+  .schema(conversationActionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { conversationId } = parsedInput;
+    const userId = ctx.userId;
+
+    const member = await prisma.conversationMember.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+      select: {
+        isPinned: true,
+        isMuted: true,
+        isArchived: true,
+        lastReadAt: true,
+        isAdmin: true,
+      },
+    });
+
+    if (!member) {
+      throw new Error("Vous n'êtes pas membre de cette conversation");
+    }
+
+    return { preferences: member };
+  });

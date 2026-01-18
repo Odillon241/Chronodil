@@ -1,5 +1,16 @@
 "use client";
 
+import { Inter } from "next/font/google";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, Home, RotateCcw } from "lucide-react";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export default function GlobalError({
   error,
   reset,
@@ -8,43 +19,68 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={inter.className}>
       <body>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          padding: '20px',
-          fontFamily: 'system-ui, sans-serif',
-          textAlign: 'center'
-        }}>
-          <h1 style={{ fontSize: '48px', margin: '0', fontWeight: 'bold', color: '#dc2626' }}>
-            Erreur globale
-          </h1>
-          <h2 style={{ fontSize: '20px', marginTop: '16px', marginBottom: '16px', color: '#666' }}>
-            Une erreur inattendue s'est produite
-          </h2>
-          <p style={{ color: '#888', marginBottom: '24px', maxWidth: '500px', fontSize: '14px' }}>
-            {error.message || "Une erreur s'est produite lors du chargement de l'application."}
-          </p>
-          <button
-            onClick={reset}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#0070f3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              fontSize: '16px',
-              cursor: 'pointer'
-            }}
-          >
-            Réessayer
-          </button>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 text-foreground">
+          <div className="w-full max-w-md space-y-6 text-center">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-destructive/10 p-4">
+                <AlertTriangle className="h-10 w-10 text-destructive" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl text-foreground">
+                Erreur critique
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Une erreur inattendue s'est produite et a arrêté l'application.
+              </p>
+            </div>
+
+            <Card className="border-destructive/20 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-base text-destructive flex items-center justify-center gap-2">
+                  Détails de l'erreur
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-md bg-muted p-3 text-left">
+                  <p className="text-sm font-mono text-muted-foreground break-all">
+                    {error.message || "Erreur inconnue"}
+                  </p>
+                  {error.digest && (
+                    <p className="text-xs text-muted-foreground mt-2 border-t pt-2">
+                      ID: {error.digest}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button
+                onClick={reset}
+                size="lg"
+                className="gap-2 w-full sm:w-auto"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Réessayer
+              </Button>
+              <Button
+                onClick={() => window.location.href = '/'}
+                variant="outline"
+                size="lg"
+                className="gap-2 w-full sm:w-auto"
+              >
+                <Home className="h-4 w-4" />
+                Retour à l'accueil
+              </Button>
+            </div>
+          </div>
         </div>
       </body>
     </html>
   );
 }
+

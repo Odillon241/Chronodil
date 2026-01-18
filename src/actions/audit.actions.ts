@@ -13,6 +13,8 @@ const getAuditLogsSchema = z.object({
   entity: z.string().optional(),
   userId: z.string().optional(),
   action: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 });
 
 export const getAuditLogs = actionClient
@@ -32,6 +34,12 @@ export const getAuditLogs = actionClient
         ...(parsedInput.entity && { entity: parsedInput.entity }),
         ...(parsedInput.userId && { userId: parsedInput.userId }),
         ...(parsedInput.action && { action: parsedInput.action }),
+        ...((parsedInput.startDate || parsedInput.endDate) && {
+          createdAt: {
+            ...(parsedInput.startDate && { gte: new Date(parsedInput.startDate) }),
+            ...(parsedInput.endDate && { lte: new Date(new Date(parsedInput.endDate).setHours(23, 59, 59, 999)) }), // Fin de journée
+          },
+        }),
       },
       include: {
         User: {

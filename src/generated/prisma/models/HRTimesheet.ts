@@ -329,10 +329,10 @@ export type HRTimesheetWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"HRTimesheet"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HRTimesheet"> | Date | string
   HRActivity?: Prisma.HRActivityListRelationFilter
-  Report?: Prisma.ReportListRelationFilter
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   User_HRTimesheet_userIdToUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  Report?: Prisma.ReportListRelationFilter
   Task?: Prisma.TaskListRelationFilter
 }
 
@@ -357,10 +357,10 @@ export type HRTimesheetOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   HRActivity?: Prisma.HRActivityOrderByRelationAggregateInput
-  Report?: Prisma.ReportOrderByRelationAggregateInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserOrderByWithRelationInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserOrderByWithRelationInput
   User_HRTimesheet_userIdToUser?: Prisma.UserOrderByWithRelationInput
+  Report?: Prisma.ReportOrderByRelationAggregateInput
   Task?: Prisma.TaskOrderByRelationAggregateInput
 }
 
@@ -389,10 +389,10 @@ export type HRTimesheetWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"HRTimesheet"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HRTimesheet"> | Date | string
   HRActivity?: Prisma.HRActivityListRelationFilter
-  Report?: Prisma.ReportListRelationFilter
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   User_HRTimesheet_userIdToUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  Report?: Prisma.ReportListRelationFilter
   Task?: Prisma.TaskListRelationFilter
 }, "id" | "userId_weekStartDate">
 
@@ -466,10 +466,10 @@ export type HRTimesheetCreateInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutHRTimesheetInput
-  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput
   User_HRTimesheet_userIdToUser: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_userIdToUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   Task?: Prisma.TaskCreateNestedManyWithoutHRTimesheetInput
 }
 
@@ -516,10 +516,10 @@ export type HRTimesheetUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   HRActivity?: Prisma.HRActivityUpdateManyWithoutHRTimesheetNestedInput
-  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserNestedInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserNestedInput
   User_HRTimesheet_userIdToUser?: Prisma.UserUpdateOneRequiredWithoutHRTimesheet_HRTimesheet_userIdToUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   Task?: Prisma.TaskUpdateManyWithoutHRTimesheetNestedInput
 }
 
@@ -903,10 +903,10 @@ export type HRTimesheetCreateWithoutHRActivityInput = {
   odillonComments?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
-  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput
   User_HRTimesheet_userIdToUser: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_userIdToUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   Task?: Prisma.TaskCreateNestedManyWithoutHRTimesheetInput
 }
 
@@ -967,10 +967,10 @@ export type HRTimesheetUpdateWithoutHRActivityInput = {
   odillonComments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserNestedInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserNestedInput
   User_HRTimesheet_userIdToUser?: Prisma.UserUpdateOneRequiredWithoutHRTimesheet_HRTimesheet_userIdToUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   Task?: Prisma.TaskUpdateManyWithoutHRTimesheetNestedInput
 }
 
@@ -1128,10 +1128,10 @@ export type HRTimesheetCreateWithoutTaskInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutHRTimesheetInput
-  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput
   User_HRTimesheet_userIdToUser: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_userIdToUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
 }
 
 export type HRTimesheetUncheckedCreateWithoutTaskInput = {
@@ -1192,10 +1192,10 @@ export type HRTimesheetUpdateWithoutTaskInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   HRActivity?: Prisma.HRActivityUpdateManyWithoutHRTimesheetNestedInput
-  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserNestedInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserNestedInput
   User_HRTimesheet_userIdToUser?: Prisma.UserUpdateOneRequiredWithoutHRTimesheet_HRTimesheet_userIdToUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
 }
 
 export type HRTimesheetUncheckedUpdateWithoutTaskInput = {
@@ -1240,9 +1240,9 @@ export type HRTimesheetCreateWithoutUser_HRTimesheet_managerSignedByIdToUserInpu
   createdAt?: Date | string
   updatedAt: Date | string
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutHRTimesheetInput
-  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput
   User_HRTimesheet_userIdToUser: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_userIdToUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   Task?: Prisma.TaskCreateNestedManyWithoutHRTimesheetInput
 }
 
@@ -1298,9 +1298,9 @@ export type HRTimesheetCreateWithoutUser_HRTimesheet_odillonSignedByIdToUserInpu
   createdAt?: Date | string
   updatedAt: Date | string
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutHRTimesheetInput
-  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput
   User_HRTimesheet_userIdToUser: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_userIdToUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   Task?: Prisma.TaskCreateNestedManyWithoutHRTimesheetInput
 }
 
@@ -1356,9 +1356,9 @@ export type HRTimesheetCreateWithoutUser_HRTimesheet_userIdToUserInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   HRActivity?: Prisma.HRActivityCreateNestedManyWithoutHRTimesheetInput
-  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserCreateNestedOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutHRTimesheetInput
   Task?: Prisma.TaskCreateNestedManyWithoutHRTimesheetInput
 }
 
@@ -1550,9 +1550,9 @@ export type HRTimesheetUpdateWithoutUser_HRTimesheet_managerSignedByIdToUserInpu
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   HRActivity?: Prisma.HRActivityUpdateManyWithoutHRTimesheetNestedInput
-  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserNestedInput
   User_HRTimesheet_userIdToUser?: Prisma.UserUpdateOneRequiredWithoutHRTimesheet_HRTimesheet_userIdToUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   Task?: Prisma.TaskUpdateManyWithoutHRTimesheetNestedInput
 }
 
@@ -1619,9 +1619,9 @@ export type HRTimesheetUpdateWithoutUser_HRTimesheet_odillonSignedByIdToUserInpu
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   HRActivity?: Prisma.HRActivityUpdateManyWithoutHRTimesheetNestedInput
-  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserNestedInput
   User_HRTimesheet_userIdToUser?: Prisma.UserUpdateOneRequiredWithoutHRTimesheet_HRTimesheet_userIdToUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   Task?: Prisma.TaskUpdateManyWithoutHRTimesheetNestedInput
 }
 
@@ -1688,9 +1688,9 @@ export type HRTimesheetUpdateWithoutUser_HRTimesheet_userIdToUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   HRActivity?: Prisma.HRActivityUpdateManyWithoutHRTimesheetNestedInput
-  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   User_HRTimesheet_managerSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserNestedInput
   User_HRTimesheet_odillonSignedByIdToUser?: Prisma.UserUpdateOneWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutHRTimesheetNestedInput
   Task?: Prisma.TaskUpdateManyWithoutHRTimesheetNestedInput
 }
 
@@ -1809,10 +1809,10 @@ export type HRTimesheetSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   createdAt?: boolean
   updatedAt?: boolean
   HRActivity?: boolean | Prisma.HRTimesheet$HRActivityArgs<ExtArgs>
-  Report?: boolean | Prisma.HRTimesheet$ReportArgs<ExtArgs>
   User_HRTimesheet_managerSignedByIdToUser?: boolean | Prisma.HRTimesheet$User_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs>
   User_HRTimesheet_odillonSignedByIdToUser?: boolean | Prisma.HRTimesheet$User_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs>
   User_HRTimesheet_userIdToUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  Report?: boolean | Prisma.HRTimesheet$ReportArgs<ExtArgs>
   Task?: boolean | Prisma.HRTimesheet$TaskArgs<ExtArgs>
   _count?: boolean | Prisma.HRTimesheetCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hRTimesheet"]>
@@ -1892,10 +1892,10 @@ export type HRTimesheetSelectScalar = {
 export type HRTimesheetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "weekStartDate" | "weekEndDate" | "userId" | "employeeName" | "position" | "site" | "totalHours" | "status" | "employeeSignedAt" | "managerSignedAt" | "managerSignedById" | "odillonSignedAt" | "odillonSignedById" | "employeeObservations" | "managerComments" | "odillonComments" | "createdAt" | "updatedAt", ExtArgs["result"]["hRTimesheet"]>
 export type HRTimesheetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   HRActivity?: boolean | Prisma.HRTimesheet$HRActivityArgs<ExtArgs>
-  Report?: boolean | Prisma.HRTimesheet$ReportArgs<ExtArgs>
   User_HRTimesheet_managerSignedByIdToUser?: boolean | Prisma.HRTimesheet$User_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs>
   User_HRTimesheet_odillonSignedByIdToUser?: boolean | Prisma.HRTimesheet$User_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs>
   User_HRTimesheet_userIdToUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  Report?: boolean | Prisma.HRTimesheet$ReportArgs<ExtArgs>
   Task?: boolean | Prisma.HRTimesheet$TaskArgs<ExtArgs>
   _count?: boolean | Prisma.HRTimesheetCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1914,10 +1914,10 @@ export type $HRTimesheetPayload<ExtArgs extends runtime.Types.Extensions.Interna
   name: "HRTimesheet"
   objects: {
     HRActivity: Prisma.$HRActivityPayload<ExtArgs>[]
-    Report: Prisma.$ReportPayload<ExtArgs>[]
     User_HRTimesheet_managerSignedByIdToUser: Prisma.$UserPayload<ExtArgs> | null
     User_HRTimesheet_odillonSignedByIdToUser: Prisma.$UserPayload<ExtArgs> | null
     User_HRTimesheet_userIdToUser: Prisma.$UserPayload<ExtArgs>
+    Report: Prisma.$ReportPayload<ExtArgs>[]
     Task: Prisma.$TaskPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -2335,10 +2335,10 @@ readonly fields: HRTimesheetFieldRefs;
 export interface Prisma__HRTimesheetClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   HRActivity<T extends Prisma.HRTimesheet$HRActivityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HRTimesheet$HRActivityArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HRActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  Report<T extends Prisma.HRTimesheet$ReportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HRTimesheet$ReportArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   User_HRTimesheet_managerSignedByIdToUser<T extends Prisma.HRTimesheet$User_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HRTimesheet$User_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   User_HRTimesheet_odillonSignedByIdToUser<T extends Prisma.HRTimesheet$User_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HRTimesheet$User_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   User_HRTimesheet_userIdToUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  Report<T extends Prisma.HRTimesheet$ReportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HRTimesheet$ReportArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Task<T extends Prisma.HRTimesheet$TaskArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HRTimesheet$TaskArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2808,30 +2808,6 @@ export type HRTimesheet$HRActivityArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
- * HRTimesheet.Report
- */
-export type HRTimesheet$ReportArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Report
-   */
-  select?: Prisma.ReportSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Report
-   */
-  omit?: Prisma.ReportOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ReportInclude<ExtArgs> | null
-  where?: Prisma.ReportWhereInput
-  orderBy?: Prisma.ReportOrderByWithRelationInput | Prisma.ReportOrderByWithRelationInput[]
-  cursor?: Prisma.ReportWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ReportScalarFieldEnum | Prisma.ReportScalarFieldEnum[]
-}
-
-/**
  * HRTimesheet.User_HRTimesheet_managerSignedByIdToUser
  */
 export type HRTimesheet$User_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2867,6 +2843,30 @@ export type HRTimesheet$User_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs ext
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * HRTimesheet.Report
+ */
+export type HRTimesheet$ReportArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Report
+   */
+  select?: Prisma.ReportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Report
+   */
+  omit?: Prisma.ReportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReportInclude<ExtArgs> | null
+  where?: Prisma.ReportWhereInput
+  orderBy?: Prisma.ReportOrderByWithRelationInput | Prisma.ReportOrderByWithRelationInput[]
+  cursor?: Prisma.ReportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReportScalarFieldEnum | Prisma.ReportScalarFieldEnum[]
 }
 
 /**

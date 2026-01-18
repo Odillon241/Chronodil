@@ -473,34 +473,34 @@ export type UserWhereInput = {
   quietHoursEnd?: Prisma.StringFilter<"User"> | string
   quietHoursDays?: Prisma.StringNullableListFilter<"User">
   AuditLog?: Prisma.AuditLogListRelationFilter
+  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
+  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
   Conversation?: Prisma.ConversationListRelationFilter
   ConversationMember?: Prisma.ConversationMemberListRelationFilter
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetListRelationFilter
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetListRelationFilter
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetListRelationFilter
   Message?: Prisma.MessageListRelationFilter
+  MessageRead?: Prisma.MessageReadListRelationFilter
+  MessageReminder?: Prisma.MessageReminderListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
-  PushSubscription?: Prisma.PushSubscriptionListRelationFilter
   Project?: Prisma.ProjectListRelationFilter
   ProjectMember?: Prisma.ProjectMemberListRelationFilter
+  PushSubscription?: Prisma.PushSubscriptionListRelationFilter
   Report?: Prisma.ReportListRelationFilter
   ReportRecipient?: Prisma.ReportRecipientListRelationFilter
   ReportTemplate?: Prisma.ReportTemplateListRelationFilter
+  ScheduledMessage?: Prisma.ScheduledMessageListRelationFilter
   Task_Task_createdByToUser?: Prisma.TaskListRelationFilter
   Task_Task_evaluatedByToUser?: Prisma.TaskListRelationFilter
   TaskActivity?: Prisma.TaskActivityListRelationFilter
   TaskComment?: Prisma.TaskCommentListRelationFilter
   TaskMember?: Prisma.TaskMemberListRelationFilter
-  MessageRead?: Prisma.MessageReadListRelationFilter
-  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
-  ScheduledMessage?: Prisma.ScheduledMessageListRelationFilter
-  MessageReminder?: Prisma.MessageReminderListRelationFilter
-  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
+  accounts?: Prisma.AccountListRelationFilter
+  sessions?: Prisma.SessionListRelationFilter
   Department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   other_User?: Prisma.UserListRelationFilter
-  sessions?: Prisma.SessionListRelationFilter
-  accounts?: Prisma.AccountListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -542,34 +542,34 @@ export type UserOrderByWithRelationInput = {
   quietHoursEnd?: Prisma.SortOrder
   quietHoursDays?: Prisma.SortOrder
   AuditLog?: Prisma.AuditLogOrderByRelationAggregateInput
+  ChannelPermission?: Prisma.ChannelPermissionOrderByRelationAggregateInput
+  ChatAuditLog?: Prisma.ChatAuditLogOrderByRelationAggregateInput
   Conversation?: Prisma.ConversationOrderByRelationAggregateInput
   ConversationMember?: Prisma.ConversationMemberOrderByRelationAggregateInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetOrderByRelationAggregateInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetOrderByRelationAggregateInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetOrderByRelationAggregateInput
   Message?: Prisma.MessageOrderByRelationAggregateInput
+  MessageRead?: Prisma.MessageReadOrderByRelationAggregateInput
+  MessageReminder?: Prisma.MessageReminderOrderByRelationAggregateInput
   Notification?: Prisma.NotificationOrderByRelationAggregateInput
-  PushSubscription?: Prisma.PushSubscriptionOrderByRelationAggregateInput
   Project?: Prisma.ProjectOrderByRelationAggregateInput
   ProjectMember?: Prisma.ProjectMemberOrderByRelationAggregateInput
+  PushSubscription?: Prisma.PushSubscriptionOrderByRelationAggregateInput
   Report?: Prisma.ReportOrderByRelationAggregateInput
   ReportRecipient?: Prisma.ReportRecipientOrderByRelationAggregateInput
   ReportTemplate?: Prisma.ReportTemplateOrderByRelationAggregateInput
+  ScheduledMessage?: Prisma.ScheduledMessageOrderByRelationAggregateInput
   Task_Task_createdByToUser?: Prisma.TaskOrderByRelationAggregateInput
   Task_Task_evaluatedByToUser?: Prisma.TaskOrderByRelationAggregateInput
   TaskActivity?: Prisma.TaskActivityOrderByRelationAggregateInput
   TaskComment?: Prisma.TaskCommentOrderByRelationAggregateInput
   TaskMember?: Prisma.TaskMemberOrderByRelationAggregateInput
-  MessageRead?: Prisma.MessageReadOrderByRelationAggregateInput
-  ChannelPermission?: Prisma.ChannelPermissionOrderByRelationAggregateInput
-  ScheduledMessage?: Prisma.ScheduledMessageOrderByRelationAggregateInput
-  MessageReminder?: Prisma.MessageReminderOrderByRelationAggregateInput
-  ChatAuditLog?: Prisma.ChatAuditLogOrderByRelationAggregateInput
+  accounts?: Prisma.AccountOrderByRelationAggregateInput
+  sessions?: Prisma.SessionOrderByRelationAggregateInput
   Department?: Prisma.DepartmentOrderByWithRelationInput
   User?: Prisma.UserOrderByWithRelationInput
   other_User?: Prisma.UserOrderByRelationAggregateInput
-  sessions?: Prisma.SessionOrderByRelationAggregateInput
-  accounts?: Prisma.AccountOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -614,34 +614,34 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   quietHoursEnd?: Prisma.StringFilter<"User"> | string
   quietHoursDays?: Prisma.StringNullableListFilter<"User">
   AuditLog?: Prisma.AuditLogListRelationFilter
+  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
+  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
   Conversation?: Prisma.ConversationListRelationFilter
   ConversationMember?: Prisma.ConversationMemberListRelationFilter
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetListRelationFilter
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetListRelationFilter
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetListRelationFilter
   Message?: Prisma.MessageListRelationFilter
+  MessageRead?: Prisma.MessageReadListRelationFilter
+  MessageReminder?: Prisma.MessageReminderListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
-  PushSubscription?: Prisma.PushSubscriptionListRelationFilter
   Project?: Prisma.ProjectListRelationFilter
   ProjectMember?: Prisma.ProjectMemberListRelationFilter
+  PushSubscription?: Prisma.PushSubscriptionListRelationFilter
   Report?: Prisma.ReportListRelationFilter
   ReportRecipient?: Prisma.ReportRecipientListRelationFilter
   ReportTemplate?: Prisma.ReportTemplateListRelationFilter
+  ScheduledMessage?: Prisma.ScheduledMessageListRelationFilter
   Task_Task_createdByToUser?: Prisma.TaskListRelationFilter
   Task_Task_evaluatedByToUser?: Prisma.TaskListRelationFilter
   TaskActivity?: Prisma.TaskActivityListRelationFilter
   TaskComment?: Prisma.TaskCommentListRelationFilter
   TaskMember?: Prisma.TaskMemberListRelationFilter
-  MessageRead?: Prisma.MessageReadListRelationFilter
-  ChannelPermission?: Prisma.ChannelPermissionListRelationFilter
-  ScheduledMessage?: Prisma.ScheduledMessageListRelationFilter
-  MessageReminder?: Prisma.MessageReminderListRelationFilter
-  ChatAuditLog?: Prisma.ChatAuditLogListRelationFilter
+  accounts?: Prisma.AccountListRelationFilter
+  sessions?: Prisma.SessionListRelationFilter
   Department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   other_User?: Prisma.UserListRelationFilter
-  sessions?: Prisma.SessionListRelationFilter
-  accounts?: Prisma.AccountListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -769,34 +769,34 @@ export type UserCreateInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -838,32 +838,32 @@ export type UserUncheckedCreateInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -903,34 +903,34 @@ export type UserUpdateInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -972,32 +972,32 @@ export type UserUncheckedUpdateInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1817,33 +1817,33 @@ export type UserCreateWithoutAccountsInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1885,31 +1885,31 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1965,33 +1965,33 @@ export type UserUpdateWithoutAccountsInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -2033,31 +2033,31 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogInput = {
@@ -2096,34 +2096,34 @@ export type UserCreateWithoutAuditLogInput = {
   quietHoursStart?: string
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogInput = {
@@ -2164,32 +2164,32 @@ export type UserUncheckedCreateWithoutAuditLogInput = {
   quietHoursStart?: string
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogInput = {
@@ -2244,34 +2244,34 @@ export type UserUpdateWithoutAuditLogInput = {
   quietHoursStart?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogInput = {
@@ -2312,32 +2312,32 @@ export type UserUncheckedUpdateWithoutAuditLogInput = {
   quietHoursStart?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConversationInput = {
@@ -2377,33 +2377,33 @@ export type UserCreateWithoutConversationInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConversationInput = {
@@ -2445,31 +2445,31 @@ export type UserUncheckedCreateWithoutConversationInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConversationInput = {
@@ -2525,33 +2525,33 @@ export type UserUpdateWithoutConversationInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConversationInput = {
@@ -2593,31 +2593,31 @@ export type UserUncheckedUpdateWithoutConversationInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConversationMemberInput = {
@@ -2657,33 +2657,33 @@ export type UserCreateWithoutConversationMemberInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConversationMemberInput = {
@@ -2725,31 +2725,31 @@ export type UserUncheckedCreateWithoutConversationMemberInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConversationMemberInput = {
@@ -2805,33 +2805,33 @@ export type UserUpdateWithoutConversationMemberInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConversationMemberInput = {
@@ -2873,31 +2873,31 @@ export type UserUncheckedUpdateWithoutConversationMemberInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutDepartmentInput = {
@@ -2937,33 +2937,33 @@ export type UserCreateWithoutDepartmentInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -3004,32 +3004,32 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -3138,33 +3138,33 @@ export type UserCreateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInpu
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput = {
@@ -3206,31 +3206,31 @@ export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_managerSignedByIdT
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput = {
@@ -3275,33 +3275,33 @@ export type UserCreateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInpu
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3343,31 +3343,31 @@ export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdT
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3412,33 +3412,33 @@ export type UserCreateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3480,31 +3480,31 @@ export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_userIdToUserInput 
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3560,33 +3560,33 @@ export type UserUpdateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInpu
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput = {
@@ -3628,31 +3628,31 @@ export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_managerSignedByIdT
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3703,33 +3703,33 @@ export type UserUpdateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInpu
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3771,31 +3771,31 @@ export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdT
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3846,33 +3846,33 @@ export type UserUpdateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3914,31 +3914,31 @@ export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_userIdToUserInput 
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageInput = {
@@ -3978,33 +3978,33 @@ export type UserCreateWithoutMessageInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageInput = {
@@ -4046,31 +4046,31 @@ export type UserUncheckedCreateWithoutMessageInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageInput = {
@@ -4126,33 +4126,33 @@ export type UserUpdateWithoutMessageInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageInput = {
@@ -4194,31 +4194,31 @@ export type UserUncheckedUpdateWithoutMessageInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageReadInput = {
@@ -4258,33 +4258,33 @@ export type UserCreateWithoutMessageReadInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageReadInput = {
@@ -4326,31 +4326,31 @@ export type UserUncheckedCreateWithoutMessageReadInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageReadInput = {
@@ -4406,33 +4406,33 @@ export type UserUpdateWithoutMessageReadInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageReadInput = {
@@ -4474,31 +4474,31 @@ export type UserUncheckedUpdateWithoutMessageReadInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutChannelPermissionInput = {
@@ -4538,33 +4538,33 @@ export type UserCreateWithoutChannelPermissionInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutChannelPermissionInput = {
@@ -4606,31 +4606,31 @@ export type UserUncheckedCreateWithoutChannelPermissionInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChannelPermissionInput = {
@@ -4686,33 +4686,33 @@ export type UserUpdateWithoutChannelPermissionInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChannelPermissionInput = {
@@ -4754,31 +4754,31 @@ export type UserUncheckedUpdateWithoutChannelPermissionInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutChatAuditLogInput = {
@@ -4818,33 +4818,33 @@ export type UserCreateWithoutChatAuditLogInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutChatAuditLogInput = {
@@ -4886,31 +4886,31 @@ export type UserUncheckedCreateWithoutChatAuditLogInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChatAuditLogInput = {
@@ -4966,33 +4966,33 @@ export type UserUpdateWithoutChatAuditLogInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChatAuditLogInput = {
@@ -5034,31 +5034,31 @@ export type UserUncheckedUpdateWithoutChatAuditLogInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutScheduledMessageInput = {
@@ -5098,16 +5098,20 @@ export type UserCreateWithoutScheduledMessageInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
@@ -5116,15 +5120,11 @@ export type UserCreateWithoutScheduledMessageInput = {
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutScheduledMessageInput = {
@@ -5166,16 +5166,20 @@ export type UserUncheckedCreateWithoutScheduledMessageInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
@@ -5184,13 +5188,9 @@ export type UserUncheckedCreateWithoutScheduledMessageInput = {
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutScheduledMessageInput = {
@@ -5246,16 +5246,20 @@ export type UserUpdateWithoutScheduledMessageInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
@@ -5264,15 +5268,11 @@ export type UserUpdateWithoutScheduledMessageInput = {
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutScheduledMessageInput = {
@@ -5314,16 +5314,20 @@ export type UserUncheckedUpdateWithoutScheduledMessageInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
@@ -5332,13 +5336,9 @@ export type UserUncheckedUpdateWithoutScheduledMessageInput = {
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageReminderInput = {
@@ -5378,33 +5378,33 @@ export type UserCreateWithoutMessageReminderInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageReminderInput = {
@@ -5446,31 +5446,31 @@ export type UserUncheckedCreateWithoutMessageReminderInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageReminderInput = {
@@ -5526,33 +5526,33 @@ export type UserUpdateWithoutMessageReminderInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageReminderInput = {
@@ -5594,31 +5594,31 @@ export type UserUncheckedUpdateWithoutMessageReminderInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationInput = {
@@ -5658,33 +5658,33 @@ export type UserCreateWithoutNotificationInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationInput = {
@@ -5726,31 +5726,31 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationInput = {
@@ -5806,33 +5806,33 @@ export type UserUpdateWithoutNotificationInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationInput = {
@@ -5874,31 +5874,31 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPushSubscriptionInput = {
@@ -5938,33 +5938,33 @@ export type UserCreateWithoutPushSubscriptionInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPushSubscriptionInput = {
@@ -6006,31 +6006,31 @@ export type UserUncheckedCreateWithoutPushSubscriptionInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPushSubscriptionInput = {
@@ -6086,33 +6086,33 @@ export type UserUpdateWithoutPushSubscriptionInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushSubscriptionInput = {
@@ -6154,31 +6154,31 @@ export type UserUncheckedUpdateWithoutPushSubscriptionInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProjectInput = {
@@ -6218,33 +6218,33 @@ export type UserCreateWithoutProjectInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProjectInput = {
@@ -6286,31 +6286,31 @@ export type UserUncheckedCreateWithoutProjectInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProjectInput = {
@@ -6366,33 +6366,33 @@ export type UserUpdateWithoutProjectInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectInput = {
@@ -6434,31 +6434,31 @@ export type UserUncheckedUpdateWithoutProjectInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProjectMemberInput = {
@@ -6498,33 +6498,33 @@ export type UserCreateWithoutProjectMemberInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProjectMemberInput = {
@@ -6566,31 +6566,31 @@ export type UserUncheckedCreateWithoutProjectMemberInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProjectMemberInput = {
@@ -6646,33 +6646,33 @@ export type UserUpdateWithoutProjectMemberInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectMemberInput = {
@@ -6714,31 +6714,31 @@ export type UserUncheckedUpdateWithoutProjectMemberInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportInput = {
@@ -6778,33 +6778,33 @@ export type UserCreateWithoutReportInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportInput = {
@@ -6846,31 +6846,31 @@ export type UserUncheckedCreateWithoutReportInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportInput = {
@@ -6926,33 +6926,33 @@ export type UserUpdateWithoutReportInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportInput = {
@@ -6994,31 +6994,31 @@ export type UserUncheckedUpdateWithoutReportInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportRecipientInput = {
@@ -7058,33 +7058,33 @@ export type UserCreateWithoutReportRecipientInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportRecipientInput = {
@@ -7126,31 +7126,31 @@ export type UserUncheckedCreateWithoutReportRecipientInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportRecipientInput = {
@@ -7206,33 +7206,33 @@ export type UserUpdateWithoutReportRecipientInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportRecipientInput = {
@@ -7274,31 +7274,31 @@ export type UserUncheckedUpdateWithoutReportRecipientInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportTemplateInput = {
@@ -7338,33 +7338,33 @@ export type UserCreateWithoutReportTemplateInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportTemplateInput = {
@@ -7406,31 +7406,31 @@ export type UserUncheckedCreateWithoutReportTemplateInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportTemplateInput = {
@@ -7486,33 +7486,33 @@ export type UserUpdateWithoutReportTemplateInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportTemplateInput = {
@@ -7554,31 +7554,31 @@ export type UserUncheckedUpdateWithoutReportTemplateInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -7618,33 +7618,33 @@ export type UserCreateWithoutSessionsInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -7686,31 +7686,31 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -7766,33 +7766,33 @@ export type UserUpdateWithoutSessionsInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -7834,31 +7834,31 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTask_Task_createdByToUserInput = {
@@ -7898,33 +7898,33 @@ export type UserCreateWithoutTask_Task_createdByToUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTask_Task_createdByToUserInput = {
@@ -7966,31 +7966,31 @@ export type UserUncheckedCreateWithoutTask_Task_createdByToUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTask_Task_createdByToUserInput = {
@@ -8035,33 +8035,33 @@ export type UserCreateWithoutTask_Task_evaluatedByToUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTask_Task_evaluatedByToUserInput = {
@@ -8103,31 +8103,31 @@ export type UserUncheckedCreateWithoutTask_Task_evaluatedByToUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTask_Task_evaluatedByToUserInput = {
@@ -8183,33 +8183,33 @@ export type UserUpdateWithoutTask_Task_createdByToUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTask_Task_createdByToUserInput = {
@@ -8251,31 +8251,31 @@ export type UserUncheckedUpdateWithoutTask_Task_createdByToUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutTask_Task_evaluatedByToUserInput = {
@@ -8326,33 +8326,33 @@ export type UserUpdateWithoutTask_Task_evaluatedByToUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTask_Task_evaluatedByToUserInput = {
@@ -8394,31 +8394,31 @@ export type UserUncheckedUpdateWithoutTask_Task_evaluatedByToUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTaskActivityInput = {
@@ -8458,33 +8458,33 @@ export type UserCreateWithoutTaskActivityInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaskActivityInput = {
@@ -8526,31 +8526,31 @@ export type UserUncheckedCreateWithoutTaskActivityInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaskActivityInput = {
@@ -8606,33 +8606,33 @@ export type UserUpdateWithoutTaskActivityInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaskActivityInput = {
@@ -8674,31 +8674,31 @@ export type UserUncheckedUpdateWithoutTaskActivityInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTaskCommentInput = {
@@ -8738,33 +8738,33 @@ export type UserCreateWithoutTaskCommentInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaskCommentInput = {
@@ -8806,31 +8806,31 @@ export type UserUncheckedCreateWithoutTaskCommentInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaskCommentInput = {
@@ -8886,33 +8886,33 @@ export type UserUpdateWithoutTaskCommentInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaskCommentInput = {
@@ -8954,31 +8954,31 @@ export type UserUncheckedUpdateWithoutTaskCommentInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTaskMemberInput = {
@@ -9018,33 +9018,33 @@ export type UserCreateWithoutTaskMemberInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaskMemberInput = {
@@ -9086,31 +9086,31 @@ export type UserUncheckedCreateWithoutTaskMemberInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaskMemberInput = {
@@ -9166,33 +9166,33 @@ export type UserUpdateWithoutTaskMemberInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaskMemberInput = {
@@ -9234,31 +9234,31 @@ export type UserUncheckedUpdateWithoutTaskMemberInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOther_UserInput = {
@@ -9298,33 +9298,33 @@ export type UserCreateWithoutOther_UserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOther_UserInput = {
@@ -9366,31 +9366,31 @@ export type UserUncheckedCreateWithoutOther_UserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOther_UserInput = {
@@ -9435,33 +9435,33 @@ export type UserCreateWithoutUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserInput = {
@@ -9502,32 +9502,32 @@ export type UserUncheckedCreateWithoutUserInput = {
   quietHoursEnd?: string
   quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
   Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
   ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
   Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
   ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
   TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
   TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
-  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
-  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
-  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserInput = {
@@ -9588,33 +9588,33 @@ export type UserUpdateWithoutOther_UserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOther_UserInput = {
@@ -9656,31 +9656,31 @@ export type UserUncheckedUpdateWithoutOther_UserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutUserInput = {
@@ -9775,33 +9775,33 @@ export type UserUpdateWithoutDepartmentInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -9842,32 +9842,32 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -9985,33 +9985,33 @@ export type UserUpdateWithoutUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserInput = {
@@ -10052,32 +10052,32 @@ export type UserUncheckedUpdateWithoutUserInput = {
   quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
   quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
   AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
   Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
   ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
   HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
   Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
-  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
   ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
   ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
   ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
   Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
   Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
   TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
   TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
-  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
-  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
-  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
-  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
-  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
-  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutUserInput = {
@@ -10126,62 +10126,62 @@ export type UserUncheckedUpdateManyWithoutUserInput = {
 
 export type UserCountOutputType = {
   AuditLog: number
+  ChannelPermission: number
+  ChatAuditLog: number
   Conversation: number
   ConversationMember: number
   HRTimesheet_HRTimesheet_managerSignedByIdToUser: number
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser: number
   HRTimesheet_HRTimesheet_userIdToUser: number
   Message: number
+  MessageRead: number
+  MessageReminder: number
   Notification: number
-  PushSubscription: number
   Project: number
   ProjectMember: number
+  PushSubscription: number
   Report: number
   ReportRecipient: number
   ReportTemplate: number
+  ScheduledMessage: number
   Task_Task_createdByToUser: number
   Task_Task_evaluatedByToUser: number
   TaskActivity: number
   TaskComment: number
   TaskMember: number
-  MessageRead: number
-  ChannelPermission: number
-  ScheduledMessage: number
-  MessageReminder: number
-  ChatAuditLog: number
-  other_User: number
-  sessions: number
   accounts: number
+  sessions: number
+  other_User: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   AuditLog?: boolean | UserCountOutputTypeCountAuditLogArgs
+  ChannelPermission?: boolean | UserCountOutputTypeCountChannelPermissionArgs
+  ChatAuditLog?: boolean | UserCountOutputTypeCountChatAuditLogArgs
   Conversation?: boolean | UserCountOutputTypeCountConversationArgs
   ConversationMember?: boolean | UserCountOutputTypeCountConversationMemberArgs
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: boolean | UserCountOutputTypeCountHRTimesheet_HRTimesheet_managerSignedByIdToUserArgs
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: boolean | UserCountOutputTypeCountHRTimesheet_HRTimesheet_odillonSignedByIdToUserArgs
   HRTimesheet_HRTimesheet_userIdToUser?: boolean | UserCountOutputTypeCountHRTimesheet_HRTimesheet_userIdToUserArgs
   Message?: boolean | UserCountOutputTypeCountMessageArgs
+  MessageRead?: boolean | UserCountOutputTypeCountMessageReadArgs
+  MessageReminder?: boolean | UserCountOutputTypeCountMessageReminderArgs
   Notification?: boolean | UserCountOutputTypeCountNotificationArgs
-  PushSubscription?: boolean | UserCountOutputTypeCountPushSubscriptionArgs
   Project?: boolean | UserCountOutputTypeCountProjectArgs
   ProjectMember?: boolean | UserCountOutputTypeCountProjectMemberArgs
+  PushSubscription?: boolean | UserCountOutputTypeCountPushSubscriptionArgs
   Report?: boolean | UserCountOutputTypeCountReportArgs
   ReportRecipient?: boolean | UserCountOutputTypeCountReportRecipientArgs
   ReportTemplate?: boolean | UserCountOutputTypeCountReportTemplateArgs
+  ScheduledMessage?: boolean | UserCountOutputTypeCountScheduledMessageArgs
   Task_Task_createdByToUser?: boolean | UserCountOutputTypeCountTask_Task_createdByToUserArgs
   Task_Task_evaluatedByToUser?: boolean | UserCountOutputTypeCountTask_Task_evaluatedByToUserArgs
   TaskActivity?: boolean | UserCountOutputTypeCountTaskActivityArgs
   TaskComment?: boolean | UserCountOutputTypeCountTaskCommentArgs
   TaskMember?: boolean | UserCountOutputTypeCountTaskMemberArgs
-  MessageRead?: boolean | UserCountOutputTypeCountMessageReadArgs
-  ChannelPermission?: boolean | UserCountOutputTypeCountChannelPermissionArgs
-  ScheduledMessage?: boolean | UserCountOutputTypeCountScheduledMessageArgs
-  MessageReminder?: boolean | UserCountOutputTypeCountMessageReminderArgs
-  ChatAuditLog?: boolean | UserCountOutputTypeCountChatAuditLogArgs
-  other_User?: boolean | UserCountOutputTypeCountOther_UserArgs
-  sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
+  sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+  other_User?: boolean | UserCountOutputTypeCountOther_UserArgs
 }
 
 /**
@@ -10199,6 +10199,20 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  */
 export type UserCountOutputTypeCountAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AuditLogWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelPermissionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChatAuditLogWhereInput
 }
 
 /**
@@ -10246,15 +10260,22 @@ export type UserCountOutputTypeCountMessageArgs<ExtArgs extends runtime.Types.Ex
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountNotificationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.NotificationWhereInput
+export type UserCountOutputTypeCountMessageReadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageReadWhereInput
 }
 
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountPushSubscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.PushSubscriptionWhereInput
+export type UserCountOutputTypeCountMessageReminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageReminderWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountNotificationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
 }
 
 /**
@@ -10269,6 +10290,13 @@ export type UserCountOutputTypeCountProjectArgs<ExtArgs extends runtime.Types.Ex
  */
 export type UserCountOutputTypeCountProjectMemberArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ProjectMemberWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPushSubscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PushSubscriptionWhereInput
 }
 
 /**
@@ -10290,6 +10318,13 @@ export type UserCountOutputTypeCountReportRecipientArgs<ExtArgs extends runtime.
  */
 export type UserCountOutputTypeCountReportTemplateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ReportTemplateWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountScheduledMessageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScheduledMessageWhereInput
 }
 
 /**
@@ -10330,43 +10365,8 @@ export type UserCountOutputTypeCountTaskMemberArgs<ExtArgs extends runtime.Types
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountMessageReadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.MessageReadWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChannelPermissionWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountScheduledMessageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ScheduledMessageWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountMessageReminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.MessageReminderWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChatAuditLogWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountOther_UserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserWhereInput
+export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AccountWhereInput
 }
 
 /**
@@ -10379,8 +10379,8 @@ export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.E
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.AccountWhereInput
+export type UserCountOutputTypeCountOther_UserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserWhereInput
 }
 
 
@@ -10423,34 +10423,34 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   quietHoursEnd?: boolean
   quietHoursDays?: boolean
   AuditLog?: boolean | Prisma.User$AuditLogArgs<ExtArgs>
+  ChannelPermission?: boolean | Prisma.User$ChannelPermissionArgs<ExtArgs>
+  ChatAuditLog?: boolean | Prisma.User$ChatAuditLogArgs<ExtArgs>
   Conversation?: boolean | Prisma.User$ConversationArgs<ExtArgs>
   ConversationMember?: boolean | Prisma.User$ConversationMemberArgs<ExtArgs>
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: boolean | Prisma.User$HRTimesheet_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs>
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: boolean | Prisma.User$HRTimesheet_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs>
   HRTimesheet_HRTimesheet_userIdToUser?: boolean | Prisma.User$HRTimesheet_HRTimesheet_userIdToUserArgs<ExtArgs>
   Message?: boolean | Prisma.User$MessageArgs<ExtArgs>
+  MessageRead?: boolean | Prisma.User$MessageReadArgs<ExtArgs>
+  MessageReminder?: boolean | Prisma.User$MessageReminderArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
-  PushSubscription?: boolean | Prisma.User$PushSubscriptionArgs<ExtArgs>
   Project?: boolean | Prisma.User$ProjectArgs<ExtArgs>
   ProjectMember?: boolean | Prisma.User$ProjectMemberArgs<ExtArgs>
+  PushSubscription?: boolean | Prisma.User$PushSubscriptionArgs<ExtArgs>
   Report?: boolean | Prisma.User$ReportArgs<ExtArgs>
   ReportRecipient?: boolean | Prisma.User$ReportRecipientArgs<ExtArgs>
   ReportTemplate?: boolean | Prisma.User$ReportTemplateArgs<ExtArgs>
+  ScheduledMessage?: boolean | Prisma.User$ScheduledMessageArgs<ExtArgs>
   Task_Task_createdByToUser?: boolean | Prisma.User$Task_Task_createdByToUserArgs<ExtArgs>
   Task_Task_evaluatedByToUser?: boolean | Prisma.User$Task_Task_evaluatedByToUserArgs<ExtArgs>
   TaskActivity?: boolean | Prisma.User$TaskActivityArgs<ExtArgs>
   TaskComment?: boolean | Prisma.User$TaskCommentArgs<ExtArgs>
   TaskMember?: boolean | Prisma.User$TaskMemberArgs<ExtArgs>
-  MessageRead?: boolean | Prisma.User$MessageReadArgs<ExtArgs>
-  ChannelPermission?: boolean | Prisma.User$ChannelPermissionArgs<ExtArgs>
-  ScheduledMessage?: boolean | Prisma.User$ScheduledMessageArgs<ExtArgs>
-  MessageReminder?: boolean | Prisma.User$MessageReminderArgs<ExtArgs>
-  ChatAuditLog?: boolean | Prisma.User$ChatAuditLogArgs<ExtArgs>
+  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
+  sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   Department?: boolean | Prisma.User$DepartmentArgs<ExtArgs>
   User?: boolean | Prisma.User$UserArgs<ExtArgs>
   other_User?: boolean | Prisma.User$other_UserArgs<ExtArgs>
-  sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
-  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -10581,34 +10581,34 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "role" | "avatar" | "departmentId" | "managerId" | "position" | "createdAt" | "updatedAt" | "emailVerified" | "image" | "enableTimesheetReminders" | "reminderTime" | "reminderDays" | "desktopNotificationsEnabled" | "emailNotificationsEnabled" | "notificationSoundEnabled" | "notificationSoundType" | "notificationSoundVolume" | "darkModeEnabled" | "accentColor" | "viewDensity" | "fontSize" | "language" | "dateFormat" | "hourFormat" | "timezone" | "highContrast" | "screenReaderMode" | "reduceMotion" | "weeklyGoal" | "lastSeenAt" | "quietHoursEnabled" | "quietHoursStart" | "quietHoursEnd" | "quietHoursDays", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   AuditLog?: boolean | Prisma.User$AuditLogArgs<ExtArgs>
+  ChannelPermission?: boolean | Prisma.User$ChannelPermissionArgs<ExtArgs>
+  ChatAuditLog?: boolean | Prisma.User$ChatAuditLogArgs<ExtArgs>
   Conversation?: boolean | Prisma.User$ConversationArgs<ExtArgs>
   ConversationMember?: boolean | Prisma.User$ConversationMemberArgs<ExtArgs>
   HRTimesheet_HRTimesheet_managerSignedByIdToUser?: boolean | Prisma.User$HRTimesheet_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs>
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: boolean | Prisma.User$HRTimesheet_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs>
   HRTimesheet_HRTimesheet_userIdToUser?: boolean | Prisma.User$HRTimesheet_HRTimesheet_userIdToUserArgs<ExtArgs>
   Message?: boolean | Prisma.User$MessageArgs<ExtArgs>
+  MessageRead?: boolean | Prisma.User$MessageReadArgs<ExtArgs>
+  MessageReminder?: boolean | Prisma.User$MessageReminderArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
-  PushSubscription?: boolean | Prisma.User$PushSubscriptionArgs<ExtArgs>
   Project?: boolean | Prisma.User$ProjectArgs<ExtArgs>
   ProjectMember?: boolean | Prisma.User$ProjectMemberArgs<ExtArgs>
+  PushSubscription?: boolean | Prisma.User$PushSubscriptionArgs<ExtArgs>
   Report?: boolean | Prisma.User$ReportArgs<ExtArgs>
   ReportRecipient?: boolean | Prisma.User$ReportRecipientArgs<ExtArgs>
   ReportTemplate?: boolean | Prisma.User$ReportTemplateArgs<ExtArgs>
+  ScheduledMessage?: boolean | Prisma.User$ScheduledMessageArgs<ExtArgs>
   Task_Task_createdByToUser?: boolean | Prisma.User$Task_Task_createdByToUserArgs<ExtArgs>
   Task_Task_evaluatedByToUser?: boolean | Prisma.User$Task_Task_evaluatedByToUserArgs<ExtArgs>
   TaskActivity?: boolean | Prisma.User$TaskActivityArgs<ExtArgs>
   TaskComment?: boolean | Prisma.User$TaskCommentArgs<ExtArgs>
   TaskMember?: boolean | Prisma.User$TaskMemberArgs<ExtArgs>
-  MessageRead?: boolean | Prisma.User$MessageReadArgs<ExtArgs>
-  ChannelPermission?: boolean | Prisma.User$ChannelPermissionArgs<ExtArgs>
-  ScheduledMessage?: boolean | Prisma.User$ScheduledMessageArgs<ExtArgs>
-  MessageReminder?: boolean | Prisma.User$MessageReminderArgs<ExtArgs>
-  ChatAuditLog?: boolean | Prisma.User$ChatAuditLogArgs<ExtArgs>
+  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
+  sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   Department?: boolean | Prisma.User$DepartmentArgs<ExtArgs>
   User?: boolean | Prisma.User$UserArgs<ExtArgs>
   other_User?: boolean | Prisma.User$other_UserArgs<ExtArgs>
-  sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
-  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10624,34 +10624,34 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     AuditLog: Prisma.$AuditLogPayload<ExtArgs>[]
+    ChannelPermission: Prisma.$ChannelPermissionPayload<ExtArgs>[]
+    ChatAuditLog: Prisma.$ChatAuditLogPayload<ExtArgs>[]
     Conversation: Prisma.$ConversationPayload<ExtArgs>[]
     ConversationMember: Prisma.$ConversationMemberPayload<ExtArgs>[]
     HRTimesheet_HRTimesheet_managerSignedByIdToUser: Prisma.$HRTimesheetPayload<ExtArgs>[]
     HRTimesheet_HRTimesheet_odillonSignedByIdToUser: Prisma.$HRTimesheetPayload<ExtArgs>[]
     HRTimesheet_HRTimesheet_userIdToUser: Prisma.$HRTimesheetPayload<ExtArgs>[]
     Message: Prisma.$MessagePayload<ExtArgs>[]
+    MessageRead: Prisma.$MessageReadPayload<ExtArgs>[]
+    MessageReminder: Prisma.$MessageReminderPayload<ExtArgs>[]
     Notification: Prisma.$NotificationPayload<ExtArgs>[]
-    PushSubscription: Prisma.$PushSubscriptionPayload<ExtArgs>[]
     Project: Prisma.$ProjectPayload<ExtArgs>[]
     ProjectMember: Prisma.$ProjectMemberPayload<ExtArgs>[]
+    PushSubscription: Prisma.$PushSubscriptionPayload<ExtArgs>[]
     Report: Prisma.$ReportPayload<ExtArgs>[]
     ReportRecipient: Prisma.$ReportRecipientPayload<ExtArgs>[]
     ReportTemplate: Prisma.$ReportTemplatePayload<ExtArgs>[]
+    ScheduledMessage: Prisma.$ScheduledMessagePayload<ExtArgs>[]
     Task_Task_createdByToUser: Prisma.$TaskPayload<ExtArgs>[]
     Task_Task_evaluatedByToUser: Prisma.$TaskPayload<ExtArgs>[]
     TaskActivity: Prisma.$TaskActivityPayload<ExtArgs>[]
     TaskComment: Prisma.$TaskCommentPayload<ExtArgs>[]
     TaskMember: Prisma.$TaskMemberPayload<ExtArgs>[]
-    MessageRead: Prisma.$MessageReadPayload<ExtArgs>[]
-    ChannelPermission: Prisma.$ChannelPermissionPayload<ExtArgs>[]
-    ScheduledMessage: Prisma.$ScheduledMessagePayload<ExtArgs>[]
-    MessageReminder: Prisma.$MessageReminderPayload<ExtArgs>[]
-    ChatAuditLog: Prisma.$ChatAuditLogPayload<ExtArgs>[]
+    accounts: Prisma.$AccountPayload<ExtArgs>[]
+    sessions: Prisma.$SessionPayload<ExtArgs>[]
     Department: Prisma.$DepartmentPayload<ExtArgs> | null
     User: Prisma.$UserPayload<ExtArgs> | null
     other_User: Prisma.$UserPayload<ExtArgs>[]
-    sessions: Prisma.$SessionPayload<ExtArgs>[]
-    accounts: Prisma.$AccountPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -11086,34 +11086,34 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   AuditLog<T extends Prisma.User$AuditLogArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$AuditLogArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ChannelPermission<T extends Prisma.User$ChannelPermissionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ChannelPermissionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ChatAuditLog<T extends Prisma.User$ChatAuditLogArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ChatAuditLogArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Conversation<T extends Prisma.User$ConversationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ConversationArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ConversationMember<T extends Prisma.User$ConversationMemberArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ConversationMemberArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   HRTimesheet_HRTimesheet_managerSignedByIdToUser<T extends Prisma.User$HRTimesheet_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$HRTimesheet_HRTimesheet_managerSignedByIdToUserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HRTimesheetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser<T extends Prisma.User$HRTimesheet_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$HRTimesheet_HRTimesheet_odillonSignedByIdToUserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HRTimesheetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   HRTimesheet_HRTimesheet_userIdToUser<T extends Prisma.User$HRTimesheet_HRTimesheet_userIdToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$HRTimesheet_HRTimesheet_userIdToUserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HRTimesheetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Message<T extends Prisma.User$MessageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$MessageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  MessageRead<T extends Prisma.User$MessageReadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$MessageReadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  MessageReminder<T extends Prisma.User$MessageReminderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$MessageReminderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Notification<T extends Prisma.User$NotificationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotificationArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  PushSubscription<T extends Prisma.User$PushSubscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$PushSubscriptionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Project<T extends Prisma.User$ProjectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ProjectArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ProjectMember<T extends Prisma.User$ProjectMemberArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ProjectMemberArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  PushSubscription<T extends Prisma.User$PushSubscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$PushSubscriptionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Report<T extends Prisma.User$ReportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ReportArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ReportRecipient<T extends Prisma.User$ReportRecipientArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ReportRecipientArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportRecipientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ReportTemplate<T extends Prisma.User$ReportTemplateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ReportTemplateArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ScheduledMessage<T extends Prisma.User$ScheduledMessageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ScheduledMessageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Task_Task_createdByToUser<T extends Prisma.User$Task_Task_createdByToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$Task_Task_createdByToUserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Task_Task_evaluatedByToUser<T extends Prisma.User$Task_Task_evaluatedByToUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$Task_Task_evaluatedByToUserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   TaskActivity<T extends Prisma.User$TaskActivityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$TaskActivityArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   TaskComment<T extends Prisma.User$TaskCommentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$TaskCommentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   TaskMember<T extends Prisma.User$TaskMemberArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$TaskMemberArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  MessageRead<T extends Prisma.User$MessageReadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$MessageReadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  ChannelPermission<T extends Prisma.User$ChannelPermissionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ChannelPermissionArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  ScheduledMessage<T extends Prisma.User$ScheduledMessageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ScheduledMessageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  MessageReminder<T extends Prisma.User$MessageReminderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$MessageReminderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  ChatAuditLog<T extends Prisma.User$ChatAuditLogArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ChatAuditLogArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Department<T extends Prisma.User$DepartmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$DepartmentArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   User<T extends Prisma.User$UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$UserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   other_User<T extends Prisma.User$other_UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$other_UserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11600,6 +11600,54 @@ export type User$AuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 }
 
 /**
+ * User.ChannelPermission
+ */
+export type User$ChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelPermission
+   */
+  select?: Prisma.ChannelPermissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelPermission
+   */
+  omit?: Prisma.ChannelPermissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelPermissionInclude<ExtArgs> | null
+  where?: Prisma.ChannelPermissionWhereInput
+  orderBy?: Prisma.ChannelPermissionOrderByWithRelationInput | Prisma.ChannelPermissionOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelPermissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChannelPermissionScalarFieldEnum | Prisma.ChannelPermissionScalarFieldEnum[]
+}
+
+/**
+ * User.ChatAuditLog
+ */
+export type User$ChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChatAuditLog
+   */
+  select?: Prisma.ChatAuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChatAuditLog
+   */
+  omit?: Prisma.ChatAuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChatAuditLogInclude<ExtArgs> | null
+  where?: Prisma.ChatAuditLogWhereInput
+  orderBy?: Prisma.ChatAuditLogOrderByWithRelationInput | Prisma.ChatAuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.ChatAuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatAuditLogScalarFieldEnum | Prisma.ChatAuditLogScalarFieldEnum[]
+}
+
+/**
  * User.Conversation
  */
 export type User$ConversationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -11744,6 +11792,54 @@ export type User$MessageArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 }
 
 /**
+ * User.MessageRead
+ */
+export type User$MessageReadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MessageRead
+   */
+  select?: Prisma.MessageReadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MessageRead
+   */
+  omit?: Prisma.MessageReadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageReadInclude<ExtArgs> | null
+  where?: Prisma.MessageReadWhereInput
+  orderBy?: Prisma.MessageReadOrderByWithRelationInput | Prisma.MessageReadOrderByWithRelationInput[]
+  cursor?: Prisma.MessageReadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageReadScalarFieldEnum | Prisma.MessageReadScalarFieldEnum[]
+}
+
+/**
+ * User.MessageReminder
+ */
+export type User$MessageReminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MessageReminder
+   */
+  select?: Prisma.MessageReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MessageReminder
+   */
+  omit?: Prisma.MessageReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageReminderInclude<ExtArgs> | null
+  where?: Prisma.MessageReminderWhereInput
+  orderBy?: Prisma.MessageReminderOrderByWithRelationInput | Prisma.MessageReminderOrderByWithRelationInput[]
+  cursor?: Prisma.MessageReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageReminderScalarFieldEnum | Prisma.MessageReminderScalarFieldEnum[]
+}
+
+/**
  * User.Notification
  */
 export type User$NotificationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -11765,30 +11861,6 @@ export type User$NotificationArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
-}
-
-/**
- * User.PushSubscription
- */
-export type User$PushSubscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the PushSubscription
-   */
-  select?: Prisma.PushSubscriptionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the PushSubscription
-   */
-  omit?: Prisma.PushSubscriptionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.PushSubscriptionInclude<ExtArgs> | null
-  where?: Prisma.PushSubscriptionWhereInput
-  orderBy?: Prisma.PushSubscriptionOrderByWithRelationInput | Prisma.PushSubscriptionOrderByWithRelationInput[]
-  cursor?: Prisma.PushSubscriptionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.PushSubscriptionScalarFieldEnum | Prisma.PushSubscriptionScalarFieldEnum[]
 }
 
 /**
@@ -11837,6 +11909,30 @@ export type User$ProjectMemberArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ProjectMemberScalarFieldEnum | Prisma.ProjectMemberScalarFieldEnum[]
+}
+
+/**
+ * User.PushSubscription
+ */
+export type User$PushSubscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PushSubscription
+   */
+  select?: Prisma.PushSubscriptionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PushSubscription
+   */
+  omit?: Prisma.PushSubscriptionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PushSubscriptionInclude<ExtArgs> | null
+  where?: Prisma.PushSubscriptionWhereInput
+  orderBy?: Prisma.PushSubscriptionOrderByWithRelationInput | Prisma.PushSubscriptionOrderByWithRelationInput[]
+  cursor?: Prisma.PushSubscriptionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PushSubscriptionScalarFieldEnum | Prisma.PushSubscriptionScalarFieldEnum[]
 }
 
 /**
@@ -11909,6 +12005,30 @@ export type User$ReportTemplateArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ReportTemplateScalarFieldEnum | Prisma.ReportTemplateScalarFieldEnum[]
+}
+
+/**
+ * User.ScheduledMessage
+ */
+export type User$ScheduledMessageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScheduledMessage
+   */
+  select?: Prisma.ScheduledMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScheduledMessage
+   */
+  omit?: Prisma.ScheduledMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScheduledMessageInclude<ExtArgs> | null
+  where?: Prisma.ScheduledMessageWhereInput
+  orderBy?: Prisma.ScheduledMessageOrderByWithRelationInput | Prisma.ScheduledMessageOrderByWithRelationInput[]
+  cursor?: Prisma.ScheduledMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScheduledMessageScalarFieldEnum | Prisma.ScheduledMessageScalarFieldEnum[]
 }
 
 /**
@@ -12032,123 +12152,51 @@ export type User$TaskMemberArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 /**
- * User.MessageRead
+ * User.accounts
  */
-export type User$MessageReadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the MessageRead
+   * Select specific fields to fetch from the Account
    */
-  select?: Prisma.MessageReadSelect<ExtArgs> | null
+  select?: Prisma.AccountSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the MessageRead
+   * Omit specific fields from the Account
    */
-  omit?: Prisma.MessageReadOmit<ExtArgs> | null
+  omit?: Prisma.AccountOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.MessageReadInclude<ExtArgs> | null
-  where?: Prisma.MessageReadWhereInput
-  orderBy?: Prisma.MessageReadOrderByWithRelationInput | Prisma.MessageReadOrderByWithRelationInput[]
-  cursor?: Prisma.MessageReadWhereUniqueInput
+  include?: Prisma.AccountInclude<ExtArgs> | null
+  where?: Prisma.AccountWhereInput
+  orderBy?: Prisma.AccountOrderByWithRelationInput | Prisma.AccountOrderByWithRelationInput[]
+  cursor?: Prisma.AccountWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.MessageReadScalarFieldEnum | Prisma.MessageReadScalarFieldEnum[]
+  distinct?: Prisma.AccountScalarFieldEnum | Prisma.AccountScalarFieldEnum[]
 }
 
 /**
- * User.ChannelPermission
+ * User.sessions
  */
-export type User$ChannelPermissionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ChannelPermission
+   * Select specific fields to fetch from the Session
    */
-  select?: Prisma.ChannelPermissionSelect<ExtArgs> | null
+  select?: Prisma.SessionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ChannelPermission
+   * Omit specific fields from the Session
    */
-  omit?: Prisma.ChannelPermissionOmit<ExtArgs> | null
+  omit?: Prisma.SessionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ChannelPermissionInclude<ExtArgs> | null
-  where?: Prisma.ChannelPermissionWhereInput
-  orderBy?: Prisma.ChannelPermissionOrderByWithRelationInput | Prisma.ChannelPermissionOrderByWithRelationInput[]
-  cursor?: Prisma.ChannelPermissionWhereUniqueInput
+  include?: Prisma.SessionInclude<ExtArgs> | null
+  where?: Prisma.SessionWhereInput
+  orderBy?: Prisma.SessionOrderByWithRelationInput | Prisma.SessionOrderByWithRelationInput[]
+  cursor?: Prisma.SessionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ChannelPermissionScalarFieldEnum | Prisma.ChannelPermissionScalarFieldEnum[]
-}
-
-/**
- * User.ScheduledMessage
- */
-export type User$ScheduledMessageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ScheduledMessage
-   */
-  select?: Prisma.ScheduledMessageSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ScheduledMessage
-   */
-  omit?: Prisma.ScheduledMessageOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ScheduledMessageInclude<ExtArgs> | null
-  where?: Prisma.ScheduledMessageWhereInput
-  orderBy?: Prisma.ScheduledMessageOrderByWithRelationInput | Prisma.ScheduledMessageOrderByWithRelationInput[]
-  cursor?: Prisma.ScheduledMessageWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ScheduledMessageScalarFieldEnum | Prisma.ScheduledMessageScalarFieldEnum[]
-}
-
-/**
- * User.MessageReminder
- */
-export type User$MessageReminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the MessageReminder
-   */
-  select?: Prisma.MessageReminderSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the MessageReminder
-   */
-  omit?: Prisma.MessageReminderOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.MessageReminderInclude<ExtArgs> | null
-  where?: Prisma.MessageReminderWhereInput
-  orderBy?: Prisma.MessageReminderOrderByWithRelationInput | Prisma.MessageReminderOrderByWithRelationInput[]
-  cursor?: Prisma.MessageReminderWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.MessageReminderScalarFieldEnum | Prisma.MessageReminderScalarFieldEnum[]
-}
-
-/**
- * User.ChatAuditLog
- */
-export type User$ChatAuditLogArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChatAuditLog
-   */
-  select?: Prisma.ChatAuditLogSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChatAuditLog
-   */
-  omit?: Prisma.ChatAuditLogOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChatAuditLogInclude<ExtArgs> | null
-  where?: Prisma.ChatAuditLogWhereInput
-  orderBy?: Prisma.ChatAuditLogOrderByWithRelationInput | Prisma.ChatAuditLogOrderByWithRelationInput[]
-  cursor?: Prisma.ChatAuditLogWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ChatAuditLogScalarFieldEnum | Prisma.ChatAuditLogScalarFieldEnum[]
+  distinct?: Prisma.SessionScalarFieldEnum | Prisma.SessionScalarFieldEnum[]
 }
 
 /**
@@ -12211,54 +12259,6 @@ export type User$other_UserArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
-}
-
-/**
- * User.sessions
- */
-export type User$sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Session
-   */
-  select?: Prisma.SessionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Session
-   */
-  omit?: Prisma.SessionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SessionInclude<ExtArgs> | null
-  where?: Prisma.SessionWhereInput
-  orderBy?: Prisma.SessionOrderByWithRelationInput | Prisma.SessionOrderByWithRelationInput[]
-  cursor?: Prisma.SessionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.SessionScalarFieldEnum | Prisma.SessionScalarFieldEnum[]
-}
-
-/**
- * User.accounts
- */
-export type User$accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Account
-   */
-  select?: Prisma.AccountSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Account
-   */
-  omit?: Prisma.AccountOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AccountInclude<ExtArgs> | null
-  where?: Prisma.AccountWhereInput
-  orderBy?: Prisma.AccountOrderByWithRelationInput | Prisma.AccountOrderByWithRelationInput[]
-  cursor?: Prisma.AccountWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.AccountScalarFieldEnum | Prisma.AccountScalarFieldEnum[]
 }
 
 /**

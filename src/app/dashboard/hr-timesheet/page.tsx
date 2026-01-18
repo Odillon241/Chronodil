@@ -262,6 +262,7 @@ export default function HRTimesheetPage() {
         statusOptions={statusOptions}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        canExport={canViewPendingTab}
       />
 
       {isLoading ? (

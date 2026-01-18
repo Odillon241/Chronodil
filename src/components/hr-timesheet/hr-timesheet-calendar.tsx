@@ -9,14 +9,11 @@ import {
     CalendarDatePagination,
     CalendarDatePicker,
     CalendarHeader,
-    CalendarItem,
     CalendarMonthPicker,
     CalendarProvider,
     CalendarYearPicker,
     type CalendarFeature,
 } from "@/components/ui/shadcn-io/calendar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface HRTimesheet {
     id: string;
@@ -35,30 +32,47 @@ interface HRTimesheetCalendarProps {
 }
 
 // Map status to colors
-const STATUS_COLORS: Record<string, string> = {
-    DRAFT: "#94a3b8", // slate-400
-    PENDING: "#facc15", // yellow-400
-    MANAGER_APPROVED: "#60a5fa", // blue-400
-    APPROVED: "#4ade80", // green-400
-    REJECTED: "#ef4444", // red-500
+// Map status to colors (bg = background, fg = foreground/indicator)
+const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
+    DRAFT: { bg: "#f1f5f9", fg: "#64748b" }, // slate-100 / slate-500
+    PENDING: { bg: "#fef9c3", fg: "#ca8a04" }, // yellow-100 / yellow-600
+    MANAGER_APPROVED: { bg: "#dbeafe", fg: "#2563eb" }, // blue-100 / blue-600
+    APPROVED: { bg: "#dcfce7", fg: "#16a34a" }, // green-100 / green-600
+    REJECTED: { bg: "#fee2e2", fg: "#dc2626" }, // red-100 / red-600
 };
+
+// Map status to labels
+const STATUS_LABELS: Record<string, string> = {
+    DRAFT: "Brouillon",
+    PENDING: "En attente",
+    MANAGER_APPROVED: "Validé Manager",
+    APPROVED: "Validé",
+    REJECTED: "Rejeté",
+};
+
+// Fallback color
+const DEFAULT_COLOR = { bg: "#f1f5f9", fg: "#64748b" };
 
 export function HRTimesheetCalendar({ timesheets, onView }: HRTimesheetCalendarProps) {
     // Transform timesheets to CalendarFeatures
     const features = useMemo<CalendarFeature[]>(() => {
-        return timesheets.map((ts) => ({
-            id: ts.id,
-            name: `${ts.employeeName} (${ts.totalHours}h)`,
-            startAt: new Date(ts.weekStartDate),
-            endAt: new Date(ts.weekEndDate),
-            status: {
-                color: STATUS_COLORS[ts.status] || STATUS_COLORS.DRAFT,
-            },
-        }));
+        return timesheets.map((ts) => {
+            const colors = STATUS_COLORS[ts.status] || DEFAULT_COLOR;
+            return {
+                id: ts.id,
+                name: `${ts.employeeName} (${ts.totalHours}h) - ${STATUS_LABELS[ts.status] || ts.status}`,
+                startAt: new Date(ts.weekStartDate),
+                endAt: new Date(ts.weekEndDate),
+                status: {
+                    color: colors.fg,
+                    backgroundColor: colors.bg,
+                },
+            };
+        });
     }, [timesheets]);
 
     return (
-        <div className="h-[600px] border rounded-md overflow-hidden flex flex-col">
+        <div className="border rounded-md overflow-hidden flex flex-col bg-background">
             <CalendarProvider>
                 <CalendarDate className="flex-none">
                     <CalendarDatePicker>
@@ -68,15 +82,10 @@ export function HRTimesheetCalendar({ timesheets, onView }: HRTimesheetCalendarP
                     <CalendarDatePagination />
                 </CalendarDate>
                 <CalendarHeader className="flex-none" />
-                <CalendarBody features={features} className="overflow-y-auto">
-                    {({ feature }) => (
-                        <CalendarItem
-                            feature={feature}
-                            onClick={() => onView(feature.id)}
-                            className="mb-1"
-                        />
-                    )}
-                </CalendarBody>
+                <CalendarBody
+                    features={features}
+                    onFeatureClick={(feature) => onView(feature.id)}
+                />
             </CalendarProvider>
         </div>
     );

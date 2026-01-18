@@ -1,16 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, List, CalendarDays, ChartGantt } from "lucide-react";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { SearchWithFilters } from "@/components/ui/search-with-filters";
+import { List, CalendarDays, ChartGantt } from "lucide-react";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
+import { HRTimesheetExportMenu } from "@/components/hr-timesheet/hr-timesheet-export-menu";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface HRTimesheetToolbarProps {
@@ -23,6 +17,7 @@ interface HRTimesheetToolbarProps {
     statusOptions: { id: string; label: string; count?: number }[];
     viewMode: "list" | "calendar" | "gantt";
     onViewModeChange: (mode: "list" | "calendar" | "gantt") => void;
+    canExport?: boolean;
 }
 
 export function HRTimesheetToolbar({
@@ -35,6 +30,7 @@ export function HRTimesheetToolbar({
     statusOptions,
     viewMode,
     onViewModeChange,
+    canExport = false,
 }: HRTimesheetToolbarProps) {
     return (
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -66,82 +62,61 @@ export function HRTimesheetToolbar({
                 ))}
             </div>
 
-            {/* View Switcher */}
-            <div className="flex items-center border rounded-lg p-1 bg-muted/20">
-                <Button
-                    variant={viewMode === "list" ? "secondary" : "ghost"}
-                    size="sm"
-                    onClick={() => onViewModeChange("list")}
-                    className="h-7 px-2"
-                    title="Vue Liste"
-                >
-                    <List className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant={viewMode === "calendar" ? "secondary" : "ghost"}
-                    size="sm"
-                    onClick={() => onViewModeChange("calendar")}
-                    className="h-7 px-2"
-                    title="Vue Calendrier"
-                >
-                    <CalendarDays className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant={viewMode === "gantt" ? "secondary" : "ghost"}
-                    size="sm"
-                    onClick={() => onViewModeChange("gantt")}
-                    className="h-7 px-2"
-                    title="Vue Gantt"
-                >
-                    <ChartGantt className="h-4 w-4" />
-                </Button>
+            {/* View Switcher + Export */}
+            <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/20">
+                    <Button
+                        variant={viewMode === "list" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => onViewModeChange("list")}
+                        className="h-7 px-2"
+                        title="Vue Liste"
+                    >
+                        <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant={viewMode === "calendar" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => onViewModeChange("calendar")}
+                        className="h-7 px-2"
+                        title="Vue Calendrier"
+                    >
+                        <CalendarDays className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant={viewMode === "gantt" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => onViewModeChange("gantt")}
+                        className="h-7 px-2"
+                        title="Vue Gantt"
+                    >
+                        <ChartGantt className="h-4 w-4" />
+                    </Button>
+                </div>
+
+                {/* Export Button - Visible for managers only */}
+                {canExport && (
+                    <HRTimesheetExportMenu
+                        searchQuery={searchQuery}
+                        dateFrom={dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined}
+                        dateTo={dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined}
+                    />
+                )}
             </div>
 
-            {/* Barre de recherche et Date */}
-            <SearchWithFilters
-                value={searchQuery}
-                onChange={onSearchChange}
+            {/* Barre de recherche et Date via FilterButtonGroup */}
+            <FilterButtonGroup
+                searchValue={searchQuery}
+                onSearchChange={onSearchChange}
                 placeholder="Rechercher..."
-                variant="simple"
-                trailingContent={
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant={"outline"}
-                                size="sm"
-                                className={cn(
-                                    "h-9 justify-start text-left font-normal",
-                                    !dateRange && "text-muted-foreground"
-                                )}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange?.from ? (
-                                    dateRange.to ? (
-                                        <>
-                                            {format(dateRange.from, "LLL dd, y", { locale: fr })} -{" "}
-                                            {format(dateRange.to, "LLL dd, y", { locale: fr })}
-                                        </>
-                                    ) : (
-                                        format(dateRange.from, "LLL dd, y", { locale: fr })
-                                    )
-                                ) : (
-                                    <span>Dates</span>
-                                )}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                            <Calendar
-                                initialFocus
-                                mode="range"
-                                defaultMonth={dateRange?.from}
-                                selected={dateRange as any}
-                                onSelect={(range: any) => onDateRangeChange(range)}
-                                numberOfMonths={2}
-                                locale={fr}
-                            />
-                        </PopoverContent>
-                    </Popover>
-                }
+                startDate={dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined}
+                endDate={dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined}
+                onDateChange={(start, end) => {
+                    onDateRangeChange({
+                        from: start ? new Date(start) : undefined,
+                        to: end ? new Date(end) : undefined
+                    });
+                }}
             />
         </div>
     );

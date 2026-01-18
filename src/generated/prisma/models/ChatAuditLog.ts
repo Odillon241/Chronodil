@@ -218,8 +218,8 @@ export type ChatAuditLogWhereInput = {
   ipAddress?: Prisma.StringNullableFilter<"ChatAuditLog"> | string | null
   userAgent?: Prisma.StringNullableFilter<"ChatAuditLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChatAuditLog"> | Date | string
-  User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   Conversation?: Prisma.XOR<Prisma.ConversationNullableScalarRelationFilter, Prisma.ConversationWhereInput> | null
+  User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type ChatAuditLogOrderByWithRelationInput = {
@@ -233,8 +233,8 @@ export type ChatAuditLogOrderByWithRelationInput = {
   ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  User?: Prisma.UserOrderByWithRelationInput
   Conversation?: Prisma.ConversationOrderByWithRelationInput
+  User?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ChatAuditLogWhereUniqueInput = Prisma.AtLeast<{
@@ -251,8 +251,8 @@ export type ChatAuditLogWhereUniqueInput = Prisma.AtLeast<{
   ipAddress?: Prisma.StringNullableFilter<"ChatAuditLog"> | string | null
   userAgent?: Prisma.StringNullableFilter<"ChatAuditLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChatAuditLog"> | Date | string
-  User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   Conversation?: Prisma.XOR<Prisma.ConversationNullableScalarRelationFilter, Prisma.ConversationWhereInput> | null
+  User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id">
 
 export type ChatAuditLogOrderByWithAggregationInput = {
@@ -296,8 +296,8 @@ export type ChatAuditLogCreateInput = {
   ipAddress?: string | null
   userAgent?: string | null
   createdAt?: Date | string
-  User?: Prisma.UserCreateNestedOneWithoutChatAuditLogInput
   Conversation?: Prisma.ConversationCreateNestedOneWithoutChatAuditLogInput
+  User?: Prisma.UserCreateNestedOneWithoutChatAuditLogInput
 }
 
 export type ChatAuditLogUncheckedCreateInput = {
@@ -322,8 +322,8 @@ export type ChatAuditLogUpdateInput = {
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  User?: Prisma.UserUpdateOneWithoutChatAuditLogNestedInput
   Conversation?: Prisma.ConversationUpdateOneWithoutChatAuditLogNestedInput
+  User?: Prisma.UserUpdateOneWithoutChatAuditLogNestedInput
 }
 
 export type ChatAuditLogUncheckedUpdateInput = {
@@ -732,8 +732,8 @@ export type ChatAuditLogSelect<ExtArgs extends runtime.Types.Extensions.Internal
   ipAddress?: boolean
   userAgent?: boolean
   createdAt?: boolean
-  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
   Conversation?: boolean | Prisma.ChatAuditLog$ConversationArgs<ExtArgs>
+  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
 }, ExtArgs["result"]["chatAuditLog"]>
 
 export type ChatAuditLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -747,8 +747,8 @@ export type ChatAuditLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   ipAddress?: boolean
   userAgent?: boolean
   createdAt?: boolean
-  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
   Conversation?: boolean | Prisma.ChatAuditLog$ConversationArgs<ExtArgs>
+  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
 }, ExtArgs["result"]["chatAuditLog"]>
 
 export type ChatAuditLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -762,8 +762,8 @@ export type ChatAuditLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   ipAddress?: boolean
   userAgent?: boolean
   createdAt?: boolean
-  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
   Conversation?: boolean | Prisma.ChatAuditLog$ConversationArgs<ExtArgs>
+  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
 }, ExtArgs["result"]["chatAuditLog"]>
 
 export type ChatAuditLogSelectScalar = {
@@ -781,23 +781,23 @@ export type ChatAuditLogSelectScalar = {
 
 export type ChatAuditLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "action" | "entityType" | "entityId" | "conversationId" | "changes" | "ipAddress" | "userAgent" | "createdAt", ExtArgs["result"]["chatAuditLog"]>
 export type ChatAuditLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
   Conversation?: boolean | Prisma.ChatAuditLog$ConversationArgs<ExtArgs>
+  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
 }
 export type ChatAuditLogIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
   Conversation?: boolean | Prisma.ChatAuditLog$ConversationArgs<ExtArgs>
+  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
 }
 export type ChatAuditLogIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
   Conversation?: boolean | Prisma.ChatAuditLog$ConversationArgs<ExtArgs>
+  User?: boolean | Prisma.ChatAuditLog$UserArgs<ExtArgs>
 }
 
 export type $ChatAuditLogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ChatAuditLog"
   objects: {
-    User: Prisma.$UserPayload<ExtArgs> | null
     Conversation: Prisma.$ConversationPayload<ExtArgs> | null
+    User: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1204,8 +1204,8 @@ readonly fields: ChatAuditLogFieldRefs;
  */
 export interface Prisma__ChatAuditLogClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  User<T extends Prisma.ChatAuditLog$UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChatAuditLog$UserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   Conversation<T extends Prisma.ChatAuditLog$ConversationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChatAuditLog$ConversationArgs<ExtArgs>>): Prisma.Prisma__ConversationClient<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  User<T extends Prisma.ChatAuditLog$UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChatAuditLog$UserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1641,25 +1641,6 @@ export type ChatAuditLogDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
- * ChatAuditLog.User
- */
-export type ChatAuditLog$UserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the User
-   */
-  select?: Prisma.UserSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the User
-   */
-  omit?: Prisma.UserOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-}
-
-/**
  * ChatAuditLog.Conversation
  */
 export type ChatAuditLog$ConversationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1676,6 +1657,25 @@ export type ChatAuditLog$ConversationArgs<ExtArgs extends runtime.Types.Extensio
    */
   include?: Prisma.ConversationInclude<ExtArgs> | null
   where?: Prisma.ConversationWhereInput
+}
+
+/**
+ * ChatAuditLog.User
+ */
+export type ChatAuditLog$UserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

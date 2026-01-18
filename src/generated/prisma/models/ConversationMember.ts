@@ -34,6 +34,8 @@ export type ConversationMemberMinAggregateOutputType = {
   isMuted: boolean | null
   isArchived: boolean | null
   archivedAt: Date | null
+  isPinned: boolean | null
+  pinnedAt: Date | null
 }
 
 export type ConversationMemberMaxAggregateOutputType = {
@@ -46,6 +48,8 @@ export type ConversationMemberMaxAggregateOutputType = {
   isMuted: boolean | null
   isArchived: boolean | null
   archivedAt: Date | null
+  isPinned: boolean | null
+  pinnedAt: Date | null
 }
 
 export type ConversationMemberCountAggregateOutputType = {
@@ -58,6 +62,8 @@ export type ConversationMemberCountAggregateOutputType = {
   isMuted: number
   isArchived: number
   archivedAt: number
+  isPinned: number
+  pinnedAt: number
   _all: number
 }
 
@@ -72,6 +78,8 @@ export type ConversationMemberMinAggregateInputType = {
   isMuted?: true
   isArchived?: true
   archivedAt?: true
+  isPinned?: true
+  pinnedAt?: true
 }
 
 export type ConversationMemberMaxAggregateInputType = {
@@ -84,6 +92,8 @@ export type ConversationMemberMaxAggregateInputType = {
   isMuted?: true
   isArchived?: true
   archivedAt?: true
+  isPinned?: true
+  pinnedAt?: true
 }
 
 export type ConversationMemberCountAggregateInputType = {
@@ -96,6 +106,8 @@ export type ConversationMemberCountAggregateInputType = {
   isMuted?: true
   isArchived?: true
   archivedAt?: true
+  isPinned?: true
+  pinnedAt?: true
   _all?: true
 }
 
@@ -181,6 +193,8 @@ export type ConversationMemberGroupByOutputType = {
   isMuted: boolean
   isArchived: boolean
   archivedAt: Date | null
+  isPinned: boolean
+  pinnedAt: Date | null
   _count: ConversationMemberCountAggregateOutputType | null
   _min: ConversationMemberMinAggregateOutputType | null
   _max: ConversationMemberMaxAggregateOutputType | null
@@ -214,6 +228,8 @@ export type ConversationMemberWhereInput = {
   isMuted?: Prisma.BoolFilter<"ConversationMember"> | boolean
   isArchived?: Prisma.BoolFilter<"ConversationMember"> | boolean
   archivedAt?: Prisma.DateTimeNullableFilter<"ConversationMember"> | Date | string | null
+  isPinned?: Prisma.BoolFilter<"ConversationMember"> | boolean
+  pinnedAt?: Prisma.DateTimeNullableFilter<"ConversationMember"> | Date | string | null
   Conversation?: Prisma.XOR<Prisma.ConversationScalarRelationFilter, Prisma.ConversationWhereInput>
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -228,6 +244,8 @@ export type ConversationMemberOrderByWithRelationInput = {
   isMuted?: Prisma.SortOrder
   isArchived?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinnedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   Conversation?: Prisma.ConversationOrderByWithRelationInput
   User?: Prisma.UserOrderByWithRelationInput
 }
@@ -246,6 +264,8 @@ export type ConversationMemberWhereUniqueInput = Prisma.AtLeast<{
   isMuted?: Prisma.BoolFilter<"ConversationMember"> | boolean
   isArchived?: Prisma.BoolFilter<"ConversationMember"> | boolean
   archivedAt?: Prisma.DateTimeNullableFilter<"ConversationMember"> | Date | string | null
+  isPinned?: Prisma.BoolFilter<"ConversationMember"> | boolean
+  pinnedAt?: Prisma.DateTimeNullableFilter<"ConversationMember"> | Date | string | null
   Conversation?: Prisma.XOR<Prisma.ConversationScalarRelationFilter, Prisma.ConversationWhereInput>
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "conversationId_userId">
@@ -260,6 +280,8 @@ export type ConversationMemberOrderByWithAggregationInput = {
   isMuted?: Prisma.SortOrder
   isArchived?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinnedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ConversationMemberCountOrderByAggregateInput
   _max?: Prisma.ConversationMemberMaxOrderByAggregateInput
   _min?: Prisma.ConversationMemberMinOrderByAggregateInput
@@ -278,6 +300,8 @@ export type ConversationMemberScalarWhereWithAggregatesInput = {
   isMuted?: Prisma.BoolWithAggregatesFilter<"ConversationMember"> | boolean
   isArchived?: Prisma.BoolWithAggregatesFilter<"ConversationMember"> | boolean
   archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ConversationMember"> | Date | string | null
+  isPinned?: Prisma.BoolWithAggregatesFilter<"ConversationMember"> | boolean
+  pinnedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ConversationMember"> | Date | string | null
 }
 
 export type ConversationMemberCreateInput = {
@@ -288,6 +312,8 @@ export type ConversationMemberCreateInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
   Conversation: Prisma.ConversationCreateNestedOneWithoutConversationMemberInput
   User: Prisma.UserCreateNestedOneWithoutConversationMemberInput
 }
@@ -302,6 +328,8 @@ export type ConversationMemberUncheckedCreateInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
 }
 
 export type ConversationMemberUpdateInput = {
@@ -312,6 +340,8 @@ export type ConversationMemberUpdateInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   Conversation?: Prisma.ConversationUpdateOneRequiredWithoutConversationMemberNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutConversationMemberNestedInput
 }
@@ -326,6 +356,8 @@ export type ConversationMemberUncheckedUpdateInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ConversationMemberCreateManyInput = {
@@ -338,6 +370,8 @@ export type ConversationMemberCreateManyInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
 }
 
 export type ConversationMemberUpdateManyMutationInput = {
@@ -348,6 +382,8 @@ export type ConversationMemberUpdateManyMutationInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ConversationMemberUncheckedUpdateManyInput = {
@@ -360,6 +396,8 @@ export type ConversationMemberUncheckedUpdateManyInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ConversationMemberListRelationFilter = {
@@ -387,6 +425,8 @@ export type ConversationMemberCountOrderByAggregateInput = {
   isMuted?: Prisma.SortOrder
   isArchived?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinnedAt?: Prisma.SortOrder
 }
 
 export type ConversationMemberMaxOrderByAggregateInput = {
@@ -399,6 +439,8 @@ export type ConversationMemberMaxOrderByAggregateInput = {
   isMuted?: Prisma.SortOrder
   isArchived?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinnedAt?: Prisma.SortOrder
 }
 
 export type ConversationMemberMinOrderByAggregateInput = {
@@ -411,6 +453,8 @@ export type ConversationMemberMinOrderByAggregateInput = {
   isMuted?: Prisma.SortOrder
   isArchived?: Prisma.SortOrder
   archivedAt?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinnedAt?: Prisma.SortOrder
 }
 
 export type ConversationMemberCreateNestedManyWithoutConversationInput = {
@@ -505,6 +549,8 @@ export type ConversationMemberCreateWithoutConversationInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
   User: Prisma.UserCreateNestedOneWithoutConversationMemberInput
 }
 
@@ -517,6 +563,8 @@ export type ConversationMemberUncheckedCreateWithoutConversationInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
 }
 
 export type ConversationMemberCreateOrConnectWithoutConversationInput = {
@@ -558,6 +606,8 @@ export type ConversationMemberScalarWhereInput = {
   isMuted?: Prisma.BoolFilter<"ConversationMember"> | boolean
   isArchived?: Prisma.BoolFilter<"ConversationMember"> | boolean
   archivedAt?: Prisma.DateTimeNullableFilter<"ConversationMember"> | Date | string | null
+  isPinned?: Prisma.BoolFilter<"ConversationMember"> | boolean
+  pinnedAt?: Prisma.DateTimeNullableFilter<"ConversationMember"> | Date | string | null
 }
 
 export type ConversationMemberCreateWithoutUserInput = {
@@ -568,6 +618,8 @@ export type ConversationMemberCreateWithoutUserInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
   Conversation: Prisma.ConversationCreateNestedOneWithoutConversationMemberInput
 }
 
@@ -580,6 +632,8 @@ export type ConversationMemberUncheckedCreateWithoutUserInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
 }
 
 export type ConversationMemberCreateOrConnectWithoutUserInput = {
@@ -617,6 +671,8 @@ export type ConversationMemberCreateManyConversationInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
 }
 
 export type ConversationMemberUpdateWithoutConversationInput = {
@@ -627,6 +683,8 @@ export type ConversationMemberUpdateWithoutConversationInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   User?: Prisma.UserUpdateOneRequiredWithoutConversationMemberNestedInput
 }
 
@@ -639,6 +697,8 @@ export type ConversationMemberUncheckedUpdateWithoutConversationInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ConversationMemberUncheckedUpdateManyWithoutConversationInput = {
@@ -650,6 +710,8 @@ export type ConversationMemberUncheckedUpdateManyWithoutConversationInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ConversationMemberCreateManyUserInput = {
@@ -661,6 +723,8 @@ export type ConversationMemberCreateManyUserInput = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: Date | string | null
+  isPinned?: boolean
+  pinnedAt?: Date | string | null
 }
 
 export type ConversationMemberUpdateWithoutUserInput = {
@@ -671,6 +735,8 @@ export type ConversationMemberUpdateWithoutUserInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   Conversation?: Prisma.ConversationUpdateOneRequiredWithoutConversationMemberNestedInput
 }
 
@@ -683,6 +749,8 @@ export type ConversationMemberUncheckedUpdateWithoutUserInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ConversationMemberUncheckedUpdateManyWithoutUserInput = {
@@ -694,6 +762,8 @@ export type ConversationMemberUncheckedUpdateManyWithoutUserInput = {
   isMuted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -708,6 +778,8 @@ export type ConversationMemberSelect<ExtArgs extends runtime.Types.Extensions.In
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: boolean
+  isPinned?: boolean
+  pinnedAt?: boolean
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversationMember"]>
@@ -722,6 +794,8 @@ export type ConversationMemberSelectCreateManyAndReturn<ExtArgs extends runtime.
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: boolean
+  isPinned?: boolean
+  pinnedAt?: boolean
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversationMember"]>
@@ -736,6 +810,8 @@ export type ConversationMemberSelectUpdateManyAndReturn<ExtArgs extends runtime.
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: boolean
+  isPinned?: boolean
+  pinnedAt?: boolean
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversationMember"]>
@@ -750,9 +826,11 @@ export type ConversationMemberSelectScalar = {
   isMuted?: boolean
   isArchived?: boolean
   archivedAt?: boolean
+  isPinned?: boolean
+  pinnedAt?: boolean
 }
 
-export type ConversationMemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "userId" | "joinedAt" | "lastReadAt" | "isAdmin" | "isMuted" | "isArchived" | "archivedAt", ExtArgs["result"]["conversationMember"]>
+export type ConversationMemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "userId" | "joinedAt" | "lastReadAt" | "isAdmin" | "isMuted" | "isArchived" | "archivedAt" | "isPinned" | "pinnedAt", ExtArgs["result"]["conversationMember"]>
 export type ConversationMemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -782,6 +860,8 @@ export type $ConversationMemberPayload<ExtArgs extends runtime.Types.Extensions.
     isMuted: boolean
     isArchived: boolean
     archivedAt: Date | null
+    isPinned: boolean
+    pinnedAt: Date | null
   }, ExtArgs["result"]["conversationMember"]>
   composites: {}
 }
@@ -1216,6 +1296,8 @@ export interface ConversationMemberFieldRefs {
   readonly isMuted: Prisma.FieldRef<"ConversationMember", 'Boolean'>
   readonly isArchived: Prisma.FieldRef<"ConversationMember", 'Boolean'>
   readonly archivedAt: Prisma.FieldRef<"ConversationMember", 'DateTime'>
+  readonly isPinned: Prisma.FieldRef<"ConversationMember", 'Boolean'>
+  readonly pinnedAt: Prisma.FieldRef<"ConversationMember", 'DateTime'>
 }
     
 

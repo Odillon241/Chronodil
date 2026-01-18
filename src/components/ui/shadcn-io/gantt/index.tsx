@@ -1219,11 +1219,28 @@ export const GanttProvider: FC<GanttProviderProps> = ({
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollLeft =
-        scrollRef.current.scrollWidth / 2 - scrollRef.current.clientWidth / 2;
+      const today = new Date();
+      const timelineStartDate = new Date(timelineData[0].year, 0, 1);
+
+      const offset = getOffset(today, timelineStartDate, {
+        zoom,
+        range,
+        columnWidth,
+        sidebarWidth: 300,
+        headerHeight,
+        rowHeight,
+        onAddItem,
+        placeholderLength: 2,
+        timelineData,
+        ref: scrollRef,
+      });
+
+      // Center the view on today
+      scrollRef.current.scrollLeft = offset - scrollRef.current.clientWidth / 2;
       setScrollX(scrollRef.current.scrollLeft);
     }
-  }, [setScrollX]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, zoom]);
 
   // Update sidebar width when DOM is ready
   useEffect(() => {

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/context-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SearchWithFilters, FilterSection, FilterField } from "@/components/ui/search-with-filters";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
 import {
   Dialog,
   DialogContent,
@@ -21,13 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -222,92 +215,56 @@ export function HRTimesheetActivitiesTable({
     <>
       {/* Barre de recherche et filtres */}
       <div className="p-4 flex items-center justify-between gap-4">
-        <SearchWithFilters
-          value={searchQuery}
-          onChange={setSearchQuery}
+        <FilterButtonGroup
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
           placeholder="Rechercher une activité..."
-          variant="with-filter-icon"
-          hasActiveFilters={hasActiveFilters}
-          filterContent={
-            <FilterSection>
-              <FilterField label="Catégorie">
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Toutes les catégories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes les catégories</SelectItem>
-                    {uniqueCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FilterField>
 
-              <FilterField label="Type">
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tous les types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="OPERATIONAL">Opérationnel</SelectItem>
-                    <SelectItem value="REPORTING">Reporting</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FilterField>
+          // Filtre 1: Catégorie
+          firstFilterLabel="Catégorie"
+          filterOptions={[
+            { id: "all", label: "Toutes les catégories", value: "all" },
+            ...uniqueCategories.map(cat => ({ id: cat, label: cat, value: cat }))
+          ]}
+          selectedFilter={filterCategory}
+          onFilterChange={setFilterCategory}
 
-              <FilterField label="Statut">
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tous les statuts" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="COMPLETED">Terminé</SelectItem>
-                    <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FilterField>
+          // Filtre 2: Type
+          secondFilterLabel="Type"
+          secondFilterOptions={[
+            { id: "all", label: "Tous les types", value: "all" },
+            { id: "OPERATIONAL", label: "Opérationnel", value: "OPERATIONAL" },
+            { id: "REPORTING", label: "Reporting", value: "REPORTING" },
+          ]}
+          selectedSecondFilter={filterType}
+          onSecondFilterChange={setFilterType}
 
-              <FilterField label="Périodicité">
-                <Select value={filterPeriodicity} onValueChange={setFilterPeriodicity}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Toutes les périodicités" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes les périodicités</SelectItem>
-                    <SelectItem value="DAILY">Quotidien</SelectItem>
-                    <SelectItem value="WEEKLY">Hebdomadaire</SelectItem>
-                    <SelectItem value="MONTHLY">Mensuel</SelectItem>
-                    <SelectItem value="PUNCTUAL">Ponctuel</SelectItem>
-                    <SelectItem value="WEEKLY_MONTHLY">Hebdo/Mensuel</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FilterField>
-
-              {hasActiveFilters && (
-                <div className="flex justify-end pt-2 border-t">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setFilterCategory("all");
-                      setFilterType("all");
-                      setFilterStatus("all");
-                      setFilterPeriodicity("all");
-                    }}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Réinitialiser
-                  </Button>
-                </div>
-              )}
-            </FilterSection>
-          }
+          // Filtres supplémentaires: Statut & Périodicité
+          extraFilters={[
+            {
+              label: "Statut",
+              selected: filterStatus,
+              onChange: setFilterStatus,
+              options: [
+                { id: "all", label: "Tous les statuts", value: "all" },
+                { id: "COMPLETED", label: "Terminé", value: "COMPLETED" },
+                { id: "IN_PROGRESS", label: "En cours", value: "IN_PROGRESS" },
+              ]
+            },
+            {
+              label: "Périodicité",
+              selected: filterPeriodicity,
+              onChange: setFilterPeriodicity,
+              options: [
+                { id: "all", label: "Toutes les périodicités", value: "all" },
+                { id: "DAILY", label: "Quotidien", value: "DAILY" },
+                { id: "WEEKLY", label: "Hebdomadaire", value: "WEEKLY" },
+                { id: "MONTHLY", label: "Mensuel", value: "MONTHLY" },
+                { id: "PUNCTUAL", label: "Ponctuel", value: "PUNCTUAL" },
+                { id: "WEEKLY_MONTHLY", label: "Hebdo/Mensuel", value: "WEEKLY_MONTHLY" },
+              ]
+            }
+          ]}
         />
 
         {hasActiveFilters && (

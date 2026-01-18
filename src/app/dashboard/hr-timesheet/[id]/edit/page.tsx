@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/select";
 import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
 import { toast } from "sonner";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInDays, startOfWeek, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   getHRTimesheet,
@@ -356,6 +356,22 @@ export default function EditHRTimesheetPage() {
     }
   }
 
+  const handleUpdateDates = async (field: "weekStartDate" | "weekEndDate", date: Date) => {
+    if (!timesheet) return;
+    try {
+      const result = await updateHRTimesheet({
+        id: timesheetId,
+        data: { [field]: date }
+      });
+      if (result?.data) {
+        setTimesheet(prev => prev ? { ...prev, [field]: date } : null);
+        toast.success("Date mise à jour");
+      }
+    } catch (e) {
+      toast.error("Erreur lors de la mise à jour de la date");
+    }
+  }
+
 
   const handleTaskSelect = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -584,11 +600,46 @@ export default function EditHRTimesheetPage() {
             <span>/</span>
             <span>Édition</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3 flex-wrap">
             <span className="bg-primary/10 p-2 rounded-lg"><CalendarIcon className="h-6 w-6 text-primary" /></span>
-            Feuille du {format(new Date(timesheet.weekStartDate), "dd MMM", { locale: fr })}
-            <span className="text-muted-foreground mx-1">-</span>
-            {format(new Date(timesheet.weekEndDate), "dd MMM yyyy", { locale: fr })}
+            <span>Feuille du</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="hover:bg-muted/50 px-2 py-1 rounded-md transition-colors cursor-pointer underline decoration-dashed underline-offset-4 decoration-primary/40">
+                  {format(new Date(timesheet.weekStartDate), "dd MMM", { locale: fr })}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={new Date(timesheet.weekStartDate)}
+                  onSelect={(d) => {
+                    if (d) {
+                      const start = startOfWeek(d, { weekStartsOn: 1 });
+                      handleUpdateDates("weekStartDate", start);
+                      handleUpdateDates("weekEndDate", addDays(start, 4));
+                    }
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <span className="text-muted-foreground">-</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="hover:bg-muted/50 px-2 py-1 rounded-md transition-colors cursor-pointer underline decoration-dashed underline-offset-4 decoration-primary/40">
+                  {format(new Date(timesheet.weekEndDate), "dd MMM yyyy", { locale: fr })}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={new Date(timesheet.weekEndDate)}
+                  onSelect={(d) => d && handleUpdateDates("weekEndDate", d)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </h1>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline" className="text-xs uppercase tracking-widest">Brouillon</Badge>

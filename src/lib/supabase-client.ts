@@ -23,7 +23,7 @@ export function createClient(): SupabaseClient {
       },
       realtime: {
         params: {
-          eventsPerSecond: 10, // Limiter les événements pour éviter la surcharge
+          eventsPerSecond: 40, // Haute performance : fluidité maximale pour une réaction instantanée
         },
       },
     }

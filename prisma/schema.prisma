@@ -80,23 +80,23 @@ model Conversation {
   id                 String               @id
   type               ConversationType
   name               String?
-  description        String? // Description du canal
+  description        String?
   projectId          String?
   createdBy          String?
-  isPrivate          Boolean              @default(false) // Canal privé (sur invitation)
-  isShared           Boolean              @default(false) // Canal partagé (multi-organisations)
-  category           String? // Catégorie pour organisation
-  topic              String? // Sujet actuel du canal
-  purpose            String? // Objectif du canal
+  isPrivate          Boolean              @default(false)
+  isShared           Boolean              @default(false)
+  category           String?
+  topic              String?
+  purpose            String?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime
+  ChannelPermission  ChannelPermission[]
+  ChatAuditLog       ChatAuditLog[]       @relation("ChatAuditLogConversation")
   User               User?                @relation(fields: [createdBy], references: [id])
   Project            Project?             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   ConversationMember ConversationMember[]
   Message            Message[]
-  ChannelPermission  ChannelPermission[] // Permissions spécifiques au canal
   ScheduledMessage   ScheduledMessage[]   @relation("ScheduledMessageConversation")
-  ChatAuditLog       ChatAuditLog[]       @relation("ChatAuditLogConversation")
 
   @@index([createdAt])
   @@index([createdBy])
@@ -116,6 +116,8 @@ model ConversationMember {
   isMuted        Boolean      @default(false)
   isArchived     Boolean      @default(false)
   archivedAt     DateTime?
+  isPinned       Boolean      @default(false)
+  pinnedAt       DateTime?
   Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -123,6 +125,7 @@ model ConversationMember {
   @@index([conversationId])
   @@index([userId])
   @@index([userId, isArchived])
+  @@index([userId, isPinned])
 }
 
 model Department {
@@ -193,10 +196,10 @@ model HRTimesheet {
   createdAt                                DateTime          @default(now())
   updatedAt                                DateTime
   HRActivity                               HRActivity[]
-  Report                                   Report[]
   User_HRTimesheet_managerSignedByIdToUser User?             @relation("HRTimesheet_managerSignedByIdToUser", fields: [managerSignedById], references: [id])
   User_HRTimesheet_odillonSignedByIdToUser User?             @relation("HRTimesheet_odillonSignedByIdToUser", fields: [odillonSignedById], references: [id])
   User_HRTimesheet_userIdToUser            User              @relation("HRTimesheet_userIdToUser", fields: [userId], references: [id], onDelete: Cascade)
+  Report                                   Report[]
   Task                                     Task[]
 
   @@unique([userId, weekStartDate])
@@ -230,18 +233,18 @@ model Message {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
   replyToId       String?
-  threadId        String? // ID du thread parent (null si message principal)
-  threadCount     Int               @default(0) // Nombre de réponses dans le thread
-  isThreadRoot    Boolean           @default(false) // Si c'est la racine d'un thread
+  threadId        String?
+  threadCount     Int               @default(0)
+  isThreadRoot    Boolean           @default(false)
   reactions       Json?
   pinnedAt        DateTime?
   pinnedById      String?
   Conversation    Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   Message         Message?          @relation("MessageToMessage", fields: [replyToId], references: [id])
   other_Message   Message[]         @relation("MessageToMessage")
+  User            User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
   ThreadParent    Message?          @relation("ThreadMessages", fields: [threadId], references: [id])
   ThreadReplies   Message[]         @relation("ThreadMessages")
-  User            User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
   MessageRead     MessageRead[]
   MessageReminder MessageReminder[] @relation("MessageReminderMessage")
 
@@ -271,15 +274,15 @@ model MessageRead {
 model ChannelPermission {
   id               String       @id @default(cuid())
   conversationId   String
-  userId           String? // null = permission pour tous
-  role             String? // OWNER, ADMIN, MEMBER, GUEST
+  userId           String?
+  role             String?
   canPost          Boolean      @default(true)
   canEdit          Boolean      @default(false)
   canDelete        Boolean      @default(false)
   canAddMembers    Boolean      @default(false)
   canRemoveMembers Boolean      @default(false)
   canPinMessages   Boolean      @default(false)
-  canMentionAll    Boolean      @default(false) // @channel, @here
+  canMentionAll    Boolean      @default(false)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime
   Conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -293,16 +296,16 @@ model ChannelPermission {
 model ChatAuditLog {
   id             String        @id @default(cuid())
   userId         String?
-  action         String // CREATE_CHANNEL, DELETE_MESSAGE, ADD_MEMBER, etc.
-  entityType     String // CONVERSATION, MESSAGE, MEMBER, etc.
+  action         String
+  entityType     String
   entityId       String
   conversationId String?
-  changes        Json? // Changements effectués
+  changes        Json?
   ipAddress      String?
   userAgent      String?
   createdAt      DateTime      @default(now())
-  User           User?         @relation("ChatAuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
-  Conversation   Conversation? @relation("ChatAuditLogConversation", fields: [conversationId], references: [id], onDelete: SetNull)
+  Conversation   Conversation? @relation("ChatAuditLogConversation", fields: [conversationId], references: [id])
+  User           User?         @relation("ChatAuditLogUser", fields: [userId], references: [id])
 
   @@index([userId])
   @@index([entityType, entityId])
@@ -316,10 +319,10 @@ model ScheduledMessage {
   senderId       String
   content        String
   attachments    Json?
-  scheduledFor   DateTime // Date/heure d'envoi
-  sentAt         DateTime? // null si pas encore envoyé
+  scheduledFor   DateTime
+  sentAt         DateTime?
   isRecurring    Boolean      @default(false)
-  recurrenceRule String? // Cron expression ou règle de récurrence
+  recurrenceRule String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime
   Conversation   Conversation @relation("ScheduledMessageConversation", fields: [conversationId], references: [id], onDelete: Cascade)
@@ -335,8 +338,8 @@ model MessageReminder {
   id         String    @id @default(cuid())
   messageId  String
   userId     String
-  remindAt   DateTime // Date/heure du rappel
-  remindedAt DateTime? // null si pas encore rappelé
+  remindAt   DateTime
+  remindedAt DateTime?
   createdAt  DateTime  @default(now())
   Message    Message   @relation("MessageReminderMessage", fields: [messageId], references: [id], onDelete: Cascade)
   User       User      @relation("MessageReminderUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -434,8 +437,8 @@ model Report {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
   User            User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  ReportTemplate  ReportTemplate?   @relation(fields: [templateId], references: [id])
   HRTimesheet     HRTimesheet?      @relation(fields: [hrTimesheetId], references: [id])
+  ReportTemplate  ReportTemplate?   @relation(fields: [templateId], references: [id])
   ReportRecipient ReportRecipient[]
 
   @@index([createdAt])
@@ -474,8 +477,8 @@ model ReportTemplate {
   createdById     String
   createdAt       DateTime        @default(now())
   updatedAt       DateTime
-  User            User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
   Report          Report[]
+  User            User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@index([frequency])
   @@index([isActive])
@@ -511,8 +514,6 @@ model Session {
   @@index([userId])
   @@map("session")
 }
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 
 model Task {
   id                          String              @id
@@ -580,11 +581,6 @@ model Task {
   @@index([reminderDate])
   @@index([status])
   @@index([status, priority])
-  @@index([reminderDate, reminderNotifiedAt])
-  @@index([dueDate, overdueDays])
-  @@index([recurrence, isRecurringTemplate])
-  @@index([slaDeadline, slaStatus])
-  @@index([parentId, createdAt])
 }
 
 model TaskActivity {
@@ -676,35 +672,34 @@ model User {
   quietHoursEnd                                   String               @default("07:00")
   quietHoursDays                                  String[]             @default([])
   AuditLog                                        AuditLog[]
+  ChannelPermission                               ChannelPermission[]  @relation("ChannelPermissionUser")
+  ChatAuditLog                                    ChatAuditLog[]       @relation("ChatAuditLogUser")
   Conversation                                    Conversation[]
   ConversationMember                              ConversationMember[]
   HRTimesheet_HRTimesheet_managerSignedByIdToUser HRTimesheet[]        @relation("HRTimesheet_managerSignedByIdToUser")
   HRTimesheet_HRTimesheet_odillonSignedByIdToUser HRTimesheet[]        @relation("HRTimesheet_odillonSignedByIdToUser")
   HRTimesheet_HRTimesheet_userIdToUser            HRTimesheet[]        @relation("HRTimesheet_userIdToUser")
   Message                                         Message[]
+  MessageRead                                     MessageRead[]
+  MessageReminder                                 MessageReminder[]    @relation("MessageReminderUser")
   Notification                                    Notification[]
-  PushSubscription                                PushSubscription[]
   Project                                         Project[]
   ProjectMember                                   ProjectMember[]
+  PushSubscription                                PushSubscription[]
   Report                                          Report[]
   ReportRecipient                                 ReportRecipient[]
   ReportTemplate                                  ReportTemplate[]
+  ScheduledMessage                                ScheduledMessage[]   @relation("ScheduledMessageUser")
   Task_Task_createdByToUser                       Task[]               @relation("Task_createdByToUser")
   Task_Task_evaluatedByToUser                     Task[]               @relation("Task_evaluatedByToUser")
   TaskActivity                                    TaskActivity[]
   TaskComment                                     TaskComment[]
   TaskMember                                      TaskMember[]
-  MessageRead                                     MessageRead[]
-  ChannelPermission                               ChannelPermission[]  @relation("ChannelPermissionUser")
-  ScheduledMessage                                ScheduledMessage[]   @relation("ScheduledMessageUser")
-  MessageReminder                                 MessageReminder[]    @relation("MessageReminderUser")
-  ChatAuditLog                                    ChatAuditLog[]       @relation("ChatAuditLogUser")
+  accounts                                        Account[]            @relation("accounts")
+  sessions                                        Session[]            @relation("sessions")
   Department                                      Department?          @relation(fields: [departmentId], references: [id])
   User                                            User?                @relation("UserToUser", fields: [managerId], references: [id])
   other_User                                      User[]               @relation("UserToUser")
-
-  sessions Session[] @relation("sessions")
-  accounts Account[] @relation("accounts")
 
   @@index([departmentId])
   @@index([email])
@@ -730,7 +725,7 @@ enum ConversationType {
   DIRECT
   GROUP
   PROJECT
-  CHANNEL // Canal public/privé organisé
+  CHANNEL
 }
 
 enum HRActivityStatus {

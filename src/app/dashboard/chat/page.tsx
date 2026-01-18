@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { Card } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageSquare } from "lucide-react";
@@ -18,6 +18,8 @@ import {
   ChatCreateChannelDialogDynamic,
   ChatThreadViewDynamic,
 } from "@/components/features/chat-components-dynamic";
+
+import { ChatEmptyState } from "@/features/chat/components/chat-empty-state";
 
 import { useChatKeyboardShortcuts } from "@/hooks/use-chat-keyboard-shortcuts";
 import {
@@ -44,6 +46,7 @@ export default function ChatPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
@@ -139,7 +142,7 @@ export default function ChatPage() {
     conversationListRefreshRef.current = setTimeout(async () => {
       conversationListRefreshRef.current = null;
       await loadConversations();
-    }, 200);
+    }, 50); // Réduit de 200ms à 50ms pour plus de réactivité
   }, [loadConversations]);
 
   const scheduleConversationDetailRefresh = useCallback(
@@ -151,7 +154,7 @@ export default function ChatPage() {
       conversationDetailRefreshRef.current = setTimeout(async () => {
         conversationDetailRefreshRef.current = null;
         await loadConversation(conversationId);
-      }, 180);
+      }, 30); // Réduit de 180ms à 30ms pour plus de réactivité
     },
     [loadConversation]
   );
@@ -162,6 +165,7 @@ export default function ChatPage() {
       setLoading(true);
       await Promise.all([loadConversations(), loadUsersAndProjects()]);
       setLoading(false);
+      setIsInitialLoad(false); // Après le premier chargement, ne plus afficher le skeleton
     };
 
     if (currentUser) {
@@ -271,11 +275,12 @@ export default function ChatPage() {
   const handleRealtimeMessageChange = useCallback(
     (_eventType?: string, _messageId?: string, conversationId?: string) => {
       scheduleConversationsRefresh();
+      // Appel IMMEDIAT pour la conversation active (pas de debouncing)
       if (conversationId && selectedConversation?.id === conversationId) {
-        scheduleConversationDetailRefresh(conversationId);
+        loadConversation(conversationId);
       }
     },
-    [scheduleConversationDetailRefresh, scheduleConversationsRefresh, selectedConversation?.id]
+    [loadConversation, scheduleConversationsRefresh, selectedConversation?.id]
   );
 
   // Real-time updates pour le chat
@@ -302,13 +307,15 @@ export default function ChatPage() {
     "flex flex-col h-full min-h-0 overflow-hidden";
 
   // Pendant l'hydratation, afficher un état de chargement simple pour éviter les erreurs d'hydratation
-  if (!mounted || !currentUser || loading) {
+  // Afficher le skeleton seulement lors du premier chargement (pas de données existantes)
+  // Pour les rechargements, conserver le contenu visible et mettre à jour en arrière-plan
+  if (!mounted || !currentUser || (loading && isInitialLoad && conversations.length === 0)) {
     return (
-      <Card className={`${fullScreenClasses} bg-background border`} suppressHydrationWarning>
+      <div className={`${fullScreenClasses} bg-background`} suppressHydrationWarning>
         <div className="flex h-full w-full overflow-hidden max-w-full" suppressHydrationWarning>
           <div className="grid grid-cols-1 md:grid-cols-[350px_1fr] w-full h-full min-w-0 max-w-full" suppressHydrationWarning>
             {/* Sidebar Skeleton */}
-            <Card className="rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full" suppressHydrationWarning>
+            <div className="border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full" suppressHydrationWarning>
               <div className="flex flex-col h-full min-h-0 overflow-hidden w-full max-w-full" suppressHydrationWarning>
                 <div className="p-3 sm:p-4 border-b space-y-3 sm:space-y-4 shrink-0 w-full min-w-0">
                   <div className="flex items-center justify-between gap-2 min-w-0 w-full">
@@ -336,9 +343,9 @@ export default function ChatPage() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
             {/* Main Content Skeleton */}
-            <Card className="rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex" suppressHydrationWarning>
+            <div className="bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex" suppressHydrationWarning>
               <div className="flex flex-col h-full min-h-0">
                 <div className="p-3 sm:p-4 border-b flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -369,33 +376,19 @@ export default function ChatPage() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className={`${fullScreenClasses} bg-background border`} suppressHydrationWarning>
+    <div className={`${fullScreenClasses} bg-background`} suppressHydrationWarning>
       <div className="flex h-full w-full overflow-hidden max-w-full" suppressHydrationWarning>
         <div className={`grid w-full h-full min-w-0 max-w-full ${selectedThreadId ? 'grid-cols-1 md:grid-cols-[minmax(0,350px)_1fr_minmax(0,350px)]' : 'grid-cols-1 md:grid-cols-[minmax(0,350px)_1fr]'}`} suppressHydrationWarning>
           {/* Sidebar - Liste des conversations/canaux */}
-          <Card className={`rounded-none border-l-0 border-t-0 border-b-0 border-r md:border-r bg-background h-full flex flex-col overflow-hidden min-w-0 max-w-full w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
-            {/* Indicateur de connexion real-time */}
-            {!isRealtimeConnected && (
-              <div
-                className="px-3 py-1.5 bg-destructive/10 border-b border-destructive/20 flex items-center justify-between gap-2 cursor-pointer hover:bg-destructive/20 transition-colors"
-                onClick={reconnectRealtime}
-                title="Cliquez pour reconnecter"
-              >
-                <div className="flex items-center gap-2 text-xs text-destructive">
-                  <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                  <span>Connexion perdue</span>
-                </div>
-                <span className="text-xs text-destructive/70 underline">Reconnecter</span>
-              </div>
-            )}
+          <div className={`border-r bg-background h-full flex flex-col overflow-hidden overflow-x-hidden min-w-0 max-w-[350px] w-full ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
             {/* Toggle view mode */}
             <div className="p-2 border-b flex gap-2">
               <Button
@@ -438,10 +431,10 @@ export default function ChatPage() {
                 onUpdate={loadConversations}
               />
             )}
-          </Card>
+          </div>
 
           {/* Main Content - Messages */}
-          <Card className={`rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
+          <div className={`bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full w-full ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
             {selectedConversation ? (
               <ChatMessageList
                 conversation={selectedConversation}
@@ -457,39 +450,13 @@ export default function ChatPage() {
                 onManageMembersOpened={() => setOpenManageMembersOnSelect(false)}
               />
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-8">
-                <div className="max-w-md space-y-4 sm:space-y-6">
-                  <div className="bg-muted rounded-full h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center mx-auto">
-                    <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-xl sm:text-2xl font-semibold">
-                      Bienvenue dans la messagerie Chronodil
-                    </h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      Sélectionnez une conversation existante ou créez-en une nouvelle
-                      pour commencer à échanger avec vos collègues.
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                    <Button
-                      onClick={() => setNewChatDialogOpen(true)}
-                      className="bg-primary hover:bg-primary w-full sm:w-auto text-xs sm:text-sm"
-                      size="lg"
-                    >
-                      <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                      Nouvelle conversation
-                    </Button>
-
-                  </div>
-                </div>
-              </div>
+              <ChatEmptyState onNewChat={() => setNewChatDialogOpen(true)} />
             )}
-          </Card>
+          </div>
 
           {/* Thread View */}
           {selectedThreadId && selectedConversation && (
-            <Card className="rounded-none border-0 bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex border-l z-20">
+            <div className="bg-background h-full overflow-hidden flex flex-col min-w-0 max-w-full hidden md:flex border-l z-20">
               <ChatThreadViewDynamic
                 threadId={selectedThreadId}
                 conversationId={selectedConversation.id}
@@ -497,7 +464,7 @@ export default function ChatPage() {
                 onClose={() => setSelectedThreadId(null)}
                 onUpdate={handleRefreshConversation}
               />
-            </Card>
+            </div>
           )}
         </div>
 
@@ -523,6 +490,6 @@ export default function ChatPage() {
         {/* Global Search */}
 
       </div>
-    </Card>
+    </div>
   );
 }

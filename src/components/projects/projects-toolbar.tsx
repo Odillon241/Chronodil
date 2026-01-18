@@ -1,16 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Grid3x3, List, Calendar as CalendarIcon } from "lucide-react";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { SearchWithFilters } from "@/components/ui/search-with-filters";
+import { Grid3x3, List } from "lucide-react";
+import { FilterButtonGroup } from "@/components/ui/filter-button-group";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface ProjectsToolbarProps {
@@ -67,7 +60,7 @@ export function ProjectsToolbar({
             </div>
 
             {/* View Switcher */}
-            <div className="flex items-center border rounded-lg p-1 bg-muted/20">
+            <div className="flex items-center border rounded-lg p-1 bg-muted/20 gap-1">
                 <Button
                     variant={viewMode === "list" ? "secondary" : "ghost"}
                     size="sm"
@@ -88,52 +81,20 @@ export function ProjectsToolbar({
                 </Button>
             </div>
 
-            {/* Barre de recherche et Date */}
-            <div className="flex items-center gap-2">
-                <SearchWithFilters
-                    value={searchQuery}
-                    onChange={onSearchChange}
-                    placeholder="Rechercher un projet..."
-                    variant="simple"
-                />
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant={"outline"}
-                            size="sm"
-                            className={cn(
-                                "h-9 justify-start text-left font-normal",
-                                !dateRange && "text-muted-foreground"
-                            )}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {dateRange?.from ? (
-                                dateRange.to ? (
-                                    <>
-                                        {format(dateRange.from, "LLL dd, y", { locale: fr })} -{" "}
-                                        {format(dateRange.to, "LLL dd, y", { locale: fr })}
-                                    </>
-                                ) : (
-                                    format(dateRange.from, "LLL dd, y", { locale: fr })
-                                )
-                            ) : (
-                                <span>Dates</span>
-                            )}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                        <Calendar
-                            initialFocus
-                            mode="range"
-                            defaultMonth={dateRange?.from}
-                            selected={dateRange as any}
-                            onSelect={(range: any) => onDateRangeChange(range)}
-                            numberOfMonths={2}
-                            locale={fr}
-                        />
-                    </PopoverContent>
-                </Popover>
-            </div>
+            {/* Barre de recherche et Date via FilterButtonGroup */}
+            <FilterButtonGroup
+                searchValue={searchQuery}
+                onSearchChange={onSearchChange}
+                placeholder="Rechercher un projet..."
+                startDate={dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined}
+                endDate={dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined}
+                onDateChange={(start, end) => {
+                    onDateRangeChange({
+                        from: start ? new Date(start) : undefined,
+                        to: end ? new Date(end) : undefined
+                    });
+                }}
+            />
         </div>
     );
 }
