@@ -58,11 +58,18 @@ export default function ChatPage() {
   const [openManageMembersOnSelect, setOpenManageMembersOnSelect] = useState(false);
   const conversationListRefreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const conversationDetailRefreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ref pour éviter les dépendances circulaires dans les callbacks realtime
+  const selectedConversationIdRef = useRef<string | null>(null);
 
   // S'assurer que le composant est monté côté client avant de rendre le contenu
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Synchroniser la ref avec l'état pour éviter les dépendances circulaires
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedConversation?.id ?? null;
+  }, [selectedConversation?.id]);
 
   // Raccourcis clavier
   useChatKeyboardShortcuts({
@@ -265,22 +272,23 @@ export default function ChatPage() {
   const handleRealtimeConversationChange = useCallback(
     (_eventType?: string, conversationId?: string) => {
       scheduleConversationsRefresh();
-      if (conversationId && selectedConversation?.id === conversationId) {
+      // Utiliser la ref pour éviter les dépendances circulaires
+      if (conversationId && selectedConversationIdRef.current === conversationId) {
         scheduleConversationDetailRefresh(conversationId);
       }
     },
-    [scheduleConversationDetailRefresh, scheduleConversationsRefresh, selectedConversation?.id]
+    [scheduleConversationDetailRefresh, scheduleConversationsRefresh]
   );
 
   const handleRealtimeMessageChange = useCallback(
     (_eventType?: string, _messageId?: string, conversationId?: string) => {
       scheduleConversationsRefresh();
-      // Appel IMMEDIAT pour la conversation active (pas de debouncing)
-      if (conversationId && selectedConversation?.id === conversationId) {
+      // Utiliser la ref pour éviter les dépendances circulaires
+      if (conversationId && selectedConversationIdRef.current === conversationId) {
         loadConversation(conversationId);
       }
     },
-    [loadConversation, scheduleConversationsRefresh, selectedConversation?.id]
+    [loadConversation, scheduleConversationsRefresh]
   );
 
   // Real-time updates pour le chat

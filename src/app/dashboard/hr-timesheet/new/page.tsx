@@ -367,7 +367,7 @@ export default function NewHRTimesheetPage() {
   const filteredCatalog = selectedCategory ? catalog.filter(c => c.category === selectedCategory) : [];
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full pb-6">
+    <div className="flex flex-col gap-6 w-full pb-6 px-2">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -400,10 +400,10 @@ export default function NewHRTimesheetPage() {
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
 
-        {/* Left Column: General Info (1/3) */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Left Column: General Info */}
+        <div className="space-y-6 w-full max-w-[280px]">
           <Card className="border-border shadow-sm bg-card">
             <CardHeader className="pb-3 border-b bg-muted/30">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -496,8 +496,8 @@ export default function NewHRTimesheetPage() {
           </Card>
         </div>
 
-        {/* Right Column: Activities (2/3) */}
-        <div className="md:col-span-2 lg:col-span-2 space-y-4">
+        {/* Right Column: Activities */}
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-primary" />

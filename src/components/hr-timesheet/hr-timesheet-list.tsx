@@ -175,7 +175,10 @@ export function HRTimesheetList({
                         return (
                             <ContextMenu key={ts.id}>
                                 <ContextMenuTrigger asChild>
-                                    <TableRow className="group hover:bg-muted/30 transition-colors cursor-context-menu">
+                                    <TableRow
+                                        className="group hover:bg-muted/30 transition-colors cursor-pointer"
+                                        onClick={() => onView(ts.id)}
+                                    >
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-9 w-9 border">
@@ -213,7 +216,7 @@ export function HRTimesheetList({
                                                 {status.label}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -34,14 +34,19 @@ export function useChatUnreadCount() {
     }
   }, [userId, refreshUnread]);
 
+  // Callbacks memoizés pour éviter les re-renders infinis
+  const handleConversationChange = useCallback(() => {
+    refreshUnread();
+  }, [refreshUnread]);
+
+  const handleMessageChange = useCallback(() => {
+    refreshUnread();
+  }, [refreshUnread]);
+
   useRealtimeChat({
     userId,
-    onConversationChange: () => {
-      refreshUnread();
-    },
-    onMessageChange: () => {
-      refreshUnread();
-    },
+    onConversationChange: handleConversationChange,
+    onMessageChange: handleMessageChange,
   });
 
   return {
