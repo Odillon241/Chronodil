@@ -29,7 +29,7 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
   const conversationChangeRef = useRef(onConversationChange);
   const messageChangeRef = useRef(onMessageChange);
   const notifyNewMessageRef = useRef(notifyNewMessage);
-  
+
   // Créer le client une seule fois
   const supabase = useMemo(() => createClient(), []);
   const channelName = useMemo(() => `chat-realtime`, []);
@@ -102,6 +102,20 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
             const senderId = (payload as any)?.payload?.senderId;
             if (senderId === userId) return;
             messageChangeRef.current?.('INSERT', messageId, conversationId);
+          }
+        )
+        // Broadcast quand une conversation est marquée comme lue
+        .on(
+          'broadcast',
+          { event: 'conversation:read' },
+          (payload) => {
+            const conversationId = (payload as any)?.payload?.conversationId;
+            const readByUserId = (payload as any)?.payload?.userId;
+            // Si c'est l'utilisateur actuel qui a marqué comme lu, rafraîchir pour mettre à jour les badges
+            if (readByUserId === userId) {
+              console.log('📖 Conversation marquée comme lue:', conversationId);
+              conversationChangeRef.current?.('UPDATE', conversationId);
+            }
           }
         )
         // Écouter les changements sur la table Conversation
@@ -289,13 +303,13 @@ export function useRealtimeChat({ onConversationChange, onMessageChange, userId 
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('realtime-reconnect', handleReconnect);
-      
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (channelRef.current) {
         console.log('🧹 Nettoyage de la subscription real-time Chat...');
-        supabase.removeChannel(channelRef.current).catch(() => {});
+        supabase.removeChannel(channelRef.current).catch(() => { });
         channelRef.current = null;
         isSubscribedRef.current = false;
       }

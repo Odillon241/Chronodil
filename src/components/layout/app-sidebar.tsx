@@ -49,7 +49,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useChatUnreadCount } from "@/hooks/use-chat-unread-count";
 
@@ -267,7 +267,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           {item.url === "/dashboard/chat" && chatUnread > 0 && (
                             <Badge
                               variant="outline"
-                              className="ml-auto min-w-7 justify-center rounded-full border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary"
+                              className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border-primary/40 bg-primary/10 px-1 text-[11px] font-semibold text-primary"
                             >
                               {chatUnread > 99 ? "99+" : chatUnread}
                             </Badge>
@@ -323,20 +323,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                   >
-                    <Avatar className="size-8">
-                      <AvatarImage
-                        src={
-                          (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                            (session?.user as any)?.avatar?.startsWith('http')
-                            ? (session?.user as any)?.avatar
-                            : undefined
-                        }
-                        alt={(session?.user as any)?.name || "User"}
-                      />
-                      <AvatarFallback className="bg-primary text-white text-xs">
-                        {((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U')}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      name={(session?.user as any)?.name}
+                      avatar={(session?.user as any)?.avatar}
+                      size="sm"
+                    />
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
                         {session?.user?.name || t("common.name")}
@@ -356,20 +347,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 >
                   <DropdownMenuLabel className="p-0 font-normal">
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                      <Avatar className="size-8">
-                        <AvatarImage
-                          src={
-                            (session?.user as any)?.avatar?.startsWith('/uploads') ||
-                              (session?.user as any)?.avatar?.startsWith('http')
-                              ? (session?.user as any)?.avatar
-                              : undefined
-                          }
-                          alt={(session?.user as any)?.name || "User"}
-                        />
-                        <AvatarFallback className="bg-primary text-white text-xs">
-                          {((session?.user as any)?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'U')}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        name={(session?.user as any)?.name}
+                        avatar={(session?.user as any)?.avatar}
+                        size="sm"
+                      />
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">
                           {session?.user?.name || t("common.name")}
@@ -399,11 +381,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 suppressHydrationWarning
               >
-                <Avatar className="size-8">
-                  <AvatarFallback className="bg-primary text-white text-xs">
-                    U
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar size="sm" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold" suppressHydrationWarning>
                     {t("common.name")}

@@ -18,6 +18,7 @@ import { fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
+import { useRealtimeChat } from "@/hooks/use-realtime-chat";
 import { useNotificationWithSound } from "@/hooks/use-notification-with-sound";
 import { useDesktopNotifications } from "@/hooks/use-desktop-notifications";
 import {
@@ -49,7 +50,7 @@ export function NotificationDropdown() {
 
   // Hooks pour les notifications
   const { playNotificationSound, soundEnabled } = useNotificationWithSound();
-  const desktop = useDesktopNotifications({ 
+  const desktop = useDesktopNotifications({
     enabled: true,
     onPlaySound: (soundType) => {
       if (soundEnabled) {
@@ -96,7 +97,7 @@ export function NotificationDropdown() {
 
     // ⚡ MISE À JOUR INSTANTANÉE du compteur (optimistic update)
     setUnreadCount(prev => prev + 1);
-    
+
     // ⚡ Animation du badge
     setHasNewNotification(true);
     setTimeout(() => setHasNewNotification(false), 2000);
@@ -146,14 +147,37 @@ export function NotificationDropdown() {
     enabled: !!session?.user?.id, // Désactiver tant que userId n'est pas disponible
   });
 
+  // Hook pour écouter quand une conversation est marquée comme lue
+  // Cela rafraîchit le compteur de notifications car markAsRead marque aussi les notifs chat comme lues
+  useRealtimeChat({
+    onConversationChange: useCallback(() => {
+      loadUnreadCount();
+    }, [loadUnreadCount]),
+    onMessageChange: useCallback(() => { }, []),
+    userId: session?.user?.id,
+  });
+
   useEffect(() => {
     if (mounted) {
-    loadUnreadCount();
-    // Refresh every 30 seconds (fallback si realtime ne fonctionne pas)
-    const interval = setInterval(loadUnreadCount, 30000);
-    return () => clearInterval(interval);
+      loadUnreadCount();
+      // Refresh every 30 seconds (fallback si realtime ne fonctionne pas)
+      const interval = setInterval(loadUnreadCount, 30000);
+
+      // Écouter l'événement de rafraîchissement des notifications (émis par le chat)
+      const handleRefresh = () => {
+        loadUnreadCount();
+        if (isOpen) {
+          loadNotifications();
+        }
+      };
+      window.addEventListener('notifications-refresh', handleRefresh);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('notifications-refresh', handleRefresh);
+      };
     }
-  }, [mounted, loadUnreadCount]);
+  }, [mounted, loadUnreadCount, isOpen, loadNotifications]);
 
   useEffect(() => {
     if (isOpen) {
@@ -223,14 +247,13 @@ export function NotificationDropdown() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-8 w-8">
+        <Button variant="ghost" size="icon" className="relative h-8 w-8 focus-visible:ring-0 focus-visible:ring-offset-0">
           <Bell className={`h-4 w-4 transition-transform ${hasNewNotification ? 'animate-bounce' : ''}`} />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary transition-all ${
-                hasNewNotification ? 'animate-pulse scale-110' : ''
-              }`}
+              className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-primary transition-all ${hasNewNotification ? 'animate-pulse scale-110' : ''
+                }`}
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
@@ -269,9 +292,8 @@ export function NotificationDropdown() {
             {notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
-                  !notification.isRead ? "bg-muted/50" : ""
-                }`}
+                className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notification.isRead ? "bg-muted/50" : ""
+                  }`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start gap-2 w-full">

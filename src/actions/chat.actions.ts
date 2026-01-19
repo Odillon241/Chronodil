@@ -408,35 +408,50 @@ export const getUserConversations = authActionClient
       userMembers.map((m) => [m.conversationId, m.lastReadAt])
     );
 
-    // Batch query: Compter tous les messages non lus en 1 seule requête
-    const unreadCountsRaw = await prisma.message.groupBy({
-      by: ["conversationId"],
-      where: {
-        conversationId: { in: conversationIds },
-        senderId: { not: userId },
-        OR: userMembers
-          .filter((m) => m.lastReadAt)
-          .map((m) => ({
+    // Séparer les conversations avec et sans lastReadAt
+    const conversationsWithLastReadAt = userMembers.filter((m) => m.lastReadAt);
+    const conversationsWithoutLastReadAt = userMembers.filter((m) => !m.lastReadAt);
+
+    // Fusionner les résultats dans une seule map
+    const unreadCountMap = new Map<string, number>();
+
+    // Batch query 1: Compter les messages non lus APRÈS lastReadAt (pour ceux qui ont un lastReadAt)
+    if (conversationsWithLastReadAt.length > 0) {
+      const unreadCountsAfterLastRead = await prisma.message.groupBy({
+        by: ["conversationId"],
+        where: {
+          conversationId: { in: conversationsWithLastReadAt.map((m) => m.conversationId) },
+          senderId: { not: userId }, // Exclure les messages de l'utilisateur courant
+          OR: conversationsWithLastReadAt.map((m) => ({
             conversationId: m.conversationId,
             createdAt: { gt: m.lastReadAt! },
           })),
-      },
-      _count: {
-        id: true,
-      },
-    });
+        },
+        _count: {
+          id: true,
+        },
+      });
+      unreadCountsAfterLastRead.forEach((u) => unreadCountMap.set(u.conversationId, u._count.id));
+    }
 
-    // Mapper les résultats pour accès rapide
-    const unreadCountMap = new Map(
-      unreadCountsRaw.map((u) => [u.conversationId, u._count.id])
-    );
+    // Batch query 2: Compter TOUS les messages des AUTRES utilisateurs (pour ceux sans lastReadAt)
+    if (conversationsWithoutLastReadAt.length > 0) {
+      const unreadCountsTotal = await prisma.message.groupBy({
+        by: ["conversationId"],
+        where: {
+          conversationId: { in: conversationsWithoutLastReadAt.map((m) => m.conversationId) },
+          senderId: { not: userId }, // 🔧 FIX: Exclure les messages de l'utilisateur courant!
+        },
+        _count: {
+          id: true,
+        },
+      });
+      unreadCountsTotal.forEach((u) => unreadCountMap.set(u.conversationId, u._count.id));
+    }
 
     // ⚡ OPTIMISÉ: Mapper les conversations avec leur unreadCount (pas de requête supplémentaire)
     const conversationsWithUnread = conversations.map((conv) => {
-      const lastReadAt = memberMap.get(conv.id);
-      const unreadCount = lastReadAt
-        ? unreadCountMap.get(conv.id) || 0
-        : conv._count.Message;
+      const unreadCount = unreadCountMap.get(conv.id) || 0;
 
       return {
         ...conv,
@@ -889,7 +904,43 @@ export const markAsRead = authActionClient
       },
     });
 
+    // Marquer aussi les notifications de chat liées à cette conversation comme lues
+    // Les notifications de chat ont le format de lien: /dashboard/chat?conversation={conversationId}
+    await prisma.notification.updateMany({
+      where: {
+        userId,
+        type: "chat",
+        isRead: false,
+        link: {
+          contains: conversationId,
+        },
+      },
+      data: {
+        isRead: true,
+      },
+    });
+
+    // Broadcast realtime pour mettre à jour les badges dans la sidebar et autres composants
+    createSupabaseServerClient()
+      .then((supabase) =>
+        supabase
+          .channel("chat-realtime")
+          .send({
+            type: "broadcast",
+            event: "conversation:read",
+            payload: {
+              conversationId,
+              userId,
+              readAt: new Date().toISOString(),
+            },
+            opts: { ack: true },
+          })
+          .catch((err) => console.warn("[Chat] Broadcast markAsRead échoué", err))
+      )
+      .catch((err) => console.warn("[Chat] Init supabase broadcast échouée", err));
+
     revalidatePath("/dashboard/chat");
+    revalidatePath("/dashboard"); // Aussi revalider le dashboard pour le compteur de notifications
     return { success: true };
   });
 

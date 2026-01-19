@@ -23,6 +23,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { useChatInput } from "../hooks/use-chat-input";
+import { VoiceRecorderButton } from "./voice-recorder-button";
 import type { Message } from "../types/chat.types";
 
 interface ChatMessageInputProps {
@@ -222,6 +223,20 @@ export function ChatMessageInput({
                 >
                     <Paperclip className="h-5 w-5" />
                 </Button>
+
+                {/* Voice recorder */}
+                <VoiceRecorderButton
+                    onRecordingComplete={async (audioFile) => {
+                        // Envoyer directement le message vocal
+                        setSending(true);
+                        const success = await onSend("", [audioFile]);
+                        if (success) {
+                            clearInput();
+                        }
+                        setSending(false);
+                    }}
+                    disabled={disabled || sending}
+                />
 
                 {/* Text input */}
                 <div className="relative flex-1">

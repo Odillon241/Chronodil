@@ -12,6 +12,7 @@ export interface UserSession {
     name: string;
     role?: string;
     image?: string | null;
+    avatar?: string | null;
   } | null;
 }
 
@@ -47,12 +48,14 @@ export function useSession(): SessionData {
       }
 
       if (supabaseUser) {
+        const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || "",
           name: supabaseUser.user_metadata?.name || supabaseUser.email?.split("@")[0] || "",
           role: supabaseUser.user_metadata?.role || "EMPLOYEE",
-          image: supabaseUser.user_metadata?.avatar_url || null,
+          image: avatarUrl,
+          avatar: avatarUrl,
         });
       } else {
         setUser(null);
@@ -77,12 +80,14 @@ export function useSession(): SessionData {
         console.log("[Auth] State change:", event, session?.user?.email);
         
         if (event === "SIGNED_IN" && session?.user) {
+          const avatarUrl = session.user.user_metadata?.avatar_url || null;
           setUser({
             id: session.user.id,
             email: session.user.email || "",
             name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "",
             role: session.user.user_metadata?.role || "EMPLOYEE",
-            image: session.user.user_metadata?.avatar_url || null,
+            image: avatarUrl,
+            avatar: avatarUrl,
           });
           setIsPending(false);
         } else if (event === "SIGNED_OUT") {
@@ -90,12 +95,25 @@ export function useSession(): SessionData {
           setIsPending(false);
         } else if (event === "TOKEN_REFRESHED" && session?.user) {
           // Mettre à jour l'utilisateur lors du rafraîchissement du token
+          const avatarUrl = session.user.user_metadata?.avatar_url || null;
           setUser({
             id: session.user.id,
             email: session.user.email || "",
             name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "",
             role: session.user.user_metadata?.role || "EMPLOYEE",
-            image: session.user.user_metadata?.avatar_url || null,
+            image: avatarUrl,
+            avatar: avatarUrl,
+          });
+        } else if (event === "USER_UPDATED" && session?.user) {
+          // Mettre à jour l'utilisateur lorsque les métadonnées changent
+          const avatarUrl = session.user.user_metadata?.avatar_url || null;
+          setUser({
+            id: session.user.id,
+            email: session.user.email || "",
+            name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "",
+            role: session.user.user_metadata?.role || "EMPLOYEE",
+            image: avatarUrl,
+            avatar: avatarUrl,
           });
         }
       }

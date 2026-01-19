@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -347,26 +348,26 @@ export function ChatConversationList({
                       "w-full p-3 sm:p-4 relative group overflow-hidden cursor-pointer",
                       "transition-all duration-200 ease-out",
                       "hover:bg-accent/80 hover:shadow-sm",
-                      isSelected && "bg-accent shadow-sm border-l-2 border-primary"
+                      isSelected && "bg-accent shadow-sm"
                     )}
                     onClick={() => onSelectConversation(conv.id)}
                   >
                     <div className="flex items-start gap-2 sm:gap-3 pr-8 sm:pr-10 w-full">
                       {/* Avatar ou Icône */}
                       <div className="shrink-0">
-                        {display.avatar ? (
+                        {conv.type === "DIRECT" ? (
+                          /* Conversation directe - toujours afficher UserAvatar */
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="relative">
-                                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
-                                    <AvatarImage src={display.avatar} />
-                                    <AvatarFallback className="text-xs sm:text-sm">
-                                      {display.name.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  {/* Badge de présence (conversations directes uniquement) */}
-                                  {conv.type === "DIRECT" && display.userId && (
+                                  <UserAvatar
+                                    name={display.name}
+                                    avatar={display.avatar}
+                                    className="h-10 w-10 sm:h-12 sm:w-12"
+                                  />
+                                  {/* Badge de présence */}
+                                  {display.userId && (
                                     <span
                                       className={cn(
                                         "absolute bottom-0 right-0 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-background",
@@ -378,7 +379,7 @@ export function ChatConversationList({
                                   )}
                                 </div>
                               </TooltipTrigger>
-                              {conv.type === "DIRECT" && display.userId && (
+                              {display.userId && (
                                 <TooltipContent side="right">
                                   <p className="text-xs">
                                     {isUserOnline(display.userId)
@@ -392,18 +393,15 @@ export function ChatConversationList({
                             </Tooltip>
                           </TooltipProvider>
                         ) : display.isGroup && display.members && display.members.length > 0 ? (
-                          /* Avatars superposés pour les groupes */
+                          /* Avatars superposés pour les groupes/projets */
                           <div className="flex -space-x-1.5 sm:-space-x-2">
-                            {display.members.map((member, index) => (
-                              <Avatar key={member.User.id} className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-background">
-                                <AvatarImage
-                                  src={member.User.avatar || member.User.image || undefined}
-                                  alt={member.User.name}
-                                />
-                                <AvatarFallback className="text-xs sm:text-sm">
-                                  {member.User.name.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
+                            {display.members.map((member) => (
+                              <UserAvatar
+                                key={member.User.id}
+                                name={member.User.name}
+                                avatar={member.User.avatar || member.User.image}
+                                className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-background"
+                              />
                             ))}
                             {conv.ConversationMember.length > 4 && (
                               <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-background bg-muted">
@@ -414,6 +412,7 @@ export function ChatConversationList({
                             )}
                           </div>
                         ) : (
+                          /* Icône par défaut pour les canaux */
                           <div
                             className={cn(
                               "h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center text-white shrink-0",

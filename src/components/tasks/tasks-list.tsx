@@ -28,6 +28,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { TaskStatusBadge } from "@/components/features/task-status-badge";
 import { TaskPriorityBadge } from "@/components/features/task-priority-badge";
@@ -360,16 +361,13 @@ export function TasksList({
                         {task.TaskMember && task.TaskMember.length > 0 ? (
                           <>
                             {task.TaskMember.slice(0, 3).map((member) => (
-                              <Avatar
+                              <UserAvatar
                                 key={member.User.id}
-                                className="h-8 w-8 border-2 border-background ring-1 ring-background transition-transform hover:scale-110 hover:z-10 cursor-help"
-                                title={member.User.name}
-                              >
-                                <AvatarImage src={member.User.avatar || undefined} />
-                                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                                  {member.User.name.split(" ").map((n: string) => n[0]).join("")}
-                                </AvatarFallback>
-                              </Avatar>
+                                name={member.User.name}
+                                avatar={member.User.avatar}
+                                size="sm"
+                                className="border-2 border-background ring-1 ring-background transition-transform hover:scale-110 hover:z-10 cursor-help"
+                              />
                             ))}
                             {task.TaskMember.length > 3 && (
                               <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-medium text-muted-foreground ring-1 ring-background">

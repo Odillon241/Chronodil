@@ -73,10 +73,53 @@ export const updateMyProfile = authActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { userId } = ctx;
 
+    // Mettre à jour l'utilisateur dans Prisma
     const user = await prisma.user.update({
       where: { id: userId },
       data: parsedInput,
     });
+
+    // Synchroniser avec Supabase Auth metadata si le nom ou l'avatar change
+    if (parsedInput.name || parsedInput.avatar) {
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabaseAdmin = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+
+        // Récupérer les métadonnées actuelles
+        const { data: currentUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+        const currentMetadata = currentUser?.user?.user_metadata || {};
+
+        // Fusionner avec les nouvelles valeurs
+        const newMetadata = {
+          ...currentMetadata,
+          ...(parsedInput.name && { name: parsedInput.name }),
+          ...(parsedInput.avatar && { avatar_url: parsedInput.avatar }),
+        };
+
+        console.log("[updateMyProfile] Syncing to Supabase Auth:", {
+          userId,
+          avatar: parsedInput.avatar,
+          newMetadata,
+        });
+
+        const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+          user_metadata: newMetadata,
+        });
+
+        if (error) {
+          console.error("[updateMyProfile] Supabase Auth error:", error);
+        } else {
+          console.log("[updateMyProfile] Supabase Auth updated successfully:", data.user?.user_metadata);
+        }
+      } catch (error) {
+        console.error("[updateMyProfile] Failed to sync with Supabase Auth:", error);
+        // Ne pas échouer la requête si la sync échoue
+      }
+    }
 
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard");

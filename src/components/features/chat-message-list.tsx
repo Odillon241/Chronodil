@@ -15,8 +15,9 @@ import { ChatInfoDialog } from "./chat-info-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { toggleMuteConversation, markAsRead } from "@/actions/chat.actions";
+import { toggleMuteConversation, markAsRead, sendMessage } from "@/actions/chat.actions";
 import { toast } from "sonner";
+import type { Message } from "@/features/chat/types/chat.types";
 
 export function ChatMessageList({
   conversation,
@@ -89,16 +90,37 @@ export function ChatMessageList({
     }
   };
 
-  // Marquer comme lu
+  // Handler pour le transfert de message
+  const handleForwardMessage = async (conversationId: string, message: Message): Promise<void> => {
+    // Préparer le contenu avec indication de transfert
+    const forwardedContent = message.content && message.content !== "(Fichier joint)"
+      ? `↗️ Transféré\n\n${message.content}`
+      : "(Fichier joint)";
+
+    // Envoyer le message vers la conversation de destination
+    const result = await sendMessage({
+      conversationId,
+      content: forwardedContent,
+      attachments: message.attachments || undefined,
+    });
+
+    if (result?.serverError) {
+      throw new Error(result.serverError);
+    }
+  };
+
+  // Marquer comme lu à chaque ouverture de conversation
   useEffect(() => {
     const markRead = async () => {
-      if (conversation.unreadCount && conversation.unreadCount > 0) {
-        await markAsRead({ conversationId: conversation.id });
-        onUpdate(); // Mettre à jour pour effacer le badge
-      }
+      // Toujours marquer comme lu quand on ouvre une conversation
+      // Cela met à jour lastReadAt ce qui permet de calculer correctement les non-lus
+      await markAsRead({ conversationId: conversation.id });
+      onUpdate(); // Mettre à jour pour effacer le badge
+      // Émettre un événement pour que le dropdown de notifications rafraîchisse son compteur
+      window.dispatchEvent(new CustomEvent('notifications-refresh'));
     };
     markRead();
-  }, [conversation.id, conversation.unreadCount, onUpdate]);
+  }, [conversation.id, onUpdate]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -196,6 +218,7 @@ export function ChatMessageList({
                     onPin={handlePinMessage}
                     onUnpin={handleUnpinMessage}
                     onThreadClick={onThreadClick}
+                    onForward={handleForwardMessage}
                   />
                 </div>
               );
