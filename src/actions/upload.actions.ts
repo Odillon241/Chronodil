@@ -2,11 +2,9 @@
 
 import { authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { revalidatePath } from "next/cache";
+import { createClient } from "@supabase/supabase-js";
 
-// Action pour uploader un fichier d'avatar
+// Action pour uploader un fichier d'avatar vers Supabase Storage
 export const uploadAvatar = authActionClient
   .schema(
     z.object({
@@ -20,25 +18,50 @@ export const uploadAvatar = authActionClient
     const { userId } = ctx;
 
     try {
-      // Créer le dossier uploads s'il n'existe pas
-      const uploadsDir = join(process.cwd(), "public", "uploads", "avatars");
-      await mkdir(uploadsDir, { recursive: true });
+      // Créer le client Supabase avec la service role key pour l'upload
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
 
       // Générer un nom de fichier unique
       const fileExtension = fileType.split("/")[1];
-      const uniqueFileName = `${userId}-${Date.now()}.${fileExtension}`;
-      const filePath = join(uploadsDir, uniqueFileName);
+      const uniqueFileName = `avatars/${userId}-${Date.now()}.${fileExtension}`;
 
-      // Convertir base64 en buffer et sauvegarder
+      // Convertir base64 en buffer
       const base64Data = fileContent.replace(/^data:image\/[a-z]+;base64,/, "");
       const buffer = Buffer.from(base64Data, "base64");
-      
-      await writeFile(filePath, buffer);
 
-      // Retourner l'URL relative du fichier
-      const fileUrl = `/uploads/avatars/${uniqueFileName}`;
-      
-      return { success: true, fileUrl };
+      // Supprimer l'ancien avatar s'il existe
+      const { data: existingFiles } = await supabaseAdmin.storage
+        .from("public")
+        .list("avatars", { search: `${userId}-` });
+
+      if (existingFiles && existingFiles.length > 0) {
+        const filesToDelete = existingFiles.map((file) => `avatars/${file.name}`);
+        await supabaseAdmin.storage.from("public").remove(filesToDelete);
+      }
+
+      // Upload vers Supabase Storage (bucket "public")
+      const { data, error } = await supabaseAdmin.storage
+        .from("public")
+        .upload(uniqueFileName, buffer, {
+          contentType: fileType,
+          upsert: true,
+        });
+
+      if (error) {
+        console.error("Erreur Supabase Storage:", error);
+        throw new Error(`Erreur lors de l'upload: ${error.message}`);
+      }
+
+      // Construire l'URL publique
+      const { data: publicUrl } = supabaseAdmin.storage
+        .from("public")
+        .getPublicUrl(uniqueFileName);
+
+      return { success: true, fileUrl: publicUrl.publicUrl };
     } catch (error) {
       console.error("Erreur lors de l'upload:", error);
       throw new Error("Erreur lors de l'upload du fichier");
