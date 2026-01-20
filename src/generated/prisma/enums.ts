@@ -127,3 +127,13 @@ export const UnderstandingLevel = {
 } as const
 
 export type UnderstandingLevel = (typeof UnderstandingLevel)[keyof typeof UnderstandingLevel]
+
+
+export const ReminderActivityType = {
+  TIMESHEET: 'TIMESHEET',
+  HR_TIMESHEET: 'HR_TIMESHEET',
+  TASK: 'TASK',
+  CUSTOM: 'CUSTOM'
+} as const
+
+export type ReminderActivityType = (typeof ReminderActivityType)[keyof typeof ReminderActivityType]

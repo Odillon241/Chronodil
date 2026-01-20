@@ -479,7 +479,7 @@ export default function AuditPage() {
           </DialogHeader>
           {selectedLog && (
             <div className="space-y-6 pt-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { label: "Date", value: format(new Date(selectedLog.createdAt), "dd/MM/yyyy HH:mm:ss", { locale: fr }), icon: Clock },
                   { label: "Action", value: <Badge className={cn(getActionStyle(selectedLog.action).bgColor, getActionStyle(selectedLog.action).color)}>{ACTION_LABELS[selectedLog.action] || selectedLog.action}</Badge>, icon: Activity },

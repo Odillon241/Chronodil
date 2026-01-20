@@ -81,7 +81,8 @@ export const ModelName = {
   TaskComment: 'TaskComment',
   TaskMember: 'TaskMember',
   User: 'User',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  UserReminder: 'UserReminder'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -649,6 +650,21 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const UserReminderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  activityType: 'activityType',
+  time: 'time',
+  days: 'days',
+  isEnabled: 'isEnabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserReminderScalarFieldEnum = (typeof UserReminderScalarFieldEnum)[keyof typeof UserReminderScalarFieldEnum]
 
 
 export const SortOrder = {

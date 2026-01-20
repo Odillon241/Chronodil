@@ -369,32 +369,33 @@ export default function NewHRTimesheetPage() {
   return (
     <div className="flex flex-col gap-6 w-full pb-6 px-2">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Nouvelle Feuille de Temps</h1>
-            <p className="text-sm text-muted-foreground">Remplissez les informations de la semaine</p>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">Nouvelle Feuille de Temps</h1>
+            <p className="text-sm text-muted-foreground truncate">Remplissez les informations de la semaine</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="destructive" onClick={() => router.back()} disabled={isLoading}>
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <Button variant="destructive" onClick={() => router.back()} disabled={isLoading} className="flex-1 sm:flex-none">
             Annuler
           </Button>
           <Button
             size="lg"
             onClick={handleSubmitTimesheet(onSubmitFinal)}
             disabled={isLoading}
-            className="shadow-sm"
+            className="flex-1 sm:flex-none shadow-sm"
           >
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            Enregistrer la feuille
+            <span className="hidden xs:inline">Enregistrer la feuille</span>
+            <span className="xs:hidden">Enregistrer</span>
           </Button>
         </div>
       </div>
@@ -403,7 +404,7 @@ export default function NewHRTimesheetPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
 
         {/* Left Column: General Info */}
-        <div className="space-y-6 w-full max-w-[280px]">
+        <div className="space-y-6 w-full lg:max-w-[280px]">
           <Card className="border-border shadow-sm bg-card">
             <CardHeader className="pb-3 border-b bg-muted/30">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -498,7 +499,7 @@ export default function NewHRTimesheetPage() {
 
         {/* Right Column: Activities */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-primary" />
               Activités déclarées
@@ -507,7 +508,7 @@ export default function NewHRTimesheetPage() {
 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="shadow-sm border-primary/20 hover:bg-primary/5 text-primary">
+                <Button variant="outline" className="w-full sm:w-auto shadow-sm border-primary/20 hover:bg-primary/5 text-primary">
                   <Plus className="h-4 w-4 mr-2" />
                   Ajouter une activité
                 </Button>
@@ -610,7 +611,7 @@ export default function NewHRTimesheetPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Heures totales</Label>
                       <Input type="number" step="0.5" {...registerActivity("totalHours", { valueAsNumber: true })} />
@@ -627,7 +628,7 @@ export default function NewHRTimesheetPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Fréquence</Label>
                       <Select value={watchActivity("periodicity")} onValueChange={(v: any) => setActivityValue("periodicity", v)}>
@@ -649,7 +650,7 @@ export default function NewHRTimesheetPage() {
                   </div>
 
                   {/* Dates */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Du</Label>
                       <Popover>

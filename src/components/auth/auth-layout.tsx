@@ -45,7 +45,7 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
 
         <div className="mb-6 flex flex-col items-center space-y-4">
           <h1 className="text-2xl font-bold tracking-tight text-primary">Bienvenue sur Chronodil</h1>
-          <div className="flex justify-center items-center min-h-[40px] gap-2">
+          <div className="flex flex-wrap justify-center items-center min-h-[40px] gap-2 px-2 text-center">
             <TypingText
               text={["TOGETHER WE"]}
               className="text-lg md:text-xl font-bold tracking-[0.15em] uppercase text-center font-mono text-foreground"

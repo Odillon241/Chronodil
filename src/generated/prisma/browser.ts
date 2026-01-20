@@ -172,3 +172,8 @@ export type User = Prisma.UserModel
  * 
  */
 export type Verification = Prisma.VerificationModel
+/**
+ * Model UserReminder
+ * 
+ */
+export type UserReminder = Prisma.UserReminderModel

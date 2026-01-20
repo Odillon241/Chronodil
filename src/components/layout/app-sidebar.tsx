@@ -267,7 +267,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           {item.url === "/dashboard/chat" && chatUnread > 0 && (
                             <Badge
                               variant="outline"
-                              className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border-primary/40 bg-primary/10 px-1 text-[11px] font-semibold text-primary"
+                              className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border-primary/40 bg-primary/10 text-[11px] font-semibold text-primary ${chatUnread < 10 ? "p-0" : "px-1"}`}
                             >
                               {chatUnread > 99 ? "99+" : chatUnread}
                             </Badge>

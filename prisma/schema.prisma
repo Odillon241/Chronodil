@@ -700,6 +700,7 @@ model User {
   Department                                      Department?          @relation(fields: [departmentId], references: [id])
   User                                            User?                @relation("UserToUser", fields: [managerId], references: [id])
   other_User                                      User[]               @relation("UserToUser")
+  UserReminder                                    UserReminder[]
 
   @@index([departmentId])
   @@index([email])
@@ -803,4 +804,33 @@ enum UnderstandingLevel {
   WORKING
   COMPREHENSIVE
   EXPERT
+}
+
+// =======================================
+// Système de Rappels Multi-Activités
+// =======================================
+
+enum ReminderActivityType {
+  TIMESHEET       // Feuilles de temps (employé)
+  HR_TIMESHEET    // Feuilles RH (manager/HR)
+  TASK            // Rappel de tâches
+  CUSTOM          // Rappel personnalisé
+}
+
+model UserReminder {
+  id           String               @id @default(cuid())
+  userId       String
+  name         String               // "Rappel feuille de temps", "Rappel tâches", etc.
+  activityType ReminderActivityType
+  time         String               // "17:00"
+  days         String[]             // ["MONDAY", "TUESDAY", ...]
+  isEnabled    Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  User         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isEnabled])
+  @@index([activityType])
+  @@index([time])
 }

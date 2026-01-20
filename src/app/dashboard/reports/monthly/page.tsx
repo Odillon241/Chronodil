@@ -102,7 +102,7 @@ export default function MonthlyReportPage() {
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label>Période *</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="month" className="text-sm text-muted-foreground">
                       Mois
@@ -151,9 +151,8 @@ export default function MonthlyReportPage() {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={`Ex: Rapport Mensuel - ${
-                    MONTHS.find((m) => m.value === month)?.label || ""
-                  } ${year}`}
+                  placeholder={`Ex: Rapport Mensuel - ${MONTHS.find((m) => m.value === month)?.label || ""
+                    } ${year}`}
                 />
                 <p className="text-xs text-muted-foreground">
                   Laissez vide pour utiliser le titre par défaut

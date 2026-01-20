@@ -99,11 +99,12 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateProfileInput>({
+  const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
+    defaultValues: { name: "", email: "", avatar: "", position: "" }
   });
 
-  const { register: registerPassword, handleSubmit: handleSubmitPassword, reset: resetPassword, formState: { errors: passwordErrors } } = useForm<ChangePasswordInput>({
+  const { register: registerPassword, handleSubmit: handleSubmitPassword, reset: resetPassword, formState: { errors: passwordErrors, isDirty: isPasswordDirty } } = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
   });
 
@@ -291,9 +292,9 @@ export default function ProfilePage() {
               <Button
                 onClick={() => setIsAvatarDialogOpen(true)}
                 size="icon"
-                className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full shadow-md"
+                className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full shadow-xl bg-slate-900 hover:bg-slate-800 text-white border-2 border-background"
               >
-                <Camera className="h-4 w-4" />
+                <Camera className="h-5 w-5" />
               </Button>
             </div>
             {/* Info */}
@@ -364,7 +365,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex justify-end pt-4 border-t">
-                  <Button type="submit" disabled={isSaving} className="min-w-[140px]">
+                  <Button type="submit" disabled={isSaving || !isDirty} className="min-w-[140px]">
                     {isSaving ? <Spinner className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                     Enregistrer
                   </Button>
@@ -617,7 +618,7 @@ export default function ProfilePage() {
             ))}
             <div className="flex gap-3 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setIsPasswordDialogOpen(false)} className="flex-1">Annuler</Button>
-              <Button type="submit" disabled={isChangingPassword} className="flex-1">
+              <Button type="submit" disabled={isChangingPassword || !isPasswordDirty} className="flex-1">
                 {isChangingPassword ? <Spinner className="mr-2" /> : null}Modifier
               </Button>
             </div>

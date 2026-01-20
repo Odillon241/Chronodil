@@ -414,7 +414,8 @@ export const ModelName = {
   TaskComment: 'TaskComment',
   TaskMember: 'TaskMember',
   User: 'User',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  UserReminder: 'UserReminder'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -430,7 +431,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "activityCatalog" | "auditLog" | "companySetting" | "conversation" | "conversationMember" | "department" | "hRActivity" | "hRTimesheet" | "holiday" | "message" | "messageRead" | "channelPermission" | "chatAuditLog" | "scheduledMessage" | "messageReminder" | "notification" | "pushSubscription" | "project" | "projectMember" | "report" | "reportRecipient" | "reportTemplate" | "reportType" | "session" | "task" | "taskActivity" | "taskComment" | "taskMember" | "user" | "verification"
+    modelProps: "account" | "activityCatalog" | "auditLog" | "companySetting" | "conversation" | "conversationMember" | "department" | "hRActivity" | "hRTimesheet" | "holiday" | "message" | "messageRead" | "channelPermission" | "chatAuditLog" | "scheduledMessage" | "messageReminder" | "notification" | "pushSubscription" | "project" | "projectMember" | "report" | "reportRecipient" | "reportTemplate" | "reportType" | "session" | "task" | "taskActivity" | "taskComment" | "taskMember" | "user" | "verification" | "userReminder"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2728,6 +2729,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserReminder: {
+      payload: Prisma.$UserReminderPayload<ExtArgs>
+      fields: Prisma.UserReminderFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserReminderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserReminderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>
+        }
+        findFirst: {
+          args: Prisma.UserReminderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserReminderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>
+        }
+        findMany: {
+          args: Prisma.UserReminderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>[]
+        }
+        create: {
+          args: Prisma.UserReminderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>
+        }
+        createMany: {
+          args: Prisma.UserReminderCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserReminderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>[]
+        }
+        delete: {
+          args: Prisma.UserReminderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>
+        }
+        update: {
+          args: Prisma.UserReminderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserReminderDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserReminderUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserReminderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserReminderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserReminderPayload>
+        }
+        aggregate: {
+          args: Prisma.UserReminderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserReminder>
+        }
+        groupBy: {
+          args: Prisma.UserReminderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserReminderGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserReminderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserReminderCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3318,6 +3393,21 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const UserReminderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  activityType: 'activityType',
+  time: 'time',
+  days: 'days',
+  isEnabled: 'isEnabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserReminderScalarFieldEnum = (typeof UserReminderScalarFieldEnum)[keyof typeof UserReminderScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3595,6 +3685,20 @@ export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
 export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
     
 
+
+/**
+ * Reference to a field of type 'ReminderActivityType'
+ */
+export type EnumReminderActivityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderActivityType'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderActivityType[]'
+ */
+export type ListEnumReminderActivityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderActivityType[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -3721,6 +3825,7 @@ export type GlobalOmitConfig = {
   taskMember?: Prisma.TaskMemberOmit
   user?: Prisma.UserOmit
   verification?: Prisma.VerificationOmit
+  userReminder?: Prisma.UserReminderOmit
 }
 
 /* Types for Logging */

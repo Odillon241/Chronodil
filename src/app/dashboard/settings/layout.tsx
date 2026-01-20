@@ -242,15 +242,24 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
       <aside className="w-full lg:w-64 lg:fixed lg:top-16 lg:left-[var(--sidebar-width)] lg:bottom-0 shrink-0 flex flex-col border-b lg:border-b-0 lg:border-r border-border bg-background z-20">
         {/* Barre de recherche */}
         <div className="p-3 sm:p-4 shrink-0">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 transition-colors group-focus-within:text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Rechercher..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9 bg-muted/50 border-border focus:ring-1 focus:ring-primary/20 focus:bg-background transition-all"
-            />
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center h-9 w-9 rounded-md border border-border bg-muted/30 shrink-0 shadow-sm">
+                <Search className="h-4 w-4 text-muted-foreground/50" />
+              </div>
+              <div className="relative flex-1 group">
+                <Input
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-9 px-3 bg-muted/50 border-border focus:ring-1 focus:ring-primary/20 focus:bg-background transition-all"
+                />
+              </div>
+            </div>
+            <p className="pl-11 text-[10px] text-muted-foreground/60 leading-tight">
+              Recherchez des paramètres par nom ou mots-clés
+            </p>
           </div>
         </div>
         <Separator />
@@ -270,16 +279,15 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                     href={item.href}
                     className={cn(
                       "group relative flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200",
-                      "hover:bg-muted/50",
                       isActive
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {/* Ligne indicatrice à gauche */}
                     <span className={cn(
-                      "absolute left-0 top-1/2 -translate-y-1/2 h-6 w-0.5 rounded-full transition-all duration-200",
-                      isActive ? "bg-foreground" : "bg-transparent group-hover:bg-muted-foreground/30"
+                      "absolute left-0 top-2 bottom-2 w-1 rounded-full transition-all duration-200",
+                      isActive ? "bg-primary" : "bg-transparent group-hover:bg-muted-foreground/30"
                     )} />
 
                     <Icon className={cn(
@@ -290,7 +298,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                     <div className="flex-1 min-w-0">
                       <div className={cn(
                         "font-medium transition-colors duration-200",
-                        isActive ? "text-foreground" : ""
+                        isActive ? "text-primary" : ""
                       )}>
                         {item.title}
                         {item.matchedSubsection && searchQuery && (
