@@ -1,7 +1,7 @@
-import { WebSocketServer, WebSocket } from 'ws';
-import { IncomingMessage } from 'http';
-import { nanoid } from 'nanoid';
-import { prisma } from './db';
+import { WebSocketServer, WebSocket } from 'ws'
+import { IncomingMessage } from 'http'
+import { nanoid } from 'nanoid'
+import { prisma } from './db'
 import {
   WSMessageType,
   WSClientMessage,
@@ -11,54 +11,54 @@ import {
   WSLeaveConversationMessage,
   WSSendMessageMessage,
   WSTypingMessage,
-} from '@/types/websocket';
+} from '@/types/websocket'
 
 interface AuthenticatedClient {
-  ws: WebSocket;
-  userId: string;
-  userName: string;
-  conversations: Set<string>; // IDs des conversations rejointes
+  ws: WebSocket
+  userId: string
+  userName: string
+  conversations: Set<string> // IDs des conversations rejointes
 }
 
 export class WebSocketManager {
-  private wss: WebSocketServer;
-  private clients: Map<WebSocket, AuthenticatedClient | null>;
-  private conversationRooms: Map<string, Set<WebSocket>>;
+  private wss: WebSocketServer
+  private clients: Map<WebSocket, AuthenticatedClient | null>
+  private conversationRooms: Map<string, Set<WebSocket>>
 
   constructor(wss: WebSocketServer) {
-    this.wss = wss;
-    this.clients = new Map();
-    this.conversationRooms = new Map();
+    this.wss = wss
+    this.clients = new Map()
+    this.conversationRooms = new Map()
 
-    this.setupWebSocketServer();
+    this.setupWebSocketServer()
   }
 
   private setupWebSocketServer(): void {
-    this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-      console.log('🔌 New WebSocket connection');
+    this.wss.on('connection', (ws: WebSocket, _req: IncomingMessage) => {
+      console.log('🔌 New WebSocket connection')
 
       // Initialiser le client comme non authentifié
-      this.clients.set(ws, null);
+      this.clients.set(ws, null)
 
       ws.on('message', async (data: Buffer) => {
         try {
-          const message: WSClientMessage = JSON.parse(data.toString());
-          await this.handleMessage(ws, message);
+          const message: WSClientMessage = JSON.parse(data.toString())
+          await this.handleMessage(ws, message)
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-          this.sendError(ws, 'Invalid message format');
+          console.error('Error parsing WebSocket message:', error)
+          this.sendError(ws, 'Invalid message format')
         }
-      });
+      })
 
       ws.on('close', () => {
-        console.log('🔌 WebSocket connection closed');
-        this.handleDisconnect(ws);
-      });
+        console.log('🔌 WebSocket connection closed')
+        this.handleDisconnect(ws)
+      })
 
       ws.on('error', (error) => {
-        console.error('WebSocket error:', error);
-        this.handleDisconnect(ws);
-      });
+        console.error('WebSocket error:', error)
+        this.handleDisconnect(ws)
+      })
 
       // Envoyer un message de bienvenue (optionnel)
       this.send(ws, {
@@ -66,42 +66,42 @@ export class WebSocketManager {
         timestamp: new Date().toISOString(),
         error: 'Please authenticate first',
         code: 'NOT_AUTHENTICATED',
-      });
-    });
+      })
+    })
   }
 
   private async handleMessage(ws: WebSocket, message: WSClientMessage): Promise<void> {
     switch (message.type) {
       case WSMessageType.AUTHENTICATE:
-        await this.handleAuthenticate(ws, message);
-        break;
+        await this.handleAuthenticate(ws, message)
+        break
 
       case WSMessageType.JOIN_CONVERSATION:
-        await this.handleJoinConversation(ws, message);
-        break;
+        await this.handleJoinConversation(ws, message)
+        break
 
       case WSMessageType.LEAVE_CONVERSATION:
-        await this.handleLeaveConversation(ws, message);
-        break;
+        await this.handleLeaveConversation(ws, message)
+        break
 
       case WSMessageType.SEND_MESSAGE:
-        await this.handleSendMessage(ws, message);
-        break;
+        await this.handleSendMessage(ws, message)
+        break
 
       case WSMessageType.TYPING_START:
       case WSMessageType.TYPING_STOP:
-        await this.handleTyping(ws, message);
-        break;
+        await this.handleTyping(ws, message)
+        break
 
       case WSMessageType.PING:
         this.send(ws, {
           type: WSMessageType.PONG,
           timestamp: new Date().toISOString(),
-        });
-        break;
+        })
+        break
 
       default:
-        this.sendError(ws, 'Unknown message type');
+        this.sendError(ws, 'Unknown message type')
     }
   }
 
@@ -116,22 +116,22 @@ export class WebSocketManager {
       // const userId = decoded.userId;
 
       // Pour l'instant, extraire l'userId du token directement (DEV ONLY)
-      const userId = message.token; // Remplacer par une vraie vérification JWT
+      const userId = message.token // Remplacer par une vraie vérification JWT
 
       // Récupérer les infos utilisateur depuis la base de données
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, email: true },
-      });
+      })
 
       if (!user) {
         this.send(ws, {
           type: WSMessageType.AUTH_ERROR,
           timestamp: new Date().toISOString(),
           error: 'User not found',
-        });
-        ws.close();
-        return;
+        })
+        ws.close()
+        return
       }
 
       // Authentifier le client
@@ -140,32 +140,35 @@ export class WebSocketManager {
         userId: user.id,
         userName: user.name,
         conversations: new Set(),
-      });
+      })
 
       this.send(ws, {
         type: WSMessageType.AUTHENTICATED,
         timestamp: new Date().toISOString(),
         userId: user.id,
         userName: user.name,
-      });
+      })
 
-      console.log(`✅ User authenticated: ${user.name} (${user.id})`);
+      console.log(`✅ User authenticated: ${user.name} (${user.id})`)
     } catch (error) {
-      console.error('Authentication error:', error);
+      console.error('Authentication error:', error)
       this.send(ws, {
         type: WSMessageType.AUTH_ERROR,
         timestamp: new Date().toISOString(),
         error: 'Authentication failed',
-      });
-      ws.close();
+      })
+      ws.close()
     }
   }
 
-  private async handleJoinConversation(ws: WebSocket, message: WSJoinConversationMessage): Promise<void> {
-    const client = this.clients.get(ws);
+  private async handleJoinConversation(
+    ws: WebSocket,
+    message: WSJoinConversationMessage,
+  ): Promise<void> {
+    const client = this.clients.get(ws)
     if (!client) {
-      this.sendError(ws, 'Not authenticated');
-      return;
+      this.sendError(ws, 'Not authenticated')
+      return
     }
 
     try {
@@ -177,63 +180,66 @@ export class WebSocketManager {
             userId: client.userId,
           },
         },
-      });
+      })
 
       if (!member) {
-        this.sendError(ws, 'Not a member of this conversation');
-        return;
+        this.sendError(ws, 'Not a member of this conversation')
+        return
       }
 
       // Ajouter le client à la room de la conversation
       if (!this.conversationRooms.has(message.conversationId)) {
-        this.conversationRooms.set(message.conversationId, new Set());
+        this.conversationRooms.set(message.conversationId, new Set())
       }
-      this.conversationRooms.get(message.conversationId)!.add(ws);
-      client.conversations.add(message.conversationId);
+      this.conversationRooms.get(message.conversationId)!.add(ws)
+      client.conversations.add(message.conversationId)
 
       this.send(ws, {
         type: WSMessageType.JOINED_CONVERSATION,
         timestamp: new Date().toISOString(),
         conversationId: message.conversationId,
-      });
+      })
 
-      console.log(`📥 User ${client.userName} joined conversation ${message.conversationId}`);
+      console.log(`📥 User ${client.userName} joined conversation ${message.conversationId}`)
     } catch (error) {
-      console.error('Error joining conversation:', error);
-      this.sendError(ws, 'Failed to join conversation');
+      console.error('Error joining conversation:', error)
+      this.sendError(ws, 'Failed to join conversation')
     }
   }
 
-  private async handleLeaveConversation(ws: WebSocket, message: WSLeaveConversationMessage): Promise<void> {
-    const client = this.clients.get(ws);
+  private async handleLeaveConversation(
+    ws: WebSocket,
+    message: WSLeaveConversationMessage,
+  ): Promise<void> {
+    const client = this.clients.get(ws)
     if (!client) {
-      this.sendError(ws, 'Not authenticated');
-      return;
+      this.sendError(ws, 'Not authenticated')
+      return
     }
 
-    const room = this.conversationRooms.get(message.conversationId);
+    const room = this.conversationRooms.get(message.conversationId)
     if (room) {
-      room.delete(ws);
+      room.delete(ws)
       if (room.size === 0) {
-        this.conversationRooms.delete(message.conversationId);
+        this.conversationRooms.delete(message.conversationId)
       }
     }
-    client.conversations.delete(message.conversationId);
+    client.conversations.delete(message.conversationId)
 
     this.send(ws, {
       type: WSMessageType.LEFT_CONVERSATION,
       timestamp: new Date().toISOString(),
       conversationId: message.conversationId,
-    });
+    })
 
-    console.log(`📤 User ${client.userName} left conversation ${message.conversationId}`);
+    console.log(`📤 User ${client.userName} left conversation ${message.conversationId}`)
   }
 
   private async handleSendMessage(ws: WebSocket, message: WSSendMessageMessage): Promise<void> {
-    const client = this.clients.get(ws);
+    const client = this.clients.get(ws)
     if (!client) {
-      this.sendError(ws, 'Not authenticated');
-      return;
+      this.sendError(ws, 'Not authenticated')
+      return
     }
 
     try {
@@ -245,15 +251,15 @@ export class WebSocketManager {
             userId: client.userId,
           },
         },
-      });
+      })
 
       if (!member) {
         this.send(ws, {
           type: WSMessageType.MESSAGE_ERROR,
           timestamp: new Date().toISOString(),
           error: 'Not a member of this conversation',
-        });
-        return;
+        })
+        return
       }
 
       // Créer le message dans la base de données
@@ -275,14 +281,14 @@ export class WebSocketManager {
             },
           },
         },
-      });
+      })
 
       // Confirmer au sender
       this.send(ws, {
         type: WSMessageType.MESSAGE_SENT,
         timestamp: new Date().toISOString(),
         messageId: newMessage.id,
-      });
+      })
 
       // Broadcast le message à tous les membres de la conversation
       this.broadcastToConversation(message.conversationId, {
@@ -298,28 +304,28 @@ export class WebSocketManager {
           createdAt: newMessage.createdAt.toISOString(),
           attachments: message.attachments,
         },
-      });
+      })
 
-      console.log(`💬 Message sent by ${client.userName} in conversation ${message.conversationId}`);
+      console.log(`💬 Message sent by ${client.userName} in conversation ${message.conversationId}`)
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', error)
       this.send(ws, {
         type: WSMessageType.MESSAGE_ERROR,
         timestamp: new Date().toISOString(),
         error: 'Failed to send message',
-      });
+      })
     }
   }
 
   private async handleTyping(ws: WebSocket, message: WSTypingMessage): Promise<void> {
-    const client = this.clients.get(ws);
+    const client = this.clients.get(ws)
     if (!client) {
-      this.sendError(ws, 'Not authenticated');
-      return;
+      this.sendError(ws, 'Not authenticated')
+      return
     }
 
-    const isTyping = message.type === WSMessageType.TYPING_START;
-    const eventType = isTyping ? WSMessageType.USER_TYPING : WSMessageType.USER_STOPPED_TYPING;
+    const isTyping = message.type === WSMessageType.TYPING_START
+    const eventType = isTyping ? WSMessageType.USER_TYPING : WSMessageType.USER_STOPPED_TYPING
 
     // Broadcast aux autres membres de la conversation
     this.broadcastToConversation(
@@ -331,31 +337,31 @@ export class WebSocketManager {
         userId: client.userId,
         userName: client.userName,
       },
-      ws // Exclure l'expéditeur
-    );
+      ws, // Exclure l'expéditeur
+    )
   }
 
   private handleDisconnect(ws: WebSocket): void {
-    const client = this.clients.get(ws);
+    const client = this.clients.get(ws)
     if (client) {
       // Retirer le client de toutes les rooms
       client.conversations.forEach((conversationId) => {
-        const room = this.conversationRooms.get(conversationId);
+        const room = this.conversationRooms.get(conversationId)
         if (room) {
-          room.delete(ws);
+          room.delete(ws)
           if (room.size === 0) {
-            this.conversationRooms.delete(conversationId);
+            this.conversationRooms.delete(conversationId)
           }
         }
-      });
-      console.log(`❌ User ${client.userName} disconnected`);
+      })
+      console.log(`❌ User ${client.userName} disconnected`)
     }
-    this.clients.delete(ws);
+    this.clients.delete(ws)
   }
 
   private send(ws: WebSocket, message: WSServerMessage): void {
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(message));
+      ws.send(JSON.stringify(message))
     }
   }
 
@@ -365,32 +371,35 @@ export class WebSocketManager {
       timestamp: new Date().toISOString(),
       error,
       code,
-    });
+    })
   }
 
-  private broadcastToConversation(conversationId: string, message: WSServerMessage, exclude?: WebSocket): void {
-    const room = this.conversationRooms.get(conversationId);
-    if (!room) return;
+  private broadcastToConversation(
+    conversationId: string,
+    message: WSServerMessage,
+    exclude?: WebSocket,
+  ): void {
+    const room = this.conversationRooms.get(conversationId)
+    if (!room) return
 
     room.forEach((client) => {
       if (client !== exclude) {
-        this.send(client, message);
+        this.send(client, message)
       }
-    });
+    })
   }
 
-
   public shutdown(): void {
-    console.log('🛑 Shutting down WebSocket server...');
+    console.log('🛑 Shutting down WebSocket server...')
 
     // Fermer toutes les connexions
     this.clients.forEach((_, ws) => {
-      ws.close();
-    });
+      ws.close()
+    })
 
-    this.clients.clear();
-    this.conversationRooms.clear();
+    this.clients.clear()
+    this.conversationRooms.clear()
 
-    console.log('✅ WebSocket server shut down');
+    console.log('✅ WebSocket server shut down')
   }
 }

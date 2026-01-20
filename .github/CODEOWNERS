@@ -1,0 +1,45 @@
+# GitHub CODEOWNERS for Chronodil App
+# This file defines required reviewers for code changes
+
+# Default: All changes require review from these teams
+* @devops-release @director-review
+
+# Architecture and Design
+src/lib/               @director-architect
+src/types/             @director-architect
+prisma/                @director-database
+
+# Frontend Components
+src/components/        @dev-frontend @director-review
+src/app/               @dev-frontend @director-review
+
+# Backend Actions
+src/actions/           @dev-backend @director-review
+src/app/api/           @dev-backend @director-review
+
+# Security
+src/lib/security.ts    @director-security @sec-auditor
+src/lib/auth*.ts       @sec-auth @director-security
+proxy.ts               @sec-auth @director-security
+
+# Testing
+src/__tests__/         @qa-test-runner @dev-testing
+.github/workflows/     @devops-cicd @director-qa
+
+# Documentation
+docs/                  @director-doc
+README.md              @director-doc
+CHANGELOG.md           @devops-release
+
+# Configuration
+*.config.*             @director-devops @devops-infra
+.env*                  @sec-secrets
+package.json           @devops-cicd
+pnpm-lock.yaml         @devops-cicd
+
+# CI/CD
+.github/workflows/     @devops-cicd @director-devops
+
+# Release Management
+.releaserc.json        @devops-release
+commitlint.config.cjs  @devops-release

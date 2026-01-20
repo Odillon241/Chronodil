@@ -1,41 +1,40 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { MinimalTiptap } from '@/components/ui/minimal-tiptap-dynamic';
-import { Button } from '@/components/ui/button';
-import { TrainingLevel, MasteryLevel, UnderstandingLevel } from "../../generated/prisma/enums";
+} from '@/components/ui/select'
+import { MinimalTiptap } from '@/components/ui/minimal-tiptap-dynamic'
+import { Button } from '@/components/ui/button'
+import { TrainingLevel, MasteryLevel, UnderstandingLevel } from '../../generated/prisma/enums'
 
 interface TaskEvaluationFormProps {
-  trainingLevel?: TrainingLevel | null;
-  masteryLevel?: MasteryLevel | null;
-  understandingLevel?: UnderstandingLevel | null;
-  evaluationNotes?: string | null;
+  trainingLevel?: TrainingLevel | null
+  masteryLevel?: MasteryLevel | null
+  understandingLevel?: UnderstandingLevel | null
+  evaluationNotes?: string | null
   onEvaluationChange?: (data: {
-    trainingLevel?: TrainingLevel | null;
-    masteryLevel?: MasteryLevel | null;
-    understandingLevel?: UnderstandingLevel | null;
-    evaluationNotes?: string;
-  }) => void;
-  isReadOnly?: boolean;
+    trainingLevel?: TrainingLevel | null
+    masteryLevel?: MasteryLevel | null
+    understandingLevel?: UnderstandingLevel | null
+    evaluationNotes?: string
+  }) => void
+  isReadOnly?: boolean
 }
 
-const trainingLevels: TrainingLevel[] = ['NONE', 'BASIC', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'];
-const masteryLevels: MasteryLevel[] = ['NOVICE', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'];
+const trainingLevels: TrainingLevel[] = ['NONE', 'BASIC', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']
+const masteryLevels: MasteryLevel[] = ['NOVICE', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']
 const understandingLevels: UnderstandingLevel[] = [
   'NONE',
   'SUPERFICIAL',
   'WORKING',
   'COMPREHENSIVE',
   'EXPERT',
-];
+]
 
 const trainingLevelLabels: Record<TrainingLevel, string> = {
   NONE: 'Aucune formation',
@@ -43,7 +42,7 @@ const trainingLevelLabels: Record<TrainingLevel, string> = {
   INTERMEDIATE: 'Formation intermédiaire',
   ADVANCED: 'Formation avancée',
   EXPERT: 'Formation experte',
-};
+}
 
 const masteryLevelLabels: Record<MasteryLevel, string> = {
   NOVICE: 'Novice',
@@ -51,7 +50,7 @@ const masteryLevelLabels: Record<MasteryLevel, string> = {
   INTERMEDIATE: 'Intermédiaire',
   ADVANCED: 'Avancé',
   EXPERT: 'Expert',
-};
+}
 
 const understandingLevelLabels: Record<UnderstandingLevel, string> = {
   NONE: 'Aucune compréhension',
@@ -59,7 +58,7 @@ const understandingLevelLabels: Record<UnderstandingLevel, string> = {
   WORKING: 'Compréhension fonctionnelle',
   COMPREHENSIVE: 'Compréhension complète',
   EXPERT: 'Compréhension experte',
-};
+}
 
 export function TaskEvaluationForm({
   trainingLevel,
@@ -70,23 +69,23 @@ export function TaskEvaluationForm({
   isReadOnly = false,
 }: TaskEvaluationFormProps) {
   const [localTrainingLevel, setLocalTrainingLevel] = useState<TrainingLevel | null | undefined>(
-    trainingLevel
-  );
+    trainingLevel,
+  )
   const [localMasteryLevel, setLocalMasteryLevel] = useState<MasteryLevel | null | undefined>(
-    masteryLevel
-  );
+    masteryLevel,
+  )
   const [localUnderstandingLevel, setLocalUnderstandingLevel] = useState<
     UnderstandingLevel | null | undefined
-  >(understandingLevel);
-  const [localNotes, setLocalNotes] = useState(evaluationNotes || '');
+  >(understandingLevel)
+  const [localNotes, setLocalNotes] = useState(evaluationNotes || '')
 
   // Synchroniser l'état local avec les props quand elles changent
   useEffect(() => {
-    setLocalTrainingLevel(trainingLevel);
-    setLocalMasteryLevel(masteryLevel);
-    setLocalUnderstandingLevel(understandingLevel);
-    setLocalNotes(evaluationNotes || '');
-  }, [trainingLevel, masteryLevel, understandingLevel, evaluationNotes]);
+    setLocalTrainingLevel(trainingLevel)
+    setLocalMasteryLevel(masteryLevel)
+    setLocalUnderstandingLevel(understandingLevel)
+    setLocalNotes(evaluationNotes || '')
+  }, [trainingLevel, masteryLevel, understandingLevel, evaluationNotes])
 
   const handleSave = () => {
     onEvaluationChange?.({
@@ -94,8 +93,8 @@ export function TaskEvaluationForm({
       masteryLevel: localMasteryLevel,
       understandingLevel: localUnderstandingLevel,
       evaluationNotes: localNotes,
-    });
-  };
+    })
+  }
 
   return (
     <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
@@ -177,7 +176,9 @@ export function TaskEvaluationForm({
           editable={!isReadOnly}
           className="min-h-[250px]"
         />
-        <p className="text-xs text-slate-500">Observations et recommandations pour le collaborateur</p>
+        <p className="text-xs text-slate-500">
+          Observations et recommandations pour le collaborateur
+        </p>
       </div>
 
       {!isReadOnly && (
@@ -188,5 +189,5 @@ export function TaskEvaluationForm({
         </div>
       )}
     </div>
-  );
+  )
 }

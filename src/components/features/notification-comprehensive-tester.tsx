@@ -1,35 +1,26 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useNotificationWithSound } from '@/hooks/use-notification-with-sound';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  CheckCircle,
-  AlertCircle,
-  Volume2,
-  Bell,
-  Wifi,
-  Clock,
-  Zap,
-  TestTube,
-} from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { useNotificationWithSound } from '@/hooks/use-notification-with-sound'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { CheckCircle, AlertCircle, Volume2, Bell, Clock, Zap, TestTube } from 'lucide-react'
 
 interface TestResult {
-  name: string;
-  status: 'pending' | 'running' | 'passed' | 'failed';
-  message: string;
-  duration: number;
+  name: string
+  status: 'pending' | 'running' | 'passed' | 'failed'
+  message: string
+  duration: number
 }
 
 export function NotificationComprehensiveTester() {
-  const [mounted, setMounted] = useState(false);
-  const [testResults, setTestResults] = useState<TestResult[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false)
+  const [testResults, setTestResults] = useState<TestResult[]>([])
+  const [isRunning, setIsRunning] = useState(false)
+  const [logs, setLogs] = useState<string[]>([])
 
   const {
     soundEnabled,
@@ -40,209 +31,209 @@ export function NotificationComprehensiveTester() {
     setSoundPreference,
     setVolumePreference,
     requestPermission,
-  } = useNotificationWithSound();
+  } = useNotificationWithSound()
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString('fr-FR');
-    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)]);
-  };
+    const timestamp = new Date().toLocaleTimeString('fr-FR')
+    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)])
+  }
 
   const addTestResult = (result: TestResult) => {
-    setTestResults((prev) => [result, ...prev]);
-  };
+    setTestResults((prev) => [result, ...prev])
+  }
 
   const runTest = async (testName: string, testFn: () => Promise<void>) => {
-    const startTime = performance.now();
+    const startTime = performance.now()
     const result: TestResult = {
       name: testName,
       status: 'running',
       message: 'En cours...',
       duration: 0,
-    };
+    }
 
-    addTestResult(result);
-    addLog(`▶️ Démarrage du test: ${testName}`);
+    addTestResult(result)
+    addLog(`▶️ Démarrage du test: ${testName}`)
 
     try {
-      await testFn();
-      const duration = performance.now() - startTime;
+      await testFn()
+      const duration = performance.now() - startTime
 
       addTestResult({
         name: testName,
         status: 'passed',
         message: 'Succès',
         duration: Math.round(duration),
-      });
+      })
 
-      addLog(`✅ Test réussi: ${testName} (${Math.round(duration)}ms)`);
+      addLog(`✅ Test réussi: ${testName} (${Math.round(duration)}ms)`)
     } catch (error) {
-      const duration = performance.now() - startTime;
+      const duration = performance.now() - startTime
 
       addTestResult({
         name: testName,
         status: 'failed',
         message: error instanceof Error ? error.message : 'Erreur inconnue',
         duration: Math.round(duration),
-      });
+      })
 
-      addLog(`❌ Test échoué: ${testName} - ${error}`);
+      addLog(`❌ Test échoué: ${testName} - ${error}`)
     }
-  };
+  }
 
   const runAllTests = async () => {
-    setIsRunning(true);
-    setTestResults([]);
-    setLogs([]);
+    setIsRunning(true)
+    setTestResults([])
+    setLogs([])
 
-    addLog('🚀 Démarrage de la suite de tests...');
+    addLog('🚀 Démarrage de la suite de tests...')
 
     // Test 1: Vérifier l'initialisation
     await runTest('Initialisation du hook', async () => {
-      if (!mounted) throw new Error('Hook non monté');
-      addLog('✓ Hook initialisé');
-    });
+      if (!mounted) throw new Error('Hook non monté')
+      addLog('✓ Hook initialisé')
+    })
 
     // Test 2: Vérifier les permissions
     await runTest('Vérification des permissions', async () => {
-      addLog(`Permission actuelle: ${hasPermission ? 'Accordée' : 'Non accordée'}`);
-    });
+      addLog(`Permission actuelle: ${hasPermission ? 'Accordée' : 'Non accordée'}`)
+    })
 
     // Test 3: Jouer un son
-    await runTest('Lecture d\'un son', async () => {
+    await runTest("Lecture d'un son", async () => {
       if (!soundEnabled) {
-        addLog('⚠️ Sons désactivés, activation...');
-        setSoundPreference(true);
+        addLog('⚠️ Sons désactivés, activation...')
+        setSoundPreference(true)
       }
 
-      playSound('notification');
-      addLog('✓ Son joué');
+      playSound('notification')
+      addLog('✓ Son joué')
 
       // Attendre que le son se termine
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    });
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    })
 
     // Test 4: Test du son d'alerte
-    await runTest('Lecture du son d\'alerte', async () => {
-      playSound('error');
-      addLog('✓ Son d\'alerte joué');
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    });
+    await runTest("Lecture du son d'alerte", async () => {
+      playSound('error')
+      addLog("✓ Son d'alerte joué")
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    })
 
     // Test 5: Test du son de succès
     await runTest('Lecture du son de succès', async () => {
-      playSound('success');
-      addLog('✓ Son de succès joué');
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    });
+      playSound('success')
+      addLog('✓ Son de succès joué')
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    })
 
     // Test 6: Vérifier le volume
     await runTest('Gestion du volume', async () => {
-      addLog(`Volume actuel: ${Math.round(volume * 100)}%`);
+      addLog(`Volume actuel: ${Math.round(volume * 100)}%`)
 
       // Changer le volume
-      setVolumePreference(0.3);
-      addLog('✓ Volume changé à 30%');
+      setVolumePreference(0.3)
+      addLog('✓ Volume changé à 30%')
 
       // Restaurer le volume
-      setVolumePreference(volume);
-      addLog(`✓ Volume restauré à ${Math.round(volume * 100)}%`);
-    });
+      setVolumePreference(volume)
+      addLog(`✓ Volume restauré à ${Math.round(volume * 100)}%`)
+    })
 
     // Test 7: Tester les permissions
     await runTest('Demande de permissions', async () => {
       if (!hasPermission) {
-        addLog('⚠️ Demande de permission utilisateur...');
-        const result = await requestPermission();
-        addLog(`✓ Résultat: ${result}`);
+        addLog('⚠️ Demande de permission utilisateur...')
+        const result = await requestPermission()
+        addLog(`✓ Résultat: ${result}`)
       } else {
-        addLog('✓ Permissions déjà accordées');
+        addLog('✓ Permissions déjà accordées')
       }
-    });
+    })
 
     // Test 8: BroadcastChannel
     await runTest('Test BroadcastChannel', async () => {
       if ('BroadcastChannel' in window) {
-        const channel = new BroadcastChannel('test-notification');
-        addLog('✓ BroadcastChannel créé');
+        const channel = new BroadcastChannel('test-notification')
+        addLog('✓ BroadcastChannel créé')
 
-        channel.postMessage({ type: 'TEST', data: 'test' });
-        addLog('✓ Message envoyé');
+        channel.postMessage({ type: 'TEST', data: 'test' })
+        addLog('✓ Message envoyé')
 
-        channel.close();
-        addLog('✓ BroadcastChannel fermé');
+        channel.close()
+        addLog('✓ BroadcastChannel fermé')
       } else {
-        throw new Error('BroadcastChannel non supporté');
+        throw new Error('BroadcastChannel non supporté')
       }
-    });
+    })
 
     // Test 9: localStorage
     await runTest('Persistance localStorage', async () => {
-      const testValue = 'test-value-' + Date.now();
-      localStorage.setItem('notification-test', testValue);
+      const testValue = 'test-value-' + Date.now()
+      localStorage.setItem('notification-test', testValue)
 
-      const retrieved = localStorage.getItem('notification-test');
+      const retrieved = localStorage.getItem('notification-test')
       if (retrieved !== testValue) {
-        throw new Error('localStorage non fonctionnel');
+        throw new Error('localStorage non fonctionnel')
       }
 
-      localStorage.removeItem('notification-test');
-      addLog('✓ localStorage fonctionnel');
-    });
+      localStorage.removeItem('notification-test')
+      addLog('✓ localStorage fonctionnel')
+    })
 
     // Test 10: Performance
     await runTest('Performance - Sons multiples', async () => {
-      const startTime = performance.now();
+      const startTime = performance.now()
 
       for (let i = 0; i < 5; i++) {
-        playSound('notification');
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        playSound('notification')
+        await new Promise((resolve) => setTimeout(resolve, 100))
       }
 
-      const duration = performance.now() - startTime;
-      addLog(`✓ 5 sons joués en ${Math.round(duration)}ms`);
-    });
+      const duration = performance.now() - startTime
+      addLog(`✓ 5 sons joués en ${Math.round(duration)}ms`)
+    })
 
-    setIsRunning(false);
-    addLog('✅ Suite de tests complétée');
-  };
+    setIsRunning(false)
+    addLog('✅ Suite de tests complétée')
+  }
 
   const getStatusColor = (status: TestResult['status']) => {
     switch (status) {
       case 'passed':
-        return 'bg-green-500';
+        return 'bg-green-500'
       case 'failed':
-        return 'bg-red-500';
+        return 'bg-red-500'
       case 'running':
-        return 'bg-blue-500';
+        return 'bg-blue-500'
       default:
-        return 'bg-gray-500';
+        return 'bg-gray-500'
     }
-  };
+  }
 
   const getStatusIcon = (status: TestResult['status']) => {
     switch (status) {
       case 'passed':
-        return <CheckCircle className="h-4 w-4" />;
+        return <CheckCircle className="h-4 w-4" />
       case 'failed':
-        return <AlertCircle className="h-4 w-4" />;
+        return <AlertCircle className="h-4 w-4" />
       case 'running':
-        return <Zap className="h-4 w-4 animate-spin" />;
+        return <Zap className="h-4 w-4 animate-spin" />
       default:
-        return <Clock className="h-4 w-4" />;
+        return <Clock className="h-4 w-4" />
     }
-  };
-
-  if (!mounted) {
-    return <div className="p-4 text-sm text-muted-foreground">Initialisation...</div>;
   }
 
-  const passedTests = testResults.filter((t) => t.status === 'passed').length;
-  const failedTests = testResults.filter((t) => t.status === 'failed').length;
-  const totalTests = testResults.length;
+  if (!mounted) {
+    return <div className="p-4 text-sm text-muted-foreground">Initialisation...</div>
+  }
+
+  const passedTests = testResults.filter((t) => t.status === 'passed').length
+  const failedTests = testResults.filter((t) => t.status === 'failed').length
+  const totalTests = testResults.length
 
   return (
     <div className="w-full space-y-6">
@@ -312,12 +303,7 @@ export function NotificationComprehensiveTester() {
           {isRunning ? 'Tests en cours...' : 'Exécuter tous les tests'}
         </Button>
 
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={() => testSound()}
-          disabled={!soundEnabled}
-        >
+        <Button size="lg" variant="outline" onClick={() => testSound()} disabled={!soundEnabled}>
           <Bell className="mr-2 h-4 w-4" />
           Tester le son
         </Button>
@@ -342,7 +328,18 @@ export function NotificationComprehensiveTester() {
           ) : (
             <div className="space-y-2">
               {testResults.map((result, index) => (
-                <Card key={index} className="border-l-4" style={{borderLeftColor: result.status === 'passed' ? '#22c55e' : result.status === 'failed' ? '#ef4444' : '#3b82f6'}}>
+                <Card
+                  key={index}
+                  className="border-l-4"
+                  style={{
+                    borderLeftColor:
+                      result.status === 'passed'
+                        ? '#22c55e'
+                        : result.status === 'failed'
+                          ? '#ef4444'
+                          : '#3b82f6',
+                  }}
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 flex-1">
@@ -353,10 +350,7 @@ export function NotificationComprehensiveTester() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <Badge
-                          variant="outline"
-                          className={getStatusColor(result.status)}
-                        >
+                        <Badge variant="outline" className={getStatusColor(result.status)}>
                           {result.status === 'passed'
                             ? 'Succès'
                             : result.status === 'failed'
@@ -405,9 +399,7 @@ export function NotificationComprehensiveTester() {
         <CardContent className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Sons activés:</span>
-            <span className="font-medium">
-              {soundEnabled ? '✅ Oui' : '❌ Non'}
-            </span>
+            <span className="font-medium">{soundEnabled ? '✅ Oui' : '❌ Non'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Volume:</span>
@@ -440,5 +432,5 @@ export function NotificationComprehensiveTester() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

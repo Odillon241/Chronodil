@@ -1,63 +1,65 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { UserPlus, X, Users } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
-import { getUsers } from "@/actions/user.actions";
-import { addProjectMember, removeProjectMember } from "@/actions/project.actions";
+} from '@/components/ui/select'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { UserPlus, X, Users } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
+import { toast } from 'sonner'
+import { getUsers } from '@/actions/user.actions'
+import { addProjectMember, removeProjectMember } from '@/actions/project.actions'
 
 interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  role: string;
+  id: string
+  name: string | null
+  email: string
+  role: string
+  avatar?: string | null
+  image?: string | null
   department?: {
-    id: string;
-    name: string;
-  } | null;
+    id: string
+    name: string
+  } | null
 }
 
 interface ProjectMember {
-  id: string;
-  user: User;
-  User?: User; // Alias pour compatibilité avec Prisma
-  role: string | null;
+  id: string
+  user: User
+  User?: User // Alias pour compatibilité avec Prisma
+  role: string | null
 }
 
 interface Project {
-  id: string;
-  name: string;
-  code: string;
-  color: string | null;
-  ProjectMember?: ProjectMember[];
-  members?: ProjectMember[]; // Alias pour compatibilité
+  id: string
+  name: string
+  code: string
+  color: string | null
+  ProjectMember?: ProjectMember[]
+  members?: ProjectMember[] // Alias pour compatibilité
 }
 
 interface ProjectTeamDialogProps {
-  project: Project | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onUpdate: () => void;
+  project: Project | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onUpdate: () => void
 }
 
 export function ProjectTeamDialog({
@@ -66,131 +68,134 @@ export function ProjectTeamDialog({
   onOpenChange,
   onUpdate,
 }: ProjectTeamDialogProps) {
-  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [memberRole, setMemberRole] = useState<string>("MEMBER");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([])
+  const [selectedUserId, setSelectedUserId] = useState<string>('')
+  const [memberRole, setMemberRole] = useState<string>('MEMBER')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false)
 
   useEffect(() => {
     if (open && project) {
-      loadAvailableUsers();
+      loadAvailableUsers()
     }
-  }, [open, project]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, project])
 
   const loadAvailableUsers = async () => {
-    setIsLoadingUsers(true);
+    setIsLoadingUsers(true)
     try {
-      const result = await getUsers({});
+      const result = await getUsers({})
       if (result?.data) {
         // Filter out users already in the project and ADMIN users
-        const currentMemberIds = project?.ProjectMember?.map((m) => (m.user?.id || m.User?.id)) || 
-                                project?.members?.map((m) => (m.user?.id || m.User?.id)) || [];
+        const currentMemberIds =
+          project?.ProjectMember?.map((m) => m.user?.id || m.User?.id) ||
+          project?.members?.map((m) => m.user?.id || m.User?.id) ||
+          []
         const filtered = (result.data as any[]).filter(
-          (user: any) => !currentMemberIds.includes(user.id) && user.role !== "ADMIN"
-        );
-        setAvailableUsers(filtered as User[]);
+          (user: any) => !currentMemberIds.includes(user.id) && user.role !== 'ADMIN',
+        )
+        setAvailableUsers(filtered as User[])
       }
     } catch (error) {
-      console.error("Error loading users:", error);
-      toast.error("Erreur lors du chargement des utilisateurs");
+      console.error('Error loading users:', error)
+      toast.error('Erreur lors du chargement des utilisateurs')
     } finally {
-      setIsLoadingUsers(false);
+      setIsLoadingUsers(false)
     }
-  };
+  }
 
   const handleAddMember = async () => {
     if (!project || !selectedUserId) {
-      toast.error("Veuillez sélectionner un utilisateur");
-      return;
+      toast.error('Veuillez sélectionner un utilisateur')
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const result = await addProjectMember({
         projectId: project.id,
         userId: selectedUserId,
         role: memberRole || undefined,
-      });
+      })
 
       if (result?.data) {
-        toast.success("Membre ajouté avec succès !");
-        setSelectedUserId("");
-        setMemberRole("MEMBER");
-        onUpdate();
-        loadAvailableUsers();
+        toast.success('Membre ajouté avec succès !')
+        setSelectedUserId('')
+        setMemberRole('MEMBER')
+        onUpdate()
+        loadAvailableUsers()
       } else {
-        toast.error(result?.serverError || "Erreur lors de l'ajout");
+        toast.error(result?.serverError || "Erreur lors de l'ajout")
       }
     } catch (error) {
-      toast.error("Erreur lors de l'ajout du membre");
-      console.error(error);
+      toast.error("Erreur lors de l'ajout du membre")
+      console.error(error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleRemoveMember = async (membershipId: string, userName: string) => {
-    if (!project) return;
+    if (!project) return
 
     if (!confirm(`Voulez-vous vraiment retirer ${userName} de ce projet ?`)) {
-      return;
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const result = await removeProjectMember({
         id: membershipId,
-      });
+      })
 
       if (result?.data) {
-        toast.success("Membre retiré avec succès !");
-        onUpdate();
-        loadAvailableUsers();
+        toast.success('Membre retiré avec succès !')
+        onUpdate()
+        loadAvailableUsers()
       } else {
-        toast.error(result?.serverError || "Erreur lors du retrait");
+        toast.error(result?.serverError || 'Erreur lors du retrait')
       }
     } catch (error) {
-      toast.error("Erreur lors du retrait du membre");
-      console.error(error);
+      toast.error('Erreur lors du retrait du membre')
+      console.error(error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  const getInitials = (name: string | null) => {
-    if (!name) return "U";
+  const _getInitials = (name: string | null) => {
+    if (!name) return 'U'
     return name
-      .split(" ")
+      .split(' ')
       .map((n) => n[0])
-      .join("")
+      .join('')
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   const getRoleBadgeColor = (role: string) => {
     const colors = {
-      ADMIN: "bg-red-100 text-red-800 border-red-200",
-      HR: "bg-purple-100 text-purple-800 border-purple-200",
-      MANAGER: "bg-blue-100 text-blue-800 border-blue-200",
-      EMPLOYEE: "bg-green-100 text-green-800 border-green-200",
-    };
-    return colors[role as keyof typeof colors] || colors.EMPLOYEE;
-  };
+      ADMIN: 'bg-red-100 text-red-800 border-red-200',
+      HR: 'bg-purple-100 text-purple-800 border-purple-200',
+      MANAGER: 'bg-blue-100 text-blue-800 border-blue-200',
+      EMPLOYEE: 'bg-green-100 text-green-800 border-green-200',
+    }
+    return colors[role as keyof typeof colors] || colors.EMPLOYEE
+  }
 
   const getRoleLabel = (role: string) => {
     const labels = {
-      ADMIN: "Administrateur",
-      HR: "RH",
-      MANAGER: "Manager",
-      EMPLOYEE: "Employé",
-      MEMBER: "Membre",
-      LEAD: "Chef de projet",
-    };
-    return labels[role as keyof typeof labels] || role;
-  };
+      ADMIN: 'Administrateur',
+      HR: 'RH',
+      MANAGER: 'Manager',
+      EMPLOYEE: 'Employé',
+      MEMBER: 'Membre',
+      LEAD: 'Chef de projet',
+    }
+    return labels[role as keyof typeof labels] || role
+  }
 
-  if (!project) return null;
+  if (!project) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -199,13 +204,11 @@ export function ProjectTeamDialog({
           <DialogTitle className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: project.color || "#dd2d4a" }}
+              style={{ backgroundColor: project.color || '#dd2d4a' }}
             />
             Gérer l'équipe - {project.name}
           </DialogTitle>
-          <DialogDescription>
-            Ajoutez ou retirez des membres de l'équipe projet
-          </DialogDescription>
+          <DialogDescription>Ajoutez ou retirez des membres de l'équipe projet</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -240,7 +243,7 @@ export function ProjectTeamDialog({
                               <div className="flex items-center gap-2">
                                 <span>{user.name || user.email}</span>
                                 <span className="text-xs text-muted-foreground">
-                                  {user.department?.name || "Pas de département"}
+                                  {user.department?.name || 'Pas de département'}
                                 </span>
                               </div>
                             </SelectItem>
@@ -250,9 +253,7 @@ export function ProjectTeamDialog({
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Rôle sur le projet (optionnel)
-                      </label>
+                      <label className="text-sm font-medium">Rôle sur le projet (optionnel)</label>
                       <Select value={memberRole} onValueChange={setMemberRole}>
                         <SelectTrigger>
                           <SelectValue />
@@ -298,8 +299,8 @@ export function ProjectTeamDialog({
               </h3>
             </div>
 
-            {(!project.ProjectMember || project.ProjectMember.length === 0) && 
-             (!project.members || project.members.length === 0) ? (
+            {(!project.ProjectMember || project.ProjectMember.length === 0) &&
+            (!project.members || project.members.length === 0) ? (
               <Card>
                 <CardContent className="py-8">
                   <div className="text-center text-muted-foreground">
@@ -314,14 +315,17 @@ export function ProjectTeamDialog({
                     <CardContent className="py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {getInitials((member.user || member.User)?.name)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <UserAvatar
+                            name={(member.user || member.User)?.name}
+                            avatar={
+                              (member.user || member.User)?.avatar ||
+                              (member.user || member.User)?.image
+                            }
+                            size="md"
+                          />
                           <div>
                             <div className="font-medium">
-                              {(member.user || member.User)?.name || "Utilisateur sans nom"}
+                              {(member.user || member.User)?.name || 'Utilisateur sans nom'}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {(member.user || member.User)?.email}
@@ -335,8 +339,12 @@ export function ProjectTeamDialog({
                               {getRoleLabel(member.role)}
                             </Badge>
                           )}
-                          <Badge className={getRoleBadgeColor((member.user || member.User)?.role || "EMPLOYEE")}>
-                            {getRoleLabel((member.user || member.User)?.role || "EMPLOYEE")}
+                          <Badge
+                            className={getRoleBadgeColor(
+                              (member.user || member.User)?.role || 'EMPLOYEE',
+                            )}
+                          >
+                            {getRoleLabel((member.user || member.User)?.role || 'EMPLOYEE')}
                           </Badge>
                           {(member.user || member.User)?.department && (
                             <Badge variant="secondary" className="text-xs">
@@ -349,7 +357,9 @@ export function ProjectTeamDialog({
                             onClick={() =>
                               handleRemoveMember(
                                 member.id,
-                                (member.user || member.User)?.name || (member.user || member.User)?.email || "Utilisateur"
+                                (member.user || member.User)?.name ||
+                                  (member.user || member.User)?.email ||
+                                  'Utilisateur',
                               )
                             }
                             disabled={isLoading}
@@ -367,5 +377,5 @@ export function ProjectTeamDialog({
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

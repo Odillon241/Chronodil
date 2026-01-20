@@ -1,30 +1,30 @@
-'use client';
+'use client'
 
-import * as React from 'react';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Link } from '@tiptap/extension-link';
-import { Image } from '@tiptap/extension-image';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableHeader } from '@tiptap/extension-table-header';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { Highlight } from '@tiptap/extension-highlight';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { TextStyle } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import { Underline } from '@tiptap/extension-underline';
-import { Subscript } from '@tiptap/extension-subscript';
-import { Superscript } from '@tiptap/extension-superscript';
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import { Placeholder } from '@tiptap/extension-placeholder';
-import { Typography } from '@tiptap/extension-typography';
-import { common, createLowlight } from 'lowlight';
+import * as React from 'react'
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import { Link } from '@tiptap/extension-link'
+import { Image } from '@tiptap/extension-image'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableHeader } from '@tiptap/extension-table-header'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { Highlight } from '@tiptap/extension-highlight'
+import { TextAlign } from '@tiptap/extension-text-align'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+import { Underline } from '@tiptap/extension-underline'
+import { Subscript } from '@tiptap/extension-subscript'
+import { Superscript } from '@tiptap/extension-superscript'
+import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
+import { Placeholder } from '@tiptap/extension-placeholder'
+import { Typography } from '@tiptap/extension-typography'
+import { common, createLowlight } from 'lowlight'
 
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Toggle } from '@/components/ui/toggle';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Toggle } from '@/components/ui/toggle'
+import { Input } from '@/components/ui/input'
 import {
   Bold,
   Italic,
@@ -52,17 +52,17 @@ import {
   Superscript as SuperscriptIcon,
   Palette,
   CodeIcon,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-const lowlight = createLowlight(common);
+const lowlight = createLowlight(common)
 
 interface MinimalTiptapProps {
-  content?: string;
-  onChange?: (content: string) => void;
-  placeholder?: string;
-  editable?: boolean;
-  className?: string;
+  content?: string
+  onChange?: (content: string) => void
+  placeholder?: string
+  editable?: boolean
+  className?: string
 }
 
 function MinimalTiptap({
@@ -72,10 +72,10 @@ function MinimalTiptap({
   editable = true,
   className,
 }: MinimalTiptapProps) {
-  const [linkUrl, setLinkUrl] = React.useState('');
-  const [showLinkInput, setShowLinkInput] = React.useState(false);
-  const [showColorPicker, setShowColorPicker] = React.useState(false);
-  const [selectedColor, setSelectedColor] = React.useState('#000000');
+  const [linkUrl, setLinkUrl] = React.useState('')
+  const [showLinkInput, setShowLinkInput] = React.useState(false)
+  const [showColorPicker, setShowColorPicker] = React.useState(false)
+  const [_selectedColor, _setSelectedColor] = React.useState('#000000')
 
   const editor = useEditor({
     immediatelyRender: false, // Fix SSR hydration mismatch
@@ -150,65 +150,68 @@ function MinimalTiptap({
     content,
     editable,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+      onChange?.(editor.getHTML())
     },
     editorProps: {
       attributes: {
-        class: cn(
-          'prose prose-sm max-w-none focus:outline-hidden',
-          'min-h-[200px] p-4 border-0'
-        ),
+        class: cn('prose prose-sm max-w-none focus:outline-hidden', 'min-h-[200px] p-4 border-0'),
       },
     },
-  });
+  })
 
   React.useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+      editor.commands.setContent(content)
     }
-  }, [content, editor]);
+  }, [content, editor])
 
   const addLink = React.useCallback(() => {
     if (linkUrl && editor) {
-      editor
-        .chain()
-        .focus()
-        .extendMarkRange('link')
-        .setLink({ href: linkUrl })
-        .run();
-      setLinkUrl('');
-      setShowLinkInput(false);
+      editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run()
+      setLinkUrl('')
+      setShowLinkInput(false)
     }
-  }, [editor, linkUrl]);
+  }, [editor, linkUrl])
 
   const addImage = React.useCallback(() => {
-    const url = window.prompt('URL de l\'image');
+    const url = window.prompt("URL de l'image")
     if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().setImage({ src: url }).run()
     }
-  }, [editor]);
+  }, [editor])
 
   const insertTable = React.useCallback(() => {
     if (editor) {
-      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
     }
-  }, [editor]);
+  }, [editor])
 
-  const applyColor = React.useCallback((color: string) => {
-    if (editor) {
-      editor.chain().focus().setColor(color).run();
-      setShowColorPicker(false);
-    }
-  }, [editor]);
+  const applyColor = React.useCallback(
+    (color: string) => {
+      if (editor) {
+        editor.chain().focus().setColor(color).run()
+        setShowColorPicker(false)
+      }
+    },
+    [editor],
+  )
 
   if (!editor) {
-    return null;
+    return null
   }
 
   const colors = [
-    '#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00',
-    '#FF00FF', '#00FFFF', '#FFA500', '#800080', '#008000'
-  ];
+    '#000000',
+    '#FF0000',
+    '#00FF00',
+    '#0000FF',
+    '#FFFF00',
+    '#FF00FF',
+    '#00FFFF',
+    '#FFA500',
+    '#800080',
+    '#008000',
+  ]
 
   return (
     <div className={cn('border rounded-lg overflow-hidden bg-white', className)}>
@@ -307,8 +310,8 @@ function MinimalTiptap({
                 variant="outline"
                 className="w-full mt-2"
                 onClick={() => {
-                  editor?.chain().focus().unsetColor().run();
-                  setShowColorPicker(false);
+                  editor?.chain().focus().unsetColor().run()
+                  setShowColorPicker(false)
                 }}
               >
                 Réinitialiser
@@ -456,10 +459,10 @@ function MinimalTiptap({
                 onChange={(e) => setLinkUrl(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    addLink();
+                    addLink()
                   } else if (e.key === 'Escape') {
-                    setShowLinkInput(false);
-                    setLinkUrl('');
+                    setShowLinkInput(false)
+                    setLinkUrl('')
                   }
                 }}
                 className="h-8 w-48"
@@ -472,8 +475,8 @@ function MinimalTiptap({
                 size="sm"
                 variant="ghost"
                 onClick={() => {
-                  setShowLinkInput(false);
-                  setLinkUrl('');
+                  setShowLinkInput(false)
+                  setLinkUrl('')
                 }}
               >
                 ✕
@@ -493,21 +496,11 @@ function MinimalTiptap({
           </Button>
         )}
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={addImage}
-          title="Ajouter une image"
-        >
+        <Button variant="ghost" size="sm" onClick={addImage} title="Ajouter une image">
           <ImageIcon className="h-4 w-4" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={insertTable}
-          title="Insérer un tableau"
-        >
+        <Button variant="ghost" size="sm" onClick={insertTable} title="Insérer un tableau">
           <TableIcon className="h-4 w-4" />
         </Button>
 
@@ -546,10 +539,7 @@ function MinimalTiptap({
         </Button>
       </div>
 
-      <EditorContent
-        editor={editor}
-        className="tiptap-editor"
-      />
+      <EditorContent editor={editor} className="tiptap-editor" />
 
       <style jsx global>{`
         .tiptap-editor .ProseMirror {
@@ -610,7 +600,7 @@ function MinimalTiptap({
         }
       `}</style>
     </div>
-  );
+  )
 }
 
-export { MinimalTiptap, type MinimalTiptapProps };
+export { MinimalTiptap, type MinimalTiptapProps }

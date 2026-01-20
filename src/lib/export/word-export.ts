@@ -9,41 +9,40 @@ import {
   TableRow,
   TableCell,
   WidthType,
-  BorderStyle,
-} from "docx";
-import { convert } from "html-to-text";
-import type { ReportData } from "./types";
+} from 'docx'
+import { convert } from 'html-to-text'
+import type { ReportData } from './types'
 
 /**
  * Convertir du HTML en paragraphes Word
  */
 function htmlToParagraphs(html: string): Paragraph[] {
-  const paragraphs: Paragraph[] = [];
+  const paragraphs: Paragraph[] = []
 
   // Convertir HTML en texte simple avec structure
   const text = convert(html, {
     wordwrap: false,
     preserveNewlines: true,
-  });
+  })
 
   // Diviser en lignes et créer des paragraphes
-  const lines = text.split("\n").filter((line) => line.trim());
+  const lines = text.split('\n').filter((line) => line.trim())
 
   for (const line of lines) {
-    const trimmed = line.trim();
+    const trimmed = line.trim()
 
     // Détecter les titres (commencent souvent par # ou sont en MAJUSCULES)
-    if (trimmed.startsWith("#")) {
-      const level = trimmed.match(/^#+/)?.[0].length || 1;
-      const headingText = trimmed.replace(/^#+\s*/, "");
+    if (trimmed.startsWith('#')) {
+      const level = trimmed.match(/^#+/)?.[0].length || 1
+      const headingText = trimmed.replace(/^#+\s*/, '')
 
       paragraphs.push(
         new Paragraph({
           text: headingText,
           heading: level === 1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
           spacing: { before: 240, after: 120 },
-        })
-      );
+        }),
+      )
     } else if (trimmed.toUpperCase() === trimmed && trimmed.length > 5) {
       // Ligne en majuscules = titre
       paragraphs.push(
@@ -51,26 +50,26 @@ function htmlToParagraphs(html: string): Paragraph[] {
           text: trimmed,
           heading: HeadingLevel.HEADING_2,
           spacing: { before: 240, after: 120 },
-        })
-      );
+        }),
+      )
     } else {
       // Paragraphe normal
       paragraphs.push(
         new Paragraph({
           children: [new TextRun(trimmed)],
           spacing: { before: 120, after: 120 },
-        })
-      );
+        }),
+      )
     }
   }
 
-  return paragraphs;
+  return paragraphs
 }
 
 /**
  * Créer un tableau Word depuis des données structurées
  */
-function createTable(headers: string[], rows: string[][]): Table {
+function _createTable(headers: string[], rows: string[][]): Table {
   return new Table({
     width: {
       size: 100,
@@ -93,9 +92,9 @@ function createTable(headers: string[], rows: string[][]): Table {
                 }),
               ],
               shading: {
-                fill: "F3F4F6",
+                fill: 'F3F4F6',
               },
-            })
+            }),
         ),
       }),
       // Lignes de données
@@ -106,22 +105,22 @@ function createTable(headers: string[], rows: string[][]): Table {
               (cell) =>
                 new TableCell({
                   children: [new Paragraph({ text: cell })],
-                })
+                }),
             ),
-          })
+          }),
       ),
     ],
-  });
+  })
 }
 
 /**
  * Exporter un rapport en format Word (.docx)
  */
 export async function exportToWord(reportData: ReportData): Promise<Buffer> {
-  const { title, content, period, author, createdAt } = reportData;
+  const { title, content, period, author, createdAt } = reportData
 
   // Créer les sections du document
-  const sections: Paragraph[] = [];
+  const sections: Paragraph[] = []
 
   // Titre principal
   sections.push(
@@ -130,47 +129,45 @@ export async function exportToWord(reportData: ReportData): Promise<Buffer> {
       heading: HeadingLevel.TITLE,
       alignment: AlignmentType.CENTER,
       spacing: { after: 400 },
-    })
-  );
+    }),
+  )
 
   // Métadonnées
   if (period || author || createdAt) {
-    const metadata: string[] = [];
-    if (period) metadata.push(`Période: ${period}`);
-    if (author) metadata.push(`Auteur: ${author}`);
+    const metadata: string[] = []
+    if (period) metadata.push(`Période: ${period}`)
+    if (author) metadata.push(`Auteur: ${author}`)
     if (createdAt) {
-      metadata.push(
-        `Date de création: ${createdAt.toLocaleDateString("fr-FR")}`
-      );
+      metadata.push(`Date de création: ${createdAt.toLocaleDateString('fr-FR')}`)
     }
 
     sections.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: metadata.join(" | "),
+            text: metadata.join(' | '),
             italics: true,
             size: 20,
           }),
         ],
         alignment: AlignmentType.CENTER,
         spacing: { after: 400 },
-      })
-    );
+      }),
+    )
   }
 
   // Ligne de séparation
   sections.push(
     new Paragraph({
-      text: "─".repeat(50),
+      text: '─'.repeat(50),
       alignment: AlignmentType.CENTER,
       spacing: { after: 240 },
-    })
-  );
+    }),
+  )
 
   // Convertir le contenu HTML en paragraphes
-  const contentParagraphs = htmlToParagraphs(content);
-  sections.push(...contentParagraphs);
+  const contentParagraphs = htmlToParagraphs(content)
+  sections.push(...contentParagraphs)
 
   // Créer le document
   const doc = new Document({
@@ -180,23 +177,21 @@ export async function exportToWord(reportData: ReportData): Promise<Buffer> {
         children: sections,
       },
     ],
-  });
+  })
 
   // Générer le buffer
-  const buffer = await Packer.toBuffer(doc);
-  return buffer;
+  const buffer = await Packer.toBuffer(doc)
+  return buffer
 }
 
 /**
  * Exporter plusieurs rapports en un seul document Word
  */
-export async function exportMultipleReportsToWord(
-  reports: ReportData[]
-): Promise<Buffer> {
-  const sections: Paragraph[] = [];
+export async function exportMultipleReportsToWord(reports: ReportData[]): Promise<Buffer> {
+  const sections: Paragraph[] = []
 
   for (let i = 0; i < reports.length; i++) {
-    const report = reports[i];
+    const report = reports[i]
 
     // Titre du rapport
     sections.push(
@@ -204,8 +199,8 @@ export async function exportMultipleReportsToWord(
         text: report.title,
         heading: HeadingLevel.HEADING_1,
         spacing: { before: i === 0 ? 0 : 480, after: 240 },
-      })
-    );
+      }),
+    )
 
     // Métadonnées
     if (report.period) {
@@ -218,22 +213,22 @@ export async function exportMultipleReportsToWord(
             }),
           ],
           spacing: { after: 240 },
-        })
-      );
+        }),
+      )
     }
 
     // Contenu
-    const contentParagraphs = htmlToParagraphs(report.content);
-    sections.push(...contentParagraphs);
+    const contentParagraphs = htmlToParagraphs(report.content)
+    sections.push(...contentParagraphs)
 
     // Séparateur entre rapports
     if (i < reports.length - 1) {
       sections.push(
         new Paragraph({
-          text: "",
+          text: '',
           spacing: { after: 240 },
-        })
-      );
+        }),
+      )
     }
   }
 
@@ -244,8 +239,8 @@ export async function exportMultipleReportsToWord(
         children: sections,
       },
     ],
-  });
+  })
 
-  const buffer = await Packer.toBuffer(doc);
-  return buffer;
+  const buffer = await Packer.toBuffer(doc)
+  return buffer
 }

@@ -1,9 +1,9 @@
-"use server";
+'use server'
 
-import { authActionClient } from "@/lib/safe-action";
-import { prisma } from "@/lib/db";
-import { z } from "zod";
-import { exportReportSchema } from "@/lib/validations/report-template";
+import { authActionClient } from '@/lib/safe-action'
+import { prisma } from '@/lib/db'
+import { z } from 'zod'
+import { exportReportSchema } from '@/lib/validations/report-template'
 
 // ============================================
 // EXPORT ACTIONS
@@ -15,8 +15,8 @@ import { exportReportSchema } from "@/lib/validations/report-template";
 export const exportReport = authActionClient
   .schema(exportReportSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
-    const { reportId, format } = parsedInput;
+    const { userId } = ctx
+    const { reportId, format } = parsedInput
 
     // Récupérer le rapport
     const report = await prisma.report.findUnique({
@@ -38,10 +38,10 @@ export const exportReport = authActionClient
           },
         },
       },
-    });
+    })
 
     if (!report) {
-      throw new Error("Rapport non trouvé");
+      throw new Error('Rapport non trouvé')
     }
 
     // Vérifier les permissions
@@ -49,10 +49,10 @@ export const exportReport = authActionClient
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { role: true },
-      });
+      })
 
-      if (user?.role !== "ADMIN" && user?.role !== "HR" && user?.role !== "MANAGER") {
-        throw new Error("Vous n'avez pas la permission d'exporter ce rapport");
+      if (user?.role !== 'ADMIN' && user?.role !== 'HR' && user?.role !== 'MANAGER') {
+        throw new Error("Vous n'avez pas la permission d'exporter ce rapport")
       }
     }
 
@@ -68,36 +68,36 @@ export const exportReport = authActionClient
         includeSummary: report.includeSummary,
         reportType: report.reportType,
       },
-    };
+    }
 
     // Générer le fichier selon le format
-    let buffer: Buffer;
-    let filename: string;
-    let mimeType: string;
+    let buffer: Buffer
+    let filename: string
+    let mimeType: string
 
     switch (format) {
-      case "word": {
-        const { exportToWord } = await import("@/lib/export/word-export");
-        buffer = await exportToWord(reportData);
-        filename = `${report.title}.docx`;
-        mimeType =
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        break;
+      case 'word': {
+        const { exportToWord } = await import('@/lib/export/word-export')
+        buffer = await exportToWord(reportData)
+        filename = `${report.title}.docx`
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        break
       }
 
-      case "excel": {
-        const { exportToExcel } = await import("@/lib/export/excel-export");
-        buffer = await exportToExcel(reportData);
-        filename = `${report.title}.xlsx`;
-        mimeType =
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        break;
+      case 'excel': {
+        const { exportToExcel } = await import('@/lib/export/excel-export')
+        buffer = await exportToExcel(reportData)
+        filename = `${report.title}.xlsx`
+        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        break
       }
 
-      case "pdf": {
+      case 'pdf': {
         // TODO: L'export PDF nécessite une configuration supplémentaire pour Next.js
         // Pour l'activer, consultez RAPPORT_IMPLEMENTATION.md
-        throw new Error("L'export PDF sera disponible prochainement. Utilisez Word ou Excel pour l'instant.");
+        throw new Error(
+          "L'export PDF sera disponible prochainement. Utilisez Word ou Excel pour l'instant.",
+        )
         // const { exportToPDF } = await import("@/lib/export/pdf-export");
         // buffer = await exportToPDF(reportData);
         // filename = `${report.title}.pdf`;
@@ -106,19 +106,19 @@ export const exportReport = authActionClient
       }
 
       default:
-        throw new Error(`Format d'export non supporté: ${format}`);
+        throw new Error(`Format d'export non supporté: ${format}`)
     }
 
     // Convertir le buffer en base64 pour le transfert
-    const base64 = buffer.toString("base64");
+    const base64 = buffer.toString('base64')
 
     return {
       filename,
       mimeType,
       data: base64,
       size: buffer.length,
-    };
-  });
+    }
+  })
 
 /**
  * Exporter plusieurs rapports en un seul fichier
@@ -126,14 +126,14 @@ export const exportReport = authActionClient
 export const exportMultipleReports = authActionClient
   .schema(
     z.object({
-      reportIds: z.array(z.string()).min(1, "Au moins un rapport requis"),
-      format: z.enum(["word", "excel", "pdf"]),
+      reportIds: z.array(z.string()).min(1, 'Au moins un rapport requis'),
+      format: z.enum(['word', 'excel', 'pdf']),
       filename: z.string().optional(),
-    })
+    }),
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
-    const { reportIds, format, filename } = parsedInput;
+    const { userId } = ctx
+    const { reportIds, format, filename } = parsedInput
 
     // Récupérer tous les rapports
     const reports = await prisma.report.findMany({
@@ -152,30 +152,30 @@ export const exportMultipleReports = authActionClient
         },
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: 'asc',
       },
-    });
+    })
 
     if (reports.length === 0) {
-      throw new Error("Aucun rapport trouvé");
+      throw new Error('Aucun rapport trouvé')
     }
 
     // Vérifier les permissions
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
-    });
+    })
 
     const hasAccess = reports.every(
       (report) =>
         report.createdById === userId ||
-        user?.role === "ADMIN" ||
-        user?.role === "HR" ||
-        user?.role === "MANAGER"
-    );
+        user?.role === 'ADMIN' ||
+        user?.role === 'HR' ||
+        user?.role === 'MANAGER',
+    )
 
     if (!hasAccess) {
-      throw new Error("Vous n'avez pas la permission d'exporter certains rapports");
+      throw new Error("Vous n'avez pas la permission d'exporter certains rapports")
     }
 
     // Préparer les données pour l'export
@@ -185,47 +185,47 @@ export const exportMultipleReports = authActionClient
       period: report.period || undefined,
       author: report.User.name || report.User.email,
       createdAt: report.createdAt,
-    }));
+    }))
 
     // Générer le fichier selon le format
-    let buffer: Buffer;
-    let exportFilename: string;
-    let mimeType: string;
+    let buffer: Buffer
+    let exportFilename: string
+    let mimeType: string
 
-    const defaultFilename = `Rapports_${new Date().toISOString().split("T")[0]}`;
+    const defaultFilename = `Rapports_${new Date().toISOString().split('T')[0]}`
 
     switch (format) {
-      case "word":
+      case 'word':
         // Import dynamique pour éviter les problèmes de bundling
-        const { exportMultipleReportsToWord } = await import("@/lib/export/word-export");
-        buffer = await exportMultipleReportsToWord(reportsData);
-        exportFilename = `${filename || defaultFilename}.docx`;
-        mimeType =
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        break;
+        const { exportMultipleReportsToWord } = await import('@/lib/export/word-export')
+        buffer = await exportMultipleReportsToWord(reportsData)
+        exportFilename = `${filename || defaultFilename}.docx`
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        break
 
-      case "excel":
-        const { exportMultipleReportsToExcel } = await import("@/lib/export/excel-export");
-        buffer = await exportMultipleReportsToExcel(reportsData);
-        exportFilename = `${filename || defaultFilename}.xlsx`;
-        mimeType =
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        break;
+      case 'excel':
+        const { exportMultipleReportsToExcel } = await import('@/lib/export/excel-export')
+        buffer = await exportMultipleReportsToExcel(reportsData)
+        exportFilename = `${filename || defaultFilename}.xlsx`
+        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        break
 
-      case "pdf":
-        throw new Error("L'export PDF sera disponible prochainement. Utilisez Word ou Excel pour l'instant.");
-        // const { exportMultipleReportsToPDF } = await import("@/lib/export/pdf-export");
-        // buffer = await exportMultipleReportsToPDF(reportsData);
-        // exportFilename = `${filename || defaultFilename}.pdf`;
-        // mimeType = "application/pdf";
-        // break;
+      case 'pdf':
+        throw new Error(
+          "L'export PDF sera disponible prochainement. Utilisez Word ou Excel pour l'instant.",
+        )
+      // const { exportMultipleReportsToPDF } = await import("@/lib/export/pdf-export");
+      // buffer = await exportMultipleReportsToPDF(reportsData);
+      // exportFilename = `${filename || defaultFilename}.pdf`;
+      // mimeType = "application/pdf";
+      // break;
 
       default:
-        throw new Error(`Format d'export non supporté: ${format}`);
+        throw new Error(`Format d'export non supporté: ${format}`)
     }
 
     // Convertir le buffer en base64
-    const base64 = buffer.toString("base64");
+    const base64 = buffer.toString('base64')
 
     return {
       filename: exportFilename,
@@ -233,8 +233,8 @@ export const exportMultipleReports = authActionClient
       data: base64,
       size: buffer.length,
       reportCount: reports.length,
-    };
-  });
+    }
+  })
 
 /**
  * Exporter un rapport directement depuis une feuille de temps
@@ -243,13 +243,13 @@ export const exportTimesheetAsReport = authActionClient
   .schema(
     z.object({
       hrTimesheetId: z.string(),
-      format: z.enum(["word", "excel", "pdf"]),
+      format: z.enum(['word', 'excel', 'pdf']),
       templateId: z.string().optional(),
-    })
+    }),
   )
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
-    const { hrTimesheetId, format, templateId } = parsedInput;
+    const { userId } = ctx
+    const { hrTimesheetId, format } = parsedInput
 
     // Récupérer la feuille de temps
     const timesheet = await prisma.hRTimesheet.findUnique({
@@ -264,14 +264,14 @@ export const exportTimesheetAsReport = authActionClient
         },
         HRActivity: {
           orderBy: {
-            startDate: "asc",
+            startDate: 'asc',
           },
         },
       },
-    });
+    })
 
     if (!timesheet) {
-      throw new Error("Feuille de temps non trouvée");
+      throw new Error('Feuille de temps non trouvée')
     }
 
     // Vérifier les permissions
@@ -279,15 +279,16 @@ export const exportTimesheetAsReport = authActionClient
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { role: true },
-      });
+      })
 
-      if (user?.role !== "ADMIN" && user?.role !== "HR" && user?.role !== "MANAGER") {
-        throw new Error("Vous n'avez pas la permission d'exporter cette feuille de temps");
+      if (user?.role !== 'ADMIN' && user?.role !== 'HR' && user?.role !== 'MANAGER') {
+        throw new Error("Vous n'avez pas la permission d'exporter cette feuille de temps")
       }
     }
 
     // Générer le rapport (utilise generateReportFromTimesheet en interne)
-    const { generateReportFromTimesheet } = await import("./report-generation.actions");
+    const { generateReportFromTimesheet: _generateReportFromTimesheet } =
+      await import('./report-generation.actions')
 
     // Cette fonction est une action, donc on doit l'appeler directement
     // Pour simplifier, on va créer le rapport directement ici
@@ -316,15 +317,15 @@ export const exportTimesheetAsReport = authActionClient
                 <td>${activity.activityName}</td>
                 <td>${activity.activityType}</td>
                 <td>${activity.totalHours}h</td>
-                <td>${activity.status === "COMPLETED" ? "Terminée" : "En cours"}</td>
+                <td>${activity.status === 'COMPLETED' ? 'Terminée' : 'En cours'}</td>
               </tr>
-            `
-            ).join("")}
+            `,
+            ).join('')}
           </tbody>
         </table>`,
-      period: `${new Date(timesheet.weekStartDate).toLocaleDateString("fr-FR")} - ${new Date(
-        timesheet.weekEndDate
-      ).toLocaleDateString("fr-FR")}`,
+      period: `${new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR')} - ${new Date(
+        timesheet.weekEndDate,
+      ).toLocaleDateString('fr-FR')}`,
       author: timesheet.User_HRTimesheet_userIdToUser.name || timesheet.employeeName,
       createdAt: new Date(),
       activities: timesheet.HRActivity.map((activity) => ({
@@ -332,36 +333,36 @@ export const exportTimesheetAsReport = authActionClient
         type: activity.activityType,
         periodicity: activity.periodicity,
         hours: activity.totalHours,
-        status: activity.status === "COMPLETED" ? "Terminée" : "En cours",
+        status: activity.status === 'COMPLETED' ? 'Terminée' : 'En cours',
       })),
-    };
+    }
 
     // Générer le fichier
-    let buffer: Buffer;
-    let filename: string;
-    let mimeType: string;
+    let buffer: Buffer
+    let filename: string
+    let mimeType: string
 
     switch (format) {
-      case "word": {
-        const { exportToWord } = await import("@/lib/export/word-export");
-        buffer = await exportToWord(reportData);
-        filename = `Rapport_${timesheet.employeeName}_${new Date().toISOString().split("T")[0]}.docx`;
-        mimeType =
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        break;
+      case 'word': {
+        const { exportToWord } = await import('@/lib/export/word-export')
+        buffer = await exportToWord(reportData)
+        filename = `Rapport_${timesheet.employeeName}_${new Date().toISOString().split('T')[0]}.docx`
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        break
       }
 
-      case "excel": {
-        const { exportToExcel } = await import("@/lib/export/excel-export");
-        buffer = await exportToExcel(reportData);
-        filename = `Rapport_${timesheet.employeeName}_${new Date().toISOString().split("T")[0]}.xlsx`;
-        mimeType =
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        break;
+      case 'excel': {
+        const { exportToExcel } = await import('@/lib/export/excel-export')
+        buffer = await exportToExcel(reportData)
+        filename = `Rapport_${timesheet.employeeName}_${new Date().toISOString().split('T')[0]}.xlsx`
+        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        break
       }
 
-      case "pdf": {
-        throw new Error("L'export PDF sera disponible prochainement. Utilisez Word ou Excel pour l'instant.");
+      case 'pdf': {
+        throw new Error(
+          "L'export PDF sera disponible prochainement. Utilisez Word ou Excel pour l'instant.",
+        )
         // const { exportToPDF } = await import("@/lib/export/pdf-export");
         // buffer = await exportToPDF(reportData);
         // filename = `Rapport_${timesheet.employeeName}_${new Date().toISOString().split("T")[0]}.pdf`;
@@ -370,15 +371,15 @@ export const exportTimesheetAsReport = authActionClient
       }
 
       default:
-        throw new Error(`Format d'export non supporté: ${format}`);
+        throw new Error(`Format d'export non supporté: ${format}`)
     }
 
-    const base64 = buffer.toString("base64");
+    const base64 = buffer.toString('base64')
 
     return {
       filename,
       mimeType,
       data: base64,
       size: buffer.length,
-    };
-  });
+    }
+  })

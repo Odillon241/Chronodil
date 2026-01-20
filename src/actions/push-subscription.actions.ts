@@ -1,8 +1,8 @@
-"use server";
+'use server'
 
-import { prisma } from "@/lib/db";
-import { authActionClient } from "@/lib/safe-action";
-import { z } from "zod";
+import { prisma } from '@/lib/db'
+import { authActionClient } from '@/lib/safe-action'
+import { z } from 'zod'
 
 /**
  * Schéma pour une subscription push
@@ -13,7 +13,7 @@ const pushSubscriptionSchema = z.object({
     p256dh: z.string().min(1),
     auth: z.string().min(1),
   }),
-});
+})
 
 /**
  * Sauvegarder une subscription push pour l'utilisateur connecté
@@ -21,13 +21,13 @@ const pushSubscriptionSchema = z.object({
 export const savePushSubscription = authActionClient
   .schema(pushSubscriptionSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
-    const { endpoint, keys } = parsedInput;
+    const { userId } = ctx
+    const { endpoint, keys } = parsedInput
 
     // Vérifier si une subscription existe déjà avec ce endpoint
     const existingSubscription = await prisma.pushSubscription.findUnique({
       where: { endpoint },
-    });
+    })
 
     if (existingSubscription) {
       // Si c'est pour le même utilisateur, mettre à jour
@@ -39,14 +39,14 @@ export const savePushSubscription = authActionClient
             auth: keys.auth,
             updatedAt: new Date(),
           },
-        });
-        return { success: true, subscription: updated, action: "updated" };
+        })
+        return { success: true, subscription: updated, action: 'updated' }
       }
 
       // Si c'est pour un autre utilisateur, supprimer l'ancienne et créer une nouvelle
       await prisma.pushSubscription.delete({
         where: { endpoint },
-      });
+      })
     }
 
     // Créer une nouvelle subscription
@@ -57,10 +57,10 @@ export const savePushSubscription = authActionClient
         p256dh: keys.p256dh,
         auth: keys.auth,
       },
-    });
+    })
 
-    return { success: true, subscription, action: "created" };
-  });
+    return { success: true, subscription, action: 'created' }
+  })
 
 /**
  * Supprimer une subscription push
@@ -68,28 +68,28 @@ export const savePushSubscription = authActionClient
 export const deletePushSubscription = authActionClient
   .schema(z.object({ endpoint: z.string().url() }))
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
-    const { endpoint } = parsedInput;
+    const { userId } = ctx
+    const { endpoint } = parsedInput
 
     // Vérifier que la subscription appartient à l'utilisateur
     const subscription = await prisma.pushSubscription.findUnique({
       where: { endpoint },
-    });
+    })
 
     if (!subscription) {
-      return { success: true, message: "Subscription déjà supprimée" };
+      return { success: true, message: 'Subscription déjà supprimée' }
     }
 
     if (subscription.userId !== userId) {
-      throw new Error("Non autorisé");
+      throw new Error('Non autorisé')
     }
 
     await prisma.pushSubscription.delete({
       where: { endpoint },
-    });
+    })
 
-    return { success: true, message: "Subscription supprimée" };
-  });
+    return { success: true, message: 'Subscription supprimée' }
+  })
 
 /**
  * Vérifier si l'utilisateur a une subscription active
@@ -97,7 +97,7 @@ export const deletePushSubscription = authActionClient
 export const checkPushSubscription = authActionClient
   .schema(z.object({}))
   .action(async ({ ctx }) => {
-    const { userId } = ctx;
+    const { userId } = ctx
 
     const subscriptions = await prisma.pushSubscription.findMany({
       where: { userId },
@@ -107,14 +107,14 @@ export const checkPushSubscription = authActionClient
         createdAt: true,
         updatedAt: true,
       },
-    });
+    })
 
     return {
       hasSubscription: subscriptions.length > 0,
       count: subscriptions.length,
       subscriptions,
-    };
-  });
+    }
+  })
 
 /**
  * Récupérer toutes les subscriptions d'un utilisateur (pour l'envoi de notifications)
@@ -128,7 +128,7 @@ export async function getUserPushSubscriptions(userId: string) {
       p256dh: true,
       auth: true,
     },
-  });
+  })
 }
 
 /**
@@ -139,12 +139,12 @@ export async function removeInvalidPushSubscription(endpoint: string) {
   try {
     await prisma.pushSubscription.delete({
       where: { endpoint },
-    });
-    console.log(`[Push] Subscription invalide supprimée: ${endpoint.substring(0, 50)}...`);
-    return true;
-  } catch (error) {
+    })
+    console.log(`[Push] Subscription invalide supprimée: ${endpoint.substring(0, 50)}...`)
+    return true
+  } catch (_error) {
     // La subscription n'existe peut-être plus
-    return false;
+    return false
   }
 }
 
@@ -154,47 +154,48 @@ export async function removeInvalidPushSubscription(endpoint: string) {
 export const sendTestPushNotification = authActionClient
   .schema(z.object({}))
   .action(async ({ ctx }) => {
-    const { userId } = ctx;
+    const { userId } = ctx
 
     try {
       // Import dynamique pour éviter les problèmes avec web-push
-      const { createAndSendNotification } = await import("@/lib/notification-helpers");
+      const { createAndSendNotification } = await import('@/lib/notification-helpers')
 
       // Créer et envoyer une notification de test
       const result = await createAndSendNotification({
         userId,
-        title: "🔔 Test de notification push",
-        message: "Si vous voyez ce message, les notifications push fonctionnent correctement ! Vous recevrez des alertes même quand l'application est fermée.",
-        type: "info",
-        link: "/dashboard/notifications",
+        title: '🔔 Test de notification push',
+        message:
+          "Si vous voyez ce message, les notifications push fonctionnent correctement ! Vous recevrez des alertes même quand l'application est fermée.",
+        type: 'info',
+        link: '/dashboard/notifications',
         sendPush: true,
-      });
+      })
 
       if (result.pushResult?.sent > 0) {
         return {
           success: true,
           message: `Notification envoyée avec succès à ${result.pushResult.sent} appareil(s)`,
           sent: result.pushResult.sent,
-        };
+        }
       } else if (result.pushResult?.failed > 0) {
         return {
           success: false,
           message: "Échec de l'envoi de la notification",
           error: "Aucun appareil n'a reçu la notification",
-        };
+        }
       } else {
         return {
           success: false,
-          message: "Aucune subscription active trouvée",
-          error: "Veuillez vous réabonner aux notifications push",
-        };
+          message: 'Aucune subscription active trouvée',
+          error: 'Veuillez vous réabonner aux notifications push',
+        }
       }
     } catch (error: any) {
-      console.error("[Push Test] Erreur:", error);
+      console.error('[Push Test] Erreur:', error)
       return {
         success: false,
         message: "Erreur lors de l'envoi",
-        error: error.message || "Erreur inconnue",
-      };
+        error: error.message || 'Erreur inconnue',
+      }
     }
-  });
+  })

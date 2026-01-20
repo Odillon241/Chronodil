@@ -1,32 +1,25 @@
-"use client"
+'use client'
 
-import { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCcw } from "lucide-react";
+import { useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, RefreshCcw } from 'lucide-react'
 
 export default function DashboardError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error("Dashboard error:", error);
-  }, [error]);
+    console.error('Dashboard error:', error)
+  }, [error])
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
-        <p className="text-muted-foreground">
-          Une erreur s'est produite lors du chargement de vos données.
-        </p>
-      </div>
-
-      <Card className="border-destructive">
+    <div className="flex-1 flex items-center justify-center p-6">
+      <Card className="w-full max-w-md border-none shadow-none bg-transparent">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="bg-destructive/10 p-2 rounded-md">
@@ -46,30 +39,21 @@ export default function DashboardError({
               {error.message || "Une erreur inconnue s'est produite"}
             </p>
             {error.digest && (
-              <p className="text-xs text-muted-foreground mt-2">
-                ID d'erreur: {error.digest}
-              </p>
+              <p className="text-xs text-muted-foreground mt-2">ID d'erreur: {error.digest}</p>
             )}
           </div>
 
           <div className="flex gap-2">
-            <Button
-              onClick={reset}
-              variant="default"
-              className="gap-2"
-            >
+            <Button onClick={reset} variant="default" className="gap-2">
               <RefreshCcw className="h-4 w-4" />
               Réessayer
             </Button>
-            <Button
-              onClick={() => window.location.href = "/"}
-              variant="outline"
-            >
+            <Button onClick={() => (window.location.href = '/')} variant="outline">
               Retour à l'accueil
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

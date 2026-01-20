@@ -1,15 +1,19 @@
 # Chronodil - Application de Gestion des Temps
 
-Application web moderne et responsive pour la gestion des feuilles de temps, développée avec Next.js 14, TypeScript, Prisma et Better Auth.
+Application web moderne et responsive pour la gestion des feuilles de temps,
+développée avec Next.js 16, TypeScript, Prisma et Better Auth.
 
 ![Chronodil](https://img.shields.io/badge/version-0.1.0-blue)
-![Next.js](https://img.shields.io/badge/Next.js-14.2-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8)
+![Next.js](https://img.shields.io/badge/Next.js-16.1-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8)
+![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3)
+![Prettier](https://img.shields.io/badge/Prettier-3-F7B93E)
 
 ## 🎯 Fonctionnalités
 
 ### Pour tous les utilisateurs
+
 - ✅ **Authentification sécurisée** avec Better Auth
 - ⏰ **Saisie des temps** intuitive avec calcul automatique de la durée
 - 📊 **Tableau de bord** avec statistiques en temps réel
@@ -19,12 +23,14 @@ Application web moderne et responsive pour la gestion des feuilles de temps, dé
 - 🎨 **Interface responsive** adaptée mobile et desktop
 
 ### Pour les managers
+
 - ✔️ **Validation des temps** de l'équipe
 - 👥 **Gestion d'équipe** et affectation aux projets
 - 📊 **Tableaux de bord** avancés
 - 💬 **Système de commentaires** pour les validations
 
 ### Pour les RH et Admins
+
 - 👤 **Gestion des utilisateurs** et rôles
 - 🏢 **Gestion des départements**
 - ⚙️ **Configuration** de l'application
@@ -33,11 +39,11 @@ Application web moderne et responsive pour la gestion des feuilles de temps, dé
 
 ## 🛠️ Stack Technique
 
-- **Framework**: Next.js 15 (App Router)
-- **Langage**: TypeScript
+- **Framework**: Next.js 16 (App Router + Turbopack)
+- **Langage**: TypeScript 5.9
 - **Base de données**: PostgreSQL avec Prisma ORM
 - **Authentification**: Better Auth
-- **UI**: Tailwind CSS + shadcn/ui + Radix UI
+- **UI**: Tailwind CSS 4 + shadcn/ui + Radix UI
 - **Validation**: Zod + React Hook Form
 - **Server Actions**: next-safe-action
 - **État global**: Zustand
@@ -46,12 +52,15 @@ Application web moderne et responsive pour la gestion des feuilles de temps, dé
 - **Dates**: date-fns
 - **Charts**: Recharts
 - **Export**: ExcelJS, jsPDF
+- **Linting**: ESLint 9 (flat config) + typescript-eslint
+- **Formatting**: Prettier 3
+- **Git Hooks**: Husky + lint-staged
 
 ## 📋 Prérequis
 
-- Node.js 18+
+- Node.js 20.9+ (requis pour Next.js 16)
 - PostgreSQL 14+
-- pnpm 8+ (recommandé) ou npm/yarn
+- pnpm 10+ (recommandé) ou npm/yarn
 
 ## 🚀 Installation
 
@@ -64,10 +73,10 @@ cd Chronodil_App
 ### 2. Installer pnpm (si pas déjà installé)
 
 ```bash
-npm install -g pnpm
-# ou
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare pnpm@10.28.0 --activate
+# ou
+npm install -g pnpm@10
 ```
 
 ### 3. Installer les dépendances
@@ -87,9 +96,6 @@ DATABASE_URL="postgresql://user:password@localhost:5432/chronodil"
 # Better Auth
 BETTER_AUTH_SECRET="votre-secret-key-securisee"
 BETTER_AUTH_URL="http://localhost:3000"
-
-# Email (Resend) - Optionnel
-RESEND_API_KEY="votre-resend-api-key"
 
 # Inngest - Optionnel
 INNGEST_EVENT_KEY="votre-inngest-event-key"
@@ -135,6 +141,8 @@ L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
 
 ```
 Chronodil_App/
+├── .husky/                    # Git hooks (pre-commit)
+├── .vscode/                   # Configuration VS Code
 ├── prisma/
 │   └── schema.prisma          # Schéma de base de données
 ├── src/
@@ -153,8 +161,10 @@ Chronodil_App/
 │   └── types/               # Types TypeScript
 ├── public/                   # Assets statiques
 ├── .env                      # Variables d'environnement
-├── next.config.js           # Configuration Next.js
-├── tailwind.config.ts       # Configuration Tailwind
+├── .prettierrc               # Configuration Prettier
+├── .prettierignore           # Fichiers ignorés par Prettier
+├── eslint.config.mjs         # Configuration ESLint (flat config)
+├── next.config.mjs           # Configuration Next.js
 └── package.json
 ```
 
@@ -167,14 +177,6 @@ L'application utilise une palette de couleurs cohérente :
 - **Bright Pink** (#f26a8d) - Éléments interactifs
 - **Amaranth Pink** (#f49cbb) - Fond et cartes
 - **Light Cyan** (#cbeef3) - Éléments secondaires
-
-## 🔑 Comptes par défaut
-
-Après le seed de la base de données :
-
-- **Admin**: admin@chronodil.com / Admin2025!
-- **Manager**: manager@chronodil.com / Manager2025!
-- **Employé**: employe@chronodil.com / Employee2025!
 
 ## 📚 Documentation
 
@@ -202,24 +204,71 @@ Après le seed de la base de données :
 ## 🔧 Scripts disponibles
 
 ```bash
-pnpm dev             # Lancer en mode développement
+# Développement
+pnpm dev             # Lancer en mode développement (Turbopack)
 pnpm build           # Build de production
 pnpm start           # Lancer en mode production
-pnpm lint            # Linter le code
+
+# Qualité du code
+pnpm lint            # Exécuter ESLint
+pnpm lint:fix        # Corriger les erreurs ESLint automatiquement
+pnpm format          # Formater le code avec Prettier
+pnpm format:check    # Vérifier le formatage sans modifier
+pnpm check-all       # lint + format:check + tsc (vérification complète)
+
+# Base de données
 pnpm db:seed         # Alimenter la base de données
 pnpm db:migrate      # Créer/exécuter une migration
 pnpm db:studio       # Interface admin Prisma
+pnpm db:push         # Push du schéma sans migration
+pnpm db:pull         # Pull du schéma depuis la DB
 ```
+
+## 🎯 Qualité du code
+
+### Configuration ESLint + Prettier + Husky
+
+Le projet utilise une configuration stricte pour garantir la qualité du code :
+
+- **ESLint 9** avec flat config (`eslint.config.mjs`)
+  - `next/core-web-vitals` + `next/typescript`
+  - `typescript-eslint` avec `projectService: true`
+  - Intégration Prettier pour éviter les conflits
+
+- **Prettier** (`.prettierrc`)
+  - 100 caractères max par ligne
+  - Sans point-virgule, single quotes
+  - Trailing commas
+
+- **Husky + lint-staged** (pre-commit hook)
+  - Lint et format automatique sur les fichiers staged
+  - Empêche les commits avec des erreurs de lint
+
+### VS Code
+
+Extensions recommandées (installées automatiquement) :
+
+- `dbaeumer.vscode-eslint`
+- `esbenp.prettier-vscode`
+
+Auto-fix on save activé dans `.vscode/settings.json`.
 
 ## 🗣️ Dictée vocale rapide (Cursor)
 
-- **Windows**: appuyez sur `Windows + H` dans Cursor (éditeur ou chat), puis dictez. Si cela ne fonctionne pas:
-  - Paramètres > Confidentialité et sécurité > Microphone → autoriser les applications de bureau
-  - Paramètres > Heure et langue > Parole → activer les services de reconnaissance vocale en ligne
-- **macOS**: Réglages Système > Clavier > Dictée → activer; démarrer la dictée avec la touche `Fn` (deux pressions).
-- **Astuce**: placez le curseur là où vous voulez insérer le texte avant de démarrer.
-- **Ponctuation (fr)**: dites « virgule », « point », « point d’interrogation », « point-virgule », « deux-points », « nouvelle ligne ».
-- **Mise à jour**: Cursor ne propose pas encore de saisie vocale native; surveillez les nouveautés dans les docs: `https://docs.cursor.com`.
+- **Windows**: appuyez sur `Windows + H` dans Cursor (éditeur ou chat), puis
+  dictez. Si cela ne fonctionne pas:
+  - Paramètres > Confidentialité et sécurité > Microphone → autoriser les
+    applications de bureau
+  - Paramètres > Heure et langue > Parole → activer les services de
+    reconnaissance vocale en ligne
+- **macOS**: Réglages Système > Clavier > Dictée → activer; démarrer la dictée
+  avec la touche `Fn` (deux pressions).
+- **Astuce**: placez le curseur là où vous voulez insérer le texte avant de
+  démarrer.
+- **Ponctuation (fr)**: dites « virgule », « point », « point d’interrogation »,
+  « point-virgule », « deux-points », « nouvelle ligne ».
+- **Mise à jour**: Cursor ne propose pas encore de saisie vocale native;
+  surveillez les nouveautés dans les docs: `https://docs.cursor.com`.
 
 ## 🐛 Debugging
 
@@ -234,6 +283,7 @@ S'assurer que `BETTER_AUTH_SECRET` est défini dans `.env`.
 ### Problèmes de build
 
 Nettoyer le cache :
+
 ```bash
 rm -rf .next node_modules pnpm-lock.yaml
 pnpm install
@@ -252,10 +302,16 @@ pnpm build
 Ce projet est en développement actif. Pour contribuer :
 
 1. Fork le projet
-2. Créer une branche (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+2. Installer les dépendances (`pnpm install`)
+3. Créer une branche (`git checkout -b feature/AmazingFeature`)
+4. Développer avec les extensions VS Code recommandées
+5. Vérifier le code (`pnpm check-all`)
+6. Commit les changements (Husky lint automatiquement)
+7. Push vers la branche (`git push origin feature/AmazingFeature`)
+8. Ouvrir une Pull Request
+
+> **Note**: Le hook pre-commit exécute automatiquement ESLint et Prettier sur
+> les fichiers modifiés.
 
 ## 📝 License
 

@@ -1,17 +1,15 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Check } from "lucide-react"
+import { useState } from 'react'
 import {
   Menubar,
   MenubarContent,
-  MenubarItem,
   MenubarMenu,
   MenubarTrigger,
   MenubarRadioGroup,
   MenubarRadioItem,
-} from "@/components/ui/menubar"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/menubar'
+import { cn } from '@/lib/utils'
 
 interface StatusOption {
   id: string
@@ -32,24 +30,21 @@ export function StatusMenubar({
   options,
   selectedValue,
   onValueChange,
-  label = "Statut",
+  label = 'Statut',
   className,
 }: StatusMenubarProps) {
   const [isOpen, setIsOpen] = useState(false)
-  
-  const selectedOption = options.find(option => option.value === selectedValue)
+
+  const selectedOption = options.find((option) => option.value === selectedValue)
 
   return (
-    <Menubar className={cn("w-fit", className)}>
+    <Menubar className={cn('w-fit', className)}>
       <MenubarMenu>
-        <MenubarTrigger
-          className="cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <MenubarTrigger className="cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
           <div className="flex items-center gap-2">
             <span className="font-medium">{label}:</span>
             <span className="text-primary font-semibold">
-              {selectedOption?.label || "Sélectionner"}
+              {selectedOption?.label || 'Sélectionner'}
             </span>
             {selectedOption?.count !== undefined && (
               <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
@@ -61,17 +56,11 @@ export function StatusMenubar({
         <MenubarContent align="start">
           <MenubarRadioGroup value={selectedValue} onValueChange={onValueChange}>
             {options.map((option) => (
-              <MenubarRadioItem
-                key={option.id}
-                value={option.value}
-                className="cursor-pointer"
-              >
+              <MenubarRadioItem key={option.id} value={option.value} className="cursor-pointer">
                 <div className="flex items-center justify-between w-full">
                   <span>{option.label}</span>
                   {option.count !== undefined && (
-                    <span className="text-xs text-muted-foreground ml-2">
-                      ({option.count})
-                    </span>
+                    <span className="text-xs text-muted-foreground ml-2">({option.count})</span>
                   )}
                 </div>
               </MenubarRadioItem>

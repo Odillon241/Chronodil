@@ -1,8 +1,8 @@
-"use server";
+'use server'
 
-import { prisma } from "@/lib/db";
-import { authActionClient } from "@/lib/safe-action";
-import { z } from "zod";
+import { prisma } from '@/lib/db'
+import { authActionClient } from '@/lib/safe-action'
+import { z } from 'zod'
 
 /**
  * Fichier regroupant les requêtes optimisées pour utiliser les index de la base de données
@@ -18,17 +18,19 @@ import { z } from "zod";
  * Utilise l'index User_departmentId_idx pour des performances optimales
  */
 export const getUsersByDepartment = authActionClient
-  .schema(z.object({
-    departmentId: z.string(),
-    includeInactive: z.boolean().optional(),
-  }))
+  .schema(
+    z.object({
+      departmentId: z.string(),
+      includeInactive: z.boolean().optional(),
+    }),
+  )
   .action(async ({ parsedInput, ctx }) => {
-    const { departmentId, includeInactive } = parsedInput;
-    const { userRole } = ctx;
+    const { departmentId, includeInactive } = parsedInput
+    const { userRole } = ctx
 
     // Vérifier les permissions
-    if (!["MANAGER", "DIRECTEUR", "ADMIN", "HR"].includes(userRole)) {
-      throw new Error("Accès non autorisé");
+    if (!['MANAGER', 'DIRECTEUR', 'ADMIN', 'HR'].includes(userRole)) {
+      throw new Error('Accès non autorisé')
     }
 
     // Cette requête utilise l'index User_departmentId_idx
@@ -53,44 +55,43 @@ export const getUsersByDepartment = authActionClient
           },
         },
       },
-      orderBy: [
-        { role: "asc" },
-        { name: "asc" },
-      ],
-    });
+      orderBy: [{ role: 'asc' }, { name: 'asc' }],
+    })
 
     // Calculer les statistiques par rôle
     const roleStats = {
-      EMPLOYEE: users.filter(u => u.role === "EMPLOYEE").length,
-      MANAGER: users.filter(u => u.role === "MANAGER").length,
-      HR: users.filter(u => u.role === "HR").length,
-      DIRECTEUR: users.filter(u => u.role === "DIRECTEUR").length,
-      ADMIN: users.filter(u => u.role === "ADMIN").length,
-    };
+      EMPLOYEE: users.filter((u) => u.role === 'EMPLOYEE').length,
+      MANAGER: users.filter((u) => u.role === 'MANAGER').length,
+      HR: users.filter((u) => u.role === 'HR').length,
+      DIRECTEUR: users.filter((u) => u.role === 'DIRECTEUR').length,
+      ADMIN: users.filter((u) => u.role === 'ADMIN').length,
+    }
 
-    return { users, totalUsers: users.length, roleStats };
-  });
+    return { users, totalUsers: users.length, roleStats }
+  })
 
 /**
  * Récupérer les utilisateurs récemment actifs
  * Utilise l'index User_lastSeenAt_idx pour des performances optimales
  */
 export const getRecentlyActiveUsers = authActionClient
-  .schema(z.object({
-    hours: z.number().min(1).max(168).optional(), // Par défaut 24h, max 1 semaine
-  }))
+  .schema(
+    z.object({
+      hours: z.number().min(1).max(168).optional(), // Par défaut 24h, max 1 semaine
+    }),
+  )
   .action(async ({ parsedInput, ctx }) => {
-    const { hours = 24 } = parsedInput;
-    const { userRole } = ctx;
+    const { hours = 24 } = parsedInput
+    const { userRole } = ctx
 
     // Vérifier les permissions
-    if (!["MANAGER", "DIRECTEUR", "ADMIN", "HR"].includes(userRole)) {
-      throw new Error("Accès non autorisé");
+    if (!['MANAGER', 'DIRECTEUR', 'ADMIN', 'HR'].includes(userRole)) {
+      throw new Error('Accès non autorisé')
     }
 
     // Calculer la date limite (maintenant - X heures)
-    const cutoffDate = new Date();
-    cutoffDate.setHours(cutoffDate.getHours() - hours);
+    const cutoffDate = new Date()
+    cutoffDate.setHours(cutoffDate.getHours() - hours)
 
     // Cette requête utilise l'index User_lastSeenAt_idx
     const users = await prisma.user.findMany({
@@ -114,12 +115,12 @@ export const getRecentlyActiveUsers = authActionClient
         },
       },
       orderBy: {
-        lastSeenAt: "desc",
+        lastSeenAt: 'desc',
       },
-    });
+    })
 
-    return { users, totalActive: users.length, hours };
-  });
+    return { users, totalActive: users.length, hours }
+  })
 
 // ========================================
 // PROJECTS - Index: Project_departmentId_idx
@@ -130,12 +131,14 @@ export const getRecentlyActiveUsers = authActionClient
  * Utilise l'index Project_departmentId_idx pour des performances optimales
  */
 export const getProjectsByDepartment = authActionClient
-  .schema(z.object({
-    departmentId: z.string(),
-    includeInactive: z.boolean().optional(),
-  }))
-  .action(async ({ parsedInput, ctx }) => {
-    const { departmentId, includeInactive } = parsedInput;
+  .schema(
+    z.object({
+      departmentId: z.string(),
+      includeInactive: z.boolean().optional(),
+    }),
+  )
+  .action(async ({ parsedInput }) => {
+    const { departmentId, includeInactive } = parsedInput
 
     // Cette requête utilise l'index Project_departmentId_idx
     const projects = await prisma.project.findMany({
@@ -152,21 +155,18 @@ export const getProjectsByDepartment = authActionClient
           },
         },
       },
-      orderBy: [
-        { isActive: "desc" },
-        { createdAt: "desc" },
-      ],
-    });
+      orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
+    })
 
     // Calculer les statistiques
     const stats = {
       total: projects.length,
-      active: projects.filter(p => p.isActive).length,
-      inactive: projects.filter(p => !p.isActive).length,
-    };
+      active: projects.filter((p) => p.isActive).length,
+      inactive: projects.filter((p) => !p.isActive).length,
+    }
 
-    return { projects, stats };
-  });
+    return { projects, stats }
+  })
 
 // ========================================
 // ACCOUNTS - Index: Account_userId_idx
@@ -177,16 +177,18 @@ export const getProjectsByDepartment = authActionClient
  * Utilise l'index Account_userId_idx pour des performances optimales
  */
 export const getUserAccounts = authActionClient
-  .schema(z.object({
-    userId: z.string().optional(), // Si non fourni, utilise l'utilisateur connecté
-  }))
+  .schema(
+    z.object({
+      userId: z.string().optional(), // Si non fourni, utilise l'utilisateur connecté
+    }),
+  )
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = parsedInput;
-    const targetUserId = userId || ctx.userId;
+    const { userId } = parsedInput
+    const targetUserId = userId || ctx.userId
 
     // Vérifier les permissions
-    if (targetUserId !== ctx.userId && ctx.userRole !== "ADMIN") {
-      throw new Error("Vous ne pouvez voir que vos propres comptes");
+    if (targetUserId !== ctx.userId && ctx.userRole !== 'ADMIN') {
+      throw new Error('Vous ne pouvez voir que vos propres comptes')
     }
 
     // Cette requête utilise l'index Account_userId_idx
@@ -203,12 +205,12 @@ export const getUserAccounts = authActionClient
         // Exclure les tokens sensibles
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
-    });
+    })
 
-    return { accounts, totalAccounts: accounts.length };
-  });
+    return { accounts, totalAccounts: accounts.length }
+  })
 
 // ========================================
 // REPORTS - Index: Report_templateId_idx, ReportTemplate_createdById_idx
@@ -219,26 +221,28 @@ export const getUserAccounts = authActionClient
  * Utilise l'index Report_templateId_idx pour des performances optimales
  */
 export const getReportsByTemplate = authActionClient
-  .schema(z.object({
-    templateId: z.string(),
-    startDate: z.date().optional(),
-    endDate: z.date().optional(),
-  }))
+  .schema(
+    z.object({
+      templateId: z.string(),
+      startDate: z.date().optional(),
+      endDate: z.date().optional(),
+    }),
+  )
   .action(async ({ parsedInput, ctx }) => {
-    const { templateId, startDate, endDate } = parsedInput;
-    const { userRole } = ctx;
+    const { templateId, startDate, endDate } = parsedInput
+    const { userRole } = ctx
 
     // Vérifier les permissions
-    if (!["MANAGER", "DIRECTEUR", "ADMIN", "HR"].includes(userRole)) {
-      throw new Error("Accès non autorisé");
+    if (!['MANAGER', 'DIRECTEUR', 'ADMIN', 'HR'].includes(userRole)) {
+      throw new Error('Accès non autorisé')
     }
 
     // Construire le filtre de dates
-    const dateFilter: any = {};
+    const dateFilter: any = {}
     if (startDate || endDate) {
-      dateFilter.createdAt = {};
-      if (startDate) dateFilter.createdAt.gte = startDate;
-      if (endDate) dateFilter.createdAt.lte = endDate;
+      dateFilter.createdAt = {}
+      if (startDate) dateFilter.createdAt.gte = startDate
+      if (endDate) dateFilter.createdAt.lte = endDate
     }
 
     // Cette requête utilise l'index Report_templateId_idx
@@ -265,42 +269,46 @@ export const getReportsByTemplate = authActionClient
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
-    });
+    })
 
     // Calculer les statistiques
     const stats = {
       total: reports.length,
-      avgFileSize: reports.length > 0
-        ? reports.reduce((sum, r) => sum + r.fileSize, 0) / reports.length
-        : 0,
+      avgFileSize:
+        reports.length > 0 ? reports.reduce((sum, r) => sum + r.fileSize, 0) / reports.length : 0,
       formats: {
-        pdf: reports.filter(r => r.format === "pdf").length,
-        word: reports.filter(r => r.format === "word").length,
-        excel: reports.filter(r => r.format === "excel").length,
+        pdf: reports.filter((r) => r.format === 'pdf').length,
+        word: reports.filter((r) => r.format === 'word').length,
+        excel: reports.filter((r) => r.format === 'excel').length,
       },
-    };
+    }
 
-    return { reports, stats };
-  });
+    return { reports, stats }
+  })
 
 /**
  * Récupérer les templates de rapports créés par un utilisateur
  * Utilise l'index ReportTemplate_createdById_idx pour des performances optimales
  */
 export const getTemplatesByCreator = authActionClient
-  .schema(z.object({
-    creatorId: z.string().optional(), // Si non fourni, utilise l'utilisateur connecté
-    includeInactive: z.boolean().optional(),
-  }))
+  .schema(
+    z.object({
+      creatorId: z.string().optional(), // Si non fourni, utilise l'utilisateur connecté
+      includeInactive: z.boolean().optional(),
+    }),
+  )
   .action(async ({ parsedInput, ctx }) => {
-    const { creatorId, includeInactive } = parsedInput;
-    const targetCreatorId = creatorId || ctx.userId;
+    const { creatorId, includeInactive } = parsedInput
+    const targetCreatorId = creatorId || ctx.userId
 
     // Vérifier les permissions
-    if (targetCreatorId !== ctx.userId && !["MANAGER", "DIRECTEUR", "ADMIN", "HR"].includes(ctx.userRole)) {
-      throw new Error("Vous ne pouvez voir que vos propres templates");
+    if (
+      targetCreatorId !== ctx.userId &&
+      !['MANAGER', 'DIRECTEUR', 'ADMIN', 'HR'].includes(ctx.userRole)
+    ) {
+      throw new Error('Vous ne pouvez voir que vos propres templates')
     }
 
     // Cette requête utilise l'index ReportTemplate_createdById_idx
@@ -324,25 +332,21 @@ export const getTemplatesByCreator = authActionClient
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: [
-        { isDefault: "desc" },
-        { sortOrder: "asc" },
-        { createdAt: "desc" },
-      ],
-    });
+      orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }],
+    })
 
     // Calculer les statistiques
     const stats = {
       total: templates.length,
-      active: templates.filter(t => t.isActive).length,
-      inactive: templates.filter(t => !t.isActive).length,
-      defaults: templates.filter(t => t.isDefault).length,
+      active: templates.filter((t) => t.isActive).length,
+      inactive: templates.filter((t) => !t.isActive).length,
+      defaults: templates.filter((t) => t.isDefault).length,
       frequencies: {
-        WEEKLY: templates.filter(t => t.frequency === "WEEKLY").length,
-        MONTHLY: templates.filter(t => t.frequency === "MONTHLY").length,
-        INDIVIDUAL: templates.filter(t => t.frequency === "INDIVIDUAL").length,
+        WEEKLY: templates.filter((t) => t.frequency === 'WEEKLY').length,
+        MONTHLY: templates.filter((t) => t.frequency === 'MONTHLY').length,
+        INDIVIDUAL: templates.filter((t) => t.frequency === 'INDIVIDUAL').length,
       },
-    };
+    }
 
-    return { templates, stats };
-  });
+    return { templates, stats }
+  })

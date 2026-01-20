@@ -1,101 +1,100 @@
-"use client";
+'use client'
 
-import { useEffect, useState, useRef } from "react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { X, Send, Reply, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { getThreadMessages, sendMessageWithThread } from "@/actions/chat.actions";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { useEffect, useState, useRef } from 'react'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { X, Send, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { Separator } from '@/components/ui/separator'
+import { getThreadMessages, sendMessageWithThread } from '@/actions/chat.actions'
+import { toast } from 'sonner'
 
 interface ChatThreadViewProps {
-  threadId: string;
-  conversationId: string;
-  currentUserId: string;
-  onClose: () => void;
-  onUpdate: () => void;
+  threadId: string
+  conversationId: string
+  currentUserId: string
+  onClose: () => void
+  onUpdate: () => void
 }
 
 export function ChatThreadView({
   threadId,
   conversationId,
-  currentUserId,
+  currentUserId: _currentUserId,
   onClose,
   onUpdate,
 }: ChatThreadViewProps) {
-  const [rootMessage, setRootMessage] = useState<any>(null);
-  const [replies, setReplies] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [replyContent, setReplyContent] = useState("");
-  const [sending, setSending] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [rootMessage, setRootMessage] = useState<any>(null)
+  const [replies, setReplies] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [replyContent, setReplyContent] = useState('')
+  const [sending, setSending] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const loadThread = async () => {
     try {
-      const result = await getThreadMessages({ threadId });
+      const result = await getThreadMessages({ threadId })
       if (result?.data) {
-        setRootMessage(result.data.rootMessage);
-        setReplies(result.data.messages || []);
+        setRootMessage(result.data.rootMessage)
+        setReplies(result.data.messages || [])
       }
-    } catch (error) {
-      toast.error("Erreur lors du chargement du fil de discussion");
+    } catch (_error) {
+      toast.error('Erreur lors du chargement du fil de discussion')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    loadThread();
-  }, [threadId]);
+    loadThread()
+  }, [threadId])
 
   // Auto-scroll vers le bas
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [replies]);
+  }, [replies])
 
   const handleSendReply = async () => {
-    if (!replyContent.trim() || sending) return;
+    if (!replyContent.trim() || sending) return
 
-    setSending(true);
+    setSending(true)
     try {
       const result = await sendMessageWithThread({
         conversationId,
         content: replyContent.trim(),
         threadId,
         replyToId: rootMessage?.id, // Optionnel, mais lie au parent techniquement
-      });
+      })
 
       if (result?.data) {
-        setReplyContent("");
+        setReplyContent('')
         // Recharger les réponses
-        const threadResult = await getThreadMessages({ threadId });
+        const threadResult = await getThreadMessages({ threadId })
         if (threadResult?.data?.messages) {
-          setReplies(threadResult.data.messages);
+          setReplies(threadResult.data.messages)
         }
-        onUpdate(); // Mettre à jour la vue principale (compteurs, etc.)
+        onUpdate() // Mettre à jour la vue principale (compteurs, etc.)
       } else {
-        toast.error(result?.serverError || "Erreur lors de l'envoi");
+        toast.error(result?.serverError || "Erreur lors de l'envoi")
       }
-    } catch (error) {
-      toast.error("Erreur lors de l'envoi de la réponse");
+    } catch (_error) {
+      toast.error("Erreur lors de l'envoi de la réponse")
     } finally {
-      setSending(false);
+      setSending(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center border-l bg-background w-full md:w-80 lg:w-96">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
-    );
+    )
   }
 
   if (!rootMessage) {
@@ -106,7 +105,7 @@ export function ChatThreadView({
           Fermer
         </Button>
       </div>
-    );
+    )
   }
 
   return (
@@ -116,7 +115,7 @@ export function ChatThreadView({
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-sm">Fil de discussion</h3>
           <span className="text-xs text-muted-foreground">
-            {replies.length} réponse{replies.length > 1 ? "s" : ""}
+            {replies.length} réponse{replies.length > 1 ? 's' : ''}
           </span>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
@@ -128,17 +127,16 @@ export function ChatThreadView({
         {/* Message Racine */}
         <div className="mb-6">
           <div className="flex items-start gap-3 mb-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={rootMessage.User.avatar || undefined} />
-              <AvatarFallback>
-                {rootMessage.User.name.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              name={rootMessage.User.name}
+              avatar={rootMessage.User.image || rootMessage.User.avatar}
+              size="sm"
+            />
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="font-semibold text-sm">{rootMessage.User.name}</span>
                 <span className="text-xs text-muted-foreground">
-                  {format(new Date(rootMessage.createdAt), "dd MMM HH:mm", {
+                  {format(new Date(rootMessage.createdAt), 'dd MMM HH:mm', {
                     locale: fr,
                   })}
                 </span>
@@ -146,9 +144,7 @@ export function ChatThreadView({
             </div>
           </div>
           <div className="pl-11">
-            <div className="bg-muted/50 p-3 rounded-lg text-sm">
-              {rootMessage.content}
-            </div>
+            <div className="bg-muted/50 p-3 rounded-lg text-sm">{rootMessage.content}</div>
           </div>
         </div>
 
@@ -163,17 +159,17 @@ export function ChatThreadView({
         <div className="space-y-4">
           {replies.map((reply) => (
             <div key={reply.id} className="flex items-start gap-3 group">
-              <Avatar className="h-6 w-6 mt-1">
-                <AvatarImage src={reply.User.avatar || undefined} />
-                <AvatarFallback className="text-[10px]">
-                  {reply.User.name.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                name={reply.User.name}
+                avatar={reply.User.image || reply.User.avatar}
+                size="xs"
+                className="mt-1"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
                   <span className="font-medium text-xs">{reply.User.name}</span>
                   <span className="text-[10px] text-muted-foreground">
-                    {format(new Date(reply.createdAt), "HH:mm")}
+                    {format(new Date(reply.createdAt), 'HH:mm')}
                   </span>
                 </div>
                 <div className="text-sm wrap-break-word mt-0.5">{reply.content}</div>
@@ -191,27 +187,19 @@ export function ChatThreadView({
             value={replyContent}
             onChange={(e) => setReplyContent(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSendReply();
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSendReply()
               }
             }}
             disabled={sending}
             className="flex-1"
           />
-          <Button
-            size="icon"
-            onClick={handleSendReply}
-            disabled={!replyContent.trim() || sending}
-          >
-            {sending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+          <Button size="icon" onClick={handleSendReply} disabled={!replyContent.trim() || sending}>
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
       </div>
     </div>
-  );
+  )
 }

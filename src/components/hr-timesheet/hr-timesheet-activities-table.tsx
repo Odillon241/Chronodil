@@ -1,26 +1,26 @@
-"use client";
+'use client'
 
-import { useState, useMemo } from "react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit2, Eye, Info, X } from "lucide-react";
+import { useState, useMemo } from 'react'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { ArrowUpDown, ArrowUp, ArrowDown, Trash2, Edit2, Eye, Info } from 'lucide-react'
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { FilterButtonGroup } from "@/components/ui/filter-button-group";
+} from '@/components/ui/context-menu'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { FilterButtonGroup } from '@/components/ui/filter-button-group'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -28,57 +28,57 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 
 interface Activity {
-  id?: string;
-  _tempId?: string; // ID temporaire pour les activités non encore sauvegardées
-  activityType: string;
-  activityName: string;
-  description?: string;
-  periodicity: string;
-  startDate: Date;
-  endDate: Date;
-  totalHours: number;
-  status: string;
+  id?: string
+  _tempId?: string // ID temporaire pour les activités non encore sauvegardées
+  activityType: string
+  activityName: string
+  description?: string
+  periodicity: string
+  startDate: Date
+  endDate: Date
+  totalHours: number
+  status: string
   ActivityCatalog?: {
-    id?: string;
-    name: string;
-    category: string;
-  } | null;
+    id?: string
+    name: string
+    category: string
+  } | null
 }
 
 interface HRTimesheetActivitiesTableProps {
-  activities: Activity[];
-  onDelete?: (id: string) => void;
-  onEdit?: (activity: Activity) => void;
-  showActions?: boolean;
+  activities: Activity[]
+  onDelete?: (id: string) => void
+  onEdit?: (activity: Activity) => void
+  showActions?: boolean
 }
 
 const getPeriodicityLabel = (periodicity: string) => {
   const labels: Record<string, string> = {
-    DAILY: "Quotidien",
-    WEEKLY: "Hebdomadaire",
-    MONTHLY: "Mensuel",
-    PUNCTUAL: "Ponctuel",
-    WEEKLY_MONTHLY: "Hebdo/Mensuel",
-  };
-  return labels[periodicity] || periodicity;
-};
+    DAILY: 'Quotidien',
+    WEEKLY: 'Hebdomadaire',
+    MONTHLY: 'Mensuel',
+    PUNCTUAL: 'Ponctuel',
+    WEEKLY_MONTHLY: 'Hebdo/Mensuel',
+  }
+  return labels[periodicity] || periodicity
+}
 
 const getActivityTypeBadge = (type: string) => {
   return (
-    <Badge variant={type === "OPERATIONAL" ? "default" : "secondary"}>
-      {type === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+    <Badge variant={type === 'OPERATIONAL' ? 'default' : 'secondary'}>
+      {type === 'OPERATIONAL' ? 'Opérationnel' : 'Reporting'}
     </Badge>
-  );
-};
+  )
+}
 
 export function HRTimesheetActivitiesTable({
   activities,
@@ -86,129 +86,118 @@ export function HRTimesheetActivitiesTable({
   onEdit,
   showActions = false,
 }: HRTimesheetActivitiesTableProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterType, setFilterType] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterPeriodicity, setFilterPeriodicity] = useState<string>("all");
-  const [sortField, setSortField] = useState<string>("");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterCategory, setFilterCategory] = useState<string>('all')
+  const [filterType, setFilterType] = useState<string>('all')
+  const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [filterPeriodicity, setFilterPeriodicity] = useState<string>('all')
+  const [sortField, setSortField] = useState<string>('')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false)
 
   // Filtrage des activités
   let filteredDisplayActivities = useMemo(() => {
     return activities.filter((activity) => {
       // Recherche par nom ou description
       const matchesSearch =
-        searchQuery === "" ||
+        searchQuery === '' ||
         activity.activityName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (activity.description &&
-          activity.description.toLowerCase().includes(searchQuery.toLowerCase()));
+          activity.description.toLowerCase().includes(searchQuery.toLowerCase()))
 
       // Filtre par catégorie
-      const category = activity.ActivityCatalog?.category || "Autres";
-      const matchesCategory =
-        filterCategory === "all" || category === filterCategory;
+      const category = activity.ActivityCatalog?.category || 'Autres'
+      const matchesCategory = filterCategory === 'all' || category === filterCategory
 
       // Filtre par type
-      const matchesType =
-        filterType === "all" || activity.activityType === filterType;
+      const matchesType = filterType === 'all' || activity.activityType === filterType
 
       // Filtre par statut
-      const matchesStatus =
-        filterStatus === "all" || activity.status === filterStatus;
+      const matchesStatus = filterStatus === 'all' || activity.status === filterStatus
 
       // Filtre par périodicité
       const matchesPeriodicity =
-        filterPeriodicity === "all" || activity.periodicity === filterPeriodicity;
+        filterPeriodicity === 'all' || activity.periodicity === filterPeriodicity
 
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesType &&
-        matchesStatus &&
-        matchesPeriodicity
-      );
-    });
-  }, [activities, searchQuery, filterCategory, filterType, filterStatus, filterPeriodicity]);
+      return matchesSearch && matchesCategory && matchesType && matchesStatus && matchesPeriodicity
+    })
+  }, [activities, searchQuery, filterCategory, filterType, filterStatus, filterPeriodicity])
 
   // Tri des activités
   if (sortField) {
     filteredDisplayActivities = [...filteredDisplayActivities].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: any
+      let bValue: any
 
       switch (sortField) {
-        case "category":
-          aValue = (a.ActivityCatalog?.category || "Autres").toLowerCase();
-          bValue = (b.ActivityCatalog?.category || "Autres").toLowerCase();
-          break;
-        case "activityName":
-          aValue = a.activityName.toLowerCase();
-          bValue = b.activityName.toLowerCase();
-          break;
-        case "type":
-          aValue = a.activityType;
-          bValue = b.activityType;
-          break;
-        case "periodicity":
-          aValue = a.periodicity;
-          bValue = b.periodicity;
-          break;
-        case "status":
-          aValue = a.status;
-          bValue = b.status;
-          break;
-        case "totalHours":
-          aValue = a.totalHours;
-          bValue = b.totalHours;
-          break;
-        case "startDate":
-          aValue = new Date(a.startDate).getTime();
-          bValue = new Date(b.startDate).getTime();
-          break;
+        case 'category':
+          aValue = (a.ActivityCatalog?.category || 'Autres').toLowerCase()
+          bValue = (b.ActivityCatalog?.category || 'Autres').toLowerCase()
+          break
+        case 'activityName':
+          aValue = a.activityName.toLowerCase()
+          bValue = b.activityName.toLowerCase()
+          break
+        case 'type':
+          aValue = a.activityType
+          bValue = b.activityType
+          break
+        case 'periodicity':
+          aValue = a.periodicity
+          bValue = b.periodicity
+          break
+        case 'status':
+          aValue = a.status
+          bValue = b.status
+          break
+        case 'totalHours':
+          aValue = a.totalHours
+          bValue = b.totalHours
+          break
+        case 'startDate':
+          aValue = new Date(a.startDate).getTime()
+          bValue = new Date(b.startDate).getTime()
+          break
         default:
-          return 0;
+          return 0
       }
 
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
-    });
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
   }
 
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
     } else {
-      setSortField(field);
-      setSortDirection("asc");
+      setSortField(field)
+      setSortDirection('asc')
     }
-  };
+  }
 
   // Récupérer les catégories uniques pour le filtre
   const uniqueCategories = useMemo(() => {
     return Array.from(
-      new Set(
-        activities.map((a) => a.ActivityCatalog?.category || "Autres")
-      )
-    ).sort();
-  }, [activities]);
+      new Set(activities.map((a) => a.ActivityCatalog?.category || 'Autres')),
+    ).sort()
+  }, [activities])
 
   const hasActiveFilters =
     !!searchQuery ||
-    filterCategory !== "all" ||
-    filterType !== "all" ||
-    filterStatus !== "all" ||
-    filterPeriodicity !== "all";
+    filterCategory !== 'all' ||
+    filterType !== 'all' ||
+    filterStatus !== 'all' ||
+    filterPeriodicity !== 'all'
 
   if (activities.length === 0) {
     return (
       <div className="text-center py-12 border rounded-lg bg-muted/30">
         <p className="text-muted-foreground">Aucune activité enregistrée</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -219,58 +208,56 @@ export function HRTimesheetActivitiesTable({
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           placeholder="Rechercher une activité..."
-
           // Filtre 1: Catégorie
           firstFilterLabel="Catégorie"
           filterOptions={[
-            { id: "all", label: "Toutes les catégories", value: "all" },
-            ...uniqueCategories.map(cat => ({ id: cat, label: cat, value: cat }))
+            { id: 'all', label: 'Toutes les catégories', value: 'all' },
+            ...uniqueCategories.map((cat) => ({ id: cat, label: cat, value: cat })),
           ]}
           selectedFilter={filterCategory}
           onFilterChange={setFilterCategory}
-
           // Filtre 2: Type
           secondFilterLabel="Type"
           secondFilterOptions={[
-            { id: "all", label: "Tous les types", value: "all" },
-            { id: "OPERATIONAL", label: "Opérationnel", value: "OPERATIONAL" },
-            { id: "REPORTING", label: "Reporting", value: "REPORTING" },
+            { id: 'all', label: 'Tous les types', value: 'all' },
+            { id: 'OPERATIONAL', label: 'Opérationnel', value: 'OPERATIONAL' },
+            { id: 'REPORTING', label: 'Reporting', value: 'REPORTING' },
           ]}
           selectedSecondFilter={filterType}
           onSecondFilterChange={setFilterType}
-
           // Filtres supplémentaires: Statut & Périodicité
           extraFilters={[
             {
-              label: "Statut",
+              label: 'Statut',
               selected: filterStatus,
               onChange: setFilterStatus,
               options: [
-                { id: "all", label: "Tous les statuts", value: "all" },
-                { id: "COMPLETED", label: "Terminé", value: "COMPLETED" },
-                { id: "IN_PROGRESS", label: "En cours", value: "IN_PROGRESS" },
-              ]
+                { id: 'all', label: 'Tous les statuts', value: 'all' },
+                { id: 'COMPLETED', label: 'Terminé', value: 'COMPLETED' },
+                { id: 'IN_PROGRESS', label: 'En cours', value: 'IN_PROGRESS' },
+              ],
             },
             {
-              label: "Périodicité",
+              label: 'Périodicité',
               selected: filterPeriodicity,
               onChange: setFilterPeriodicity,
               options: [
-                { id: "all", label: "Toutes les périodicités", value: "all" },
-                { id: "DAILY", label: "Quotidien", value: "DAILY" },
-                { id: "WEEKLY", label: "Hebdomadaire", value: "WEEKLY" },
-                { id: "MONTHLY", label: "Mensuel", value: "MONTHLY" },
-                { id: "PUNCTUAL", label: "Ponctuel", value: "PUNCTUAL" },
-                { id: "WEEKLY_MONTHLY", label: "Hebdo/Mensuel", value: "WEEKLY_MONTHLY" },
-              ]
-            }
+                { id: 'all', label: 'Toutes les périodicités', value: 'all' },
+                { id: 'DAILY', label: 'Quotidien', value: 'DAILY' },
+                { id: 'WEEKLY', label: 'Hebdomadaire', value: 'WEEKLY' },
+                { id: 'MONTHLY', label: 'Mensuel', value: 'MONTHLY' },
+                { id: 'PUNCTUAL', label: 'Ponctuel', value: 'PUNCTUAL' },
+                { id: 'WEEKLY_MONTHLY', label: 'Hebdo/Mensuel', value: 'WEEKLY_MONTHLY' },
+              ],
+            },
           ]}
         />
 
         {hasActiveFilters && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              {filteredDisplayActivities.length} résultat{filteredDisplayActivities.length > 1 ? "s" : ""} sur {activities.length}
+              {filteredDisplayActivities.length} résultat
+              {filteredDisplayActivities.length > 1 ? 's' : ''} sur {activities.length}
             </span>
           </div>
         )}
@@ -289,10 +276,14 @@ export function HRTimesheetActivitiesTable({
                 <TableHead className="min-w-[180px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent -ml-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 data-[state=open]:bg-accent -ml-3"
+                      >
                         Catégorie
-                        {sortField === "category" ? (
-                          sortDirection === "asc" ? (
+                        {sortField === 'category' ? (
+                          sortDirection === 'asc' ? (
                             <ArrowUp className="ml-2 h-3 w-3" />
                           ) : (
                             <ArrowDown className="ml-2 h-3 w-3" />
@@ -303,7 +294,7 @@ export function HRTimesheetActivitiesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleSort("category")}>
+                      <DropdownMenuItem onClick={() => handleSort('category')}>
                         Trier par catégorie
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -312,10 +303,14 @@ export function HRTimesheetActivitiesTable({
                 <TableHead className="min-w-[200px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent -ml-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 data-[state=open]:bg-accent -ml-3"
+                      >
                         Nom de l'activité
-                        {sortField === "activityName" ? (
-                          sortDirection === "asc" ? (
+                        {sortField === 'activityName' ? (
+                          sortDirection === 'asc' ? (
                             <ArrowUp className="ml-2 h-3 w-3" />
                           ) : (
                             <ArrowDown className="ml-2 h-3 w-3" />
@@ -326,7 +321,7 @@ export function HRTimesheetActivitiesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleSort("activityName")}>
+                      <DropdownMenuItem onClick={() => handleSort('activityName')}>
                         Trier par nom
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -335,10 +330,14 @@ export function HRTimesheetActivitiesTable({
                 <TableHead className="min-w-[120px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent -ml-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 data-[state=open]:bg-accent -ml-3"
+                      >
                         Type
-                        {sortField === "type" ? (
-                          sortDirection === "asc" ? (
+                        {sortField === 'type' ? (
+                          sortDirection === 'asc' ? (
                             <ArrowUp className="ml-2 h-3 w-3" />
                           ) : (
                             <ArrowDown className="ml-2 h-3 w-3" />
@@ -349,7 +348,7 @@ export function HRTimesheetActivitiesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleSort("type")}>
+                      <DropdownMenuItem onClick={() => handleSort('type')}>
                         Trier par type
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -358,10 +357,14 @@ export function HRTimesheetActivitiesTable({
                 <TableHead className="min-w-[120px] hidden md:table-cell">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent -ml-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 data-[state=open]:bg-accent -ml-3"
+                      >
                         Périodicité
-                        {sortField === "periodicity" ? (
-                          sortDirection === "asc" ? (
+                        {sortField === 'periodicity' ? (
+                          sortDirection === 'asc' ? (
                             <ArrowUp className="ml-2 h-3 w-3" />
                           ) : (
                             <ArrowDown className="ml-2 h-3 w-3" />
@@ -372,7 +375,7 @@ export function HRTimesheetActivitiesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleSort("periodicity")}>
+                      <DropdownMenuItem onClick={() => handleSort('periodicity')}>
                         Trier par périodicité
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -381,10 +384,14 @@ export function HRTimesheetActivitiesTable({
                 <TableHead className="min-w-[100px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent -ml-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 data-[state=open]:bg-accent -ml-3"
+                      >
                         Statut
-                        {sortField === "status" ? (
-                          sortDirection === "asc" ? (
+                        {sortField === 'status' ? (
+                          sortDirection === 'asc' ? (
                             <ArrowUp className="ml-2 h-3 w-3" />
                           ) : (
                             <ArrowDown className="ml-2 h-3 w-3" />
@@ -395,7 +402,7 @@ export function HRTimesheetActivitiesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleSort("status")}>
+                      <DropdownMenuItem onClick={() => handleSort('status')}>
                         Trier par statut
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -404,10 +411,14 @@ export function HRTimesheetActivitiesTable({
                 <TableHead className="min-w-[140px] hidden md:table-cell">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent -ml-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 data-[state=open]:bg-accent -ml-3"
+                      >
                         Période
-                        {sortField === "startDate" ? (
-                          sortDirection === "asc" ? (
+                        {sortField === 'startDate' ? (
+                          sortDirection === 'asc' ? (
                             <ArrowUp className="ml-2 h-3 w-3" />
                           ) : (
                             <ArrowDown className="ml-2 h-3 w-3" />
@@ -418,7 +429,7 @@ export function HRTimesheetActivitiesTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleSort("startDate")}>
+                      <DropdownMenuItem onClick={() => handleSort('startDate')}>
                         Trier par date
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -428,10 +439,14 @@ export function HRTimesheetActivitiesTable({
                   <div className="flex justify-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 data-[state=open]:bg-accent">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 data-[state=open]:bg-accent"
+                        >
                           Heures
-                          {sortField === "totalHours" ? (
-                            sortDirection === "asc" ? (
+                          {sortField === 'totalHours' ? (
+                            sortDirection === 'asc' ? (
                               <ArrowUp className="ml-2 h-3 w-3" />
                             ) : (
                               <ArrowDown className="ml-2 h-3 w-3" />
@@ -442,16 +457,14 @@ export function HRTimesheetActivitiesTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="center">
-                        <DropdownMenuItem onClick={() => handleSort("totalHours")}>
+                        <DropdownMenuItem onClick={() => handleSort('totalHours')}>
                           Trier par heures
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </TableHead>
-                {showActions && (
-                  <TableHead className="min-w-[80px] text-right">Actions</TableHead>
-                )}
+                {showActions && <TableHead className="min-w-[80px] text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -462,20 +475,20 @@ export function HRTimesheetActivitiesTable({
                       className="cursor-pointer"
                       onClick={(e) => {
                         // Ne pas ouvrir le modal si on a cliqué sur un bouton ou un élément interactif
-                        const target = e.target as HTMLElement;
+                        const target = e.target as HTMLElement
                         if (
                           target.closest('button') ||
                           target.closest('[role="menuitem"]') ||
                           target.closest('[role="option"]')
                         ) {
-                          return;
+                          return
                         }
-                        setSelectedActivity(activity);
-                        setShowDetailsDialog(true);
+                        setSelectedActivity(activity)
+                        setShowDetailsDialog(true)
                       }}
                     >
                       <TableCell className="font-medium">
-                        {activity.ActivityCatalog?.category || "Autres"}
+                        {activity.ActivityCatalog?.category || 'Autres'}
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
@@ -486,9 +499,9 @@ export function HRTimesheetActivitiesTable({
                               size="sm"
                               className="h-6 w-6 p-0"
                               onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedActivity(activity);
-                                setShowDetailsDialog(true);
+                                e.stopPropagation()
+                                setSelectedActivity(activity)
+                                setShowDetailsDialog(true)
                               }}
                               title="Voir les détails"
                             >
@@ -501,29 +514,25 @@ export function HRTimesheetActivitiesTable({
                             </p>
                           )}
                           <div className="text-xs text-muted-foreground md:hidden">
-                            {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
-                            {" → "}
-                            {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
+                            {format(new Date(activity.startDate), 'dd/MM/yyyy', { locale: fr })}
+                            {' → '}
+                            {format(new Date(activity.endDate), 'dd/MM/yyyy', { locale: fr })}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {getActivityTypeBadge(activity.activityType)}
-                      </TableCell>
+                      <TableCell>{getActivityTypeBadge(activity.activityType)}</TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <Badge variant="outline">
-                          {getPeriodicityLabel(activity.periodicity)}
-                        </Badge>
+                        <Badge variant="outline">{getPeriodicityLabel(activity.periodicity)}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={activity.status === "COMPLETED" ? "default" : "secondary"}>
-                          {activity.status === "COMPLETED" ? "Terminé" : "En cours"}
+                        <Badge variant={activity.status === 'COMPLETED' ? 'default' : 'secondary'}>
+                          {activity.status === 'COMPLETED' ? 'Terminé' : 'En cours'}
                         </Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
-                        {format(new Date(activity.startDate), "dd/MM/yyyy", { locale: fr })}
-                        {" → "}
-                        {format(new Date(activity.endDate), "dd/MM/yyyy", { locale: fr })}
+                        {format(new Date(activity.startDate), 'dd/MM/yyyy', { locale: fr })}
+                        {' → '}
+                        {format(new Date(activity.endDate), 'dd/MM/yyyy', { locale: fr })}
                       </TableCell>
                       <TableCell className="text-center">
                         <span className="font-semibold text-primary">
@@ -538,8 +547,8 @@ export function HRTimesheetActivitiesTable({
                                 variant="ghost"
                                 size="sm"
                                 onClick={(e) => {
-                                  e.stopPropagation();
-                                  onEdit(activity);
+                                  e.stopPropagation()
+                                  onEdit(activity)
                                 }}
                                 className="text-primary hover:text-primary"
                               >
@@ -551,9 +560,9 @@ export function HRTimesheetActivitiesTable({
                                 variant="destructive"
                                 size="sm"
                                 onClick={(e) => {
-                                  e.stopPropagation();
-                                  const activityId = activity.id || activity._tempId;
-                                  if (activityId) onDelete(activityId);
+                                  e.stopPropagation()
+                                  const activityId = activity.id || activity._tempId
+                                  if (activityId) onDelete(activityId)
                                 }}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -577,8 +586,8 @@ export function HRTimesheetActivitiesTable({
                           {onEdit && <ContextMenuSeparator />}
                           <ContextMenuItem
                             onClick={() => {
-                              const activityId = activity.id || activity._tempId;
-                              if (activityId) onDelete(activityId);
+                              const activityId = activity.id || activity._tempId
+                              if (activityId) onDelete(activityId)
                             }}
                             className="text-destructive focus:text-destructive"
                           >
@@ -610,7 +619,9 @@ export function HRTimesheetActivitiesTable({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Info className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Nom de l'activité</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Nom de l'activité
+                  </span>
                 </div>
                 <p className="text-base font-semibold">{selectedActivity.activityName}</p>
               </div>
@@ -621,14 +632,18 @@ export function HRTimesheetActivitiesTable({
                     <Info className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-muted-foreground">Description</span>
                   </div>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.description}</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">
+                    {selectedActivity.description}
+                  </p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div className="space-y-2">
                   <span className="text-sm font-medium text-muted-foreground">Catégorie</span>
-                  <p className="text-sm">{selectedActivity.ActivityCatalog?.category || "Autres"}</p>
+                  <p className="text-sm">
+                    {selectedActivity.ActivityCatalog?.category || 'Autres'}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <span className="text-sm font-medium text-muted-foreground">Type</span>
@@ -645,17 +660,19 @@ export function HRTimesheetActivitiesTable({
                 <div className="space-y-2">
                   <span className="text-sm font-medium text-muted-foreground">Statut</span>
                   <div>
-                    <Badge variant={selectedActivity.status === "COMPLETED" ? "default" : "secondary"}>
-                      {selectedActivity.status === "COMPLETED" ? "Terminé" : "En cours"}
+                    <Badge
+                      variant={selectedActivity.status === 'COMPLETED' ? 'default' : 'secondary'}
+                    >
+                      {selectedActivity.status === 'COMPLETED' ? 'Terminé' : 'En cours'}
                     </Badge>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <span className="text-sm font-medium text-muted-foreground">Période</span>
                   <p className="text-sm">
-                    {format(new Date(selectedActivity.startDate), "dd/MM/yyyy", { locale: fr })}
-                    {" → "}
-                    {format(new Date(selectedActivity.endDate), "dd/MM/yyyy", { locale: fr })}
+                    {format(new Date(selectedActivity.startDate), 'dd/MM/yyyy', { locale: fr })}
+                    {' → '}
+                    {format(new Date(selectedActivity.endDate), 'dd/MM/yyyy', { locale: fr })}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -670,6 +687,5 @@ export function HRTimesheetActivitiesTable({
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }
-

@@ -1,68 +1,68 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { consolidateMonthlyReport } from "@/actions/report-generation.actions";
-import { useAction } from "next-safe-action/hooks";
-import { toast } from "sonner";
-import { Calendar, FileText, Download } from "lucide-react";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { consolidateMonthlyReport } from '@/actions/report-generation.actions'
+import { useAction } from 'next-safe-action/hooks'
+import { toast } from 'sonner'
+import { Calendar, FileText, Download } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const MONTHS = [
-  { value: 1, label: "Janvier" },
-  { value: 2, label: "Février" },
-  { value: 3, label: "Mars" },
-  { value: 4, label: "Avril" },
-  { value: 5, label: "Mai" },
-  { value: 6, label: "Juin" },
-  { value: 7, label: "Juillet" },
-  { value: 8, label: "Août" },
-  { value: 9, label: "Septembre" },
-  { value: 10, label: "Octobre" },
-  { value: 11, label: "Novembre" },
-  { value: 12, label: "Décembre" },
-];
+  { value: 1, label: 'Janvier' },
+  { value: 2, label: 'Février' },
+  { value: 3, label: 'Mars' },
+  { value: 4, label: 'Avril' },
+  { value: 5, label: 'Mai' },
+  { value: 6, label: 'Juin' },
+  { value: 7, label: 'Juillet' },
+  { value: 8, label: 'Août' },
+  { value: 9, label: 'Septembre' },
+  { value: 10, label: 'Octobre' },
+  { value: 11, label: 'Novembre' },
+  { value: 12, label: 'Décembre' },
+]
 
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
+const CURRENT_YEAR = new Date().getFullYear()
+const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i)
 
 export default function MonthlyReportPage() {
-  const router = useRouter();
-  const [year, setYear] = useState(CURRENT_YEAR);
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [format, setFormat] = useState<"word" | "pdf" | "excel">("word");
-  const [title, setTitle] = useState("");
-  const [includeSummary, setIncludeSummary] = useState(true);
+  const router = useRouter()
+  const [year, setYear] = useState(CURRENT_YEAR)
+  const [month, setMonth] = useState(new Date().getMonth() + 1)
+  const [format, setFormat] = useState<'word' | 'pdf' | 'excel'>('word')
+  const [title, setTitle] = useState('')
+  const [includeSummary, setIncludeSummary] = useState(true)
 
   const { execute: executeConsolidate, isExecuting: isConsolidating } = useAction(
     consolidateMonthlyReport,
     {
-      onSuccess: ({ data }) => {
-        toast.success("Rapport mensuel généré avec succès!");
-        router.push("/dashboard/reports");
+      onSuccess: ({ data: _data }) => {
+        toast.success('Rapport mensuel généré avec succès!')
+        router.push('/dashboard/reports')
       },
       onError: ({ error }) => {
-        toast.error(error.serverError || "Erreur lors de la consolidation");
+        toast.error(error.serverError || 'Erreur lors de la consolidation')
       },
-    }
-  );
+    },
+  )
 
   const handleGenerate = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const monthName = MONTHS.find((m) => m.value === month)?.label || "";
-    const defaultTitle = `Rapport Mensuel - ${monthName} ${year}`;
+    const monthName = MONTHS.find((m) => m.value === month)?.label || ''
+    const defaultTitle = `Rapport Mensuel - ${monthName} ${year}`
 
     executeConsolidate({
       year,
@@ -70,16 +70,14 @@ export default function MonthlyReportPage() {
       title: title.trim() || defaultTitle,
       format,
       includeSummary,
-    });
-  };
+    })
+  }
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       {/* En-tête */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Rapport Mensuel Consolidé
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Rapport Mensuel Consolidé</h1>
         <p className="text-sm sm:text-base text-muted-foreground">
           Générez un rapport consolidé à partir de toutes vos feuilles de temps hebdomadaires
         </p>
@@ -102,15 +100,12 @@ export default function MonthlyReportPage() {
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label>Période *</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="month" className="text-sm text-muted-foreground">
                       Mois
                     </Label>
-                    <Select
-                      value={month.toString()}
-                      onValueChange={(v) => setMonth(parseInt(v))}
-                    >
+                    <Select value={month.toString()} onValueChange={(v) => setMonth(parseInt(v))}>
                       <SelectTrigger id="month">
                         <SelectValue />
                       </SelectTrigger>
@@ -152,7 +147,7 @@ export default function MonthlyReportPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={`Ex: Rapport Mensuel - ${
-                    MONTHS.find((m) => m.value === month)?.label || ""
+                    MONTHS.find((m) => m.value === month)?.label || ''
                   } ${year}`}
                 />
                 <p className="text-xs text-muted-foreground">
@@ -165,7 +160,7 @@ export default function MonthlyReportPage() {
                 <Label htmlFor="format">Format d'export</Label>
                 <Select
                   value={format}
-                  onValueChange={(v: "word" | "pdf" | "excel") => setFormat(v)}
+                  onValueChange={(v: 'word' | 'pdf' | 'excel') => setFormat(v)}
                 >
                   <SelectTrigger id="format">
                     <SelectValue />
@@ -211,12 +206,12 @@ export default function MonthlyReportPage() {
             <div className="flex items-center gap-3">
               <Button type="submit" disabled={isConsolidating} className="flex-1">
                 <Download className="h-4 w-4 mr-2" />
-                {isConsolidating ? "Génération en cours..." : "Générer le rapport"}
+                {isConsolidating ? 'Génération en cours...' : 'Générer le rapport'}
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/dashboard/reports")}
+                onClick={() => router.push('/dashboard/reports')}
                 disabled={isConsolidating}
               >
                 Annuler
@@ -238,11 +233,11 @@ export default function MonthlyReportPage() {
           </p>
           <p>
             <strong>Personnalisation :</strong> Vous pouvez créer des modèles de rapports
-            personnalisés dans la section{" "}
+            personnalisés dans la section{' '}
             <Button
               variant="link"
               className="h-auto p-0"
-              onClick={() => router.push("/dashboard/reports/templates")}
+              onClick={() => router.push('/dashboard/reports/templates')}
             >
               Modèles de Rapports
             </Button>
@@ -255,5 +250,5 @@ export default function MonthlyReportPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

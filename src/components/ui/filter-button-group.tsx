@@ -1,18 +1,14 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Filter, Calendar, Search, X, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+import { useState } from 'react'
+import { Filter, Calendar, Search, X, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 interface FilterOption {
   id: string
@@ -54,39 +50,43 @@ export function FilterButtonGroup({
   startDate,
   endDate,
   onDateChange,
-  placeholder = "Rechercher...",
+  placeholder = 'Rechercher...',
   className,
   secondFilterOptions = [],
   selectedSecondFilter,
   onSecondFilterChange,
-  firstFilterLabel = "Filtrer par",
-  secondFilterLabel = "Action",
+  firstFilterLabel = 'Filtrer par',
+  secondFilterLabel = 'Action',
   extraFilters = [],
 }: FilterButtonGroupProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isDateOpen, setIsDateOpen] = useState(false)
 
   // Calculer le nombre de filtres actifs (hors dates et recherche)
-  const extraFiltersCount = extraFilters.filter(f => f.selected && f.selected !== "all" && f.selected !== "").length
-  const activeFiltersCount = [
-    selectedFilter && selectedFilter !== "all" && selectedFilter !== "",
-    selectedSecondFilter && selectedSecondFilter !== "all" && selectedSecondFilter !== "",
-  ].filter(Boolean).length + extraFiltersCount
+  const extraFiltersCount = extraFilters.filter(
+    (f) => f.selected && f.selected !== 'all' && f.selected !== '',
+  ).length
+  const activeFiltersCount =
+    [
+      selectedFilter && selectedFilter !== 'all' && selectedFilter !== '',
+      selectedSecondFilter && selectedSecondFilter !== 'all' && selectedSecondFilter !== '',
+    ].filter(Boolean).length + extraFiltersCount
 
   const handleClear = () => {
-    if (onFilterChange) onFilterChange("all")
+    if (onFilterChange) onFilterChange('all')
     if (onSecondFilterChange) {
-      onSecondFilterChange("all")
+      onSecondFilterChange('all')
     }
-    extraFilters.forEach(f => f.onChange("all"))
+    extraFilters.forEach((f) => f.onChange('all'))
     setIsFilterOpen(false)
   }
 
-  const hasActiveFilters = activeFiltersCount > 0
-  const hasFilterOptions = filterOptions.length > 0 || secondFilterOptions.length > 0 || extraFilters.length > 0
+  const _hasActiveFilters = activeFiltersCount > 0
+  const hasFilterOptions =
+    filterOptions.length > 0 || secondFilterOptions.length > 0 || extraFilters.length > 0
 
   return (
-    <div className={cn("flex flex-col sm:flex-row items-stretch sm:items-center gap-2", className)}>
+    <div className={cn('flex flex-col sm:flex-row items-stretch sm:items-center gap-2', className)}>
       {/* Barre de recherche avec icône */}
       <div className="relative flex-1 max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -101,7 +101,7 @@ export function FilterButtonGroup({
             variant="ghost"
             size="icon"
             className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={() => onSearchChange("")}
+            onClick={() => onSearchChange('')}
           >
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -112,15 +112,23 @@ export function FilterButtonGroup({
       {onDateChange && (
         <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 gap-2 shrink-0 justify-start font-normal", (!startDate && !endDate) && "text-muted-foreground")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 gap-2 shrink-0 justify-start font-normal',
+                !startDate && !endDate && 'text-muted-foreground',
+              )}
+            >
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">
                 {startDate || endDate ? (
                   <>
-                    {startDate ? new Date(startDate).toLocaleDateString() : "Début"} - {endDate ? new Date(endDate).toLocaleDateString() : "Fin"}
+                    {startDate ? new Date(startDate).toLocaleDateString() : 'Début'} -{' '}
+                    {endDate ? new Date(endDate).toLocaleDateString() : 'Fin'}
                   </>
                 ) : (
-                  "Pick a date"
+                  'Pick a date'
                 )}
               </span>
             </Button>
@@ -130,22 +138,26 @@ export function FilterButtonGroup({
               <h4 className="font-medium text-sm">Période</h4>
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="start-date" className="text-xs">Date de début</Label>
+                  <Label htmlFor="start-date" className="text-xs">
+                    Date de début
+                  </Label>
                   <Input
                     id="start-date"
                     type="date"
-                    value={startDate || ""}
-                    onChange={(e) => onDateChange(e.target.value, endDate || "")}
+                    value={startDate || ''}
+                    onChange={(e) => onDateChange(e.target.value, endDate || '')}
                     className="h-8"
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="end-date" className="text-xs">Date de fin</Label>
+                  <Label htmlFor="end-date" className="text-xs">
+                    Date de fin
+                  </Label>
                   <Input
                     id="end-date"
                     type="date"
-                    value={endDate || ""}
-                    onChange={(e) => onDateChange(startDate || "", e.target.value)}
+                    value={endDate || ''}
+                    onChange={(e) => onDateChange(startDate || '', e.target.value)}
                     className="h-8"
                   />
                 </div>
@@ -156,7 +168,7 @@ export function FilterButtonGroup({
                   size="sm"
                   className="w-full text-xs h-8"
                   onClick={() => {
-                    onDateChange("", "")
+                    onDateChange('', '')
                     setIsDateOpen(false)
                   }}
                 >
@@ -176,7 +188,10 @@ export function FilterButtonGroup({
               <Filter className="h-4 w-4" />
               <span className="hidden sm:inline">Filtres</span>
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs font-medium rounded-sm">
+                <Badge
+                  variant="secondary"
+                  className="ml-1 h-5 px-1.5 text-xs font-medium rounded-sm"
+                >
                   {activeFiltersCount}
                 </Badge>
               )}
@@ -209,15 +224,21 @@ export function FilterButtonGroup({
                     <div
                       key={option.id}
                       className={cn(
-                        "flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors",
-                        selectedFilter === option.value ? "bg-accent/50 text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                        'flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors',
+                        selectedFilter === option.value
+                          ? 'bg-accent/50 text-accent-foreground'
+                          : 'hover:bg-accent hover:text-accent-foreground',
                       )}
                       onClick={() => onFilterChange?.(option.value)}
                     >
-                      <div className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        selectedFilter === option.value ? "bg-primary text-primary-foreground" : "opacity-30"
-                      )}>
+                      <div
+                        className={cn(
+                          'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                          selectedFilter === option.value
+                            ? 'bg-primary text-primary-foreground'
+                            : 'opacity-30',
+                        )}
+                      >
                         {selectedFilter === option.value && <Check className="h-3 w-3" />}
                       </div>
                       <span>{option.label}</span>
@@ -238,15 +259,21 @@ export function FilterButtonGroup({
                       <div
                         key={option.id}
                         className={cn(
-                          "flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors",
-                          selectedSecondFilter === option.value ? "bg-accent/50 text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                          'flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors',
+                          selectedSecondFilter === option.value
+                            ? 'bg-accent/50 text-accent-foreground'
+                            : 'hover:bg-accent hover:text-accent-foreground',
                         )}
                         onClick={() => onSecondFilterChange(option.value)}
                       >
-                        <div className={cn(
-                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                          selectedSecondFilter === option.value ? "bg-primary text-primary-foreground" : "opacity-30"
-                        )}>
+                        <div
+                          className={cn(
+                            'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                            selectedSecondFilter === option.value
+                              ? 'bg-primary text-primary-foreground'
+                              : 'opacity-30',
+                          )}
+                        >
                           {selectedSecondFilter === option.value && <Check className="h-3 w-3" />}
                         </div>
                         <span>{option.label}</span>
@@ -259,7 +286,9 @@ export function FilterButtonGroup({
               {/* Extra Filters */}
               {extraFilters.map((filter, idx) => (
                 <div key={idx}>
-                  {(filterOptions.length > 0 || secondFilterOptions.length > 0 || idx > 0) && <Separator className="my-2" />}
+                  {(filterOptions.length > 0 || secondFilterOptions.length > 0 || idx > 0) && (
+                    <Separator className="my-2" />
+                  )}
                   <div className="space-y-1">
                     <h5 className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {filter.label}
@@ -268,15 +297,21 @@ export function FilterButtonGroup({
                       <div
                         key={option.id}
                         className={cn(
-                          "flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors",
-                          filter.selected === option.value ? "bg-accent/50 text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                          'flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer transition-colors',
+                          filter.selected === option.value
+                            ? 'bg-accent/50 text-accent-foreground'
+                            : 'hover:bg-accent hover:text-accent-foreground',
                         )}
                         onClick={() => filter.onChange(option.value)}
                       >
-                        <div className={cn(
-                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                          filter.selected === option.value ? "bg-primary text-primary-foreground" : "opacity-30"
-                        )}>
+                        <div
+                          className={cn(
+                            'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                            filter.selected === option.value
+                              ? 'bg-primary text-primary-foreground'
+                              : 'opacity-30',
+                          )}
+                        >
                           {filter.selected === option.value && <Check className="h-3 w-3" />}
                         </div>
                         <span>{option.label}</span>

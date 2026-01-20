@@ -1,8 +1,8 @@
-import { inngest } from "../client";
-import { prisma } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
-import { startOfWeek, endOfWeek, subWeeks, format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { inngest } from '../client'
+import { prisma } from '@/lib/db'
+import { sendEmail } from '@/lib/email'
+import { startOfWeek, endOfWeek, subWeeks, format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 /**
  * Job Inngest : Rapport hebdomadaire des feuilles de temps RH
@@ -21,23 +21,23 @@ import { fr } from "date-fns/locale";
  */
 export const hrTimesheetWeeklyReport = inngest.createFunction(
   {
-    id: "hr-timesheet-weekly-report",
-    name: "Weekly HR Timesheet Report (Monday 8am)",
+    id: 'hr-timesheet-weekly-report',
+    name: 'Weekly HR Timesheet Report (Monday 8am)',
     retries: 2,
   },
   {
     // Tous les lundis à 8h
-    cron: "0 8 * * 1",
+    cron: '0 8 * * 1',
   },
   async ({ step }) => {
-    const now = new Date();
+    const now = new Date()
 
     // Calculer la semaine précédente (lundi-dimanche)
-    const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
-    const lastWeekEnd = endOfWeek(lastWeekStart, { weekStartsOn: 1 });
+    const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 })
+    const lastWeekEnd = endOfWeek(lastWeekStart, { weekStartsOn: 1 })
 
     // Étape 1: Agréger les statistiques de la semaine
-    const stats = await step.run("aggregate-weekly-stats", async () => {
+    const stats = await step.run('aggregate-weekly-stats', async () => {
       // Récupérer tous les timesheets de la semaine
       const timesheets = await prisma.hRTimesheet.findMany({
         where: {
@@ -52,46 +52,40 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
             select: { id: true, name: true },
           },
         },
-      });
+      })
 
       // Statistiques de base
-      const totalTimesheets = timesheets.length;
-      const totalDraft = timesheets.filter((ts) => ts.status === "DRAFT").length;
-      const totalPending = timesheets.filter((ts) => ts.status === "PENDING").length;
+      const totalTimesheets = timesheets.length
+      const totalDraft = timesheets.filter((ts) => ts.status === 'DRAFT').length
+      const totalPending = timesheets.filter((ts) => ts.status === 'PENDING').length
       const totalManagerApproved = timesheets.filter(
-        (ts) => ts.status === "MANAGER_APPROVED"
-      ).length;
-      const totalApproved = timesheets.filter((ts) => ts.status === "APPROVED").length;
-      const totalRejected = timesheets.filter((ts) => ts.status === "REJECTED").length;
+        (ts) => ts.status === 'MANAGER_APPROVED',
+      ).length
+      const totalApproved = timesheets.filter((ts) => ts.status === 'APPROVED').length
+      const totalRejected = timesheets.filter((ts) => ts.status === 'REJECTED').length
 
       // Calcul des heures totales
-      const totalHours = timesheets.reduce((sum, ts) => sum + ts.totalHours, 0);
-      const avgHoursPerTimesheet =
-        totalTimesheets > 0 ? totalHours / totalTimesheets : 0;
+      const totalHours = timesheets.reduce((sum, ts) => sum + ts.totalHours, 0)
+      const avgHoursPerTimesheet = totalTimesheets > 0 ? totalHours / totalTimesheets : 0
 
       // Nombre d'activités créées
-      const totalActivities = timesheets.reduce(
-        (sum, ts) => sum + ts.HRActivity.length,
-        0
-      );
+      const totalActivities = timesheets.reduce((sum, ts) => sum + ts.HRActivity.length, 0)
 
       // Taux de conformité (soumis / total)
-      const submittedCount = totalTimesheets - totalDraft;
-      const complianceRate =
-        totalTimesheets > 0 ? (submittedCount / totalTimesheets) * 100 : 0;
+      const submittedCount = totalTimesheets - totalDraft
+      const complianceRate = totalTimesheets > 0 ? (submittedCount / totalTimesheets) * 100 : 0
 
       // Délai moyen de validation (PENDING → APPROVED)
       const approvedTimesheets = timesheets.filter(
-        (ts) => ts.status === "APPROVED" && ts.odillonSignedAt && ts.employeeSignedAt
-      );
+        (ts) => ts.status === 'APPROVED' && ts.odillonSignedAt && ts.employeeSignedAt,
+      )
       const avgValidationTime =
         approvedTimesheets.length > 0
           ? approvedTimesheets.reduce((sum, ts) => {
-              const delay =
-                ts.odillonSignedAt!.getTime() - ts.employeeSignedAt!.getTime();
-              return sum + delay / (1000 * 60 * 60 * 24); // Jours
+              const delay = ts.odillonSignedAt!.getTime() - ts.employeeSignedAt!.getTime()
+              return sum + delay / (1000 * 60 * 60 * 24) // Jours
             }, 0) / approvedTimesheets.length
-          : 0;
+          : 0
 
       return {
         weekStart: lastWeekStart,
@@ -108,14 +102,14 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
         complianceRate,
         avgValidationTime,
         timesheets, // Pour détails dans l'email
-      };
-    });
+      }
+    })
 
     // Étape 2: Récupérer les destinataires (RH + Admins)
-    const recipients = await step.run("find-recipients", async () => {
+    const recipients = await step.run('find-recipients', async () => {
       return prisma.user.findMany({
         where: {
-          role: { in: ["ADMIN", "HR"] },
+          role: { in: ['ADMIN', 'HR'] },
         },
         select: {
           id: true,
@@ -123,26 +117,26 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
           email: true,
           emailNotificationsEnabled: true,
         },
-      });
-    });
+      })
+    })
 
     if (recipients.length === 0) {
       return {
         processed: 0,
-        message: "Aucun destinataire RH/Admin trouvé",
-      };
+        message: 'Aucun destinataire RH/Admin trouvé',
+      }
     }
 
     // Étape 3: Envoyer le rapport par email
-    const emailResults = [];
+    const emailResults = []
     for (const recipient of recipients) {
-      if (!recipient.emailNotificationsEnabled) continue;
+      if (!recipient.emailNotificationsEnabled) continue
 
       const result = await step.run(`send-report-${recipient.id}`, async () => {
         try {
           // Préparer les données pour l'email
-          const weekLabel = format(stats.weekStart, "dd MMMM yyyy", { locale: fr });
-          const weekEndLabel = format(stats.weekEnd, "dd MMMM yyyy", { locale: fr });
+          const weekLabel = format(stats.weekStart, 'dd MMMM yyyy', { locale: fr })
+          const weekEndLabel = format(stats.weekEnd, 'dd MMMM yyyy', { locale: fr })
 
           // Générer le contenu HTML du rapport
           const htmlContent = `
@@ -203,7 +197,7 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
                 <tr style="background-color: #f8f9fa;">
                   <td style="padding: 12px; border: 1px solid #ddd;"><strong>Taux de soumission</strong></td>
                   <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">
-                    <span style="color: ${stats.complianceRate >= 80 ? "#28a745" : stats.complianceRate >= 60 ? "#ffc107" : "#dc3545"};">
+                    <span style="color: ${stats.complianceRate >= 80 ? '#28a745' : stats.complianceRate >= 60 ? '#ffc107' : '#dc3545'};">
                       <strong>${stats.complianceRate.toFixed(1)}%</strong>
                     </span>
                   </td>
@@ -224,7 +218,7 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
                 </p>
               </div>
               `
-                  : ""
+                  : ''
               }
 
               <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
@@ -234,31 +228,31 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
                 </p>
               </div>
             </div>
-          `;
+          `
 
           await sendEmail({
             to: recipient.email,
             subject: `📊 Rapport Hebdomadaire RH - Semaine du ${weekLabel}`,
             html: htmlContent,
-          });
+          })
 
           return {
             recipientId: recipient.id,
             recipientEmail: recipient.email,
             success: true,
-          };
+          }
         } catch (error) {
-          console.error(`Erreur email pour ${recipient.email}:`, error);
+          console.error(`[HR Report] Erreur envoi email, recipientId: ${recipient.id}`, error)
           return {
             recipientId: recipient.id,
             recipientEmail: recipient.email,
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-          };
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }
         }
-      });
+      })
 
-      emailResults.push(result);
+      emailResults.push(result)
     }
 
     return {
@@ -272,6 +266,6 @@ export const hrTimesheetWeeklyReport = inngest.createFunction(
         totalHours: stats.totalHours,
       },
       timestamp: now.toISOString(),
-    };
-  }
-);
+    }
+  },
+)

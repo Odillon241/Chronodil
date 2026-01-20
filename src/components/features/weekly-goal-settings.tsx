@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react'
+import { Settings } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -11,45 +11,45 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
-import { updateUserPreferences } from "@/actions/preferences.actions";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
+import { toast } from 'sonner'
+import { updateUserPreferences } from '@/actions/preferences.actions'
 
 interface WeeklyGoalSettingsProps {
-  currentGoal: number;
-  onGoalUpdated?: (newGoal: number) => void;
+  currentGoal: number
+  onGoalUpdated?: (newGoal: number) => void
 }
 
 export function WeeklyGoalSettings({ currentGoal, onGoalUpdated }: WeeklyGoalSettingsProps) {
-  const [open, setOpen] = useState(false);
-  const [goal, setGoal] = useState(currentGoal);
-  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [goal, setGoal] = useState(currentGoal)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSave = async () => {
     if (goal < 1 || goal > 168) {
-      toast.error("L'objectif doit être entre 1h et 168h");
-      return;
+      toast.error("L'objectif doit être entre 1h et 168h")
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const result = await updateUserPreferences({ weeklyGoal: goal });
+      const result = await updateUserPreferences({ weeklyGoal: goal })
       if (result?.data) {
-        toast.success("Objectif hebdomadaire mis à jour !");
-        setOpen(false);
-        onGoalUpdated?.(goal);
+        toast.success('Objectif hebdomadaire mis à jour !')
+        setOpen(false)
+        onGoalUpdated?.(goal)
       } else {
-        toast.error("Erreur lors de la mise à jour");
+        toast.error('Erreur lors de la mise à jour')
       }
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+    } catch (_error) {
+      toast.error('Erreur lors de la mise à jour')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -77,9 +77,7 @@ export function WeeklyGoalSettings({ currentGoal, onGoalUpdated }: WeeklyGoalSet
               onChange={(e) => setGoal(Number(e.target.value))}
               placeholder="40"
             />
-            <p className="text-xs text-muted-foreground">
-              Recommandé : 35-40h pour un temps plein
-            </p>
+            <p className="text-xs text-muted-foreground">Recommandé : 35-40h pour un temps plein</p>
           </div>
         </div>
         <DialogFooter>
@@ -92,10 +90,12 @@ export function WeeklyGoalSettings({ currentGoal, onGoalUpdated }: WeeklyGoalSet
                 <Spinner />
                 Enregistrement...
               </span>
-            ) : "Enregistrer"}
+            ) : (
+              'Enregistrer'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

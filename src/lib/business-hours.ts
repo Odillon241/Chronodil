@@ -3,17 +3,17 @@
  * Basé sur une semaine de travail standard : 8h/jour, 5 jours (lundi-vendredi)
  */
 
-import { differenceInDays, eachDayOfInterval, getDay } from "date-fns";
+import { eachDayOfInterval, getDay } from 'date-fns'
 
 /**
  * Nombre d'heures de travail par jour ouvrable
  */
-export const WORKING_HOURS_PER_DAY = 8;
+export const WORKING_HOURS_PER_DAY = 8
 
 /**
  * Jours de la semaine ouvrables (1 = lundi, 5 = vendredi)
  */
-export const WORKING_DAYS = [1, 2, 3, 4, 5];
+export const WORKING_DAYS = [1, 2, 3, 4, 5]
 
 /**
  * Vérifie si un jour est un jour ouvrable (lundi-vendredi)
@@ -21,8 +21,8 @@ export const WORKING_DAYS = [1, 2, 3, 4, 5];
  * @returns true si c'est un jour ouvrable
  */
 export function isWorkingDay(date: Date): boolean {
-  const dayOfWeek = getDay(date);
-  return WORKING_DAYS.includes(dayOfWeek);
+  const dayOfWeek = getDay(date)
+  return WORKING_DAYS.includes(dayOfWeek)
 }
 
 /**
@@ -34,21 +34,21 @@ export function isWorkingDay(date: Date): boolean {
 export function getWorkingDaysBetween(startDate: Date, endDate: Date): number {
   // Si les dates sont identiques, vérifier si c'est un jour ouvrable
   if (startDate.getTime() === endDate.getTime()) {
-    return isWorkingDay(startDate) ? 1 : 0;
+    return isWorkingDay(startDate) ? 1 : 0
   }
 
   // Si endDate < startDate, retourner 0
   if (endDate < startDate) {
-    return 0;
+    return 0
   }
 
   // Obtenir tous les jours dans l'intervalle
-  const allDays = eachDayOfInterval({ start: startDate, end: endDate });
+  const allDays = eachDayOfInterval({ start: startDate, end: endDate })
 
   // Compter uniquement les jours ouvrables
-  const workingDays = allDays.filter(isWorkingDay);
+  const workingDays = allDays.filter(isWorkingDay)
 
-  return workingDays.length;
+  return workingDays.length
 }
 
 /**
@@ -59,8 +59,8 @@ export function getWorkingDaysBetween(startDate: Date, endDate: Date): number {
  * @returns Le nombre total d'heures de travail
  */
 export function calculateWorkingHours(startDate: Date, endDate: Date): number {
-  const workingDays = getWorkingDaysBetween(startDate, endDate);
-  return workingDays * WORKING_HOURS_PER_DAY;
+  const workingDays = getWorkingDaysBetween(startDate, endDate)
+  return workingDays * WORKING_HOURS_PER_DAY
 }
 
 /**
@@ -69,7 +69,7 @@ export function calculateWorkingHours(startDate: Date, endDate: Date): number {
  * @returns Chaîne formatée (ex: "40h", "8.5h")
  */
 export function formatWorkingHours(hours: number): string {
-  return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
+  return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`
 }
 
 /**
@@ -79,6 +79,6 @@ export function formatWorkingHours(hours: number): string {
  * @returns Le nombre de semaines (arrondi au dixième)
  */
 export function getWorkingWeeks(startDate: Date, endDate: Date): number {
-  const workingDays = getWorkingDaysBetween(startDate, endDate);
-  return Math.round((workingDays / 5) * 10) / 10;
+  const workingDays = getWorkingDaysBetween(startDate, endDate)
+  return Math.round((workingDays / 5) * 10) / 10
 }

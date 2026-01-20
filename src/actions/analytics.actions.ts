@@ -1,16 +1,16 @@
-"use server";
+'use server'
 
-import { getSession, getUserRole } from "@/lib/auth";
-import { actionClient, authActionClient } from "@/lib/safe-action";
-import { z } from "zod";
+import { getSession, getUserRole } from '@/lib/auth'
+import { authActionClient } from '@/lib/safe-action'
+import { z } from 'zod'
 import {
   calculateTaskMetrics,
   calculateUserPerformance,
   calculateProjectPerformance,
   calculateProductivityTrends,
   calculateInsights,
-} from "@/lib/task-analytics";
-import { cacheTag } from "next/cache";
+} from '@/lib/task-analytics'
+import { cacheTag } from 'next/cache'
 
 /**
  * Server Actions pour les analytics de tâches
@@ -26,7 +26,7 @@ const analyticsParamsSchema = z.object({
   projectId: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
-});
+})
 
 /**
  * Récupère les métriques globales des tâches
@@ -35,31 +35,31 @@ export const getTaskMetrics = authActionClient
   .schema(analyticsParamsSchema)
   .action(async ({ parsedInput, ctx }) => {
     // "use cache";
-    cacheTag("analytics");
-    cacheTag(`analytics-metrics-${ctx.userId}`);
+    cacheTag('analytics')
+    cacheTag(`analytics-metrics-${ctx.userId}`)
 
     // Par défaut, afficher les métriques de l'utilisateur connecté
-    const targetUserId = parsedInput.userId || ctx.userId;
+    const targetUserId = parsedInput.userId || ctx.userId
 
     // Vérifier les permissions : seul l'utilisateur ou un admin peut voir ses métriques
-    const session = await getSession();
-    const userRole = getUserRole(session);
+    const session = await getSession()
+    const userRole = getUserRole(session)
     if (
       targetUserId !== ctx.userId &&
-      !["ADMIN", "MANAGER", "DIRECTEUR"].includes(userRole as string)
+      !['ADMIN', 'MANAGER', 'DIRECTEUR'].includes(userRole as string)
     ) {
-      throw new Error("Permission refusée");
+      throw new Error('Permission refusée')
     }
 
     const metrics = await calculateTaskMetrics(
       targetUserId,
       parsedInput.projectId,
       parsedInput.startDate,
-      parsedInput.endDate
-    );
+      parsedInput.endDate,
+    )
 
-    return metrics;
-  });
+    return metrics
+  })
 
 /**
  * Récupère la performance par utilisateur
@@ -71,29 +71,29 @@ export const getUserPerformanceMetrics = authActionClient
       startDate: z.date().optional(),
       endDate: z.date().optional(),
       limit: z.number().min(1).max(100).optional(),
-    })
+    }),
   )
-  .action(async ({ parsedInput, ctx }) => {
+  .action(async ({ parsedInput }) => {
     // "use cache";
-    cacheTag("analytics");
-    cacheTag("analytics-user-performance");
+    cacheTag('analytics')
+    cacheTag('analytics-user-performance')
 
-    const session = await getSession();
-    const userRole = getUserRole(session);
+    const session = await getSession()
+    const userRole = getUserRole(session)
 
     // Vérifier les permissions
-    if (!["ADMIN", "MANAGER", "DIRECTEUR"].includes(userRole as string)) {
-      throw new Error("Permission refusée - Réservé aux managers");
+    if (!['ADMIN', 'MANAGER', 'DIRECTEUR'].includes(userRole as string)) {
+      throw new Error('Permission refusée - Réservé aux managers')
     }
 
     const performance = await calculateUserPerformance(
       parsedInput.startDate,
       parsedInput.endDate,
-      parsedInput.limit
-    );
+      parsedInput.limit,
+    )
 
-    return performance;
-  });
+    return performance
+  })
 
 /**
  * Récupère la performance par projet
@@ -103,20 +103,20 @@ export const getProjectPerformanceMetrics = authActionClient
     z.object({
       startDate: z.date().optional(),
       endDate: z.date().optional(),
-    })
+    }),
   )
-  .action(async ({ parsedInput, ctx }) => {
+  .action(async ({ parsedInput }) => {
     // "use cache";
-    cacheTag("analytics");
-    cacheTag("analytics-project-performance");
+    cacheTag('analytics')
+    cacheTag('analytics-project-performance')
 
     const performance = await calculateProjectPerformance(
       parsedInput.startDate,
-      parsedInput.endDate
-    );
+      parsedInput.endDate,
+    )
 
-    return performance;
-  });
+    return performance
+  })
 
 /**
  * Récupère les tendances de productivité
@@ -126,33 +126,30 @@ export const getProductivityTrends = authActionClient
     z.object({
       userId: z.string().optional(),
       days: z.number().min(7).max(365).optional(),
-    })
+    }),
   )
   .action(async ({ parsedInput, ctx }) => {
     // "use cache";
-    cacheTag("analytics");
-    cacheTag(`analytics-trends-${ctx.userId}`);
+    cacheTag('analytics')
+    cacheTag(`analytics-trends-${ctx.userId}`)
 
     // Par défaut, afficher les tendances de l'utilisateur connecté
-    const targetUserId = parsedInput.userId || ctx.userId;
+    const targetUserId = parsedInput.userId || ctx.userId
 
     // Vérifier les permissions
-    const session = await getSession();
-    const userRole = getUserRole(session);
+    const session = await getSession()
+    const userRole = getUserRole(session)
     if (
       targetUserId !== ctx.userId &&
-      !["ADMIN", "MANAGER", "DIRECTEUR"].includes(userRole as string)
+      !['ADMIN', 'MANAGER', 'DIRECTEUR'].includes(userRole as string)
     ) {
-      throw new Error("Permission refusée");
+      throw new Error('Permission refusée')
     }
 
-    const trends = await calculateProductivityTrends(
-      targetUserId,
-      parsedInput.days || 30
-    );
+    const trends = await calculateProductivityTrends(targetUserId, parsedInput.days || 30)
 
-    return trends;
-  });
+    return trends
+  })
 
 /**
  * Récupère les insights intelligents
@@ -161,29 +158,29 @@ export const getTaskInsights = authActionClient
   .schema(
     z.object({
       userId: z.string().optional(),
-    })
+    }),
   )
   .action(async ({ parsedInput, ctx }) => {
     // "use cache";
-    cacheTag("analytics");
-    cacheTag(`analytics-insights-${ctx.userId}`);
+    cacheTag('analytics')
+    cacheTag(`analytics-insights-${ctx.userId}`)
 
-    const targetUserId = parsedInput.userId || ctx.userId;
+    const targetUserId = parsedInput.userId || ctx.userId
 
     // Vérifier les permissions
-    const session = await getSession();
-    const userRole = getUserRole(session);
+    const session = await getSession()
+    const userRole = getUserRole(session)
     if (
       targetUserId !== ctx.userId &&
-      !["ADMIN", "MANAGER", "DIRECTEUR"].includes(userRole as string)
+      !['ADMIN', 'MANAGER', 'DIRECTEUR'].includes(userRole as string)
     ) {
-      throw new Error("Permission refusée");
+      throw new Error('Permission refusée')
     }
 
-    const insights = await calculateInsights(targetUserId);
+    const insights = await calculateInsights(targetUserId)
 
-    return insights;
-  });
+    return insights
+  })
 
 /**
  * Récupère un dashboard complet avec toutes les métriques
@@ -194,30 +191,30 @@ export const getAnalyticsDashboard = authActionClient
     z.object({
       userId: z.string().optional(),
       days: z.number().min(7).max(90).optional(),
-    })
+    }),
   )
   .action(async ({ parsedInput, ctx }) => {
     // "use cache";
-    cacheTag("analytics");
-    cacheTag(`analytics-dashboard-${ctx.userId}`);
+    cacheTag('analytics')
+    cacheTag(`analytics-dashboard-${ctx.userId}`)
 
-    const targetUserId = parsedInput.userId || ctx.userId;
-    const days = parsedInput.days || 30;
+    const targetUserId = parsedInput.userId || ctx.userId
+    const days = parsedInput.days || 30
 
     // Vérifier les permissions
-    const session = await getSession();
-    const userRole = getUserRole(session);
+    const session = await getSession()
+    const userRole = getUserRole(session)
     if (
       targetUserId !== ctx.userId &&
-      !["ADMIN", "MANAGER", "DIRECTEUR"].includes(userRole as string)
+      !['ADMIN', 'MANAGER', 'DIRECTEUR'].includes(userRole as string)
     ) {
-      throw new Error("Permission refusée");
+      throw new Error('Permission refusée')
     }
 
     // Calculer les dates
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
 
     // ⚡ Requêtes parallèles pour optimiser les performances
     const [metrics, trends, insights, projectPerformance] = await Promise.all([
@@ -225,12 +222,12 @@ export const getAnalyticsDashboard = authActionClient
       calculateProductivityTrends(targetUserId, days),
       calculateInsights(targetUserId),
       calculateProjectPerformance(startDate, endDate),
-    ]);
+    ])
 
     // Optionnel : Performance utilisateurs (si manager)
-    let userPerformance = null;
-    if (["ADMIN", "MANAGER", "DIRECTEUR"].includes(userRole as string)) {
-      userPerformance = await calculateUserPerformance(startDate, endDate, 10);
+    let userPerformance = null
+    if (['ADMIN', 'MANAGER', 'DIRECTEUR'].includes(userRole as string)) {
+      userPerformance = await calculateUserPerformance(startDate, endDate, 10)
     }
 
     return {
@@ -244,5 +241,5 @@ export const getAnalyticsDashboard = authActionClient
         endDate: endDate.toISOString(),
         days,
       },
-    };
-  });
+    }
+  })

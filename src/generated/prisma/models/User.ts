@@ -501,6 +501,7 @@ export type UserWhereInput = {
   Department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   other_User?: Prisma.UserListRelationFilter
+  UserReminder?: Prisma.UserReminderListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -570,6 +571,7 @@ export type UserOrderByWithRelationInput = {
   Department?: Prisma.DepartmentOrderByWithRelationInput
   User?: Prisma.UserOrderByWithRelationInput
   other_User?: Prisma.UserOrderByRelationAggregateInput
+  UserReminder?: Prisma.UserReminderOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -642,6 +644,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   Department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   other_User?: Prisma.UserListRelationFilter
+  UserReminder?: Prisma.UserReminderListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -797,6 +800,7 @@ export type UserCreateInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -864,6 +868,7 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -931,6 +936,7 @@ export type UserUpdateInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -998,6 +1004,7 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1780,6 +1787,20 @@ export type UserUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
+export type UserCreateNestedOneWithoutUserReminderInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUserReminderInput, Prisma.UserUncheckedCreateWithoutUserReminderInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserReminderInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutUserReminderNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUserReminderInput, Prisma.UserUncheckedCreateWithoutUserReminderInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserReminderInput
+  upsert?: Prisma.UserUpsertWithoutUserReminderInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUserReminderInput, Prisma.UserUpdateWithoutUserReminderInput>, Prisma.UserUncheckedUpdateWithoutUserReminderInput>
+}
+
 export type UserCreateWithoutAccountsInput = {
   id: string
   email: string
@@ -1844,6 +1865,7 @@ export type UserCreateWithoutAccountsInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1910,6 +1932,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1992,6 +2015,7 @@ export type UserUpdateWithoutAccountsInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -2058,6 +2082,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogInput = {
@@ -2124,6 +2149,7 @@ export type UserCreateWithoutAuditLogInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogInput = {
@@ -2190,6 +2216,7 @@ export type UserUncheckedCreateWithoutAuditLogInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogInput = {
@@ -2272,6 +2299,7 @@ export type UserUpdateWithoutAuditLogInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogInput = {
@@ -2338,6 +2366,7 @@ export type UserUncheckedUpdateWithoutAuditLogInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConversationInput = {
@@ -2404,6 +2433,7 @@ export type UserCreateWithoutConversationInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConversationInput = {
@@ -2470,6 +2500,7 @@ export type UserUncheckedCreateWithoutConversationInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConversationInput = {
@@ -2552,6 +2583,7 @@ export type UserUpdateWithoutConversationInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConversationInput = {
@@ -2618,6 +2650,7 @@ export type UserUncheckedUpdateWithoutConversationInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConversationMemberInput = {
@@ -2684,6 +2717,7 @@ export type UserCreateWithoutConversationMemberInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConversationMemberInput = {
@@ -2750,6 +2784,7 @@ export type UserUncheckedCreateWithoutConversationMemberInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConversationMemberInput = {
@@ -2832,6 +2867,7 @@ export type UserUpdateWithoutConversationMemberInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConversationMemberInput = {
@@ -2898,6 +2934,7 @@ export type UserUncheckedUpdateWithoutConversationMemberInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutDepartmentInput = {
@@ -2964,6 +3001,7 @@ export type UserCreateWithoutDepartmentInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -3030,6 +3068,7 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -3165,6 +3204,7 @@ export type UserCreateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInpu
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput = {
@@ -3231,6 +3271,7 @@ export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_managerSignedByIdT
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput = {
@@ -3302,6 +3343,7 @@ export type UserCreateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInpu
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3368,6 +3410,7 @@ export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdT
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3439,6 +3482,7 @@ export type UserCreateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3505,6 +3549,7 @@ export type UserUncheckedCreateWithoutHRTimesheet_HRTimesheet_userIdToUserInput 
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3587,6 +3632,7 @@ export type UserUpdateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInpu
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_managerSignedByIdToUserInput = {
@@ -3653,6 +3699,7 @@ export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_managerSignedByIdT
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3730,6 +3777,7 @@ export type UserUpdateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInpu
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdToUserInput = {
@@ -3796,6 +3844,7 @@ export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_odillonSignedByIdT
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3873,6 +3922,7 @@ export type UserUpdateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_userIdToUserInput = {
@@ -3939,6 +3989,7 @@ export type UserUncheckedUpdateWithoutHRTimesheet_HRTimesheet_userIdToUserInput 
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageInput = {
@@ -4005,6 +4056,7 @@ export type UserCreateWithoutMessageInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageInput = {
@@ -4071,6 +4123,7 @@ export type UserUncheckedCreateWithoutMessageInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageInput = {
@@ -4153,6 +4206,7 @@ export type UserUpdateWithoutMessageInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageInput = {
@@ -4219,6 +4273,7 @@ export type UserUncheckedUpdateWithoutMessageInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageReadInput = {
@@ -4285,6 +4340,7 @@ export type UserCreateWithoutMessageReadInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageReadInput = {
@@ -4351,6 +4407,7 @@ export type UserUncheckedCreateWithoutMessageReadInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageReadInput = {
@@ -4433,6 +4490,7 @@ export type UserUpdateWithoutMessageReadInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageReadInput = {
@@ -4499,6 +4557,7 @@ export type UserUncheckedUpdateWithoutMessageReadInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutChannelPermissionInput = {
@@ -4565,6 +4624,7 @@ export type UserCreateWithoutChannelPermissionInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutChannelPermissionInput = {
@@ -4631,6 +4691,7 @@ export type UserUncheckedCreateWithoutChannelPermissionInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChannelPermissionInput = {
@@ -4713,6 +4774,7 @@ export type UserUpdateWithoutChannelPermissionInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChannelPermissionInput = {
@@ -4779,6 +4841,7 @@ export type UserUncheckedUpdateWithoutChannelPermissionInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutChatAuditLogInput = {
@@ -4845,6 +4908,7 @@ export type UserCreateWithoutChatAuditLogInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutChatAuditLogInput = {
@@ -4911,6 +4975,7 @@ export type UserUncheckedCreateWithoutChatAuditLogInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutChatAuditLogInput = {
@@ -4993,6 +5058,7 @@ export type UserUpdateWithoutChatAuditLogInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChatAuditLogInput = {
@@ -5059,6 +5125,7 @@ export type UserUncheckedUpdateWithoutChatAuditLogInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutScheduledMessageInput = {
@@ -5125,6 +5192,7 @@ export type UserCreateWithoutScheduledMessageInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutScheduledMessageInput = {
@@ -5191,6 +5259,7 @@ export type UserUncheckedCreateWithoutScheduledMessageInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutScheduledMessageInput = {
@@ -5273,6 +5342,7 @@ export type UserUpdateWithoutScheduledMessageInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutScheduledMessageInput = {
@@ -5339,6 +5409,7 @@ export type UserUncheckedUpdateWithoutScheduledMessageInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageReminderInput = {
@@ -5405,6 +5476,7 @@ export type UserCreateWithoutMessageReminderInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageReminderInput = {
@@ -5471,6 +5543,7 @@ export type UserUncheckedCreateWithoutMessageReminderInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageReminderInput = {
@@ -5553,6 +5626,7 @@ export type UserUpdateWithoutMessageReminderInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageReminderInput = {
@@ -5619,6 +5693,7 @@ export type UserUncheckedUpdateWithoutMessageReminderInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationInput = {
@@ -5685,6 +5760,7 @@ export type UserCreateWithoutNotificationInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationInput = {
@@ -5751,6 +5827,7 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationInput = {
@@ -5833,6 +5910,7 @@ export type UserUpdateWithoutNotificationInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationInput = {
@@ -5899,6 +5977,7 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPushSubscriptionInput = {
@@ -5965,6 +6044,7 @@ export type UserCreateWithoutPushSubscriptionInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPushSubscriptionInput = {
@@ -6031,6 +6111,7 @@ export type UserUncheckedCreateWithoutPushSubscriptionInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPushSubscriptionInput = {
@@ -6113,6 +6194,7 @@ export type UserUpdateWithoutPushSubscriptionInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushSubscriptionInput = {
@@ -6179,6 +6261,7 @@ export type UserUncheckedUpdateWithoutPushSubscriptionInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProjectInput = {
@@ -6245,6 +6328,7 @@ export type UserCreateWithoutProjectInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProjectInput = {
@@ -6311,6 +6395,7 @@ export type UserUncheckedCreateWithoutProjectInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProjectInput = {
@@ -6393,6 +6478,7 @@ export type UserUpdateWithoutProjectInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectInput = {
@@ -6459,6 +6545,7 @@ export type UserUncheckedUpdateWithoutProjectInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProjectMemberInput = {
@@ -6525,6 +6612,7 @@ export type UserCreateWithoutProjectMemberInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProjectMemberInput = {
@@ -6591,6 +6679,7 @@ export type UserUncheckedCreateWithoutProjectMemberInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProjectMemberInput = {
@@ -6673,6 +6762,7 @@ export type UserUpdateWithoutProjectMemberInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectMemberInput = {
@@ -6739,6 +6829,7 @@ export type UserUncheckedUpdateWithoutProjectMemberInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportInput = {
@@ -6805,6 +6896,7 @@ export type UserCreateWithoutReportInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportInput = {
@@ -6871,6 +6963,7 @@ export type UserUncheckedCreateWithoutReportInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportInput = {
@@ -6953,6 +7046,7 @@ export type UserUpdateWithoutReportInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportInput = {
@@ -7019,6 +7113,7 @@ export type UserUncheckedUpdateWithoutReportInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportRecipientInput = {
@@ -7085,6 +7180,7 @@ export type UserCreateWithoutReportRecipientInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportRecipientInput = {
@@ -7151,6 +7247,7 @@ export type UserUncheckedCreateWithoutReportRecipientInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportRecipientInput = {
@@ -7233,6 +7330,7 @@ export type UserUpdateWithoutReportRecipientInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportRecipientInput = {
@@ -7299,6 +7397,7 @@ export type UserUncheckedUpdateWithoutReportRecipientInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReportTemplateInput = {
@@ -7365,6 +7464,7 @@ export type UserCreateWithoutReportTemplateInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReportTemplateInput = {
@@ -7431,6 +7531,7 @@ export type UserUncheckedCreateWithoutReportTemplateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReportTemplateInput = {
@@ -7513,6 +7614,7 @@ export type UserUpdateWithoutReportTemplateInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReportTemplateInput = {
@@ -7579,6 +7681,7 @@ export type UserUncheckedUpdateWithoutReportTemplateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -7645,6 +7748,7 @@ export type UserCreateWithoutSessionsInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -7711,6 +7815,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -7793,6 +7898,7 @@ export type UserUpdateWithoutSessionsInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -7859,6 +7965,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTask_Task_createdByToUserInput = {
@@ -7925,6 +8032,7 @@ export type UserCreateWithoutTask_Task_createdByToUserInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTask_Task_createdByToUserInput = {
@@ -7991,6 +8099,7 @@ export type UserUncheckedCreateWithoutTask_Task_createdByToUserInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTask_Task_createdByToUserInput = {
@@ -8062,6 +8171,7 @@ export type UserCreateWithoutTask_Task_evaluatedByToUserInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTask_Task_evaluatedByToUserInput = {
@@ -8128,6 +8238,7 @@ export type UserUncheckedCreateWithoutTask_Task_evaluatedByToUserInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTask_Task_evaluatedByToUserInput = {
@@ -8210,6 +8321,7 @@ export type UserUpdateWithoutTask_Task_createdByToUserInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTask_Task_createdByToUserInput = {
@@ -8276,6 +8388,7 @@ export type UserUncheckedUpdateWithoutTask_Task_createdByToUserInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutTask_Task_evaluatedByToUserInput = {
@@ -8353,6 +8466,7 @@ export type UserUpdateWithoutTask_Task_evaluatedByToUserInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTask_Task_evaluatedByToUserInput = {
@@ -8419,6 +8533,7 @@ export type UserUncheckedUpdateWithoutTask_Task_evaluatedByToUserInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTaskActivityInput = {
@@ -8485,6 +8600,7 @@ export type UserCreateWithoutTaskActivityInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaskActivityInput = {
@@ -8551,6 +8667,7 @@ export type UserUncheckedCreateWithoutTaskActivityInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaskActivityInput = {
@@ -8633,6 +8750,7 @@ export type UserUpdateWithoutTaskActivityInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaskActivityInput = {
@@ -8699,6 +8817,7 @@ export type UserUncheckedUpdateWithoutTaskActivityInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTaskCommentInput = {
@@ -8765,6 +8884,7 @@ export type UserCreateWithoutTaskCommentInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaskCommentInput = {
@@ -8831,6 +8951,7 @@ export type UserUncheckedCreateWithoutTaskCommentInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaskCommentInput = {
@@ -8913,6 +9034,7 @@ export type UserUpdateWithoutTaskCommentInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaskCommentInput = {
@@ -8979,6 +9101,7 @@ export type UserUncheckedUpdateWithoutTaskCommentInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTaskMemberInput = {
@@ -9045,6 +9168,7 @@ export type UserCreateWithoutTaskMemberInput = {
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaskMemberInput = {
@@ -9111,6 +9235,7 @@ export type UserUncheckedCreateWithoutTaskMemberInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaskMemberInput = {
@@ -9193,6 +9318,7 @@ export type UserUpdateWithoutTaskMemberInput = {
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaskMemberInput = {
@@ -9259,6 +9385,7 @@ export type UserUncheckedUpdateWithoutTaskMemberInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOther_UserInput = {
@@ -9325,6 +9452,7 @@ export type UserCreateWithoutOther_UserInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOther_UserInput = {
@@ -9391,6 +9519,7 @@ export type UserUncheckedCreateWithoutOther_UserInput = {
   TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOther_UserInput = {
@@ -9462,6 +9591,7 @@ export type UserCreateWithoutUserInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
   other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserInput = {
@@ -9528,6 +9658,7 @@ export type UserUncheckedCreateWithoutUserInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+  UserReminder?: Prisma.UserReminderUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserInput = {
@@ -9615,6 +9746,7 @@ export type UserUpdateWithoutOther_UserInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOther_UserInput = {
@@ -9681,6 +9813,7 @@ export type UserUncheckedUpdateWithoutOther_UserInput = {
   TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutUserInput = {
@@ -9697,6 +9830,290 @@ export type UserUpdateWithWhereUniqueWithoutUserInput = {
 export type UserUpdateManyWithWhereWithoutUserInput = {
   where: Prisma.UserScalarWhereInput
   data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutUserInput>
+}
+
+export type UserCreateWithoutUserReminderInput = {
+  id: string
+  email: string
+  name: string
+  role?: $Enums.Role
+  avatar?: string | null
+  position?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  emailVerified?: boolean
+  image?: string | null
+  enableTimesheetReminders?: boolean
+  reminderTime?: string | null
+  reminderDays?: Prisma.UserCreatereminderDaysInput | string[]
+  desktopNotificationsEnabled?: boolean
+  emailNotificationsEnabled?: boolean
+  notificationSoundEnabled?: boolean
+  notificationSoundType?: string
+  notificationSoundVolume?: number
+  darkModeEnabled?: boolean
+  accentColor?: string
+  viewDensity?: string
+  fontSize?: number
+  language?: string
+  dateFormat?: string
+  hourFormat?: string
+  timezone?: string
+  highContrast?: boolean
+  screenReaderMode?: boolean
+  reduceMotion?: boolean
+  weeklyGoal?: number
+  lastSeenAt?: Date | string | null
+  quietHoursEnabled?: boolean
+  quietHoursStart?: string
+  quietHoursEnd?: string
+  quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
+  AuditLog?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogCreateNestedManyWithoutUserInput
+  Conversation?: Prisma.ConversationCreateNestedManyWithoutUserInput
+  ConversationMember?: Prisma.ConversationMemberCreateNestedManyWithoutUserInput
+  HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
+  HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
+  HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
+  Message?: Prisma.MessageCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  Project?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  ProjectMember?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  Report?: Prisma.ReportCreateNestedManyWithoutUserInput
+  ReportRecipient?: Prisma.ReportRecipientCreateNestedManyWithoutUserInput
+  ReportTemplate?: Prisma.ReportTemplateCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageCreateNestedManyWithoutUserInput
+  Task_Task_createdByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_createdByToUserInput
+  Task_Task_evaluatedByToUser?: Prisma.TaskCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
+  TaskActivity?: Prisma.TaskActivityCreateNestedManyWithoutUserInput
+  TaskComment?: Prisma.TaskCommentCreateNestedManyWithoutUserInput
+  TaskMember?: Prisma.TaskMemberCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  Department?: Prisma.DepartmentCreateNestedOneWithoutUserInput
+  User?: Prisma.UserCreateNestedOneWithoutOther_UserInput
+  other_User?: Prisma.UserCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutUserReminderInput = {
+  id: string
+  email: string
+  name: string
+  role?: $Enums.Role
+  avatar?: string | null
+  departmentId?: string | null
+  managerId?: string | null
+  position?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  emailVerified?: boolean
+  image?: string | null
+  enableTimesheetReminders?: boolean
+  reminderTime?: string | null
+  reminderDays?: Prisma.UserCreatereminderDaysInput | string[]
+  desktopNotificationsEnabled?: boolean
+  emailNotificationsEnabled?: boolean
+  notificationSoundEnabled?: boolean
+  notificationSoundType?: string
+  notificationSoundVolume?: number
+  darkModeEnabled?: boolean
+  accentColor?: string
+  viewDensity?: string
+  fontSize?: number
+  language?: string
+  dateFormat?: string
+  hourFormat?: string
+  timezone?: string
+  highContrast?: boolean
+  screenReaderMode?: boolean
+  reduceMotion?: boolean
+  weeklyGoal?: number
+  lastSeenAt?: Date | string | null
+  quietHoursEnabled?: boolean
+  quietHoursStart?: string
+  quietHoursEnd?: string
+  quietHoursDays?: Prisma.UserCreatequietHoursDaysInput | string[]
+  AuditLog?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedCreateNestedManyWithoutUserInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedCreateNestedManyWithoutUserInput
+  Conversation?: Prisma.ConversationUncheckedCreateNestedManyWithoutUserInput
+  ConversationMember?: Prisma.ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+  HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_managerSignedByIdToUserInput
+  HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_odillonSignedByIdToUserInput
+  HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedCreateNestedManyWithoutUser_HRTimesheet_userIdToUserInput
+  Message?: Prisma.MessageUncheckedCreateNestedManyWithoutUserInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutUserInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  Project?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  ProjectMember?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  Report?: Prisma.ReportUncheckedCreateNestedManyWithoutUserInput
+  ReportRecipient?: Prisma.ReportRecipientUncheckedCreateNestedManyWithoutUserInput
+  ReportTemplate?: Prisma.ReportTemplateUncheckedCreateNestedManyWithoutUserInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutUserInput
+  Task_Task_createdByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_createdByToUserInput
+  Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedCreateNestedManyWithoutUser_Task_evaluatedByToUserInput
+  TaskActivity?: Prisma.TaskActivityUncheckedCreateNestedManyWithoutUserInput
+  TaskComment?: Prisma.TaskCommentUncheckedCreateNestedManyWithoutUserInput
+  TaskMember?: Prisma.TaskMemberUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  other_User?: Prisma.UserUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutUserReminderInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutUserReminderInput, Prisma.UserUncheckedCreateWithoutUserReminderInput>
+}
+
+export type UserUpsertWithoutUserReminderInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutUserReminderInput, Prisma.UserUncheckedUpdateWithoutUserReminderInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutUserReminderInput, Prisma.UserUncheckedCreateWithoutUserReminderInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutUserReminderInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutUserReminderInput, Prisma.UserUncheckedUpdateWithoutUserReminderInput>
+}
+
+export type UserUpdateWithoutUserReminderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableTimesheetReminders?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reminderTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderDays?: Prisma.UserUpdatereminderDaysInput | string[]
+  desktopNotificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailNotificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notificationSoundEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notificationSoundType?: Prisma.StringFieldUpdateOperationsInput | string
+  notificationSoundVolume?: Prisma.FloatFieldUpdateOperationsInput | number
+  darkModeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accentColor?: Prisma.StringFieldUpdateOperationsInput | string
+  viewDensity?: Prisma.StringFieldUpdateOperationsInput | string
+  fontSize?: Prisma.IntFieldUpdateOperationsInput | number
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  dateFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  hourFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  highContrast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  screenReaderMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reduceMotion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyGoal?: Prisma.FloatFieldUpdateOperationsInput | number
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  quietHoursEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  quietHoursStart?: Prisma.StringFieldUpdateOperationsInput | string
+  quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
+  AuditLog?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUpdateManyWithoutUserNestedInput
+  Conversation?: Prisma.ConversationUpdateManyWithoutUserNestedInput
+  ConversationMember?: Prisma.ConversationMemberUpdateManyWithoutUserNestedInput
+  HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
+  HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
+  HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
+  Message?: Prisma.MessageUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  Project?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  ProjectMember?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  Report?: Prisma.ReportUpdateManyWithoutUserNestedInput
+  ReportRecipient?: Prisma.ReportRecipientUpdateManyWithoutUserNestedInput
+  ReportTemplate?: Prisma.ReportTemplateUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUpdateManyWithoutUserNestedInput
+  Task_Task_createdByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_createdByToUserNestedInput
+  Task_Task_evaluatedByToUser?: Prisma.TaskUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
+  TaskActivity?: Prisma.TaskActivityUpdateManyWithoutUserNestedInput
+  TaskComment?: Prisma.TaskCommentUpdateManyWithoutUserNestedInput
+  TaskMember?: Prisma.TaskMemberUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
+  User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
+  other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutUserReminderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableTimesheetReminders?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reminderTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reminderDays?: Prisma.UserUpdatereminderDaysInput | string[]
+  desktopNotificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailNotificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notificationSoundEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notificationSoundType?: Prisma.StringFieldUpdateOperationsInput | string
+  notificationSoundVolume?: Prisma.FloatFieldUpdateOperationsInput | number
+  darkModeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accentColor?: Prisma.StringFieldUpdateOperationsInput | string
+  viewDensity?: Prisma.StringFieldUpdateOperationsInput | string
+  fontSize?: Prisma.IntFieldUpdateOperationsInput | number
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  dateFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  hourFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  highContrast?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  screenReaderMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reduceMotion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyGoal?: Prisma.FloatFieldUpdateOperationsInput | number
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  quietHoursEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  quietHoursStart?: Prisma.StringFieldUpdateOperationsInput | string
+  quietHoursEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  quietHoursDays?: Prisma.UserUpdatequietHoursDaysInput | string[]
+  AuditLog?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  ChannelPermission?: Prisma.ChannelPermissionUncheckedUpdateManyWithoutUserNestedInput
+  ChatAuditLog?: Prisma.ChatAuditLogUncheckedUpdateManyWithoutUserNestedInput
+  Conversation?: Prisma.ConversationUncheckedUpdateManyWithoutUserNestedInput
+  ConversationMember?: Prisma.ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+  HRTimesheet_HRTimesheet_managerSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_managerSignedByIdToUserNestedInput
+  HRTimesheet_HRTimesheet_odillonSignedByIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_odillonSignedByIdToUserNestedInput
+  HRTimesheet_HRTimesheet_userIdToUser?: Prisma.HRTimesheetUncheckedUpdateManyWithoutUser_HRTimesheet_userIdToUserNestedInput
+  Message?: Prisma.MessageUncheckedUpdateManyWithoutUserNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutUserNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  Project?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  ProjectMember?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  PushSubscription?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  Report?: Prisma.ReportUncheckedUpdateManyWithoutUserNestedInput
+  ReportRecipient?: Prisma.ReportRecipientUncheckedUpdateManyWithoutUserNestedInput
+  ReportTemplate?: Prisma.ReportTemplateUncheckedUpdateManyWithoutUserNestedInput
+  ScheduledMessage?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutUserNestedInput
+  Task_Task_createdByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_createdByToUserNestedInput
+  Task_Task_evaluatedByToUser?: Prisma.TaskUncheckedUpdateManyWithoutUser_Task_evaluatedByToUserNestedInput
+  TaskActivity?: Prisma.TaskActivityUncheckedUpdateManyWithoutUserNestedInput
+  TaskComment?: Prisma.TaskCommentUncheckedUpdateManyWithoutUserNestedInput
+  TaskMember?: Prisma.TaskMemberUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyDepartmentInput = {
@@ -9802,6 +10219,7 @@ export type UserUpdateWithoutDepartmentInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   User?: Prisma.UserUpdateOneWithoutOther_UserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -9868,6 +10286,7 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -10012,6 +10431,7 @@ export type UserUpdateWithoutUserInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   Department?: Prisma.DepartmentUpdateOneWithoutUserNestedInput
   other_User?: Prisma.UserUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserInput = {
@@ -10078,6 +10498,7 @@ export type UserUncheckedUpdateWithoutUserInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   other_User?: Prisma.UserUncheckedUpdateManyWithoutUserNestedInput
+  UserReminder?: Prisma.UserReminderUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutUserInput = {
@@ -10152,6 +10573,7 @@ export type UserCountOutputType = {
   accounts: number
   sessions: number
   other_User: number
+  UserReminder: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10182,6 +10604,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   other_User?: boolean | UserCountOutputTypeCountOther_UserArgs
+  UserReminder?: boolean | UserCountOutputTypeCountUserReminderArgs
 }
 
 /**
@@ -10383,6 +10806,13 @@ export type UserCountOutputTypeCountOther_UserArgs<ExtArgs extends runtime.Types
   where?: Prisma.UserWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUserReminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserReminderWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -10451,6 +10881,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   Department?: boolean | Prisma.User$DepartmentArgs<ExtArgs>
   User?: boolean | Prisma.User$UserArgs<ExtArgs>
   other_User?: boolean | Prisma.User$other_UserArgs<ExtArgs>
+  UserReminder?: boolean | Prisma.User$UserReminderArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -10609,6 +11040,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   Department?: boolean | Prisma.User$DepartmentArgs<ExtArgs>
   User?: boolean | Prisma.User$UserArgs<ExtArgs>
   other_User?: boolean | Prisma.User$other_UserArgs<ExtArgs>
+  UserReminder?: boolean | Prisma.User$UserReminderArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10652,6 +11084,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     Department: Prisma.$DepartmentPayload<ExtArgs> | null
     User: Prisma.$UserPayload<ExtArgs> | null
     other_User: Prisma.$UserPayload<ExtArgs>[]
+    UserReminder: Prisma.$UserReminderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -11114,6 +11547,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   Department<T extends Prisma.User$DepartmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$DepartmentArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   User<T extends Prisma.User$UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$UserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   other_User<T extends Prisma.User$other_UserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$other_UserArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  UserReminder<T extends Prisma.User$UserReminderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$UserReminderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12259,6 +12693,30 @@ export type User$other_UserArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+}
+
+/**
+ * User.UserReminder
+ */
+export type User$UserReminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserReminder
+   */
+  select?: Prisma.UserReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserReminder
+   */
+  omit?: Prisma.UserReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserReminderInclude<ExtArgs> | null
+  where?: Prisma.UserReminderWhereInput
+  orderBy?: Prisma.UserReminderOrderByWithRelationInput | Prisma.UserReminderOrderByWithRelationInput[]
+  cursor?: Prisma.UserReminderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserReminderScalarFieldEnum | Prisma.UserReminderScalarFieldEnum[]
 }
 
 /**

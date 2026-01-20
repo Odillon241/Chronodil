@@ -1,11 +1,18 @@
-import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Suspense } from 'react'
 
-import { QuickActions } from "@/components/dashboard/quick-actions";
+import { QuickActions } from '@/components/dashboard/quick-actions'
+import { DashboardReportButton } from '@/components/dashboard/dashboard-report-button'
 
-import { StatsWrapper, ChartWrapper, ActivityWrapper } from "@/components/dashboard/dashboard-wrappers";
-import { StatsCardsSkeleton, OverviewChartSkeleton, RecentActivitySkeleton } from "@/components/dashboard/skeletons";
+import {
+  StatsWrapper,
+  ChartWrapper,
+  ActivityWrapper,
+} from '@/components/dashboard/dashboard-wrappers'
+import {
+  StatsCardsSkeleton,
+  OverviewChartSkeleton,
+  RecentActivitySkeleton,
+} from '@/components/dashboard/skeletons'
 
 export default function DashboardPage() {
   return (
@@ -18,10 +25,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button>
-            <Download className="mr-2 h-4 w-4" />
-            Rapport
-          </Button>
+          <DashboardReportButton />
         </div>
       </div>
 
@@ -45,5 +49,5 @@ export default function DashboardPage() {
         </Suspense>
       </section>
     </div>
-  );
+  )
 }

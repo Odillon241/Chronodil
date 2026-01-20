@@ -1,36 +1,36 @@
-"use client";
+'use client'
 
 // ============================================
 // HOOKS REACT QUERY POUR LES TÂCHES
 // ============================================
 // Hooks optimisés avec React Query pour gérer le cache automatiquement
 
-import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/providers/query-provider";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '@/providers/query-provider'
 import {
   getMyTasksOptimized,
   getAllTasksOptimized,
   getTaskByIdOptimized,
   getTasksByProjectIdOptimized,
-} from "@/actions/task.actions.optimized";
+} from '@/actions/task.actions.optimized'
 import {
   createTask,
   updateTask,
   deleteTask,
   updateTaskStatus,
   updateTaskPriority,
-} from "@/actions/task.actions";
-import { toast } from "sonner";
+} from '@/actions/task.actions'
+import { toast } from 'sonner'
 
 // ============================================
 // TYPES
 // ============================================
 interface TaskFilters {
-  projectId?: string;
-  searchQuery?: string;
-  status?: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED";
-  page?: number;
-  limit?: number;
+  projectId?: string
+  searchQuery?: string
+  status?: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'BLOCKED'
+  page?: number
+  limit?: number
 }
 
 // ============================================
@@ -45,17 +45,17 @@ export function useMyTasks(filters: TaskFilters = {}) {
         searchQuery: filters.searchQuery,
         page: filters.page || 1,
         limit: filters.limit || 50,
-      });
+      })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération des tâches");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération des tâches')
       }
 
-      return result.data;
+      return result.data
     },
     // ⚡ Stale time de 2 minutes pour cette requête spécifique
     staleTime: 2 * 60 * 1000,
-  });
+  })
 }
 
 // ============================================
@@ -71,16 +71,16 @@ export function useAllTasks(filters: TaskFilters = {}) {
         status: filters.status,
         page: filters.page || 1,
         limit: filters.limit || 50,
-      });
+      })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération des tâches");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération des tâches')
       }
 
-      return result.data;
+      return result.data
     },
     staleTime: 2 * 60 * 1000,
-  });
+  })
 }
 
 // ============================================
@@ -88,258 +88,263 @@ export function useAllTasks(filters: TaskFilters = {}) {
 // ============================================
 export function useTask(taskId: string | undefined | null) {
   return useQuery({
-    queryKey: taskId ? QUERY_KEYS.tasks.detail(taskId) : ["tasks", "empty"],
+    queryKey: taskId ? QUERY_KEYS.tasks.detail(taskId) : ['tasks', 'empty'],
     queryFn: async () => {
-      if (!taskId) throw new Error("Task ID requis");
+      if (!taskId) throw new Error('Task ID requis')
 
-      const result = await getTaskByIdOptimized({ id: taskId });
+      const result = await getTaskByIdOptimized({ id: taskId })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Tâche non trouvée");
+        throw new Error(result?.serverError || 'Tâche non trouvée')
       }
 
-      return result.data;
+      return result.data
     },
     enabled: !!taskId, // Ne lance la requête que si taskId existe
     staleTime: 3 * 60 * 1000, // 3 minutes
-  });
+  })
 }
 
 // ============================================
 // QUERY: Récupérer les tâches d'un projet avec cache
 // ============================================
-export function useProjectTasks(projectId: string | undefined, filters: Omit<TaskFilters, "projectId"> = {}) {
+export function useProjectTasks(
+  projectId: string | undefined,
+  filters: Omit<TaskFilters, 'projectId'> = {},
+) {
   return useQuery({
-    queryKey: projectId ? QUERY_KEYS.tasks.projectTasks(projectId, filters as Record<string, unknown>) : ["tasks", "empty"],
+    queryKey: projectId
+      ? QUERY_KEYS.tasks.projectTasks(projectId, filters as Record<string, unknown>)
+      : ['tasks', 'empty'],
     queryFn: async () => {
-      if (!projectId) throw new Error("Project ID requis");
+      if (!projectId) throw new Error('Project ID requis')
 
       const result = await getTasksByProjectIdOptimized({
         projectId,
         page: filters.page || 1,
         limit: filters.limit || 50,
-      });
+      })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération des tâches");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération des tâches')
       }
 
-      return result.data;
+      return result.data
     },
     enabled: !!projectId,
     staleTime: 2 * 60 * 1000,
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Créer une tâche
 // ============================================
 export function useCreateTask() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Parameters<typeof createTask>[0]) => {
-      const result = await createTask(data);
+      const result = await createTask(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la création");
+        throw new Error(result?.serverError || 'Erreur lors de la création')
       }
 
-      return result.data;
+      return result.data
     },
-    onSuccess: (newTask) => {
+    onSuccess: (_newTask) => {
       // ⚡ Invalider toutes les listes de tâches pour forcer un refetch
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all })
 
-      toast.success("Tâche créée avec succès");
+      toast.success('Tâche créée avec succès')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la création de la tâche");
+      toast.error(error.message || 'Erreur lors de la création de la tâche')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Mettre à jour une tâche
 // ============================================
 export function useUpdateTask() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Parameters<typeof updateTask>[0]) => {
-      const result = await updateTask(data);
+      const result = await updateTask(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la mise à jour");
+        throw new Error(result?.serverError || 'Erreur lors de la mise à jour')
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (updatedTask) => {
       // ⚡ Mettre à jour le cache de la tâche spécifique
-      queryClient.setQueryData(QUERY_KEYS.tasks.detail(updatedTask.id), updatedTask);
+      queryClient.setQueryData(QUERY_KEYS.tasks.detail(updatedTask.id), updatedTask)
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() })
 
-      toast.success("Tâche mise à jour");
+      toast.success('Tâche mise à jour')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la mise à jour");
+      toast.error(error.message || 'Erreur lors de la mise à jour')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Supprimer une tâche
 // ============================================
 export function useDeleteTask() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (taskId: string) => {
-      const result = await deleteTask({ id: taskId });
+      const result = await deleteTask({ id: taskId })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la suppression");
+        throw new Error(result?.serverError || 'Erreur lors de la suppression')
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (_, taskId) => {
       // ⚡ Supprimer la tâche du cache
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.tasks.detail(taskId) });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.tasks.detail(taskId) })
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all })
 
-      toast.success("Tâche supprimée");
+      toast.success('Tâche supprimée')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la suppression");
+      toast.error(error.message || 'Erreur lors de la suppression')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Changer le statut d'une tâche
 // ============================================
 export function useUpdateTaskStatus() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({
       id,
       status,
     }: {
-      id: string;
-      status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED";
+      id: string
+      status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'BLOCKED'
     }) => {
-      const result = await updateTaskStatus({ id, status });
+      const result = await updateTaskStatus({ id, status })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la mise à jour du statut");
+        throw new Error(result?.serverError || 'Erreur lors de la mise à jour du statut')
       }
 
-      return result.data;
+      return result.data
     },
     onMutate: async ({ id, status }) => {
       // ⚡ OPTIMISTIC UPDATE: Mettre à jour le cache immédiatement
       // Annuler les requêtes en cours pour éviter les conflits
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.tasks.detail(id) });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.tasks.detail(id) })
 
       // Sauvegarder l'état précédent pour rollback en cas d'erreur
-      const previousTask = queryClient.getQueryData(QUERY_KEYS.tasks.detail(id));
+      const previousTask = queryClient.getQueryData(QUERY_KEYS.tasks.detail(id))
 
       // Mettre à jour optimistiquement
       queryClient.setQueryData(QUERY_KEYS.tasks.detail(id), (old: any) => {
-        if (!old) return old;
-        return { ...old, status };
-      });
+        if (!old) return old
+        return { ...old, status }
+      })
 
-      return { previousTask };
+      return { previousTask }
     },
     onError: (error: Error, variables, context) => {
       // ⚡ ROLLBACK en cas d'erreur
       if (context?.previousTask) {
-        queryClient.setQueryData(QUERY_KEYS.tasks.detail(variables.id), context.previousTask);
+        queryClient.setQueryData(QUERY_KEYS.tasks.detail(variables.id), context.previousTask)
       }
-      toast.error(error.message || "Erreur lors de la mise à jour du statut");
+      toast.error(error.message || 'Erreur lors de la mise à jour du statut')
     },
     onSuccess: (updatedTask) => {
       // ⚡ Confirmer le cache
-      queryClient.setQueryData(QUERY_KEYS.tasks.detail(updatedTask.id), updatedTask);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() });
+      queryClient.setQueryData(QUERY_KEYS.tasks.detail(updatedTask.id), updatedTask)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() })
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Changer la priorité d'une tâche
 // ============================================
 export function useUpdateTaskPriority() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({
       id,
       priority,
     }: {
-      id: string;
-      priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+      id: string
+      priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
     }) => {
-      const result = await updateTaskPriority({ id, priority });
+      const result = await updateTaskPriority({ id, priority })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la mise à jour de la priorité");
+        throw new Error(result?.serverError || 'Erreur lors de la mise à jour de la priorité')
       }
 
-      return result.data;
+      return result.data
     },
     onMutate: async ({ id, priority }) => {
       // ⚡ OPTIMISTIC UPDATE
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.tasks.detail(id) });
-      const previousTask = queryClient.getQueryData(QUERY_KEYS.tasks.detail(id));
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.tasks.detail(id) })
+      const previousTask = queryClient.getQueryData(QUERY_KEYS.tasks.detail(id))
 
       queryClient.setQueryData(QUERY_KEYS.tasks.detail(id), (old: any) => {
-        if (!old) return old;
-        return { ...old, priority };
-      });
+        if (!old) return old
+        return { ...old, priority }
+      })
 
-      return { previousTask };
+      return { previousTask }
     },
     onError: (error: Error, variables, context) => {
       if (context?.previousTask) {
-        queryClient.setQueryData(QUERY_KEYS.tasks.detail(variables.id), context.previousTask);
+        queryClient.setQueryData(QUERY_KEYS.tasks.detail(variables.id), context.previousTask)
       }
-      toast.error(error.message || "Erreur lors de la mise à jour de la priorité");
+      toast.error(error.message || 'Erreur lors de la mise à jour de la priorité')
     },
     onSuccess: (updatedTask) => {
-      queryClient.setQueryData(QUERY_KEYS.tasks.detail(updatedTask.id), updatedTask);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() });
+      queryClient.setQueryData(QUERY_KEYS.tasks.detail(updatedTask.id), updatedTask)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.lists() })
     },
-  });
+  })
 }
 
 // ============================================
 // PREFETCH: Précharger des tâches en arrière-plan
 // ============================================
 export function usePrefetchTask() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (taskId: string) => {
     queryClient.prefetchQuery({
       queryKey: QUERY_KEYS.tasks.detail(taskId),
       queryFn: async () => {
-        const result = await getTaskByIdOptimized({ id: taskId });
-        if (!result?.data) throw new Error("Task not found");
-        return result.data;
+        const result = await getTaskByIdOptimized({ id: taskId })
+        if (!result?.data) throw new Error('Task not found')
+        return result.data
       },
       staleTime: 5 * 60 * 1000,
-    });
-  };
+    })
+  }
 }
 
 // ============================================

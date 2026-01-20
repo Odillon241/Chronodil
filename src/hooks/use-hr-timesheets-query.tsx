@@ -1,12 +1,11 @@
-"use client";
+'use client'
 
 // ============================================
 // HOOKS REACT QUERY POUR LES HR TIMESHEETS
 // ============================================
 // Hooks optimisés avec React Query pour gérer le cache automatiquement
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/providers/query-provider";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   createHRTimesheet,
   getMyHRTimesheets,
@@ -24,16 +23,16 @@ import {
   getActivityCatalog,
   getHRTimesheetStats,
   updateHRTimesheetStatus,
-} from "@/actions/hr-timesheet.actions";
-import { toast } from "sonner";
+} from '@/actions/hr-timesheet.actions'
+import { toast } from 'sonner'
 
 // ============================================
 // TYPES
 // ============================================
 interface HRTimesheetFilters {
-  status?: "DRAFT" | "PENDING" | "MANAGER_APPROVED" | "APPROVED" | "REJECTED";
-  weekStartDate?: Date;
-  weekEndDate?: Date;
+  status?: 'DRAFT' | 'PENDING' | 'MANAGER_APPROVED' | 'APPROVED' | 'REJECTED'
+  weekStartDate?: Date
+  weekEndDate?: Date
 }
 
 // ============================================
@@ -41,22 +40,22 @@ interface HRTimesheetFilters {
 // ============================================
 export function useMyHRTimesheets(filters: HRTimesheetFilters = {}) {
   return useQuery({
-    queryKey: ["hr-timesheets", "my", filters],
+    queryKey: ['hr-timesheets', 'my', filters],
     queryFn: async () => {
       const result = await getMyHRTimesheets({
         status: filters.status,
         weekStartDate: filters.weekStartDate,
         weekEndDate: filters.weekEndDate,
-      });
+      })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération des timesheets");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération des timesheets')
       }
 
-      return result.data;
+      return result.data
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
-  });
+  })
 }
 
 // ============================================
@@ -64,18 +63,18 @@ export function useMyHRTimesheets(filters: HRTimesheetFilters = {}) {
 // ============================================
 export function useHRTimesheetsForApproval() {
   return useQuery({
-    queryKey: ["hr-timesheets", "for-approval"],
+    queryKey: ['hr-timesheets', 'for-approval'],
     queryFn: async () => {
-      const result = await getHRTimesheetsForApproval({});
+      const result = await getHRTimesheetsForApproval({})
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération des timesheets");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération des timesheets')
       }
 
-      return result.data;
+      return result.data
     },
     staleTime: 1 * 60 * 1000, // 1 minute (données plus critiques)
-  });
+  })
 }
 
 // ============================================
@@ -83,21 +82,21 @@ export function useHRTimesheetsForApproval() {
 // ============================================
 export function useHRTimesheet(timesheetId: string | undefined | null) {
   return useQuery({
-    queryKey: timesheetId ? ["hr-timesheets", "detail", timesheetId] : ["hr-timesheets", "empty"],
+    queryKey: timesheetId ? ['hr-timesheets', 'detail', timesheetId] : ['hr-timesheets', 'empty'],
     queryFn: async () => {
-      if (!timesheetId) throw new Error("Timesheet ID requis");
+      if (!timesheetId) throw new Error('Timesheet ID requis')
 
-      const result = await getHRTimesheet({ timesheetId });
+      const result = await getHRTimesheet({ timesheetId })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Timesheet non trouvé");
+        throw new Error(result?.serverError || 'Timesheet non trouvé')
       }
 
-      return result.data;
+      return result.data
     },
     enabled: !!timesheetId,
     staleTime: 2 * 60 * 1000,
-  });
+  })
 }
 
 // ============================================
@@ -105,18 +104,18 @@ export function useHRTimesheet(timesheetId: string | undefined | null) {
 // ============================================
 export function useHRTimesheetStats(startDate: Date, endDate: Date) {
   return useQuery({
-    queryKey: ["hr-timesheets", "stats", startDate.toISOString(), endDate.toISOString()],
+    queryKey: ['hr-timesheets', 'stats', startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
-      const result = await getHRTimesheetStats({ startDate, endDate });
+      const result = await getHRTimesheetStats({ startDate, endDate })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération des statistiques");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération des statistiques')
       }
 
-      return result.data;
+      return result.data
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  })
 }
 
 // ============================================
@@ -124,371 +123,386 @@ export function useHRTimesheetStats(startDate: Date, endDate: Date) {
 // ============================================
 export function useActivityCatalog(filters?: { category?: string }) {
   return useQuery({
-    queryKey: ["activity-catalog", filters],
+    queryKey: ['activity-catalog', filters],
     queryFn: async () => {
       const result = await getActivityCatalog({
         category: filters?.category,
-      });
+      })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la récupération du catalogue");
+        throw new Error(result?.serverError || 'Erreur lors de la récupération du catalogue')
       }
 
-      return result.data;
+      return result.data
     },
     staleTime: 30 * 60 * 1000, // 30 minutes (données quasi-statiques)
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Créer un timesheet
 // ============================================
 export function useCreateHRTimesheet() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Parameters<typeof createHRTimesheet>[0]) => {
-      const result = await createHRTimesheet(data);
+      const result = await createHRTimesheet(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la création");
+        throw new Error(result?.serverError || 'Erreur lors de la création')
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: () => {
       // ⚡ Invalider les listes de timesheets
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "my"] });
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'my'] })
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'stats'] })
 
-      toast.success("Feuille de temps créée avec succès");
+      toast.success('Feuille de temps créée avec succès')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la création");
+      toast.error(error.message || 'Erreur lors de la création')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Mettre à jour un timesheet
 // ============================================
 export function useUpdateHRTimesheet() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Parameters<typeof updateHRTimesheet>[0]) => {
-      const result = await updateHRTimesheet(data);
+      const result = await updateHRTimesheet(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la mise à jour");
+        throw new Error(result?.serverError || 'Erreur lors de la mise à jour')
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (updatedTimesheet) => {
       // ⚡ Mettre à jour le cache
-      queryClient.setQueryData(["hr-timesheets", "detail", updatedTimesheet.id], updatedTimesheet);
+      queryClient.setQueryData(['hr-timesheets', 'detail', updatedTimesheet.id], updatedTimesheet)
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "my"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'my'] })
 
-      toast.success("Feuille de temps mise à jour");
+      toast.success('Feuille de temps mise à jour')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la mise à jour");
+      toast.error(error.message || 'Erreur lors de la mise à jour')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Supprimer un timesheet
 // ============================================
 export function useDeleteHRTimesheet() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (timesheetId: string) => {
-      const result = await deleteHRTimesheet({ timesheetId });
+      const result = await deleteHRTimesheet({ timesheetId })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la suppression");
+        throw new Error(result?.serverError || 'Erreur lors de la suppression')
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (_, timesheetId) => {
       // ⚡ Supprimer du cache
-      queryClient.removeQueries({ queryKey: ["hr-timesheets", "detail", timesheetId] });
+      queryClient.removeQueries({ queryKey: ['hr-timesheets', 'detail', timesheetId] })
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "my"] });
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'my'] })
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'stats'] })
 
-      toast.success("Feuille de temps supprimée");
+      toast.success('Feuille de temps supprimée')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la suppression");
+      toast.error(error.message || 'Erreur lors de la suppression')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Ajouter une activité
 // ============================================
 export function useAddHRActivity() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: { timesheetId: string; activity: any }) => {
-      const result = await addHRActivity(data);
+      const result = await addHRActivity(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de l'ajout de l'activité");
+        throw new Error(result?.serverError || "Erreur lors de l'ajout de l'activité")
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (_, variables) => {
       // ⚡ Invalider le cache du timesheet pour rafraîchir les activités
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "detail", variables.timesheetId] });
+      queryClient.invalidateQueries({
+        queryKey: ['hr-timesheets', 'detail', variables.timesheetId],
+      })
 
-      toast.success("Activité ajoutée");
+      toast.success('Activité ajoutée')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de l'ajout de l'activité");
+      toast.error(error.message || "Erreur lors de l'ajout de l'activité")
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Mettre à jour une activité
 // ============================================
 export function useUpdateHRActivity() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: { id: string; data: any; timesheetId?: string }) => {
-      const { timesheetId, ...apiData } = data;
-      const result = await updateHRActivity(apiData);
+      const { timesheetId, ...apiData } = data
+      const result = await updateHRActivity(apiData)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la mise à jour de l'activité");
+        throw new Error(result?.serverError || "Erreur lors de la mise à jour de l'activité")
       }
 
-      return { ...result.data, timesheetId };
+      return { ...result.data, timesheetId }
     },
     onSuccess: (data) => {
       // ⚡ Invalider le cache du timesheet si on a l'ID
       if (data.timesheetId) {
-        queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "detail", data.timesheetId] });
+        queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'detail', data.timesheetId] })
       }
 
-      toast.success("Activité mise à jour");
+      toast.success('Activité mise à jour')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la mise à jour de l'activité");
+      toast.error(error.message || "Erreur lors de la mise à jour de l'activité")
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Supprimer une activité
 // ============================================
 export function useDeleteHRActivity() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: { timesheetId: string; activityId: string }) => {
-      const result = await deleteHRActivity(data);
+      const result = await deleteHRActivity(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la suppression de l'activité");
+        throw new Error(result?.serverError || "Erreur lors de la suppression de l'activité")
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (_, variables) => {
       // ⚡ Invalider le cache du timesheet
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "detail", variables.timesheetId] });
+      queryClient.invalidateQueries({
+        queryKey: ['hr-timesheets', 'detail', variables.timesheetId],
+      })
 
-      toast.success("Activité supprimée");
+      toast.success('Activité supprimée')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la suppression de l'activité");
+      toast.error(error.message || "Erreur lors de la suppression de l'activité")
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Soumettre un timesheet
 // ============================================
 export function useSubmitHRTimesheet() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (timesheetId: string) => {
-      const result = await submitHRTimesheet({ timesheetId });
+      const result = await submitHRTimesheet({ timesheetId })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de la soumission");
+        throw new Error(result?.serverError || 'Erreur lors de la soumission')
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (updatedTimesheet) => {
       // ⚡ Mettre à jour le cache
-      queryClient.setQueryData(["hr-timesheets", "detail", updatedTimesheet.id], updatedTimesheet);
+      queryClient.setQueryData(['hr-timesheets', 'detail', updatedTimesheet.id], updatedTimesheet)
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "my"] });
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "for-approval"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'my'] })
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'for-approval'] })
 
-      toast.success("Feuille de temps soumise pour approbation");
+      toast.success('Feuille de temps soumise pour approbation')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de la soumission");
+      toast.error(error.message || 'Erreur lors de la soumission')
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Annuler la soumission
 // ============================================
 export function useCancelHRTimesheetSubmission() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (timesheetId: string) => {
-      const result = await cancelHRTimesheetSubmission({ timesheetId });
+      const result = await cancelHRTimesheetSubmission({ timesheetId })
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de l'annulation");
+        throw new Error(result?.serverError || "Erreur lors de l'annulation")
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (updatedTimesheet) => {
       // ⚡ Mettre à jour le cache
-      queryClient.setQueryData(["hr-timesheets", "detail", updatedTimesheet.id], updatedTimesheet);
+      queryClient.setQueryData(['hr-timesheets', 'detail', updatedTimesheet.id], updatedTimesheet)
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "my"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'my'] })
 
-      toast.success("Soumission annulée");
+      toast.success('Soumission annulée')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de l'annulation");
+      toast.error(error.message || "Erreur lors de l'annulation")
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Approbation manager
 // ============================================
 export function useManagerApproveHRTimesheet() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: { timesheetId: string; action: "approve" | "reject"; comments?: string }) => {
-      const result = await managerApproveHRTimesheet(data);
+    mutationFn: async (data: {
+      timesheetId: string
+      action: 'approve' | 'reject'
+      comments?: string
+    }) => {
+      const result = await managerApproveHRTimesheet(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de l'approbation");
+        throw new Error(result?.serverError || "Erreur lors de l'approbation")
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (updatedTimesheet) => {
       // ⚡ Mettre à jour le cache
-      queryClient.setQueryData(["hr-timesheets", "detail", updatedTimesheet.id], updatedTimesheet);
+      queryClient.setQueryData(['hr-timesheets', 'detail', updatedTimesheet.id], updatedTimesheet)
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "for-approval"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'for-approval'] })
 
-      toast.success("Feuille de temps approuvée");
+      toast.success('Feuille de temps approuvée')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de l'approbation");
+      toast.error(error.message || "Erreur lors de l'approbation")
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Approbation Odillon
 // ============================================
 export function useOdillonApproveHRTimesheet() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: { timesheetId: string; action: "approve" | "reject"; comments?: string }) => {
-      const result = await odillonApproveHRTimesheet(data);
+    mutationFn: async (data: {
+      timesheetId: string
+      action: 'approve' | 'reject'
+      comments?: string
+    }) => {
+      const result = await odillonApproveHRTimesheet(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors de l'approbation");
+        throw new Error(result?.serverError || "Erreur lors de l'approbation")
       }
 
-      return result.data;
+      return result.data
     },
     onSuccess: (updatedTimesheet) => {
       // ⚡ Mettre à jour le cache
-      queryClient.setQueryData(["hr-timesheets", "detail", updatedTimesheet.id], updatedTimesheet);
+      queryClient.setQueryData(['hr-timesheets', 'detail', updatedTimesheet.id], updatedTimesheet)
 
       // ⚡ Invalider les listes
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "for-approval"] });
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'for-approval'] })
 
-      toast.success("Feuille de temps approuvée par Odillon");
+      toast.success('Feuille de temps approuvée par Odillon')
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erreur lors de l'approbation");
+      toast.error(error.message || "Erreur lors de l'approbation")
     },
-  });
+  })
 }
 
 // ============================================
 // MUTATION: Changer le statut
 // ============================================
 export function useUpdateHRTimesheetStatus() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: {
-      timesheetId: string;
-      status: "DRAFT" | "PENDING" | "MANAGER_APPROVED" | "APPROVED" | "REJECTED";
+      timesheetId: string
+      status: 'DRAFT' | 'PENDING' | 'MANAGER_APPROVED' | 'APPROVED' | 'REJECTED'
     }) => {
-      const result = await updateHRTimesheetStatus(data);
+      const result = await updateHRTimesheetStatus(data)
 
       if (!result?.data) {
-        throw new Error(result?.serverError || "Erreur lors du changement de statut");
+        throw new Error(result?.serverError || 'Erreur lors du changement de statut')
       }
 
-      return result.data;
+      return result.data
     },
     onMutate: async ({ timesheetId, status }) => {
       // ⚡ OPTIMISTIC UPDATE
-      await queryClient.cancelQueries({ queryKey: ["hr-timesheets", "detail", timesheetId] });
+      await queryClient.cancelQueries({ queryKey: ['hr-timesheets', 'detail', timesheetId] })
 
-      const previousTimesheet = queryClient.getQueryData(["hr-timesheets", "detail", timesheetId]);
+      const previousTimesheet = queryClient.getQueryData(['hr-timesheets', 'detail', timesheetId])
 
-      queryClient.setQueryData(["hr-timesheets", "detail", timesheetId], (old: any) => {
-        if (!old) return old;
-        return { ...old, status };
-      });
+      queryClient.setQueryData(['hr-timesheets', 'detail', timesheetId], (old: any) => {
+        if (!old) return old
+        return { ...old, status }
+      })
 
-      return { previousTimesheet };
+      return { previousTimesheet }
     },
     onError: (error: Error, variables, context) => {
       // ⚡ ROLLBACK en cas d'erreur
       if (context?.previousTimesheet) {
-        queryClient.setQueryData(["hr-timesheets", "detail", variables.timesheetId], context.previousTimesheet);
+        queryClient.setQueryData(
+          ['hr-timesheets', 'detail', variables.timesheetId],
+          context.previousTimesheet,
+        )
       }
-      toast.error(error.message || "Erreur lors du changement de statut");
+      toast.error(error.message || 'Erreur lors du changement de statut')
     },
     onSuccess: (updatedTimesheet) => {
       // ⚡ Confirmer le cache
-      queryClient.setQueryData(["hr-timesheets", "detail", updatedTimesheet.id], updatedTimesheet);
-      queryClient.invalidateQueries({ queryKey: ["hr-timesheets", "my"] });
+      queryClient.setQueryData(['hr-timesheets', 'detail', updatedTimesheet.id], updatedTimesheet)
+      queryClient.invalidateQueries({ queryKey: ['hr-timesheets', 'my'] })
     },
-  });
+  })
 }
 
 // ============================================

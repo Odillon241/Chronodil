@@ -528,6 +528,23 @@ export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumRoleFilter<$PrismaModel>
 }
 
+export type EnumReminderActivityTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderActivityType | Prisma.EnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderActivityTypeFilter<$PrismaModel> | $Enums.ReminderActivityType
+}
+
+export type EnumReminderActivityTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderActivityType | Prisma.EnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderActivityTypeWithAggregatesFilter<$PrismaModel> | $Enums.ReminderActivityType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReminderActivityTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReminderActivityTypeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1004,6 +1021,23 @@ export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumRoleFilter<$PrismaModel>
   _max?: Prisma.NestedEnumRoleFilter<$PrismaModel>
+}
+
+export type NestedEnumReminderActivityTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderActivityType | Prisma.EnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderActivityTypeFilter<$PrismaModel> | $Enums.ReminderActivityType
+}
+
+export type NestedEnumReminderActivityTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderActivityType | Prisma.EnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderActivityType[] | Prisma.ListEnumReminderActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderActivityTypeWithAggregatesFilter<$PrismaModel> | $Enums.ReminderActivityType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReminderActivityTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReminderActivityTypeFilter<$PrismaModel>
 }
 
 

@@ -1,28 +1,28 @@
-"use client";
+'use client'
 
-import { Suspense, useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { NotificationDropdown } from "@/components/features/notification-dropdown";
-import { ThemeSwitcher } from "@/components/ui/theme-switcher";
-import { DynamicBreadcrumb } from "@/components/features/dynamic-breadcrumb";
-import { GlobalCommand } from "@/components/features/global-command";
+import { Suspense, useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { AppSidebar } from '@/components/layout/app-sidebar'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
+import { NotificationDropdown } from '@/components/features/notification-dropdown'
+import { ThemeSwitcher } from '@/components/ui/theme-switcher'
+import { DynamicBreadcrumb } from '@/components/features/dynamic-breadcrumb'
+import { GlobalCommand } from '@/components/features/global-command'
 
-import { SettingsProvider } from "@/components/providers/settings-provider";
-import { QueryProvider } from "@/providers/query-provider";
-import { Input } from "@/components/ui/input";
-import { registerServiceWorker } from "@/lib/service-worker-registration";
-import { usePresenceTracker } from "@/hooks/use-presence-tracker";
-import { usePreloadDashboardData } from "@/hooks/use-preload-dashboard-data";
+import { SettingsProvider } from '@/components/providers/settings-provider'
+import { QueryProvider } from '@/providers/query-provider'
+import { Input } from '@/components/ui/input'
+import { registerServiceWorker } from '@/lib/service-worker-registration'
+import { usePresenceTracker } from '@/hooks/use-presence-tracker'
+import { usePreloadDashboardData } from '@/hooks/use-preload-dashboard-data'
 
 function SearchBar() {
-  const [isMac, setIsMac] = useState(false);
+  const [isMac, setIsMac] = useState(false)
 
   useEffect(() => {
-    setIsMac(navigator.platform.toUpperCase().indexOf("MAC") >= 0);
-  }, []);
+    setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0)
+  }, [])
 
   return (
     <div className="relative w-full group">
@@ -31,8 +31,8 @@ function SearchBar() {
         placeholder="Rechercher..."
         className="pr-20 h-9 cursor-pointer"
         onClick={() => {
-          const event = new CustomEvent("open-search");
-          document.dispatchEvent(event);
+          const event = new CustomEvent('open-search')
+          document.dispatchEvent(event)
         }}
         readOnly
       />
@@ -52,32 +52,32 @@ function SearchBar() {
         )}
       </kbd>
     </div>
-  );
+  )
 }
 
 // Composant interne qui gère le préchargement des données
 function DashboardContent({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isChatPage = pathname?.startsWith("/dashboard/chat");
+  const pathname = usePathname()
+  const isChatPage = pathname?.startsWith('/dashboard/chat')
 
   // Tracker la présence de l'utilisateur (met à jour lastSeenAt en DB)
-  usePresenceTracker();
+  usePresenceTracker()
 
   // ⚡ PRÉCHARGEMENT: Charger toutes les données critiques en arrière-plan
   // Pour un affichage instantané lors de la navigation
-  usePreloadDashboardData();
+  usePreloadDashboardData()
 
   // Enregistrer le service worker au chargement du dashboard
   useEffect(() => {
     registerServiceWorker({
-      onSuccess: (registration) => {
-        console.log("[Service Worker] Enregistré avec succès dans le dashboard");
+      onSuccess: (_registration) => {
+        console.log('[Service Worker] Enregistré avec succès dans le dashboard')
       },
       onError: (error) => {
-        console.warn("[Service Worker] Erreur d'enregistrement:", error);
+        console.warn("[Service Worker] Erreur d'enregistrement:", error)
       },
-    });
-  }, []);
+    })
+  }, [])
 
   return (
     <SidebarProvider>
@@ -104,31 +104,25 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main
-          className={`flex-1 overflow-y-auto flex flex-col ${isChatPage ? "p-0" : "gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6"
-            }`}
+          className={`flex-1 overflow-y-auto flex flex-col ${
+            isChatPage ? 'p-0' : 'gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6'
+          }`}
         >
           {children}
         </main>
       </SidebarInset>
-      <Suspense fallback={null}>
-
-      </Suspense>
+      <Suspense fallback={null}></Suspense>
     </SidebarProvider>
-  );
+  )
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <SettingsProvider>
-
         <DashboardContent>{children}</DashboardContent>
         <GlobalCommand />
       </SettingsProvider>
     </QueryProvider>
-  );
+  )
 }

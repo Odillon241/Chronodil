@@ -2,14 +2,18 @@
   "name": "chronodil-app",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@10.28.1",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch server.ts",
     "dev:next": "next dev --turbo",
     "build": "next build",
     "start": "cross-env NODE_ENV=production tsx server.ts",
     "start:next": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-all": "pnpm lint && pnpm format:check && tsc --noEmit",
     "postinstall": "npx prisma generate || true",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx scripts/seed.ts",
@@ -25,7 +29,19 @@
     "supabase:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-supabase-vercel.ps1",
     "setup:vercel": "powershell -ExecutionPolicy Bypass -File scripts/setup-vercel-env.ps1",
     "docs:pdf": "node scripts/generate-pdf.js",
-    "sounds:upload": "tsx scripts/upload-sounds-to-supabase.ts"
+    "sounds:upload": "tsx scripts/upload-sounds-to-supabase.ts",
+    "prepare": "husky",
+    "release": "semantic-release",
+    "validate:release": "tsx scripts/validate-semantic-release.ts"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,mdx,css,scss}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.969.0",
@@ -59,6 +75,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-toggle": "^1.1.10",
+    "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
@@ -172,23 +189,42 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
+    "@next/eslint-plugin-next": "^16.1.4",
     "@playwright/test": "^1.57.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/html-to-text": "^9.0.4",
     "@types/jest": "^30.0.0",
     "@types/ws": "^8.18.1",
     "babel-plugin-react-compiler": "^1.0.0",
+    "commitlint": "^19.3.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "husky": "^9.1.7",
     "inngest-cli": "^1.16.0",
     "jest-environment-jsdom": "^30.2.0",
+    "lint-staged": "^16.2.7",
     "markdown-pdf": "^11.0.0",
     "pandoc": "^0.2.0",
     "playwright": "^1.57.0",
+    "prettier": "^3.8.0",
+    "semantic-release": "^23.0.6",
     "shadcn": "^3.6.2",
     "supabase": "^2.70.5",
     "ts-node": "^10.9.2",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "typescript-eslint": "^8.53.1"
   }
 }

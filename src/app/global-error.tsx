@@ -1,22 +1,22 @@
-"use client";
+'use client'
 
-import { Inter } from "next/font/google";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Home, RotateCcw } from "lucide-react";
-import "./globals.css";
+import { Inter } from 'next/font/google'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AlertTriangle, Home, RotateCcw } from 'lucide-react'
+import './globals.css'
 
 const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-});
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
   return (
     <html lang="fr" className={inter.className}>
@@ -47,7 +47,7 @@ export default function GlobalError({
               <CardContent className="space-y-4">
                 <div className="rounded-md bg-muted p-3 text-left">
                   <p className="text-sm font-mono text-muted-foreground break-all">
-                    {error.message || "Erreur inconnue"}
+                    {error.message || 'Erreur inconnue'}
                   </p>
                   {error.digest && (
                     <p className="text-xs text-muted-foreground mt-2 border-t pt-2">
@@ -59,16 +59,12 @@ export default function GlobalError({
             </Card>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button
-                onClick={reset}
-                size="lg"
-                className="gap-2 w-full sm:w-auto"
-              >
+              <Button onClick={reset} size="lg" className="gap-2 w-full sm:w-auto">
                 <RotateCcw className="h-4 w-4" />
                 Réessayer
               </Button>
               <Button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 variant="outline"
                 size="lg"
                 className="gap-2 w-full sm:w-auto"
@@ -81,6 +77,5 @@ export default function GlobalError({
         </div>
       </body>
     </html>
-  );
+  )
 }
-

@@ -1,71 +1,59 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useSession } from "@/lib/auth-client";
-import {
-  useAnalyticsDashboard,
-  useTaskMetrics,
-  useProductivityTrends,
-  useTaskInsights,
-} from "@/hooks/use-task-analytics";
-import { MetricsCard } from "@/components/analytics/metrics-card";
-import { ProductivityChart } from "@/components/analytics/productivity-chart";
-import { InsightsPanel } from "@/components/analytics/insights-panel";
-import { Spinner } from "@/components/ui/spinner";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react'
+import { useSession } from '@/lib/auth-client'
+import { useAnalyticsDashboard } from '@/hooks/use-task-analytics'
+import { MetricsCard } from '@/components/analytics/metrics-card'
+import { ProductivityChart } from '@/components/analytics/productivity-chart'
+import { InsightsPanel } from '@/components/analytics/insights-panel'
+import { Spinner } from '@/components/ui/spinner'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  AlertTriangle,
-  Target,
-  Repeat,
-} from "lucide-react";
+} from '@/components/ui/select'
+import { CheckCircle2, Clock, TrendingUp, AlertTriangle, Target, Repeat } from 'lucide-react'
 
 export default function AnalyticsPage() {
-  const { data: session } = useSession() as any;
-  const [selectedPeriod, setSelectedPeriod] = useState<number>(30);
+  const { data: _session } = useSession() as any
+  const [selectedPeriod, setSelectedPeriod] = useState<number>(30)
 
   // Charger toutes les données via le hook optimisé
-  const { data: dashboard, isLoading, error } = useAnalyticsDashboard({
+  const {
+    data: dashboard,
+    isLoading,
+    error,
+  } = useAnalyticsDashboard({
     days: selectedPeriod,
-  });
+  })
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <Spinner className="h-8 w-8 text-primary" />
-        <p className="text-sm text-muted-foreground">
-          Chargement des analytics...
-        </p>
+        <p className="text-sm text-muted-foreground">Chargement des analytics...</p>
       </div>
-    );
+    )
   }
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-sm text-destructive">
-          Erreur lors du chargement des analytics
-        </p>
+        <p className="text-sm text-destructive">Erreur lors du chargement des analytics</p>
         <Button onClick={() => window.location.reload()}>Réessayer</Button>
       </div>
-    );
+    )
   }
 
   if (!dashboard) {
-    return null;
+    return null
   }
 
-  const { metrics, trends, insights, projectPerformance, period } = dashboard;
+  const { metrics, trends, insights, projectPerformance, period: _period } = dashboard
 
   return (
     <div className="space-y-6">
@@ -73,9 +61,7 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-muted-foreground">
-            Vue d'ensemble de vos performances
-          </p>
+          <p className="text-muted-foreground">Vue d'ensemble de vos performances</p>
         </div>
 
         <Select
@@ -109,7 +95,7 @@ export default function AnalyticsPage() {
           icon={CheckCircle2}
           trend={{
             value: metrics.completionRate > 70 ? 15 : -5,
-            label: "vs période précédente",
+            label: 'vs période précédente',
             isPositive: metrics.completionRate > 70,
           }}
         />
@@ -128,9 +114,9 @@ export default function AnalyticsPage() {
           description={
             metrics.averageOverdueDays > 0
               ? `Moy: ${metrics.averageOverdueDays.toFixed(1)} jours`
-              : "Aucune"
+              : 'Aucune'
           }
-          className={metrics.overdueTasks > 0 ? "border-destructive" : ""}
+          className={metrics.overdueTasks > 0 ? 'border-destructive' : ''}
         />
       </div>
 
@@ -183,10 +169,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Insights & Recommandations */}
-      <InsightsPanel
-        insights={insights.insights}
-        recommendations={insights.recommendations}
-      />
+      <InsightsPanel insights={insights.insights} recommendations={insights.recommendations} />
 
       {/* Performance par projet */}
       {projectPerformance && projectPerformance.length > 0 && (
@@ -201,7 +184,7 @@ export default function AnalyticsPage() {
                 description={`${project.metrics.completed}/${project.metrics.totalTasks} tâches complétées`}
                 trend={{
                   value: project.metrics.completionRate,
-                  label: "taux de complétion",
+                  label: 'taux de complétion',
                   isPositive: project.metrics.completionRate > 70,
                 }}
               />
@@ -210,5 +193,5 @@ export default function AnalyticsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,11 +1,9 @@
-"use server";
+'use server'
 
-import { getSession, getUserRole } from "@/lib/auth";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/db";
-import { actionClient } from "@/lib/safe-action";
-import { z } from "zod";
-import { getClientIP } from "@/lib/utils";
+import { getSession, getUserRole } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { actionClient } from '@/lib/safe-action'
+import { z } from 'zod'
 
 const getAuditLogsSchema = z.object({
   limit: z.number().optional(),
@@ -15,17 +13,17 @@ const getAuditLogsSchema = z.object({
   action: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-});
+})
 
 export const getAuditLogs = actionClient
   .schema(getAuditLogsSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
-    const userRole = getUserRole(session);
+    const session = await getSession()
+    const userRole = getUserRole(session)
 
     // Seul l'administrateur peut voir les audits
-    if (!session || userRole !== "ADMIN") {
-      throw new Error("Accès non autorisé - Rôle ADMIN requis");
+    if (!session || userRole !== 'ADMIN') {
+      throw new Error('Accès non autorisé - Rôle ADMIN requis')
     }
 
     // Récupérer TOUS les audits (tous les utilisateurs), pas seulement ceux de l'admin
@@ -37,7 +35,9 @@ export const getAuditLogs = actionClient
         ...((parsedInput.startDate || parsedInput.endDate) && {
           createdAt: {
             ...(parsedInput.startDate && { gte: new Date(parsedInput.startDate) }),
-            ...(parsedInput.endDate && { lte: new Date(new Date(parsedInput.endDate).setHours(23, 59, 59, 999)) }), // Fin de journée
+            ...(parsedInput.endDate && {
+              lte: new Date(new Date(parsedInput.endDate).setHours(23, 59, 59, 999)),
+            }), // Fin de journée
           },
         }),
       },
@@ -50,63 +50,61 @@ export const getAuditLogs = actionClient
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
       take: parsedInput.limit || 100,
       skip: parsedInput.offset || 0,
-    });
+    })
 
-    return logs;
-  });
+    return logs
+  })
 
-export const getAuditStats = actionClient
-  .schema(z.object({}))
-  .action(async () => {
-    const session = await getSession();
-    const userRole = getUserRole(session);
+export const getAuditStats = actionClient.schema(z.object({})).action(async () => {
+  const session = await getSession()
+  const userRole = getUserRole(session)
 
-    // Seul l'administrateur peut voir les statistiques d'audit
-    if (!session || userRole !== "ADMIN") {
-      throw new Error("Accès non autorisé - Rôle ADMIN requis");
-    }
+  // Seul l'administrateur peut voir les statistiques d'audit
+  if (!session || userRole !== 'ADMIN') {
+    throw new Error('Accès non autorisé - Rôle ADMIN requis')
+  }
 
-    const total = await prisma.auditLog.count();
+  const total = await prisma.auditLog.count()
 
-    const byAction = await prisma.auditLog.groupBy({
-      by: ["action"],
+  const byAction = await prisma.auditLog.groupBy({
+    by: ['action'],
+    _count: {
+      action: true,
+    },
+    orderBy: {
       _count: {
-        action: true,
+        action: 'desc',
       },
-      orderBy: {
-        _count: {
-          action: "desc",
-        },
-      },
-      take: 5,
-    });
+    },
+    take: 5,
+  })
 
-    const byEntity = await prisma.auditLog.groupBy({
-      by: ["entity"],
+  const byEntity = await prisma.auditLog.groupBy({
+    by: ['entity'],
+    _count: {
+      entity: true,
+    },
+    orderBy: {
       _count: {
-        entity: true,
+        entity: 'desc',
       },
-      orderBy: {
-        _count: {
-          entity: "desc",
-        },
-      },
-      take: 5,
-    });
+    },
+    take: 5,
+  })
 
-    return {
-      total,
-      byAction: byAction.map((item) => ({
-        action: item.action,
-        count: item._count.action,
-      })),
-      byEntity: byEntity.map((item) => ({
-        entity: item.entity,
-        count: item._count.entity,
-      })),
-    };
-  });
+  return {
+    total,
+    byAction: byAction.map((item) => ({
+      action: item.action,
+      count: item._count.action,
+    })),
+    byEntity: byEntity.map((item) => ({
+      entity: item.entity,
+      count: item._count.entity,
+    })),
+  }
+})

@@ -1,16 +1,10 @@
-import { serve } from "inngest/next";
-import { inngest } from "@/lib/inngest/client";
-import {
-  sendEmailNotification,
-  sendTimesheetReminders,
-} from "@/lib/inngest/functions";
+import { serve } from 'inngest/next'
+import { inngest } from '@/lib/inngest/client'
+import { sendEmailNotification, sendTimesheetReminders } from '@/lib/inngest/functions'
 // Fonctions de gestion des tâches
-import { inngestFunctions as taskFunctions } from "@/inngest";
-// TODO: Implémenter les fonctions chat (module functions-chat manquant)
-// import {
-//   sendScheduledMessages,
-//   sendMessageReminders,
-// } from "@/lib/inngest/functions-chat";
+import { inngestFunctions as taskFunctions } from '@/inngest'
+// Fonctions de gestion des messages programmés et rappels chat
+import { sendScheduledMessages, sendMessageReminders } from '@/lib/inngest/functions-chat'
 
 // Créer le handler Inngest avec toutes les fonctions
 export const { GET, POST, PUT } = serve({
@@ -18,10 +12,10 @@ export const { GET, POST, PUT } = serve({
   functions: [
     sendEmailNotification,
     sendTimesheetReminders,
-    // Jobs de tâches (rappels, retards, récurrence)
+    // Jobs de tâches (rappels, retards, récurrence, user-reminders)
     ...taskFunctions,
-    // TODO: Ajouter les fonctions chat quand elles seront implémentées
-    // sendScheduledMessages,
-    // sendMessageReminders,
+    // Jobs chat (messages programmés, rappels de messages)
+    sendScheduledMessages,
+    sendMessageReminders,
   ],
-});
+})

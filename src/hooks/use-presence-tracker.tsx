@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useEffect, useRef, useCallback } from "react";
-import { useSession } from "@/lib/auth-client";
+import { useEffect, useRef, useCallback } from 'react'
+import { useSession } from '@/lib/auth-client'
 
 /**
  * Hook pour tracker la présence de l'utilisateur
@@ -14,16 +14,16 @@ import { useSession } from "@/lib/auth-client";
  * - Gère les erreurs réseau avec retry et backoff exponentiel
  */
 export function usePresenceTracker() {
-  const { data: session, isPending } = useSession();
-  const lastActivityRef = useRef<number>(Date.now());
-  const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const retryCountRef = useRef<number>(0);
-  const maxRetries = 3;
+  const { data: session, isPending } = useSession()
+  const lastActivityRef = useRef<number>(Date.now())
+  const updateIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const retryCountRef = useRef<number>(0)
+  const maxRetries = 3
 
   // Constantes
-  const UPDATE_INTERVAL = 30 * 1000; // 30 secondes
-  const INACTIVITY_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+  const UPDATE_INTERVAL = 30 * 1000 // 30 secondes
+  const INACTIVITY_THRESHOLD = 5 * 60 * 1000 // 5 minutes
 
   /**
    * Met à jour la présence de l'utilisateur via l'API
@@ -31,70 +31,70 @@ export function usePresenceTracker() {
    */
   const updatePresence = useCallback(async () => {
     // Ne pas faire de requête si la session est en cours de chargement ou absente
-    if (isPending || !session?.user) return;
+    if (isPending || !session?.user) return
 
     try {
-      const response = await fetch("/api/presence/update", {
-        method: "POST",
+      const response = await fetch('/api/presence/update', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include", // Important: inclure les cookies pour l'authentification
+        credentials: 'include', // Important: inclure les cookies pour l'authentification
         body: JSON.stringify({
           userId: session.user.id,
         }),
-      });
+      })
 
       // Réinitialiser le compteur de retry en cas de succès
       if (response.ok) {
-        retryCountRef.current = 0;
-        return;
+        retryCountRef.current = 0
+        return
       }
 
       // 401 = session expirée ou non authentifié - ignorer silencieusement
       if (response.status === 401) {
         // Ne pas logger comme erreur, c'est un comportement attendu
         // quand la session expire ou que l'utilisateur n'est pas connecté
-        return;
+        return
       }
 
       // Autres erreurs HTTP
-      console.warn(`[Presence] Erreur HTTP ${response.status}`);
-    } catch (error) {
+      console.warn(`[Presence] Erreur HTTP ${response.status}`)
+    } catch (_error) {
       // Erreur réseau (ECONNRESET, timeout, etc.)
-      retryCountRef.current++;
+      retryCountRef.current++
 
       if (retryCountRef.current <= maxRetries) {
         // Retry avec backoff exponentiel (1s, 2s, 4s)
-        const delay = Math.pow(2, retryCountRef.current - 1) * 1000;
+        const delay = Math.pow(2, retryCountRef.current - 1) * 1000
         setTimeout(() => {
-          updatePresence();
-        }, delay);
+          updatePresence()
+        }, delay)
       }
       // Ne pas logger les erreurs réseau transitoires pour éviter le spam console
     }
-  }, [session?.user, isPending]);
+  }, [session?.user, isPending])
 
   /**
    * Met à jour le timestamp de dernière activité
    */
   const handleActivity = useCallback(() => {
-    lastActivityRef.current = Date.now();
+    lastActivityRef.current = Date.now()
 
     // Réinitialiser le timer d'inactivité
     if (inactivityTimeoutRef.current) {
-      clearTimeout(inactivityTimeoutRef.current);
+      clearTimeout(inactivityTimeoutRef.current)
     }
 
     // Définir un nouveau timer d'inactivité
     inactivityTimeoutRef.current = setTimeout(() => {
       // L'utilisateur est inactif - on arrête les mises à jour
       if (updateIntervalRef.current) {
-        clearInterval(updateIntervalRef.current);
-        updateIntervalRef.current = null;
+        clearInterval(updateIntervalRef.current)
+        updateIntervalRef.current = null
       }
-    }, INACTIVITY_THRESHOLD);
-  }, [INACTIVITY_THRESHOLD]);
+    }, INACTIVITY_THRESHOLD)
+  }, [INACTIVITY_THRESHOLD])
 
   /**
    * Gère le changement de visibilité de la page
@@ -103,58 +103,58 @@ export function usePresenceTracker() {
     if (document.hidden) {
       // L'utilisateur a quitté l'onglet - on arrête les mises à jour
       if (updateIntervalRef.current) {
-        clearInterval(updateIntervalRef.current);
-        updateIntervalRef.current = null;
+        clearInterval(updateIntervalRef.current)
+        updateIntervalRef.current = null
       }
     } else {
       // L'utilisateur est revenu sur l'onglet - on met à jour immédiatement
-      updatePresence();
-      handleActivity();
+      updatePresence()
+      handleActivity()
 
       // Redémarrer les mises à jour périodiques si pas déjà en cours
       if (!updateIntervalRef.current) {
-        updateIntervalRef.current = setInterval(updatePresence, UPDATE_INTERVAL);
+        updateIntervalRef.current = setInterval(updatePresence, UPDATE_INTERVAL)
       }
     }
-  }, [updatePresence, handleActivity, UPDATE_INTERVAL]);
+  }, [updatePresence, handleActivity, UPDATE_INTERVAL])
 
   useEffect(() => {
     // Attendre que la session soit chargée et valide
-    if (isPending || !session?.user) return;
+    if (isPending || !session?.user) return
 
     // Mise à jour initiale
-    updatePresence();
+    updatePresence()
 
     // Démarrer les mises à jour périodiques
-    updateIntervalRef.current = setInterval(updatePresence, UPDATE_INTERVAL);
+    updateIntervalRef.current = setInterval(updatePresence, UPDATE_INTERVAL)
 
     // Écouter les événements d'activité de l'utilisateur
-    const activityEvents = ["mousedown", "keydown", "scroll", "touchstart"];
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart']
     activityEvents.forEach((event) => {
-      window.addEventListener(event, handleActivity, { passive: true });
-    });
+      window.addEventListener(event, handleActivity, { passive: true })
+    })
 
     // Écouter le changement de visibilité de la page
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     // Initialiser le timer d'inactivité
-    handleActivity();
+    handleActivity()
 
     // Cleanup
     return () => {
       if (updateIntervalRef.current) {
-        clearInterval(updateIntervalRef.current);
+        clearInterval(updateIntervalRef.current)
       }
       if (inactivityTimeoutRef.current) {
-        clearTimeout(inactivityTimeoutRef.current);
+        clearTimeout(inactivityTimeoutRef.current)
       }
 
       activityEvents.forEach((event) => {
-        window.removeEventListener(event, handleActivity);
-      });
+        window.removeEventListener(event, handleActivity)
+      })
 
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [
     session?.user,
     isPending,
@@ -162,5 +162,5 @@ export function usePresenceTracker() {
     handleActivity,
     handleVisibilityChange,
     UPDATE_INTERVAL,
-  ]);
+  ])
 }

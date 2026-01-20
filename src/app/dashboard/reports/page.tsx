@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, FileText, Download, Edit, Trash2, Calendar, Settings, BarChart3 } from "lucide-react";
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Plus, FileText, Edit, Trash2, Calendar, Settings, BarChart3 } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -11,14 +11,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { getUserReports, deleteReport } from "@/actions/report.actions";
-import { useAction } from "next-safe-action/hooks";
-import { toast } from "sonner";
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { getUserReports, deleteReport } from '@/actions/report.actions'
+import { useAction } from 'next-safe-action/hooks'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,126 +28,120 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ReportEditorDialog } from "@/components/features/report-editor-dialog";
-import { ReportExportMenu } from "@/components/features/report-export-menu";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/alert-dialog'
+import { ReportEditorDialog } from '@/components/features/report-editor-dialog'
+import { ReportExportMenu } from '@/components/features/report-export-menu'
+import { useRouter } from 'next/navigation'
 
 interface Report {
-  id: string;
-  title: string;
-  content: string;
-  format: string;
-  period: string | null;
-  includeSummary: boolean;
-  fileSize: number;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  title: string
+  content: string
+  format: string
+  period: string | null
+  includeSummary: boolean
+  fileSize: number
+  createdAt: Date
+  updatedAt: Date
   User: {
-    id: string;
-    name: string | null;
-    email: string;
-  };
+    id: string
+    name: string | null
+    email: string
+  }
 }
 
 export default function ReportsPage() {
-  const router = useRouter();
-  const [reports, setReports] = useState<Report[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [reportToDelete, setReportToDelete] = useState<string | null>(null);
+  const router = useRouter()
+  const [reports, setReports] = useState<Report[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null)
 
   // Actions
   const { execute: fetchReports } = useAction(getUserReports, {
     onSuccess: ({ data }) => {
       if (data) {
-        setReports(data as Report[]);
+        setReports(data as Report[])
       }
-      setLoading(false);
+      setLoading(false)
     },
     onError: ({ error }) => {
-      toast.error(error.serverError || "Erreur lors du chargement des rapports");
-      setLoading(false);
+      toast.error(error.serverError || 'Erreur lors du chargement des rapports')
+      setLoading(false)
     },
-  });
+  })
 
   const { execute: executeDelete, isExecuting: isDeleting } = useAction(deleteReport, {
     onSuccess: () => {
-      toast.success("Rapport supprimé avec succès");
-      setDeleteDialogOpen(false);
-      setReportToDelete(null);
-      fetchReports();
+      toast.success('Rapport supprimé avec succès')
+      setDeleteDialogOpen(false)
+      setReportToDelete(null)
+      fetchReports()
     },
     onError: ({ error }) => {
-      toast.error(error.serverError || "Erreur lors de la suppression");
+      toast.error(error.serverError || 'Erreur lors de la suppression')
     },
-  });
+  })
 
   useEffect(() => {
-    fetchReports();
-  }, []);
+    fetchReports()
+  }, [])
 
   const handleCreateNew = () => {
-    setSelectedReport(null);
-    setEditorOpen(true);
-  };
+    setSelectedReport(null)
+    setEditorOpen(true)
+  }
 
   const handleEdit = (report: Report) => {
-    setSelectedReport(report);
-    setEditorOpen(true);
-  };
+    setSelectedReport(report)
+    setEditorOpen(true)
+  }
 
   const handleDeleteClick = (reportId: string) => {
-    setReportToDelete(reportId);
-    setDeleteDialogOpen(true);
-  };
+    setReportToDelete(reportId)
+    setDeleteDialogOpen(true)
+  }
 
   const handleDeleteConfirm = () => {
     if (reportToDelete) {
-      executeDelete({ id: reportToDelete });
+      executeDelete({ id: reportToDelete })
     }
-  };
+  }
 
   const handleEditorClose = () => {
-    setEditorOpen(false);
-    setSelectedReport(null);
-    fetchReports();
-  };
+    setEditorOpen(false)
+    setSelectedReport(null)
+    fetchReports()
+  }
 
   const getFormatBadge = (format: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      pdf: "default",
-      word: "secondary",
-      excel: "destructive",
-    };
-    return (
-      <Badge variant={variants[format] || "default"}>
-        {format.toUpperCase()}
-      </Badge>
-    );
-  };
+    const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+      pdf: 'default',
+      word: 'secondary',
+      excel: 'destructive',
+    }
+    return <Badge variant={variants[format] || 'default'}>{format.toUpperCase()}</Badge>
+  }
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 octets";
-    const k = 1024;
-    const sizes = ["octets", "Ko", "Mo", "Go"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-  };
+  const _formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 octets'
+    const k = 1024
+    const sizes = ['octets', 'Ko', 'Mo', 'Go']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+  }
 
   if (loading) {
     return (
       <div className="flex flex-col gap-4 sm:gap-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Rapports</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Chargement...
-          </p>
+          <p className="text-sm sm:text-base text-muted-foreground">Chargement...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -162,17 +156,11 @@ export default function ReportsPage() {
         </div>
         <Separator orientation="vertical" className="h-14" />
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/reports/templates")}
-          >
+          <Button variant="outline" onClick={() => router.push('/dashboard/reports/templates')}>
             <Settings className="h-4 w-4 mr-2" />
             Modèles
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/reports/monthly")}
-          >
+          <Button variant="outline" onClick={() => router.push('/dashboard/reports/monthly')}>
             <BarChart3 className="h-4 w-4 mr-2" />
             Rapport Mensuel
           </Button>
@@ -203,9 +191,7 @@ export default function ReportsPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardDescription>
-              {reports.length} rapport(s)
-            </CardDescription>
+            <CardDescription>{reports.length} rapport(s)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
@@ -240,7 +226,7 @@ export default function ReportsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(report.updatedAt), "d MMM yyyy", { locale: fr })}
+                        {format(new Date(report.updatedAt), 'd MMM yyyy', { locale: fr })}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -252,10 +238,7 @@ export default function ReportsPage() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <ReportExportMenu
-                            reportId={report.id}
-                            reportTitle={report.title}
-                          />
+                          <ReportExportMenu reportId={report.id} reportTitle={report.title} />
                           <Button
                             variant="ghost"
                             size="icon"
@@ -299,11 +282,11 @@ export default function ReportsPage() {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Suppression..." : "Supprimer"}
+              {isDeleting ? 'Suppression...' : 'Supprimer'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
+  )
 }

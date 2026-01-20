@@ -1,26 +1,26 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NotificationSoundSettings } from './notification-sound-settings';
-import { NotificationSoundTester } from './notification-sound-tester';
-import { Bell, Volume2, Mail, Monitor } from 'lucide-react';
-import { Spinner } from '@/components/ui/spinner';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { NotificationSoundSettings } from './notification-sound-settings'
+import { NotificationSoundTester } from './notification-sound-tester'
+import { Volume2, Mail, Monitor } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 interface NotificationPreferences {
-  notificationSoundEnabled: boolean;
-  notificationSoundVolume: number;
-  emailNotificationsEnabled: boolean;
-  desktopNotificationsEnabled: boolean;
+  notificationSoundEnabled: boolean
+  notificationSoundVolume: number
+  emailNotificationsEnabled: boolean
+  desktopNotificationsEnabled: boolean
 }
 
 interface SettingsNotificationsSectionProps {
-  preferences?: NotificationPreferences;
-  isSaving?: boolean;
-  onPreferenceChange?: (key: string, value: any) => void;
+  preferences?: NotificationPreferences
+  isSaving?: boolean
+  onPreferenceChange?: (key: string, value: any) => void
 }
 
 export function SettingsNotificationsSection({
@@ -28,27 +28,27 @@ export function SettingsNotificationsSection({
   isSaving = false,
   onPreferenceChange,
 }: SettingsNotificationsSectionProps) {
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const [mounted, setMounted] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false)
+  const [volume, setVolume] = useState(0.5)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true);
+    setMounted(true)
     if (preferences) {
-      setSoundEnabled(preferences.notificationSoundEnabled);
-      setVolume(preferences.notificationSoundVolume ?? 0.5);
+      setSoundEnabled(preferences.notificationSoundEnabled)
+      setVolume(preferences.notificationSoundVolume ?? 0.5)
     }
-  }, [preferences]);
+  }, [preferences])
 
   const handleSoundEnabledChange = (enabled: boolean) => {
-    setSoundEnabled(enabled);
-    onPreferenceChange?.('notificationSoundEnabled', enabled);
-  };
+    setSoundEnabled(enabled)
+    onPreferenceChange?.('notificationSoundEnabled', enabled)
+  }
 
   const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    onPreferenceChange?.('notificationSoundVolume', newVolume);
-  };
+    setVolume(newVolume)
+    onPreferenceChange?.('notificationSoundVolume', newVolume)
+  }
 
   if (!mounted) {
     return (
@@ -56,7 +56,7 @@ export function SettingsNotificationsSection({
         <Spinner className="size-5" />
         <p className="text-sm text-muted-foreground">Chargement...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -112,9 +112,7 @@ export function SettingsNotificationsSection({
               <Mail className="h-4 w-4" />
               Notifications par email
             </CardTitle>
-            <CardDescription>
-              Contrôlez les notifications reçues par email
-            </CardDescription>
+            <CardDescription>Contrôlez les notifications reçues par email</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
@@ -163,9 +161,7 @@ export function SettingsNotificationsSection({
             {/* Activer/Désactiver les notifications bureau */}
             <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition">
               <div className="space-y-1 flex-1">
-                <Label className="text-base font-semibold">
-                  Activer les notifications bureau
-                </Label>
+                <Label className="text-base font-semibold">Activer les notifications bureau</Label>
                 <p className="text-sm text-muted-foreground">
                   Afficher des notifications même quand l'application est minimisée
                 </p>
@@ -182,13 +178,13 @@ export function SettingsNotificationsSection({
             {/* Information supplémentaire */}
             <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950">
               <p className="text-sm text-green-900 dark:text-green-200">
-                ✓ Cette fonctionnalité utilise les notifications natives du navigateur et du
-                système d'exploitation pour une meilleure visibilité.
+                ✓ Cette fonctionnalité utilise les notifications natives du navigateur et du système
+                d'exploitation pour une meilleure visibilité.
               </p>
             </div>
           </CardContent>
         </Card>
       </TabsContent>
     </Tabs>
-  );
+  )
 }

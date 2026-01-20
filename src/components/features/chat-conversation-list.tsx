@@ -1,14 +1,13 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserAvatar } from "@/components/ui/user-avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { useState } from 'react'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { cn } from '@/lib/utils'
+import { motion } from 'motion/react'
 import {
   Users,
   MessageSquare,
@@ -18,85 +17,75 @@ import {
   Trash2,
   LogOut,
   Pin,
-  PinOff,
   BellOff,
-  Bell,
   Archive,
-  ArchiveRestore,
   Mail,
   MailOpen,
-  Info,
-  User,
   Link,
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+} from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
-import { useRealtimePresence } from "@/hooks/use-realtime-presence";
-import { formatLastSeen } from "@/lib/utils/presence";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
+import { useRealtimePresence } from '@/hooks/use-realtime-presence'
+import { formatLastSeen } from '@/lib/utils/presence'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   togglePinConversation,
   toggleMuteConversation,
   toggleArchiveConversation,
   markConversationAsRead,
   markConversationAsUnread,
-} from "@/actions/chat.actions";
+} from '@/actions/chat.actions'
 
 interface Conversation {
-  id: string;
-  type: "DIRECT" | "GROUP" | "PROJECT" | "CHANNEL";
-  name?: string | null;
-  createdBy?: string | null;
+  id: string
+  type: 'DIRECT' | 'GROUP' | 'PROJECT' | 'CHANNEL'
+  name?: string | null
+  createdBy?: string | null
   ConversationMember: {
     User: {
-      id: string;
-      name: string;
-      email: string;
-      avatar?: string | null;
-      image?: string | null;
-      lastSeenAt?: Date | null;
-    };
-  }[];
+      id: string
+      name: string
+      email: string
+      avatar?: string | null
+      image?: string | null
+      lastSeenAt?: Date | null
+    }
+  }[]
   Project?: {
-    id: string;
-    name: string;
-    code: string;
-    color: string;
-  } | null;
+    id: string
+    name: string
+    code: string
+    color: string
+  } | null
   Message: {
-    id: string;
-    content: string;
-    createdAt: Date;
+    id: string
+    content: string
+    createdAt: Date
     User: {
-      id: string;
-      name: string;
-    };
-  }[];
-  unreadCount: number;
-  updatedAt: Date;
+      id: string
+      name: string
+    }
+  }[]
+  unreadCount: number
+  updatedAt: Date
 }
 
 interface ChatConversationListProps {
-  conversations: Conversation[];
-  currentUserId: string;
-  selectedConversationId?: string;
-  onSelectConversation: (conversationId: string) => void;
-  onNewChat: () => void;
-  onDeleteConversation?: (conversationId: string) => void;
-  onLeaveConversation?: (conversationId: string) => void;
+  conversations: Conversation[]
+  currentUserId: string
+  selectedConversationId?: string
+  onSelectConversation: (conversationId: string) => void
+  onNewChat: () => void
+  onDeleteConversation?: (conversationId: string) => void
+  onLeaveConversation?: (conversationId: string) => void
 }
 
 export function ChatConversationList({
@@ -108,187 +97,183 @@ export function ChatConversationList({
   onDeleteConversation,
   onLeaveConversation,
 }: ChatConversationListProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const { isUserOnline, getLastSeenAt } = useRealtimePresence();
+  const [searchQuery, setSearchQuery] = useState('')
+  const { isUserOnline, getLastSeenAt } = useRealtimePresence()
 
   const handleDeleteConversation = async (conversationId: string, conversationName: string) => {
-    if (!onDeleteConversation) return;
+    if (!onDeleteConversation) return
 
     const confirmed = confirm(
       `Êtes-vous sûr de vouloir supprimer définitivement la conversation "${conversationName}" ?\n\n` +
-      "Cette action est irréversible et supprimera tous les messages de cette conversation."
-    );
+        'Cette action est irréversible et supprimera tous les messages de cette conversation.',
+    )
 
     if (confirmed) {
       try {
-        await onDeleteConversation(conversationId);
-        toast.success("Conversation supprimée");
-      } catch (error) {
-        toast.error("Erreur lors de la suppression");
+        await onDeleteConversation(conversationId)
+        toast.success('Conversation supprimée')
+      } catch (_error) {
+        toast.error('Erreur lors de la suppression')
       }
     }
-  };
+  }
 
   const handleLeaveConversation = async (conversationId: string, conversationName: string) => {
-    if (!onLeaveConversation) return;
+    if (!onLeaveConversation) return
 
     const confirmed = confirm(
       `Êtes-vous sûr de vouloir quitter la conversation "${conversationName}" ?\n\n` +
-      "Vous ne recevrez plus de notifications de cette conversation."
-    );
+        'Vous ne recevrez plus de notifications de cette conversation.',
+    )
 
     if (confirmed) {
       try {
-        await onLeaveConversation(conversationId);
-        toast.success("Vous avez quitté la conversation");
-      } catch (error) {
-        toast.error("Erreur lors de la sortie");
+        await onLeaveConversation(conversationId)
+        toast.success('Vous avez quitté la conversation')
+      } catch (_error) {
+        toast.error('Erreur lors de la sortie')
       }
     }
-  };
+  }
 
   const canDeleteConversation = (conv: Conversation) => {
     // Pour les conversations directes, seul le créateur peut supprimer
-    if (conv.type === "DIRECT") {
-      return conv.createdBy === currentUserId;
+    if (conv.type === 'DIRECT') {
+      return conv.createdBy === currentUserId
     }
 
     // Pour les groupes et projets, seuls les admins peuvent supprimer
-    const userMembership = conv.ConversationMember.find(m => m.User.id === currentUserId);
-    return (userMembership as any)?.isAdmin || false;
-  };
+    const userMembership = conv.ConversationMember.find((m) => m.User.id === currentUserId)
+    return (userMembership as any)?.isAdmin || false
+  }
 
   const canLeaveConversation = (conv: Conversation) => {
     // On ne peut pas quitter une conversation directe
-    return conv.type !== "DIRECT";
-  };
+    return conv.type !== 'DIRECT'
+  }
 
   // Handlers pour les nouvelles options du menu
   const handleTogglePin = async (conversationId: string) => {
     try {
-      const result = await togglePinConversation({ conversationId });
+      const result = await togglePinConversation({ conversationId })
       if (result?.data?.message) {
-        toast.success(result.data.message);
+        toast.success(result.data.message)
       }
-    } catch (error) {
-      toast.error("Erreur lors de l'épinglage");
+    } catch (_error) {
+      toast.error("Erreur lors de l'épinglage")
     }
-  };
+  }
 
   const handleToggleMute = async (conversationId: string) => {
     try {
-      const result = await toggleMuteConversation({ conversationId });
+      const result = await toggleMuteConversation({ conversationId })
       if (result?.data?.success) {
-        toast.success(result.data.isMuted ? "Notifications désactivées" : "Notifications activées");
+        toast.success(result.data.isMuted ? 'Notifications désactivées' : 'Notifications activées')
       }
-    } catch (error) {
-      toast.error("Erreur lors de la mise en sourdine");
+    } catch (_error) {
+      toast.error('Erreur lors de la mise en sourdine')
     }
-  };
+  }
 
   const handleToggleArchive = async (conversationId: string) => {
     try {
-      const result = await toggleArchiveConversation({ conversationId });
+      const result = await toggleArchiveConversation({ conversationId })
       if (result?.data?.message) {
-        toast.success(result.data.message);
+        toast.success(result.data.message)
       }
-    } catch (error) {
-      toast.error("Erreur lors de l'archivage");
+    } catch (_error) {
+      toast.error("Erreur lors de l'archivage")
     }
-  };
+  }
 
   const handleMarkAsRead = async (conversationId: string) => {
     try {
-      await markConversationAsRead({ conversationId });
-      toast.success("Marqué comme lu");
-    } catch (error) {
-      toast.error("Erreur");
+      await markConversationAsRead({ conversationId })
+      toast.success('Marqué comme lu')
+    } catch (_error) {
+      toast.error('Erreur')
     }
-  };
+  }
 
   const handleMarkAsUnread = async (conversationId: string) => {
     try {
-      await markConversationAsUnread({ conversationId });
-      toast.success("Marqué comme non lu");
-    } catch (error) {
-      toast.error("Erreur");
+      await markConversationAsUnread({ conversationId })
+      toast.success('Marqué comme non lu')
+    } catch (_error) {
+      toast.error('Erreur')
     }
-  };
+  }
 
   const handleCopyLink = (conversationId: string) => {
-    const url = `${window.location.origin}/dashboard/chat?conversation=${conversationId}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Lien copié");
-  };
+    const url = `${window.location.origin}/dashboard/chat?conversation=${conversationId}`
+    navigator.clipboard.writeText(url)
+    toast.success('Lien copié')
+  }
 
   // Filtrer les conversations par recherche
   const filteredConversations = conversations.filter((conv) => {
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = searchQuery.toLowerCase()
 
     // Pour les conversations directes, chercher par nom d'utilisateur
-    if (conv.type === "DIRECT") {
-      const otherUser = conv.ConversationMember.find(
-        (m) => m.User.id !== currentUserId
-      )?.User;
-      return otherUser?.name.toLowerCase().includes(searchLower);
+    if (conv.type === 'DIRECT') {
+      const otherUser = conv.ConversationMember.find((m) => m.User.id !== currentUserId)?.User
+      return otherUser?.name.toLowerCase().includes(searchLower)
     }
 
     // Pour les projets
-    if (conv.type === "PROJECT" && conv.Project) {
-      return conv.Project.name.toLowerCase().includes(searchLower);
+    if (conv.type === 'PROJECT' && conv.Project) {
+      return conv.Project.name.toLowerCase().includes(searchLower)
     }
 
     // Pour les groupes
     if (conv.name) {
-      return conv.name.toLowerCase().includes(searchLower);
+      return conv.name.toLowerCase().includes(searchLower)
     }
 
-    return false;
-  });
+    return false
+  })
 
   const getConversationDisplay = (conv: Conversation) => {
-    if (conv.type === "DIRECT") {
-      const otherUser = conv.ConversationMember.find(
-        (m) => m.User.id !== currentUserId
-      )?.User;
+    if (conv.type === 'DIRECT') {
+      const otherUser = conv.ConversationMember.find((m) => m.User.id !== currentUserId)?.User
       return {
-        name: otherUser?.name || "Utilisateur inconnu",
+        name: otherUser?.name || 'Utilisateur inconnu',
         avatar: otherUser?.avatar || otherUser?.image,
         icon: <MessageSquare className="h-4 w-4" />,
-        color: "bg-blue-500",
+        color: 'bg-blue-500',
         userId: otherUser?.id,
         lastSeenAt: otherUser?.lastSeenAt,
-      };
+      }
     }
 
-    if (conv.type === "PROJECT" && conv.Project) {
+    if (conv.type === 'PROJECT' && conv.Project) {
       return {
         name: conv.Project.name,
         avatar: null,
         icon: <FolderKanban className="h-4 w-4" />,
         color: conv.Project.color,
         isGroup: true,
-        members: conv.ConversationMember.filter(m => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
-      };
+        members: conv.ConversationMember.filter((m) => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
+      }
     }
 
     return {
-      name: conv.name || "Groupe",
+      name: conv.name || 'Groupe',
       avatar: null,
       icon: <Users className="h-4 w-4" />,
-      color: "bg-green-500",
+      color: 'bg-green-500',
       isGroup: true,
-      members: conv.ConversationMember.filter(m => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
-    };
-  };
+      members: conv.ConversationMember.filter((m) => m.User.id !== currentUserId).slice(0, 3), // Max 3 avatars
+    }
+  }
 
   const getLastMessage = (conv: Conversation) => {
-    if (conv.Message.length === 0) return null;
-    const lastMsg = conv.Message[0];
-    const isCurrentUser = lastMsg.User.id === currentUserId;
-    const prefix = isCurrentUser ? "Vous: " : `${lastMsg.User.name}: `;
-    return prefix + lastMsg.content;
-  };
+    if (conv.Message.length === 0) return null
+    const lastMsg = conv.Message[0]
+    const isCurrentUser = lastMsg.User.id === currentUserId
+    const prefix = isCurrentUser ? 'Vous: ' : `${lastMsg.User.name}: `
+    return prefix + lastMsg.content
+  }
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden w-full">
@@ -296,11 +281,7 @@ export function ChatConversationList({
       <div className="p-3 sm:p-4 border-b space-y-3 sm:space-y-4 shrink-0 w-full min-w-0">
         <div className="flex items-center justify-between gap-2 min-w-0 w-full">
           <h2 className="text-base sm:text-lg font-semibold truncate flex-1 min-w-0">Messages</h2>
-          <Button
-            size="sm"
-            onClick={onNewChat}
-            className="bg-primary hover:bg-primary shrink-0"
-          >
+          <Button size="sm" onClick={onNewChat} className="bg-primary hover:bg-primary shrink-0">
             <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
             <span className="hidden sm:inline">Nouveau</span>
             <span className="sm:hidden">+</span>
@@ -327,15 +308,15 @@ export function ChatConversationList({
                 <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-20" />
                 <p className="text-sm">
                   {searchQuery
-                    ? "Aucune conversation trouvée"
-                    : "Aucune conversation pour le moment"}
+                    ? 'Aucune conversation trouvée'
+                    : 'Aucune conversation pour le moment'}
                 </p>
               </div>
             ) : (
               filteredConversations.map((conv) => {
-                const display = getConversationDisplay(conv);
-                const lastMessage = getLastMessage(conv);
-                const isSelected = conv.id === selectedConversationId;
+                const display = getConversationDisplay(conv)
+                const lastMessage = getLastMessage(conv)
+                const isSelected = conv.id === selectedConversationId
 
                 return (
                   <motion.div
@@ -345,17 +326,17 @@ export function ChatConversationList({
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.2 }}
                     className={cn(
-                      "w-full p-3 sm:p-4 relative group overflow-hidden cursor-pointer",
-                      "transition-all duration-200 ease-out",
-                      "hover:bg-accent/80 hover:shadow-sm",
-                      isSelected && "bg-accent shadow-sm"
+                      'w-full p-3 sm:p-4 relative group overflow-hidden cursor-pointer',
+                      'transition-all duration-200 ease-out',
+                      'hover:bg-accent/80 hover:shadow-sm',
+                      isSelected && 'bg-accent shadow-sm',
                     )}
                     onClick={() => onSelectConversation(conv.id)}
                   >
                     <div className="flex items-start gap-2 sm:gap-3 pr-8 sm:pr-10 w-full">
                       {/* Avatar ou Icône */}
                       <div className="shrink-0">
-                        {conv.type === "DIRECT" ? (
+                        {conv.type === 'DIRECT' ? (
                           /* Conversation directe - toujours afficher UserAvatar */
                           <TooltipProvider>
                             <Tooltip>
@@ -370,10 +351,10 @@ export function ChatConversationList({
                                   {display.userId && (
                                     <span
                                       className={cn(
-                                        "absolute bottom-0 right-0 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-background",
+                                        'absolute bottom-0 right-0 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-background',
                                         isUserOnline(display.userId)
-                                          ? "bg-green-500"
-                                          : "bg-gray-400 dark:bg-gray-600"
+                                          ? 'bg-green-500'
+                                          : 'bg-gray-400 dark:bg-gray-600',
                                       )}
                                     />
                                   )}
@@ -383,10 +364,10 @@ export function ChatConversationList({
                                 <TooltipContent side="right">
                                   <p className="text-xs">
                                     {isUserOnline(display.userId)
-                                      ? "En ligne"
+                                      ? 'En ligne'
                                       : `Hors ligne • ${formatLastSeen(
-                                        getLastSeenAt(display.userId) || display.lastSeenAt
-                                      )}`}
+                                          getLastSeenAt(display.userId) || display.lastSeenAt,
+                                        )}`}
                                   </p>
                                 </TooltipContent>
                               )}
@@ -404,19 +385,19 @@ export function ChatConversationList({
                               />
                             ))}
                             {conv.ConversationMember.length > 4 && (
-                              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-background bg-muted">
-                                <AvatarFallback className="text-[10px] sm:text-xs">
+                              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border-2 border-background bg-muted flex items-center justify-center">
+                                <span className="text-[10px] sm:text-xs font-medium">
                                   +{conv.ConversationMember.length - 3}
-                                </AvatarFallback>
-                              </Avatar>
+                                </span>
+                              </div>
                             )}
                           </div>
                         ) : (
                           /* Icône par défaut pour les canaux */
                           <div
                             className={cn(
-                              "h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center text-white shrink-0",
-                              display.color
+                              'h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center text-white shrink-0',
+                              display.color,
                             )}
                           >
                             {display.icon}
@@ -436,13 +417,10 @@ export function ChatConversationList({
                           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                             {conv.Message.length > 0 && (
                               <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap max-w-[50px] sm:max-w-[70px] truncate">
-                                {formatDistanceToNow(
-                                  new Date(conv.Message[0].createdAt),
-                                  {
-                                    addSuffix: true,
-                                    locale: fr,
-                                  }
-                                )}
+                                {formatDistanceToNow(new Date(conv.Message[0].createdAt), {
+                                  addSuffix: true,
+                                  locale: fr,
+                                })}
                               </span>
                             )}
                             {/* Unread Badge */}
@@ -451,13 +429,13 @@ export function ChatConversationList({
                                 variant="destructive"
                                 className="h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] flex items-center justify-center px-1 sm:px-1.5 text-[10px] sm:text-xs shrink-0"
                               >
-                                {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
+                                {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
                               </Badge>
                             )}
                           </div>
                         </div>
                         <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 break-all">
-                          {lastMessage || "Pas de messages"}
+                          {lastMessage || 'Pas de messages'}
                         </p>
                       </button>
                     </div>
@@ -479,8 +457,8 @@ export function ChatConversationList({
                         {/* Actions rapides */}
                         <DropdownMenuItem
                           onClick={(e) => {
-                            e.stopPropagation();
-                            handleTogglePin(conv.id);
+                            e.stopPropagation()
+                            handleTogglePin(conv.id)
                           }}
                         >
                           <Pin className="mr-2 h-4 w-4" />
@@ -488,8 +466,8 @@ export function ChatConversationList({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleMute(conv.id);
+                            e.stopPropagation()
+                            handleToggleMute(conv.id)
                           }}
                         >
                           <BellOff className="mr-2 h-4 w-4" />
@@ -498,8 +476,8 @@ export function ChatConversationList({
                         {conv.unreadCount > 0 ? (
                           <DropdownMenuItem
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsRead(conv.id);
+                              e.stopPropagation()
+                              handleMarkAsRead(conv.id)
                             }}
                           >
                             <MailOpen className="mr-2 h-4 w-4" />
@@ -508,8 +486,8 @@ export function ChatConversationList({
                         ) : (
                           <DropdownMenuItem
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsUnread(conv.id);
+                              e.stopPropagation()
+                              handleMarkAsUnread(conv.id)
                             }}
                           >
                             <Mail className="mr-2 h-4 w-4" />
@@ -518,8 +496,8 @@ export function ChatConversationList({
                         )}
                         <DropdownMenuItem
                           onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyLink(conv.id);
+                            e.stopPropagation()
+                            handleCopyLink(conv.id)
                           }}
                         >
                           <Link className="mr-2 h-4 w-4" />
@@ -528,8 +506,8 @@ export function ChatConversationList({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleArchive(conv.id);
+                            e.stopPropagation()
+                            handleToggleArchive(conv.id)
                           }}
                         >
                           <Archive className="mr-2 h-4 w-4" />
@@ -538,8 +516,8 @@ export function ChatConversationList({
                         {canLeaveConversation(conv) && (
                           <DropdownMenuItem
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleLeaveConversation(conv.id, display.name);
+                              e.stopPropagation()
+                              handleLeaveConversation(conv.id, display.name)
                             }}
                             className="text-orange-600"
                           >
@@ -552,8 +530,8 @@ export function ChatConversationList({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteConversation(conv.id, display.name);
+                                e.stopPropagation()
+                                handleDeleteConversation(conv.id, display.name)
                               }}
                               className="text-destructive"
                             >
@@ -565,13 +543,12 @@ export function ChatConversationList({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </motion.div>
-                );
+                )
               })
             )}
           </div>
         </ScrollArea>
       </div>
     </div>
-  );
+  )
 }
-

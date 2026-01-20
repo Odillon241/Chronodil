@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from 'react'
 import {
   GanttProvider,
   GanttTimeline,
@@ -12,109 +12,105 @@ import {
   GanttFeatureListGroup,
   GanttFeatureItem,
   GanttToday,
-  GanttMarker,
-  GanttCreateMarkerTrigger,
   type GanttFeature,
   type GanttStatus,
-  type GanttMarkerProps,
-} from "@/components/ui/shadcn-io/gantt";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/shadcn-io/gantt'
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { Edit, Trash2, Circle, CheckCircle, Eye, Link2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Task, STATUS_COLORS } from "./task-types";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/context-menu'
+import { Edit, Trash2, Circle, CheckCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Task, STATUS_COLORS } from './task-types'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/select'
+import { UserAvatar } from '@/components/ui/user-avatar'
 
 interface TaskGanttProps {
-  tasks: Task[];
-  onEventClick: (task: Task) => void;
-  onEventDrop?: (taskId: string, newDate: Date) => Promise<void>;
-  onEventDelete?: (taskId: string) => Promise<void>;
-  onEventToggle?: (task: Task) => Promise<void>;
-  onAddItem?: (date: Date) => void;
-  currentUserId?: string;
-  currentUserRole?: string;
+  tasks: Task[]
+  onEventClick: (task: Task) => void
+  onEventDrop?: (taskId: string, newDate: Date) => Promise<void>
+  onEventDelete?: (taskId: string) => Promise<void>
+  onEventToggle?: (task: Task) => Promise<void>
+  onAddItem?: (date: Date) => void
+  currentUserId?: string
+  currentUserRole?: string
 }
 
 const TASK_STATUSES: Record<string, GanttStatus> = {
-  TODO: { id: "TODO", name: "À faire", color: STATUS_COLORS.TODO },
-  IN_PROGRESS: { id: "IN_PROGRESS", name: "En cours", color: STATUS_COLORS.IN_PROGRESS },
-  REVIEW: { id: "REVIEW", name: "En revue", color: "#8B5CF6" },
-  DONE: { id: "DONE", name: "Terminé", color: STATUS_COLORS.DONE },
-  BLOCKED: { id: "BLOCKED", name: "Bloqué", color: "#EF4444" },
-};
+  TODO: { id: 'TODO', name: 'À faire', color: STATUS_COLORS.TODO },
+  IN_PROGRESS: { id: 'IN_PROGRESS', name: 'En cours', color: STATUS_COLORS.IN_PROGRESS },
+  REVIEW: { id: 'REVIEW', name: 'En revue', color: '#8B5CF6' },
+  DONE: { id: 'DONE', name: 'Terminé', color: STATUS_COLORS.DONE },
+  BLOCKED: { id: 'BLOCKED', name: 'Bloqué', color: '#EF4444' },
+}
 
-const getPriorityColor = (priority: string) => {
+const _getPriorityColor = (priority: string) => {
   switch (priority) {
-    case "URGENT":
-      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-    case "HIGH":
-      return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-    case "MEDIUM":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-    case "LOW":
-      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    case 'URGENT':
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case 'HIGH':
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+    case 'MEDIUM':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    case 'LOW':
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     default:
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
   }
-};
+}
 
-const getPriorityLabel = (priority: string) => {
+const _getPriorityLabel = (priority: string) => {
   switch (priority) {
-    case "URGENT":
-      return "Urgent";
-    case "HIGH":
-      return "Haute";
-    case "MEDIUM":
-      return "Moyenne";
-    case "LOW":
-      return "Basse";
+    case 'URGENT':
+      return 'Urgent'
+    case 'HIGH':
+      return 'Haute'
+    case 'MEDIUM':
+      return 'Moyenne'
+    case 'LOW':
+      return 'Basse'
     default:
-      return priority;
+      return priority
   }
-};
+}
 
 // Palette de couleurs pour les avatars
 const AVATAR_COLORS = [
-  { bg: "bg-blue-500", text: "text-white" },
-  { bg: "bg-green-500", text: "text-white" },
-  { bg: "bg-purple-500", text: "text-white" },
-  { bg: "bg-pink-500", text: "text-white" },
-  { bg: "bg-orange-500", text: "text-white" },
-  { bg: "bg-cyan-500", text: "text-white" },
-  { bg: "bg-indigo-500", text: "text-white" },
-  { bg: "bg-red-500", text: "text-white" },
-  { bg: "bg-yellow-500", text: "text-white" },
-  { bg: "bg-teal-500", text: "text-white" },
-  { bg: "bg-amber-500", text: "text-white" },
-  { bg: "bg-rose-500", text: "text-white" },
-];
+  { bg: 'bg-blue-500', text: 'text-white' },
+  { bg: 'bg-green-500', text: 'text-white' },
+  { bg: 'bg-purple-500', text: 'text-white' },
+  { bg: 'bg-pink-500', text: 'text-white' },
+  { bg: 'bg-orange-500', text: 'text-white' },
+  { bg: 'bg-cyan-500', text: 'text-white' },
+  { bg: 'bg-indigo-500', text: 'text-white' },
+  { bg: 'bg-red-500', text: 'text-white' },
+  { bg: 'bg-yellow-500', text: 'text-white' },
+  { bg: 'bg-teal-500', text: 'text-white' },
+  { bg: 'bg-amber-500', text: 'text-white' },
+  { bg: 'bg-rose-500', text: 'text-white' },
+]
 
 // Générer une couleur cohérente basée sur l'ID ou le nom de l'utilisateur
-const getAvatarColor = (userId: string | undefined, userName: string | undefined) => {
-  const identifier = userId || userName || "default";
-  let hash = 0;
+const _getAvatarColor = (userId: string | undefined, userName: string | undefined) => {
+  const identifier = userId || userName || 'default'
+  let hash = 0
   for (let i = 0; i < identifier.length; i++) {
-    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+    hash = identifier.charCodeAt(i) + ((hash << 5) - hash)
   }
-  const index = Math.abs(hash) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[index];
-};
+  const index = Math.abs(hash) % AVATAR_COLORS.length
+  return AVATAR_COLORS[index]
+}
 
 export function TaskGantt({
   tasks,
@@ -126,40 +122,40 @@ export function TaskGantt({
   currentUserId,
   currentUserRole,
 }: TaskGanttProps) {
-  const ganttRef = useRef<HTMLDivElement>(null);
+  const ganttRef = useRef<HTMLDivElement>(null)
   // Valeurs par défaut : zoom 200% et plage quotidienne
-  const [ganttZoom, setGanttZoom] = useState(200);
-  const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('daily');
+  const [ganttZoom, setGanttZoom] = useState(200)
+  const [ganttRange, setGanttRange] = useState<'daily' | 'monthly' | 'quarterly'>('daily')
 
   // Créer une Map des tâches pour accès rapide
   const tasksMap = useMemo(() => {
-    const map = new Map<string, Task>();
-    tasks.forEach((task) => map.set(task.id, task));
-    return map;
-  }, [tasks]);
+    const map = new Map<string, Task>()
+    tasks.forEach((task) => map.set(task.id, task))
+    return map
+  }, [tasks])
 
   // Convertir les tâches en features Gantt
   const ganttFeatures = useMemo<GanttFeature[]>(() => {
     return tasks
       .filter((task) => task.dueDate)
       .map((task) => {
-        const dueDate = task.dueDate ? new Date(task.dueDate) : new Date();
+        const dueDate = task.dueDate ? new Date(task.dueDate) : new Date()
 
         // Calculer la date de début en fonction des heures estimées
         // Si estimatedHours existe, on calcule startAt = dueDate - estimatedHours
         // Sinon, on affiche la tâche sur 1 jour (startAt = dueDate, endAt = dueDate + 24h)
-        let startAt: Date;
-        let endAt: Date;
+        let startAt: Date
+        let endAt: Date
 
         if (task.estimatedHours && task.estimatedHours > 0) {
           // Convertir les heures en millisecondes et calculer la date de début
-          const durationMs = task.estimatedHours * 60 * 60 * 1000;
-          startAt = new Date(dueDate.getTime() - durationMs);
-          endAt = dueDate;
+          const durationMs = task.estimatedHours * 60 * 60 * 1000
+          startAt = new Date(dueDate.getTime() - durationMs)
+          endAt = dueDate
         } else {
           // Par défaut, afficher la tâche sur 1 jour
-          startAt = dueDate;
-          endAt = new Date(dueDate.getTime() + 24 * 60 * 60 * 1000);
+          startAt = dueDate
+          endAt = new Date(dueDate.getTime() + 24 * 60 * 60 * 1000)
         }
 
         return {
@@ -169,163 +165,159 @@ export function TaskGantt({
           endAt,
           status: TASK_STATUSES[task.status] || TASK_STATUSES.TODO,
           lane: task.Project?.name, // Grouper par projet
-        };
-      });
-  }, [tasks]);
+        }
+      })
+  }, [tasks])
 
   // Grouper les features par lane (projet)
   const featuresByLane = useMemo(() => {
-    const grouped = new Map<string, GanttFeature[]>();
+    const grouped = new Map<string, GanttFeature[]>()
 
     ganttFeatures.forEach((feature) => {
-      const lane = feature.lane || "Sans projet";
+      const lane = feature.lane || 'Sans projet'
       if (!grouped.has(lane)) {
-        grouped.set(lane, []);
+        grouped.set(lane, [])
       }
-      grouped.get(lane)!.push(feature);
-    });
+      grouped.get(lane)!.push(feature)
+    })
 
-    return grouped;
-  }, [ganttFeatures]);
+    return grouped
+  }, [ganttFeatures])
 
-  const handleMove = async (
-    id: string,
-    startAt: Date,
-    endAt: Date | null
-  ) => {
+  const handleMove = async (id: string, startAt: Date, _endAt: Date | null) => {
     if (onEventDrop) {
-      await onEventDrop(id, startAt);
+      await onEventDrop(id, startAt)
     }
-  };
+  }
 
   const handleSelectItem = (id: string) => {
-    const task = tasksMap.get(id);
+    const task = tasksMap.get(id)
     if (task) {
-      onEventClick(task);
+      onEventClick(task)
     }
-  };
+  }
 
   const handleDelete = async (id: string) => {
     if (onEventDelete) {
-      await onEventDelete(id);
+      await onEventDelete(id)
     }
-  };
+  }
 
   const handleToggle = async (id: string) => {
-    const task = tasksMap.get(id);
+    const task = tasksMap.get(id)
     if (task && onEventToggle) {
-      await onEventToggle(task);
+      await onEventToggle(task)
     }
-  };
+  }
 
   // Scroller le Gantt vers la date du jour (Today) au chargement pour centrer la vue
   useEffect(() => {
     if (ganttRef.current) {
       // Attendre que le Gantt soit complètement rendu avec plusieurs tentatives
       const attemptScroll = (attempt: number = 0) => {
-        if (attempt > 5) return; // Maximum 5 tentatives
-        
-        const ganttContainer = ganttRef.current?.querySelector('.gantt') as HTMLElement;
+        if (attempt > 5) return // Maximum 5 tentatives
+
+        const ganttContainer = ganttRef.current?.querySelector('.gantt') as HTMLElement
         if (!ganttContainer) {
-          setTimeout(() => attemptScroll(attempt + 1), 200);
-          return;
+          setTimeout(() => attemptScroll(attempt + 1), 200)
+          return
         }
 
         // Chercher l'élément "Today" dans le DOM
-        const allElements = ganttRef.current?.querySelectorAll('*');
-        let todayContainerElement: HTMLElement | null = null;
+        const allElements = ganttRef.current?.querySelectorAll('*')
+        let todayContainerElement: HTMLElement | null = null
 
         if (!allElements) {
-          return;
+          return
         }
-        
+
         for (const el of allElements) {
           // Chercher l'élément qui contient exactement le texte "Today"
           if (el.textContent?.trim() === 'Today' || el.textContent?.includes('Today')) {
             // Trouver l'élément parent qui a le transform (c'est le conteneur positionné)
-            let parent = el.parentElement;
+            let parent = el.parentElement
             while (parent && parent !== ganttRef.current) {
-              const style = window.getComputedStyle(parent);
+              const style = window.getComputedStyle(parent)
               // Le conteneur de Today a un transform avec translateX et position absolute
               if (style.transform && style.transform !== 'none' && style.position === 'absolute') {
-                todayContainerElement = parent as HTMLElement;
-                break;
+                todayContainerElement = parent as HTMLElement
+                break
               }
-              parent = parent.parentElement;
+              parent = parent.parentElement
             }
-            if (todayContainerElement) break;
+            if (todayContainerElement) break
           }
         }
-        
+
         if (todayContainerElement) {
           // Extraire la position translateX depuis le transform CSS
-          const computedStyle = window.getComputedStyle(todayContainerElement);
-          const transform = computedStyle.transform;
-          
+          const computedStyle = window.getComputedStyle(todayContainerElement)
+          const transform = computedStyle.transform
+
           if (transform && transform !== 'none') {
             try {
-              const matrix = new DOMMatrix(transform);
-              const translateX = matrix.m41; // m41 correspond à translateX
-              
+              const matrix = new DOMMatrix(transform)
+              const translateX = matrix.m41 // m41 correspond à translateX
+
               // Centrer la vue sur "Today" : positionner Today au milieu de la zone visible
               // en tenant compte de la largeur de la sidebar et de la largeur de la fenêtre
-              const sidebarWidth = 200; // Largeur approximative de la sidebar
-              const viewportWidth = ganttContainer.clientWidth - sidebarWidth;
-              const scrollPosition = Math.max(0, translateX - sidebarWidth - (viewportWidth / 2));
-              
+              const sidebarWidth = 200 // Largeur approximative de la sidebar
+              const viewportWidth = ganttContainer.clientWidth - sidebarWidth
+              const scrollPosition = Math.max(0, translateX - sidebarWidth - viewportWidth / 2)
+
               ganttContainer.scrollTo({
                 left: scrollPosition,
                 behavior: attempt === 0 ? 'smooth' : 'auto', // Smooth seulement au premier essai
-              });
+              })
             } catch (error) {
               // Fallback si DOMMatrix n'est pas supporté
               if (attempt === 0) {
-                console.warn('Impossible de calculer la position de Today:', error);
+                console.warn('Impossible de calculer la position de Today:', error)
               }
-              setTimeout(() => attemptScroll(attempt + 1), 200);
+              setTimeout(() => attemptScroll(attempt + 1), 200)
             }
           } else {
-            setTimeout(() => attemptScroll(attempt + 1), 200);
+            setTimeout(() => attemptScroll(attempt + 1), 200)
           }
         } else {
-          setTimeout(() => attemptScroll(attempt + 1), 200);
+          setTimeout(() => attemptScroll(attempt + 1), 200)
         }
-      };
+      }
 
       // Démarrer le scroll après un court délai initial
-      const timeoutId = setTimeout(() => attemptScroll(0), 500);
+      const timeoutId = setTimeout(() => attemptScroll(0), 500)
 
       return () => {
-        clearTimeout(timeoutId);
-      };
+        clearTimeout(timeoutId)
+      }
     }
-  }, [ganttRange, ganttZoom, ganttFeatures.length]); // Re-scroll si les features changent ou le zoom/range change
+  }, [ganttRange, ganttZoom, ganttFeatures.length]) // Re-scroll si les features changent ou le zoom/range change
 
   // Raccourcis clavier pour le zoom
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl + "+" ou Ctrl + "=" pour zoomer
       if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
-        e.preventDefault();
-        setGanttZoom((prev) => Math.min(400, prev + 25));
+        e.preventDefault()
+        setGanttZoom((prev) => Math.min(400, prev + 25))
       }
       // Ctrl + "-" pour dézoomer
       else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
-        e.preventDefault();
-        setGanttZoom((prev) => Math.max(50, prev - 25));
+        e.preventDefault()
+        setGanttZoom((prev) => Math.max(50, prev - 25))
       }
       // Ctrl + "0" pour réinitialiser
       else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
-        e.preventDefault();
-        setGanttZoom(100);
+        e.preventDefault()
+        setGanttZoom(100)
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
 
   return (
     <div ref={ganttRef} className="flex flex-col h-[600px] w-full">
@@ -335,7 +327,10 @@ export function TaskGantt({
           {/* Sélecteur de plage */}
           <div className="flex items-center gap-2">
             <Label className="text-sm font-medium">Plage:</Label>
-            <Select value={ganttRange} onValueChange={(value: 'daily' | 'monthly' | 'quarterly') => setGanttRange(value)}>
+            <Select
+              value={ganttRange}
+              onValueChange={(value: 'daily' | 'monthly' | 'quarterly') => setGanttRange(value)}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
@@ -371,233 +366,216 @@ export function TaskGantt({
                 +
               </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setGanttZoom(100)}
-              title="Ctrl + 0"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setGanttZoom(100)} title="Ctrl + 0">
               Réinitialiser
             </Button>
           </div>
         </div>
 
         <div className="text-xs text-muted-foreground hidden sm:block">
-          Raccourcis: <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl +</kbd> / <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl -</kbd> / <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl 0</kbd>
+          Raccourcis: <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl +</kbd> /{' '}
+          <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl -</kbd> /{' '}
+          <kbd className="px-1.5 py-0.5 rounded border bg-background">Ctrl 0</kbd>
         </div>
       </div>
 
       <div className="flex-1 overflow-hidden">
         <GanttProvider range={ganttRange} zoom={ganttZoom} onAddItem={onAddItem}>
-        <GanttSidebar>
-          {ganttFeatures.length === 0 ? (
-            <GanttSidebarGroup name="Aucune tâche">
-              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                Aucune tâche avec date d'échéance
-              </div>
-            </GanttSidebarGroup>
-          ) : (
-            Array.from(featuresByLane.entries()).map(([lane, features]) => (
-              <GanttSidebarGroup key={lane} name={lane}>
-                {features.map((feature) => (
-                  <GanttSidebarItem
-                    key={feature.id}
-                    feature={feature}
-                    onSelectItem={handleSelectItem}
-                  />
-                ))}
-              </GanttSidebarGroup>
-            ))
-          )}
-        </GanttSidebar>
-
-        <GanttTimeline>
-          <GanttHeader />
-          <GanttFeatureList>
+          <GanttSidebar>
             {ganttFeatures.length === 0 ? (
-              <GanttFeatureListGroup>
-                <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-                  Aucune tâche à afficher
+              <GanttSidebarGroup name="Aucune tâche">
+                <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  Aucune tâche avec date d'échéance
                 </div>
-              </GanttFeatureListGroup>
+              </GanttSidebarGroup>
             ) : (
               Array.from(featuresByLane.entries()).map(([lane, features]) => (
-                <GanttFeatureListGroup key={lane}>
-                  {features.map((feature) => {
-                    const task = tasksMap.get(feature.id);
-                    if (!task) return null;
-
-                    return (
-                      <ContextMenu key={feature.id}>
-                        <ContextMenuTrigger asChild>
-                          <div className="flex w-full" data-feature-id={feature.id}>
-                            <button
-                              onClick={() => handleSelectItem(feature.id)}
-                              type="button"
-                              className="w-full"
-                            >
-                              <GanttFeatureItem
-                                {...feature}
-                                onMove={handleMove}
-                              >
-                                {/* Bulle d'indicateur de statut */}
-                                <div
-                                  className={cn(
-                                    "h-2 w-2 shrink-0 rounded-full mr-2",
-                                    task?.status === "DONE"
-                                      ? "bg-green-500"
-                                      : task?.status === "IN_PROGRESS"
-                                      ? "bg-blue-500 animate-pulse"
-                                      : "bg-gray-400"
-                                  )}
-                                  title={
-                                    task?.status === "DONE"
-                                      ? "Terminé"
-                                      : task?.status === "IN_PROGRESS"
-                                      ? "En cours"
-                                      : "À faire"
-                                  }
-                                />
-                                <p className="flex-1 truncate text-xs">
-                                  {feature.name}
-                                </p>
-                                {/* Afficher le créateur et les membres assignés */}
-                                <div className="flex -space-x-2 shrink-0">
-                                  {(() => {
-                                    const creator = (task as any).Creator || (task as any).User_Task_createdByToUser;
-                                    const members = (task as any).TaskMember || [];
-
-                                    const avatarsToDisplay: Array<{ id: string; name: string; avatar?: string; isCreator: boolean }> = [];
-
-                                    // Ajouter le créateur
-                                    if (creator) {
-                                      avatarsToDisplay.push({
-                                        id: creator.id,
-                                        name: creator.name,
-                                        avatar: creator.avatar,
-                                        isCreator: true,
-                                      });
-                                    }
-
-                                    // Ajouter les membres assignés (sans dupliquer le créateur)
-                                    members.forEach((member: any) => {
-                                      if (member.User.id !== creator?.id) {
-                                        avatarsToDisplay.push({
-                                          id: member.User.id,
-                                          name: member.User.name,
-                                          avatar: member.User.avatar,
-                                          isCreator: false,
-                                        });
-                                      }
-                                    });
-
-                                    // Afficher max 3 avatars + indicateur "+N"
-                                    const maxVisible = 3;
-                                    const visibleAvatars = avatarsToDisplay.slice(0, maxVisible);
-                                    const remaining = avatarsToDisplay.length - maxVisible;
-
-                                    return (
-                                      <>
-                                        {visibleAvatars.map((person) => {
-                                          const initials = person.name
-                                            ?.split(" ")
-                                            .map((n: string) => n[0])
-                                            .join("")
-                                            .slice(0, 2)
-                                            .toUpperCase() || "?";
-
-                                          const color = getAvatarColor(person.id, person.name);
-
-                                          return (
-                                            <Avatar
-                                              key={person.id}
-                                              className="h-6 w-6 border-2 border-background"
-                                              title={`${person.name}${person.isCreator ? " (Créateur)" : ""}`}
-                                            >
-                                              <AvatarImage src={person.avatar || undefined} alt={person.name} />
-                                              <AvatarFallback className={cn(
-                                                "text-[10px] font-medium leading-none flex items-center justify-center",
-                                                color.bg,
-                                                color.text
-                                              )}>
-                                                {initials}
-                                              </AvatarFallback>
-                                            </Avatar>
-                                          );
-                                        })}
-                                        {remaining > 0 && (
-                                          <div className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center">
-                                            <span className="text-[10px] font-medium">+{remaining}</span>
-                                          </div>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </div>
-                              </GanttFeatureItem>
-                            </button>
-                          </div>
-                        </ContextMenuTrigger>
-                        <ContextMenuContent>
-                          {(() => {
-                            const isCreator = task.Creator?.id === currentUserId;
-                            const isAdmin = currentUserRole === "ADMIN";
-                            const canModify = isCreator || isAdmin;
-                            
-                            return (
-                              <>
-                                {canModify && (
-                                  <ContextMenuItem
-                                    onClick={() => handleSelectItem(feature.id)}
-                                  >
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Modifier
-                                  </ContextMenuItem>
-                                )}
-                                {canModify && onEventToggle && (
-                                  <ContextMenuItem
-                                    onClick={() => handleToggle(feature.id)}
-                                  >
-                                    {task.isActive ? (
-                                      <>
-                                        <Circle className="h-4 w-4 mr-2" />
-                                        Désactiver
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                        Activer
-                                      </>
-                                    )}
-                                  </ContextMenuItem>
-                                )}
-                                {canModify && onEventDelete && (
-                                  <>
-                                    <ContextMenuSeparator />
-                                    <ContextMenuItem
-                                      onClick={() => handleDelete(feature.id)}
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Supprimer
-                                    </ContextMenuItem>
-                                  </>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </ContextMenuContent>
-                      </ContextMenu>
-                    );
-                  })}
-                </GanttFeatureListGroup>
+                <GanttSidebarGroup key={lane} name={lane}>
+                  {features.map((feature) => (
+                    <GanttSidebarItem
+                      key={feature.id}
+                      feature={feature}
+                      onSelectItem={handleSelectItem}
+                    />
+                  ))}
+                </GanttSidebarGroup>
               ))
             )}
-          </GanttFeatureList>
-          <GanttToday />
-        </GanttTimeline>
-      </GanttProvider>
+          </GanttSidebar>
+
+          <GanttTimeline>
+            <GanttHeader />
+            <GanttFeatureList>
+              {ganttFeatures.length === 0 ? (
+                <GanttFeatureListGroup>
+                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                    Aucune tâche à afficher
+                  </div>
+                </GanttFeatureListGroup>
+              ) : (
+                Array.from(featuresByLane.entries()).map(([lane, features]) => (
+                  <GanttFeatureListGroup key={lane}>
+                    {features.map((feature) => {
+                      const task = tasksMap.get(feature.id)
+                      if (!task) return null
+
+                      return (
+                        <ContextMenu key={feature.id}>
+                          <ContextMenuTrigger asChild>
+                            <div className="flex w-full" data-feature-id={feature.id}>
+                              <button
+                                onClick={() => handleSelectItem(feature.id)}
+                                type="button"
+                                className="w-full"
+                              >
+                                <GanttFeatureItem {...feature} onMove={handleMove}>
+                                  {/* Bulle d'indicateur de statut */}
+                                  <div
+                                    className={cn(
+                                      'h-2 w-2 shrink-0 rounded-full mr-2',
+                                      task?.status === 'DONE'
+                                        ? 'bg-green-500'
+                                        : task?.status === 'IN_PROGRESS'
+                                          ? 'bg-blue-500 animate-pulse'
+                                          : 'bg-gray-400',
+                                    )}
+                                    title={
+                                      task?.status === 'DONE'
+                                        ? 'Terminé'
+                                        : task?.status === 'IN_PROGRESS'
+                                          ? 'En cours'
+                                          : 'À faire'
+                                    }
+                                  />
+                                  <p className="flex-1 truncate text-xs">{feature.name}</p>
+                                  {/* Afficher le créateur et les membres assignés */}
+                                  <div className="flex -space-x-2 shrink-0">
+                                    {(() => {
+                                      const creator =
+                                        (task as any).Creator ||
+                                        (task as any).User_Task_createdByToUser
+                                      const members = (task as any).TaskMember || []
+
+                                      const avatarsToDisplay: Array<{
+                                        id: string
+                                        name: string
+                                        avatar?: string
+                                        isCreator: boolean
+                                      }> = []
+
+                                      // Ajouter le créateur
+                                      if (creator) {
+                                        avatarsToDisplay.push({
+                                          id: creator.id,
+                                          name: creator.name,
+                                          avatar: creator.avatar,
+                                          isCreator: true,
+                                        })
+                                      }
+
+                                      // Ajouter les membres assignés (sans dupliquer le créateur)
+                                      members.forEach((member: any) => {
+                                        if (member.User.id !== creator?.id) {
+                                          avatarsToDisplay.push({
+                                            id: member.User.id,
+                                            name: member.User.name,
+                                            avatar: member.User.avatar,
+                                            isCreator: false,
+                                          })
+                                        }
+                                      })
+
+                                      // Afficher max 3 avatars + indicateur "+N"
+                                      const maxVisible = 3
+                                      const visibleAvatars = avatarsToDisplay.slice(0, maxVisible)
+                                      const remaining = avatarsToDisplay.length - maxVisible
+
+                                      return (
+                                        <>
+                                          {visibleAvatars.map((person) => (
+                                            <div
+                                              key={person.id}
+                                              title={`${person.name}${person.isCreator ? ' (Créateur)' : ''}`}
+                                            >
+                                              <UserAvatar
+                                                name={person.name}
+                                                avatar={person.avatar}
+                                                size="xs"
+                                                className="h-6 w-6 border-2 border-background"
+                                              />
+                                            </div>
+                                          ))}
+                                          {remaining > 0 && (
+                                            <div className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center">
+                                              <span className="text-[10px] font-medium">
+                                                +{remaining}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </>
+                                      )
+                                    })()}
+                                  </div>
+                                </GanttFeatureItem>
+                              </button>
+                            </div>
+                          </ContextMenuTrigger>
+                          <ContextMenuContent>
+                            {(() => {
+                              const isCreator = task.Creator?.id === currentUserId
+                              const isAdmin = currentUserRole === 'ADMIN'
+                              const canModify = isCreator || isAdmin
+
+                              return (
+                                <>
+                                  {canModify && (
+                                    <ContextMenuItem onClick={() => handleSelectItem(feature.id)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Modifier
+                                    </ContextMenuItem>
+                                  )}
+                                  {canModify && onEventToggle && (
+                                    <ContextMenuItem onClick={() => handleToggle(feature.id)}>
+                                      {task.isActive ? (
+                                        <>
+                                          <Circle className="h-4 w-4 mr-2" />
+                                          Désactiver
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CheckCircle className="h-4 w-4 mr-2" />
+                                          Activer
+                                        </>
+                                      )}
+                                    </ContextMenuItem>
+                                  )}
+                                  {canModify && onEventDelete && (
+                                    <>
+                                      <ContextMenuSeparator />
+                                      <ContextMenuItem
+                                        onClick={() => handleDelete(feature.id)}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Supprimer
+                                      </ContextMenuItem>
+                                    </>
+                                  )}
+                                </>
+                              )
+                            })()}
+                          </ContextMenuContent>
+                        </ContextMenu>
+                      )
+                    })}
+                  </GanttFeatureListGroup>
+                ))
+              )}
+            </GanttFeatureList>
+            <GanttToday />
+          </GanttTimeline>
+        </GanttProvider>
       </div>
     </div>
-  );
+  )
 }

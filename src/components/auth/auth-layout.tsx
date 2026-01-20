@@ -1,31 +1,31 @@
-"use client";
+'use client'
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useTheme } from "next-themes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import TypingText from "@/components/ui/shadcn-io/typing-text";
-import { AuroraBackground } from "@/components/ui/shadcn-io/aurora-background";
+import * as React from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useTheme } from 'next-themes'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import TypingText from '@/components/ui/shadcn-io/typing-text'
+import { AuroraBackground } from '@/components/ui/shadcn-io/aurora-background'
+import { PenLine } from 'lucide-react'
 
 interface AuthLayoutProps {
-  children: React.ReactNode;
-  title: string;
-  description?: string | React.ReactNode;
-  showSocialAuth?: boolean;
+  children: React.ReactNode
+  title: string
+  description?: string | React.ReactNode
+  showSocialAuth?: boolean
 }
 
 export function AuthLayout({ children, title, description }: AuthLayoutProps) {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
-  const logoSrc = mounted && resolvedTheme === "dark"
-    ? "/assets/media/logo-dark.svg"
-    : "/assets/media/logo.svg";
+  const logoSrc =
+    mounted && resolvedTheme === 'dark' ? '/assets/media/logo-dark.svg' : '/assets/media/logo.svg'
 
   return (
     <AuroraBackground className="p-4 md:p-8">
@@ -44,21 +44,23 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
         </div>
 
         <div className="mb-6 flex flex-col items-center space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-primary">Bienvenue sur Chronodil</h1>
-          <div className="flex justify-center items-center min-h-[40px] gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-primary">
+            Bienvenue sur Chronodil
+          </h1>
+          <div className="flex flex-wrap justify-center items-center min-h-[40px] gap-2 px-2 text-center">
             <TypingText
-              text={["TOGETHER WE"]}
-              className="text-lg md:text-xl font-bold tracking-[0.15em] uppercase text-center font-mono text-foreground"
+              text={['Together we']}
+              className="text-lg md:text-xl font-bold tracking-[0.15em] text-center font-mono text-foreground"
               typingSpeed={75}
               pauseDuration={1500}
               showCursor={false}
               loop={true}
               variableSpeed={{ min: 50, max: 120 }}
             />
-            <img src="https://img.icons8.com/?id=36871&format=png&size=48" alt="write" className="h-6 w-6 md:h-7 md:w-7 inline-block" />
+            <PenLine className="h-6 w-6 md:h-7 md:w-7 text-primary" />
             <TypingText
-              text={["THE FUTURE"]}
-              className="text-lg md:text-xl font-bold tracking-[0.15em] uppercase text-center font-mono text-foreground"
+              text={['the future']}
+              className="text-lg md:text-xl font-bold tracking-[0.15em] text-center font-mono text-foreground"
               typingSpeed={75}
               pauseDuration={1500}
               showCursor={true}
@@ -74,14 +76,10 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
           <CardHeader className="space-y-1 text-center pb-2">
             <CardTitle className="text-2xl font-bold tracking-tight">{title}</CardTitle>
             {description && (
-              <CardDescription className="text-muted-foreground">
-                {description}
-              </CardDescription>
+              <CardDescription className="text-muted-foreground">{description}</CardDescription>
             )}
           </CardHeader>
-          <CardContent>
-            {children}
-          </CardContent>
+          <CardContent>{children}</CardContent>
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
@@ -89,5 +87,5 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
         </p>
       </div>
     </AuroraBackground>
-  );
+  )
 }

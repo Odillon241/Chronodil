@@ -1,24 +1,23 @@
-"use client";
+'use client'
 
-import { useState, useMemo } from "react";
-import { useSession } from "@/lib/auth-client";
-import { toast } from "sonner";
-import dynamic from "next/dynamic";
+import { useState, useMemo } from 'react'
+import { useSession } from '@/lib/auth-client'
+import { toast } from 'sonner'
+import dynamic from 'next/dynamic'
 
 // Components
-import { TasksHeader } from "@/components/tasks/tasks-header";
-import { TasksToolbar } from "@/components/tasks/tasks-toolbar";
-import { TasksList } from "@/components/tasks/tasks-list";
-import { TaskDialog } from "@/components/tasks/task-dialog";
-import { Spinner } from "@/components/ui/spinner";
-import { Separator } from "@/components/ui/separator";
+import { TasksHeader } from '@/components/tasks/tasks-header'
+import { TasksToolbar } from '@/components/tasks/tasks-toolbar'
+import { TasksList } from '@/components/tasks/tasks-list'
+import { TaskDialog } from '@/components/tasks/task-dialog'
+import { Spinner } from '@/components/ui/spinner'
 
 // Hooks
-import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
-import { useTaskReminders } from "@/hooks/use-task-reminders";
-import { useRealtimeTasksOptimized } from "@/hooks/use-realtime-tasks.optimized";
-import { useTasks } from "@/contexts/tasks-context";
-import type { StatusTabOption } from "@/components/ui/status-tabs";
+import { useConfirmationDialog } from '@/hooks/use-confirmation-dialog'
+import { useTaskReminders } from '@/hooks/use-task-reminders'
+import { useRealtimeTasksOptimized } from '@/hooks/use-realtime-tasks.optimized'
+import { useTasks } from '@/contexts/tasks-context'
+import type { StatusTabOption } from '@/components/ui/status-tabs'
 
 // Actions
 import {
@@ -26,11 +25,12 @@ import {
   updateTask,
   updateTaskStatus,
   updateTaskPriority,
-} from "@/actions/task.actions";
+} from '@/actions/task.actions'
 
 // Lazy load des composants lourds
 const TaskCalendar = dynamic(
-  () => import("@/components/features/task-calendar").then(mod => ({ default: mod.TaskCalendar })),
+  () =>
+    import('@/components/features/task-calendar').then((mod) => ({ default: mod.TaskCalendar })),
   {
     loading: () => (
       <div className="flex items-center justify-center py-12 min-h-[400px]">
@@ -38,13 +38,11 @@ const TaskCalendar = dynamic(
       </div>
     ),
     ssr: false,
-  }
-);
-
-
+  },
+)
 
 const TaskGantt = dynamic(
-  () => import("@/components/features/task-gantt").then(mod => ({ default: mod.TaskGantt })),
+  () => import('@/components/features/task-gantt').then((mod) => ({ default: mod.TaskGantt })),
   {
     loading: () => (
       <div className="flex items-center justify-center py-12 min-h-[400px]">
@@ -52,12 +50,12 @@ const TaskGantt = dynamic(
       </div>
     ),
     ssr: false,
-  }
-);
+  },
+)
 
 export default function TasksPage() {
-  const { data: session } = useSession() as any;
-  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
+  const { data: session } = useSession() as any
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog()
 
   // Contexte des tâches
   const {
@@ -68,7 +66,7 @@ export default function TasksPage() {
     searchQuery,
     statusFilter,
     priorityFilter,
-    selectedProject,
+    selectedProject: _selectedProject,
     userFilter,
     startDateFilter,
     endDateFilter,
@@ -76,178 +74,183 @@ export default function TasksPage() {
     setSearchQuery,
     setStatusFilter,
     setPriorityFilter,
-    setSelectedProject,
+    setSelectedProject: _setSelectedProject,
     setUserFilter,
     setStartDateFilter,
     setEndDateFilter,
     setViewMode,
     refreshTasks,
-  } = useTasks();
+  } = useTasks()
 
   // État local
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<any>(null);
-  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState<any>(null)
+  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set())
 
   // Activer les rappels de tâches
-  useTaskReminders({ tasks: userTasks });
+  useTaskReminders({ tasks: userTasks })
 
   // Écouter les changements en temps réel
   useRealtimeTasksOptimized({
-    userId: session?.user?.id || "",
+    userId: session?.user?.id || '',
     enabled: !!session?.user?.id,
-  });
+  })
 
   // Calculer les options de statut pour les tabs
   const statusTabOptions = useMemo<StatusTabOption[]>(() => {
-    const tasksToCount = userFilter === "my" ? userTasks : allTasks;
+    const tasksToCount = userFilter === 'my' ? userTasks : allTasks
     const counts = {
       all: tasksToCount.length,
-      TODO: tasksToCount.filter(t => t.status === "TODO").length,
-      IN_PROGRESS: tasksToCount.filter(t => t.status === "IN_PROGRESS").length,
-      REVIEW: tasksToCount.filter(t => t.status === "REVIEW").length,
-      DONE: tasksToCount.filter(t => t.status === "DONE").length,
-      BLOCKED: tasksToCount.filter(t => t.status === "BLOCKED").length,
-    };
+      TODO: tasksToCount.filter((t) => t.status === 'TODO').length,
+      IN_PROGRESS: tasksToCount.filter((t) => t.status === 'IN_PROGRESS').length,
+      REVIEW: tasksToCount.filter((t) => t.status === 'REVIEW').length,
+      DONE: tasksToCount.filter((t) => t.status === 'DONE').length,
+      BLOCKED: tasksToCount.filter((t) => t.status === 'BLOCKED').length,
+    }
 
     return [
-      { id: "all", label: "Tous", value: "all", count: counts.all },
-      { id: "TODO", label: "À faire", value: "TODO", count: counts.TODO },
-      { id: "IN_PROGRESS", label: "En cours", value: "IN_PROGRESS", count: counts.IN_PROGRESS },
-      { id: "REVIEW", label: "En revue", value: "REVIEW", count: counts.REVIEW },
-      { id: "DONE", label: "Terminé", value: "DONE", count: counts.DONE },
-      { id: "BLOCKED", label: "Bloqué", value: "BLOCKED", count: counts.BLOCKED },
-    ];
-  }, [userTasks, allTasks, userFilter]);
+      { id: 'all', label: 'Tous', value: 'all', count: counts.all },
+      { id: 'TODO', label: 'À faire', value: 'TODO', count: counts.TODO },
+      { id: 'IN_PROGRESS', label: 'En cours', value: 'IN_PROGRESS', count: counts.IN_PROGRESS },
+      { id: 'REVIEW', label: 'En revue', value: 'REVIEW', count: counts.REVIEW },
+      { id: 'DONE', label: 'Terminé', value: 'DONE', count: counts.DONE },
+      { id: 'BLOCKED', label: 'Bloqué', value: 'BLOCKED', count: counts.BLOCKED },
+    ]
+  }, [userTasks, allTasks, userFilter])
 
   // Gestionnaires d'événements
   const handleNewTask = () => {
-    setEditingTask(null);
-    setIsDialogOpen(true);
-  };
+    setEditingTask(null)
+    setIsDialogOpen(true)
+  }
 
   const handleEdit = (task: any) => {
-    setEditingTask(task);
-    setIsDialogOpen(true);
-  };
+    setEditingTask(task)
+    setIsDialogOpen(true)
+  }
 
   const handleDelete = async (id: string) => {
     await showConfirmation({
-      title: "Supprimer la tâche",
-      description: "Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible.",
-      confirmText: "Supprimer",
-      cancelText: "Annuler",
-      variant: "destructive",
+      title: 'Supprimer la tâche',
+      description:
+        'Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      variant: 'destructive',
       onConfirm: async () => {
         try {
-          const result = await deleteTask({ id });
+          const result = await deleteTask({ id })
           if (result?.data) {
-            toast.success("Tâche supprimée");
-            refreshTasks();
+            toast.success('Tâche supprimée')
+            refreshTasks()
           } else {
-            toast.error("Erreur lors de la suppression");
+            toast.error('Erreur lors de la suppression')
           }
-        } catch (error) {
-          toast.error("Erreur lors de la suppression");
+        } catch (_error) {
+          toast.error('Erreur lors de la suppression')
         }
       },
-    });
-  };
+    })
+  }
 
   const handleToggleActive = async (task: any) => {
     try {
       const result = await updateTask({
         id: task.id,
         isActive: !task.isActive,
-      });
+      })
 
       if (result?.data) {
-        toast.success(task.isActive ? "Tâche désactivée" : "Tâche activée");
-        refreshTasks();
+        toast.success(task.isActive ? 'Tâche désactivée' : 'Tâche activée')
+        refreshTasks()
       } else {
-        toast.error("Erreur lors de la mise à jour");
+        toast.error('Erreur lors de la mise à jour')
       }
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+    } catch (_error) {
+      toast.error('Erreur lors de la mise à jour')
     }
-  };
+  }
 
-  const handleStatusChange = async (taskId: string, newStatus: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED") => {
+  const handleStatusChange = async (
+    taskId: string,
+    newStatus: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'BLOCKED',
+  ) => {
     try {
-      const result = await updateTaskStatus({ id: taskId, status: newStatus });
+      const result = await updateTaskStatus({ id: taskId, status: newStatus })
       if (result?.data) {
-        toast.success("Statut mis à jour");
-        refreshTasks();
+        toast.success('Statut mis à jour')
+        refreshTasks()
       } else if (result?.serverError) {
-        toast.error(result.serverError);
+        toast.error(result.serverError)
       }
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+    } catch (_error) {
+      toast.error('Erreur lors de la mise à jour')
     }
-  };
+  }
 
-  const handlePriorityChange = async (taskId: string, newPriority: "LOW" | "MEDIUM" | "HIGH" | "URGENT") => {
+  const handlePriorityChange = async (
+    taskId: string,
+    newPriority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
+  ) => {
     try {
-      const result = await updateTaskPriority({ id: taskId, priority: newPriority });
+      const result = await updateTaskPriority({ id: taskId, priority: newPriority })
       if (result?.data) {
-        toast.success("Priorité mise à jour");
-        refreshTasks();
+        toast.success('Priorité mise à jour')
+        refreshTasks()
       } else if (result?.serverError) {
-        toast.error(result.serverError);
+        toast.error(result.serverError)
       }
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour");
+    } catch (_error) {
+      toast.error('Erreur lors de la mise à jour')
     }
-  };
+  }
 
   const handleSelectTask = (taskId: string) => {
-    const newSelected = new Set(selectedTasks);
+    const newSelected = new Set(selectedTasks)
     if (newSelected.has(taskId)) {
-      newSelected.delete(taskId);
+      newSelected.delete(taskId)
     } else {
-      newSelected.add(taskId);
+      newSelected.add(taskId)
     }
-    setSelectedTasks(newSelected);
-  };
+    setSelectedTasks(newSelected)
+  }
 
   const handleSelectAll = () => {
     if (selectedTasks.size === filteredTasks.length) {
-      setSelectedTasks(new Set());
+      setSelectedTasks(new Set())
     } else {
-      setSelectedTasks(new Set(filteredTasks.map(task => task.id)));
+      setSelectedTasks(new Set(filteredTasks.map((task) => task.id)))
     }
-  };
+  }
 
   // Gestionnaires pour le calendrier
   const handleCalendarEventClick = (task: any) => {
-    handleEdit(task);
-  };
+    handleEdit(task)
+  }
 
   const handleCalendarEventDrop = async (taskId: string, newDate: Date) => {
     const result = await updateTask({
       id: taskId,
       dueDate: newDate,
-    });
+    })
 
     if (result?.data) {
-      toast.success("Date d'échéance mise à jour !");
-      refreshTasks();
+      toast.success("Date d'échéance mise à jour !")
+      refreshTasks()
     } else {
-      toast.error("Erreur lors de la mise à jour");
-      throw new Error("Update failed");
+      toast.error('Erreur lors de la mise à jour')
+      throw new Error('Update failed')
     }
-  };
+  }
 
-  const handleCalendarSlotDoubleClick = (date: Date) => {
-    setEditingTask(null);
-    setIsDialogOpen(true);
-  };
+  const handleCalendarSlotDoubleClick = (_date: Date) => {
+    setEditingTask(null)
+    setIsDialogOpen(true)
+  }
 
   return (
     <div className="flex-1 space-y-6">
       <TasksHeader onNewTask={handleNewTask} />
-
-
 
       <TasksToolbar
         searchQuery={searchQuery}
@@ -270,13 +273,11 @@ export default function TasksPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-12 min-h-[400px]">
           <Spinner className="h-8 w-8 text-primary mb-4" />
-          <p className="text-sm text-muted-foreground">
-            Chargement des tâches...
-          </p>
+          <p className="text-sm text-muted-foreground">Chargement des tâches...</p>
         </div>
       ) : (
         <>
-          {viewMode === "list" && (
+          {viewMode === 'list' && (
             <TasksList
               tasks={filteredTasks}
               currentUserId={session?.user?.id}
@@ -292,7 +293,7 @@ export default function TasksPage() {
             />
           )}
 
-          {viewMode === "calendar" && (
+          {viewMode === 'calendar' && (
             <TaskCalendar
               tasks={filteredTasks}
               onEventClick={handleCalendarEventClick}
@@ -305,9 +306,7 @@ export default function TasksPage() {
             />
           )}
 
-
-
-          {viewMode === "gantt" && (
+          {viewMode === 'gantt' && (
             <TaskGantt
               tasks={filteredTasks}
               onEventClick={handleCalendarEventClick}
@@ -332,5 +331,5 @@ export default function TasksPage() {
 
       <ConfirmationDialog />
     </div>
-  );
+  )
 }

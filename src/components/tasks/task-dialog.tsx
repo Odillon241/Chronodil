@@ -1,51 +1,47 @@
-"use client";
+'use client'
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Bell, Volume2, VolumeX, Users } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Bell, Volume2, VolumeX, Users } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Spinner } from "@/components/ui/spinner";
-import { TaskComplexitySelector } from "@/components/features/task-complexity-selector";
-import { createTask, updateTask } from "@/actions/task.actions";
-import { getMyProjects } from "@/actions/project.actions";
+} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { Spinner } from '@/components/ui/spinner'
+import { TaskComplexitySelector } from '@/components/features/task-complexity-selector'
+import { createTask, updateTask } from '@/actions/task.actions'
+import { getMyProjects } from '@/actions/project.actions'
 import {
   getAvailableHRTimesheetsForTask,
   getActivityCatalog,
-  getActivityCategories
-} from "@/actions/hr-timesheet.actions";
-import { getAvailableUsersForSharing } from "@/actions/task.actions";
-import { toast } from "sonner";
-import dynamic from "next/dynamic";
+  getActivityCategories,
+} from '@/actions/hr-timesheet.actions'
+import { getAvailableUsersForSharing } from '@/actions/task.actions'
+import { toast } from 'sonner'
+import dynamic from 'next/dynamic'
 
 // Lazy loading des composants d'onglets
 const TaskComments = dynamic(
-  () => import("@/components/features/task-comments").then(mod => ({ default: mod.TaskComments })),
+  () =>
+    import('@/components/features/task-comments').then((mod) => ({ default: mod.TaskComments })),
   {
     loading: () => (
       <div className="flex items-center justify-center py-8">
@@ -53,11 +49,14 @@ const TaskComments = dynamic(
       </div>
     ),
     ssr: false,
-  }
-);
+  },
+)
 
 const TaskActivityTimeline = dynamic(
-  () => import("@/components/features/task-activity-timeline").then(mod => ({ default: mod.TaskActivityTimeline })),
+  () =>
+    import('@/components/features/task-activity-timeline').then((mod) => ({
+      default: mod.TaskActivityTimeline,
+    })),
   {
     loading: () => (
       <div className="flex items-center justify-center py-8">
@@ -65,15 +64,15 @@ const TaskActivityTimeline = dynamic(
       </div>
     ),
     ssr: false,
-  }
-);
+  },
+)
 
 interface TaskDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  editingTask?: any;
-  currentUserId?: string;
-  onSuccess: () => void;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  editingTask?: any
+  currentUserId?: string
+  onSuccess: () => void
 }
 
 export function TaskDialog({
@@ -83,179 +82,178 @@ export function TaskDialog({
   currentUserId,
   onSuccess,
 }: TaskDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
-  const [availableTimesheets, setAvailableTimesheets] = useState<any[]>([]);
-  const [catalog, setCatalog] = useState<any[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedCatalogId, setSelectedCatalogId] = useState<string>("");
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [projects, setProjects] = useState<any[]>([])
+  const [availableUsers, setAvailableUsers] = useState<any[]>([])
+  const [availableTimesheets, setAvailableTimesheets] = useState<any[]>([])
+  const [catalog, setCatalog] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>('')
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    projectId: "no-project",
-    estimatedHours: "",
-    dueDate: "",
-    reminderDate: "",
-    reminderTime: "",
+    name: '',
+    description: '',
+    projectId: 'no-project',
+    estimatedHours: '',
+    dueDate: '',
+    reminderDate: '',
+    reminderTime: '',
     soundEnabled: true,
     isShared: false,
-    status: "TODO",
-    priority: "MEDIUM",
-    complexity: "MOYEN",
+    status: 'TODO',
+    priority: 'MEDIUM',
+    complexity: 'MOYEN',
     trainingLevel: undefined,
     masteryLevel: undefined,
     understandingLevel: undefined,
-    hrTimesheetId: "no-timesheet",
-    activityType: "OPERATIONAL",
-    activityName: "",
-    periodicity: "WEEKLY",
-  });
+    hrTimesheetId: 'no-timesheet',
+    activityType: 'OPERATIONAL',
+    activityName: '',
+    periodicity: 'WEEKLY',
+  })
 
   // Charger les données initiales
   useEffect(() => {
     if (open) {
-      loadInitialData();
+      loadInitialData()
     }
-  }, [open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   // Initialiser le formulaire avec les données de la tâche à éditer
   useEffect(() => {
     if (editingTask) {
       setFormData({
         name: editingTask.name,
-        description: editingTask.description || "",
-        projectId: editingTask.projectId || "no-project",
-        estimatedHours: editingTask.estimatedHours?.toString() || "",
-        dueDate: editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split("T")[0] : "",
-        reminderDate: editingTask.reminderDate ? new Date(editingTask.reminderDate).toISOString().split("T")[0] : "",
-        reminderTime: editingTask.reminderTime || "",
+        description: editingTask.description || '',
+        projectId: editingTask.projectId || 'no-project',
+        estimatedHours: editingTask.estimatedHours?.toString() || '',
+        dueDate: editingTask.dueDate
+          ? new Date(editingTask.dueDate).toISOString().split('T')[0]
+          : '',
+        reminderDate: editingTask.reminderDate
+          ? new Date(editingTask.reminderDate).toISOString().split('T')[0]
+          : '',
+        reminderTime: editingTask.reminderTime || '',
         soundEnabled: editingTask.soundEnabled !== undefined ? editingTask.soundEnabled : true,
         isShared: editingTask.isShared || false,
-        status: editingTask.status || "TODO",
-        priority: editingTask.priority || "MEDIUM",
-        complexity: editingTask.complexity || "MOYEN",
+        status: editingTask.status || 'TODO',
+        priority: editingTask.priority || 'MEDIUM',
+        complexity: editingTask.complexity || 'MOYEN',
         trainingLevel: editingTask.trainingLevel || undefined,
         masteryLevel: editingTask.masteryLevel || undefined,
         understandingLevel: editingTask.understandingLevel || undefined,
-        activityType: editingTask.activityType || "OPERATIONAL",
-        activityName: editingTask.activityName || "",
-        periodicity: editingTask.periodicity || "WEEKLY",
-        hrTimesheetId: editingTask.hrTimesheetId || "no-timesheet",
-      });
+        activityType: editingTask.activityType || 'OPERATIONAL',
+        activityName: editingTask.activityName || '',
+        periodicity: editingTask.periodicity || 'WEEKLY',
+        hrTimesheetId: editingTask.hrTimesheetId || 'no-timesheet',
+      })
 
       // Initialiser la catégorie et l'activité depuis le catalogue
       if (editingTask.activityName && catalog.length > 0) {
-        const catalogItem = catalog.find((item: any) => item.name === editingTask.activityName);
+        const catalogItem = catalog.find((item: any) => item.name === editingTask.activityName)
         if (catalogItem) {
-          setSelectedCategory(catalogItem.category);
-          setSelectedCatalogId(catalogItem.id);
+          setSelectedCategory(catalogItem.category)
+          setSelectedCatalogId(catalogItem.id)
         }
       }
     } else {
-      resetForm();
+      resetForm()
     }
-  }, [editingTask, catalog]);
+  }, [editingTask, catalog])
 
   const loadInitialData = async () => {
     try {
-      await Promise.allSettled([
-        loadProjects(),
-        loadAvailableTimesheets(),
-        loadActivityCatalog(),
-      ]);
+      await Promise.allSettled([loadProjects(), loadAvailableTimesheets(), loadActivityCatalog()])
     } catch (error) {
-      console.error("Erreur lors du chargement des données initiales:", error);
+      console.error('Erreur lors du chargement des données initiales:', error)
     }
-  };
+  }
 
   const loadProjects = useCallback(async () => {
     try {
-      const result = await getMyProjects({});
+      const result = await getMyProjects({})
       if (result?.data) {
-        setProjects(result.data);
+        setProjects(result.data)
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des projets:", error);
+      console.error('Erreur lors du chargement des projets:', error)
     }
-  }, []);
+  }, [])
 
   const loadAvailableTimesheets = useCallback(async () => {
     try {
-      const result = await getAvailableHRTimesheetsForTask();
+      const result = await getAvailableHRTimesheetsForTask()
       if (result?.data) {
-        setAvailableTimesheets(result.data);
+        setAvailableTimesheets(result.data)
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des timesheets:", error);
+      console.error('Erreur lors du chargement des timesheets:', error)
     }
-  }, []);
+  }, [])
 
   const loadActivityCatalog = useCallback(async () => {
     try {
       const [catalogResult, categoriesResult] = await Promise.all([
         getActivityCatalog({}),
         getActivityCategories(),
-      ]);
+      ])
       if (catalogResult?.data) {
-        setCatalog(catalogResult.data);
+        setCatalog(catalogResult.data)
       }
       if (categoriesResult?.data) {
-        setCategories(categoriesResult.data);
+        setCategories(categoriesResult.data)
       }
     } catch (error) {
-      console.error("Erreur lors du chargement du catalogue d'activités:", error);
+      console.error("Erreur lors du chargement du catalogue d'activités:", error)
     }
-  }, []);
+  }, [])
 
   const loadAvailableUsers = useCallback(async (projectId?: string) => {
     try {
       const result = await getAvailableUsersForSharing({
-        projectId: projectId === "no-project" ? undefined : projectId,
-      });
+        projectId: projectId === 'no-project' ? undefined : projectId,
+      })
       if (result?.data) {
-        setAvailableUsers(result.data);
+        setAvailableUsers(result.data)
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des utilisateurs:", error);
+      console.error('Erreur lors du chargement des utilisateurs:', error)
     }
-  }, []);
+  }, [])
 
-  const getTypeFromCategory = (category: string): "OPERATIONAL" | "REPORTING" => {
-    return category === "Reporting" ? "REPORTING" : "OPERATIONAL";
-  };
+  const getTypeFromCategory = (category: string): 'OPERATIONAL' | 'REPORTING' => {
+    return category === 'Reporting' ? 'REPORTING' : 'OPERATIONAL'
+  }
 
   const filteredCatalogActivities = useMemo(() => {
-    return selectedCategory
-      ? catalog.filter((item: any) => item.category === selectedCategory)
-      : [];
-  }, [selectedCategory, catalog]);
+    return selectedCategory ? catalog.filter((item: any) => item.category === selectedCategory) : []
+  }, [selectedCategory, catalog])
 
   const handleCatalogItemSelect = (catalogId: string) => {
-    setSelectedCatalogId(catalogId);
-    const catalogItem = catalog.find((c: any) => c.id === catalogId);
+    setSelectedCatalogId(catalogId)
+    const catalogItem = catalog.find((c: any) => c.id === catalogId)
     if (catalogItem) {
       setFormData({
         ...formData,
         activityName: catalogItem.name,
         activityType: getTypeFromCategory(catalogItem.category),
         periodicity: catalogItem.defaultPeriodicity || formData.periodicity,
-      });
+      })
     }
-  };
+  }
 
   const toggleUserSelection = (userId: string) => {
     setSelectedUsers((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
-    );
-  };
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
       if (editingTask) {
@@ -268,20 +266,21 @@ export function TaskDialog({
           reminderDate: formData.reminderDate ? new Date(formData.reminderDate) : undefined,
           reminderTime: formData.reminderTime || undefined,
           soundEnabled: formData.soundEnabled,
-        });
+        })
 
         if (result?.data) {
-          toast.success("Tâche mise à jour !");
-          onSuccess();
-          onOpenChange(false);
+          toast.success('Tâche mise à jour !')
+          onSuccess()
+          onOpenChange(false)
         } else {
-          toast.error(result?.serverError || "Erreur");
+          toast.error(result?.serverError || 'Erreur')
         }
       } else {
         const result = await createTask({
           name: formData.name,
           description: formData.description,
-          projectId: formData.projectId === "no-project" ? undefined : formData.projectId || undefined,
+          projectId:
+            formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
           estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
           dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
           reminderDate: formData.reminderDate ? new Date(formData.reminderDate) : undefined,
@@ -289,82 +288,91 @@ export function TaskDialog({
           soundEnabled: formData.soundEnabled,
           isShared: formData.isShared,
           sharedWith: formData.isShared ? selectedUsers : undefined,
-          status: formData.status as "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "BLOCKED",
-          priority: formData.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-          complexity: formData.complexity as "FAIBLE" | "MOYEN" | "LEV_",
+          status: formData.status as 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'BLOCKED',
+          priority: formData.priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
+          complexity: formData.complexity as 'FAIBLE' | 'MOYEN' | 'LEV_',
           trainingLevel: formData.trainingLevel,
           masteryLevel: formData.masteryLevel,
           understandingLevel: formData.understandingLevel,
-          hrTimesheetId: formData.hrTimesheetId === "no-timesheet" ? undefined : formData.hrTimesheetId || undefined,
+          hrTimesheetId:
+            formData.hrTimesheetId === 'no-timesheet'
+              ? undefined
+              : formData.hrTimesheetId || undefined,
           activityType: formData.activityType || undefined,
           activityName: formData.activityName || undefined,
           periodicity: formData.periodicity || undefined,
-        });
+        })
 
         if (result?.data) {
-          toast.success("Tâche créée !");
+          toast.success('Tâche créée !')
           if (formData.isShared && selectedUsers.length > 0) {
-            toast.success(`Tâche partagée avec ${selectedUsers.length} utilisateur(s)`);
+            toast.success(`Tâche partagée avec ${selectedUsers.length} utilisateur(s)`)
           }
-          onSuccess();
-          onOpenChange(false);
+          onSuccess()
+          onOpenChange(false)
         } else {
-          toast.error(result?.serverError || "Erreur");
+          toast.error(result?.serverError || 'Erreur')
         }
       }
-    } catch (error) {
-      toast.error("Erreur lors de l'enregistrement");
+    } catch (_error) {
+      toast.error("Erreur lors de l'enregistrement")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const resetForm = () => {
     setFormData({
-      name: "",
-      description: "",
-      projectId: "no-project",
-      estimatedHours: "",
-      dueDate: "",
-      reminderDate: "",
-      reminderTime: "",
+      name: '',
+      description: '',
+      projectId: 'no-project',
+      estimatedHours: '',
+      dueDate: '',
+      reminderDate: '',
+      reminderTime: '',
       soundEnabled: true,
       isShared: false,
-      status: "TODO",
-      priority: "MEDIUM",
-      complexity: "MOYEN",
+      status: 'TODO',
+      priority: 'MEDIUM',
+      complexity: 'MOYEN',
       trainingLevel: undefined,
       masteryLevel: undefined,
       understandingLevel: undefined,
-      hrTimesheetId: "no-timesheet",
-      activityType: "OPERATIONAL",
-      activityName: "",
-      periodicity: "WEEKLY",
-    });
-    setSelectedUsers([]);
-    setSelectedCategory("");
-    setSelectedCatalogId("");
-  };
+      hrTimesheetId: 'no-timesheet',
+      activityType: 'OPERATIONAL',
+      activityName: '',
+      periodicity: 'WEEKLY',
+    })
+    setSelectedUsers([])
+    setSelectedCategory('')
+    setSelectedCatalogId('')
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base sm:text-lg">
-            {editingTask ? "Modifier la tâche" : "Nouvelle tâche"}
+            {editingTask ? 'Modifier la tâche' : 'Nouvelle tâche'}
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            {editingTask ? "Modifiez les informations de la tâche" : "Créez une nouvelle tâche pour votre projet"}
+            {editingTask
+              ? 'Modifiez les informations de la tâche'
+              : 'Créez une nouvelle tâche pour votre projet'}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details" className="text-xs sm:text-sm">Détails</TabsTrigger>
+            <TabsTrigger value="details" className="text-xs sm:text-sm">
+              Détails
+            </TabsTrigger>
             <TabsTrigger value="comments" disabled={!editingTask} className="text-xs sm:text-sm">
               <span className="hidden sm:inline">Commentaires</span>
               <span className="sm:hidden">💬</span>
-              {editingTask && editingTask._count?.TaskComment > 0 && <span className="ml-1">({editingTask._count.TaskComment})</span>}
+              {editingTask && editingTask._count?.TaskComment > 0 && (
+                <span className="ml-1">({editingTask._count.TaskComment})</span>
+              )}
             </TabsTrigger>
             <TabsTrigger value="activity" disabled={!editingTask} className="text-xs sm:text-sm">
               <span className="hidden sm:inline">Historique</span>
@@ -381,8 +389,8 @@ export function TaskDialog({
                     <Select
                       value={formData.projectId}
                       onValueChange={(value) => {
-                        setFormData({ ...formData, projectId: value });
-                        loadAvailableUsers(value);
+                        setFormData({ ...formData, projectId: value })
+                        loadAvailableUsers(value)
                       }}
                     >
                       <SelectTrigger>
@@ -406,7 +414,7 @@ export function TaskDialog({
                     <Select
                       value={formData.hrTimesheetId}
                       onValueChange={(value) => {
-                        setFormData({ ...formData, hrTimesheetId: value });
+                        setFormData({ ...formData, hrTimesheetId: value })
                       }}
                     >
                       <SelectTrigger>
@@ -418,9 +426,18 @@ export function TaskDialog({
                           .filter((timesheet) => timesheet.id)
                           .map((timesheet) => (
                             <SelectItem key={timesheet.id} value={timesheet.id}>
-                              📅 Semaine du {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                              {" au "}{new Date(timesheet.weekEndDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                              {" "}({timesheet.status === "DRAFT" ? "Brouillon" : "En attente"})
+                              📅 Semaine du{' '}
+                              {new Date(timesheet.weekStartDate).toLocaleDateString('fr-FR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                              })}
+                              {' au '}
+                              {new Date(timesheet.weekEndDate).toLocaleDateString('fr-FR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              })}{' '}
+                              ({timesheet.status === 'DRAFT' ? 'Brouillon' : 'En attente'})
                             </SelectItem>
                           ))}
                       </SelectContent>
@@ -460,18 +477,20 @@ export function TaskDialog({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="category" className="text-xs sm:text-sm">Catégorie</Label>
+                    <Label htmlFor="category" className="text-xs sm:text-sm">
+                      Catégorie
+                    </Label>
                     <Select
                       value={selectedCategory}
                       onValueChange={(value) => {
-                        setSelectedCategory(value);
-                        setSelectedCatalogId("");
-                        const activityType = getTypeFromCategory(value);
+                        setSelectedCategory(value)
+                        setSelectedCatalogId('')
+                        const activityType = getTypeFromCategory(value)
                         setFormData({
                           ...formData,
                           activityType,
-                          activityName: "",
-                        });
+                          activityName: '',
+                        })
                       }}
                     >
                       <SelectTrigger className="text-xs sm:text-sm">
@@ -490,14 +509,22 @@ export function TaskDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="activityName" className="text-xs sm:text-sm">Nom de l'activité</Label>
+                    <Label htmlFor="activityName" className="text-xs sm:text-sm">
+                      Nom de l'activité
+                    </Label>
                     <Select
                       value={selectedCatalogId}
                       onValueChange={handleCatalogItemSelect}
                       disabled={!selectedCategory}
                     >
                       <SelectTrigger className="text-xs sm:text-sm">
-                        <SelectValue placeholder={selectedCategory ? "Sélectionner une activité" : "Sélectionnez d'abord une catégorie"} />
+                        <SelectValue
+                          placeholder={
+                            selectedCategory
+                              ? 'Sélectionner une activité'
+                              : "Sélectionnez d'abord une catégorie"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {filteredCatalogActivities
@@ -512,7 +539,9 @@ export function TaskDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="periodicity" className="text-xs sm:text-sm">Périodicité</Label>
+                    <Label htmlFor="periodicity" className="text-xs sm:text-sm">
+                      Périodicité
+                    </Label>
                     <Select
                       value={formData.periodicity}
                       onValueChange={(value) => setFormData({ ...formData, periodicity: value })}
@@ -535,8 +564,11 @@ export function TaskDialog({
                   <div className="space-y-2">
                     <Label className="text-xs sm:text-sm">Type d'activité (auto)</Label>
                     <div className="flex items-center gap-2">
-                      <Badge variant={formData.activityType === "OPERATIONAL" ? "default" : "secondary"} className="text-xs">
-                        {formData.activityType === "OPERATIONAL" ? "Opérationnel" : "Reporting"}
+                      <Badge
+                        variant={formData.activityType === 'OPERATIONAL' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {formData.activityType === 'OPERATIONAL' ? 'Opérationnel' : 'Reporting'}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
                         Basé sur la catégorie sélectionnée
@@ -549,7 +581,9 @@ export function TaskDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-xs sm:text-sm">Statut</Label>
+                  <Label htmlFor="status" className="text-xs sm:text-sm">
+                    Statut
+                  </Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) => setFormData({ ...formData, status: value })}
@@ -568,7 +602,9 @@ export function TaskDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="priority" className="text-xs sm:text-sm">Priorité</Label>
+                  <Label htmlFor="priority" className="text-xs sm:text-sm">
+                    Priorité
+                  </Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value) => setFormData({ ...formData, priority: value })}
@@ -588,7 +624,9 @@ export function TaskDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="estimatedHours" className="text-xs sm:text-sm">Estimation (heures)</Label>
+                  <Label htmlFor="estimatedHours" className="text-xs sm:text-sm">
+                    Estimation (heures)
+                  </Label>
                   <Input
                     id="estimatedHours"
                     type="number"
@@ -602,7 +640,9 @@ export function TaskDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dueDate" className="text-xs sm:text-sm">Date d'échéance</Label>
+                  <Label htmlFor="dueDate" className="text-xs sm:text-sm">
+                    Date d'échéance
+                  </Label>
                   <Input
                     id="dueDate"
                     type="date"
@@ -628,7 +668,9 @@ export function TaskDialog({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="reminderTime" className="text-xs sm:text-sm">Heure du rappel</Label>
+                  <Label htmlFor="reminderTime" className="text-xs sm:text-sm">
+                    Heure du rappel
+                  </Label>
                   <Input
                     id="reminderTime"
                     type="time"
@@ -640,8 +682,15 @@ export function TaskDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="soundEnabled" className="flex items-center gap-2 text-xs sm:text-sm">
-                    {formData.soundEnabled ? <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />}
+                  <Label
+                    htmlFor="soundEnabled"
+                    className="flex items-center gap-2 text-xs sm:text-sm"
+                  >
+                    {formData.soundEnabled ? (
+                      <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    ) : (
+                      <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />
+                    )}
                     Notification sonore
                   </Label>
                   <div className="flex items-center h-10 px-3 border rounded-md">
@@ -652,8 +701,11 @@ export function TaskDialog({
                         setFormData({ ...formData, soundEnabled: checked as boolean })
                       }
                     />
-                    <label htmlFor="soundEnabled" className="ml-2 text-xs sm:text-sm cursor-pointer">
-                      {formData.soundEnabled ? "Activé" : "Désactivé"}
+                    <label
+                      htmlFor="soundEnabled"
+                      className="ml-2 text-xs sm:text-sm cursor-pointer"
+                    >
+                      {formData.soundEnabled ? 'Activé' : 'Désactivé'}
                     </label>
                   </div>
                 </div>
@@ -661,17 +713,17 @@ export function TaskDialog({
 
               {formData.reminderDate && formData.reminderTime && (
                 <p className="text-xs text-muted-foreground">
-                  Vous serez notifié le {new Date(formData.reminderDate).toLocaleDateString('fr-FR')} à {formData.reminderTime}
-                  {formData.soundEnabled && " avec un son de notification"}
+                  Vous serez notifié le{' '}
+                  {new Date(formData.reminderDate).toLocaleDateString('fr-FR')} à{' '}
+                  {formData.reminderTime}
+                  {formData.soundEnabled && ' avec un son de notification'}
                 </p>
               )}
 
               <div className="space-y-2 border-t pt-4">
                 <TaskComplexitySelector
                   value={formData.complexity as any}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, complexity: value })
-                  }
+                  onValueChange={(value) => setFormData({ ...formData, complexity: value })}
                 />
               </div>
 
@@ -682,13 +734,15 @@ export function TaskDialog({
                       id="isShared"
                       checked={formData.isShared}
                       onCheckedChange={(checked) => {
-                        const isChecked = checked as boolean;
-                        setFormData({ ...formData, isShared: isChecked });
+                        const isChecked = checked as boolean
+                        setFormData({ ...formData, isShared: isChecked })
                         if (isChecked && availableUsers.length === 0) {
-                          loadAvailableUsers(formData.projectId === "no-project" ? undefined : formData.projectId);
+                          loadAvailableUsers(
+                            formData.projectId === 'no-project' ? undefined : formData.projectId,
+                          )
                         } else if (!isChecked) {
-                          setAvailableUsers([]);
-                          setSelectedUsers([]);
+                          setAvailableUsers([])
+                          setSelectedUsers([])
                         }
                       }}
                     />
@@ -710,19 +764,18 @@ export function TaskDialog({
                           <div
                             key={user.id}
                             className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-accent ${
-                              selectedUsers.includes(user.id) ? "bg-accent" : ""
+                              selectedUsers.includes(user.id) ? 'bg-accent' : ''
                             }`}
                           >
                             <Checkbox
                               checked={selectedUsers.includes(user.id)}
                               onCheckedChange={() => toggleUserSelection(user.id)}
                             />
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.avatar || undefined} />
-                              <AvatarFallback>
-                                {user.name.split(" ").map((n: string) => n[0]).join("")}
-                              </AvatarFallback>
-                            </Avatar>
+                            <UserAvatar
+                              name={user.name}
+                              avatar={user.image || user.avatar}
+                              size="sm"
+                            />
                             <div className="flex-1">
                               <p className="text-sm font-medium">{user.name}</p>
                               <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -760,7 +813,11 @@ export function TaskDialog({
                       <Spinner />
                       Enregistrement...
                     </span>
-                  ) : editingTask ? "Mettre à jour" : "Créer"}
+                  ) : editingTask ? (
+                    'Mettre à jour'
+                  ) : (
+                    'Créer'
+                  )}
                 </Button>
               </div>
             </form>
@@ -768,20 +825,15 @@ export function TaskDialog({
 
           <TabsContent value="comments" className="mt-4">
             {editingTask && currentUserId && (
-              <TaskComments
-                taskId={editingTask.id}
-                currentUserId={currentUserId}
-              />
+              <TaskComments taskId={editingTask.id} currentUserId={currentUserId} />
             )}
           </TabsContent>
 
           <TabsContent value="activity" className="mt-4">
-            {editingTask && (
-              <TaskActivityTimeline taskId={editingTask.id} />
-            )}
+            {editingTask && <TaskActivityTimeline taskId={editingTask.id} />}
           </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

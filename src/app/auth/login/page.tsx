@@ -1,42 +1,40 @@
-"use client";
+'use client'
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginInput } from "@/lib/validations/auth";
-import { signIn, signInWithGoogle } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
-import { Loader2, Eye, EyeOff } from "lucide-react";
-import { AuthLayout } from "@/components/auth/auth-layout";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { loginSchema, type LoginInput } from '@/lib/validations/auth'
+import { signIn, signInWithGoogle } from '@/lib/auth-client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
+import { toast } from 'sonner'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { AuthLayout } from '@/components/auth/auth-layout'
 
 function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     // Afficher les erreurs de callback si présentes
-    const error = searchParams.get("error");
+    const error = searchParams.get('error')
     if (error) {
-      toast.error(decodeURIComponent(error));
+      toast.error(decodeURIComponent(error))
     }
 
     // Message de succès si confirmation email réussie
-    const message = searchParams.get("message");
+    const message = searchParams.get('message')
     if (message) {
-      toast.success(decodeURIComponent(message));
+      toast.success(decodeURIComponent(message))
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   const {
     register,
@@ -44,47 +42,45 @@ function LoginForm() {
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-  });
+  })
 
   const onSubmit = async (data: LoginInput) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const result = await signIn({
         email: data.email,
         password: data.password,
-      });
+      })
 
       if (result.error) {
         // Messages d'erreur personnalisés en français
-        let errorMessage = result.error.message || "Échec de la connexion";
+        let errorMessage = result.error.message || 'Échec de la connexion'
 
-        if (errorMessage.includes("Invalid login credentials")) {
-          errorMessage = "Email ou mot de passe incorrect";
-        } else if (errorMessage.includes("Email not confirmed")) {
-          errorMessage = "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.";
-        } else if (errorMessage.includes("Too many requests")) {
-          errorMessage = "Trop de tentatives. Veuillez réessayer dans quelques minutes.";
+        if (errorMessage.includes('Invalid login credentials')) {
+          errorMessage = 'Email ou mot de passe incorrect'
+        } else if (errorMessage.includes('Email not confirmed')) {
+          errorMessage =
+            'Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.'
+        } else if (errorMessage.includes('Too many requests')) {
+          errorMessage = 'Trop de tentatives. Veuillez réessayer dans quelques minutes.'
         }
 
-        toast.error(errorMessage);
+        toast.error(errorMessage)
       } else {
-        toast.success("Connexion réussie !");
-        router.push("/dashboard");
-        router.refresh();
+        toast.success('Connexion réussie !')
+        router.push('/dashboard')
+        router.refresh()
       }
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Une erreur s'est produite lors de la connexion");
+      console.error('Login error:', error)
+      toast.error("Une erreur s'est produite lors de la connexion")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <AuthLayout
-      title="Bienvenue"
-      description="Connectez-vous pour accéder à votre espace"
-    >
+    <AuthLayout title="Bienvenue" description="Connectez-vous pour accéder à votre espace">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -92,7 +88,7 @@ function LoginForm() {
             id="email"
             type="email"
             placeholder="nom@exemple.com"
-            {...register("email")}
+            {...register('email')}
             disabled={isLoading}
             autoComplete="email"
             className="bg-transparent"
@@ -106,8 +102,8 @@ function LoginForm() {
           <div className="relative">
             <Input
               id="password"
-              type={showPassword ? "text" : "password"}
-              {...register("password")}
+              type={showPassword ? 'text' : 'password'}
+              {...register('password')}
               disabled={isLoading}
               autoComplete="current-password"
               className="bg-transparent pr-10"
@@ -118,11 +114,7 @@ function LoginForm() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
             >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {errors.password && (
@@ -136,18 +128,15 @@ function LoginForm() {
           </Link>
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isLoading}
-          size="lg"
-        >
+        <Button type="submit" className="w-full" disabled={isLoading} size="lg">
           {isLoading ? (
             <span className="flex items-center gap-2">
               <Spinner className="h-4 w-4" />
               Connexion...
             </span>
-          ) : "Se connecter"}
+          ) : (
+            'Se connecter'
+          )}
         </Button>
 
         <div className="relative my-4">
@@ -155,9 +144,7 @@ function LoginForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Ou
-            </span>
+            <span className="bg-background px-2 text-muted-foreground">Ou</span>
           </div>
         </div>
 
@@ -167,17 +154,17 @@ function LoginForm() {
           className="w-full"
           disabled={isLoading || isGoogleLoading}
           onClick={async () => {
-            setIsGoogleLoading(true);
+            setIsGoogleLoading(true)
             try {
-              const { error } = await signInWithGoogle();
+              const { error } = await signInWithGoogle()
               if (error) {
-                toast.error("Erreur lors de la connexion avec Google");
+                toast.error('Erreur lors de la connexion avec Google')
               }
             } catch (error) {
-              console.error("Google sign in error:", error);
-              toast.error("Une erreur s'est produite");
+              console.error('Google sign in error:', error)
+              toast.error("Une erreur s'est produite")
             } finally {
-              setIsGoogleLoading(false);
+              setIsGoogleLoading(false)
             }
           }}
         >
@@ -212,14 +199,17 @@ function LoginForm() {
         </Button>
 
         <div className="text-center text-sm">
-          Vous n'avez pas de compte ?{" "}
-          <Link href="/auth/register" className="text-primary hover:text-primary/80 font-medium transition-colors hover:underline">
+          Vous n'avez pas de compte ?{' '}
+          <Link
+            href="/auth/register"
+            className="text-primary hover:text-primary/80 font-medium transition-colors hover:underline"
+          >
             S'inscrire
           </Link>
         </div>
       </form>
     </AuthLayout>
-  );
+  )
 }
 
 function LoginFallback() {
@@ -227,7 +217,7 @@ function LoginFallback() {
     <div className="min-h-screen flex items-center justify-center bg-muted/40">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
-  );
+  )
 }
 
 export default function LoginPage() {
@@ -235,5 +225,5 @@ export default function LoginPage() {
     <Suspense fallback={<LoginFallback />}>
       <LoginForm />
     </Suspense>
-  );
+  )
 }

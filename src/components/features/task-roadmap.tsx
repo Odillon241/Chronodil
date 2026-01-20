@@ -1,42 +1,41 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { CalendarIcon, KanbanSquareIcon, ListIcon, GanttChartSquareIcon, TableIcon } from "lucide-react";
-import { TaskCalendar } from "./task-calendar";
-// import { TaskKanban } from "./task-kanban"; // TODO: File deleted
-import { TaskList } from "./task-list";
-import { TaskGantt } from "./task-gantt";
-import { TaskTable } from "./task-table";
-import { Task } from "./task-types";
+import { useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card } from '@/components/ui/card'
+import { CalendarIcon, ListIcon, GanttChartSquareIcon, TableIcon } from 'lucide-react'
+import { TaskCalendar } from './task-calendar'
+import { TaskList } from './task-list'
+import { TaskGantt } from './task-gantt'
+import { TaskTable } from './task-table'
+import { Task } from './task-types'
 
 // Ré-exporter les types pour la compatibilité
-export type { Task, TaskOwner } from "./task-types";
-export { STATUS_COLORS } from "./task-types";
+export type { Task, TaskOwner } from './task-types'
+export { STATUS_COLORS } from './task-types'
 
 interface TaskRoadmapProps {
-  tasks: Task[];
-  onEventClick: (task: Task) => void;
-  onEventDrop: (taskId: string, newDate: Date) => Promise<void>;
-  onStatusChange: (taskId: string, newStatus: string) => Promise<void>;
-  onDayDoubleClick: (date: Date) => void;
-  onEventDelete?: (taskId: string) => Promise<void>;
-  onEventToggle?: (task: Task) => Promise<void>;
-  onAddItem?: (date: Date) => void;
+  tasks: Task[]
+  onEventClick: (task: Task) => void
+  onEventDrop: (taskId: string, newDate: Date) => Promise<void>
+  _onStatusChange?: (taskId: string, newStatus: string) => Promise<void>
+  onDayDoubleClick: (date: Date) => void
+  onEventDelete?: (taskId: string) => Promise<void>
+  onEventToggle?: (task: Task) => Promise<void>
+  onAddItem?: (date: Date) => void
 }
 
 export function TaskRoadmap({
   tasks,
   onEventClick,
   onEventDrop,
-  onStatusChange,
+  _onStatusChange,
   onDayDoubleClick,
   onEventDelete,
   onEventToggle,
   onAddItem,
 }: TaskRoadmapProps) {
-  const [activeView, setActiveView] = useState("calendar");
+  const [activeView, setActiveView] = useState('calendar')
 
   return (
     <Card className="p-4 sm:p-6">
@@ -118,5 +117,5 @@ export function TaskRoadmap({
         </TabsContent>
       </Tabs>
     </Card>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, FileText, Edit, Trash2, Star, StarOff } from "lucide-react";
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Plus, FileText, Edit, Trash2, Star, StarOff } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -11,17 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import {
   getReportTemplates,
   deleteReportTemplate,
   setDefaultReportTemplate,
-} from "@/actions/report-template.actions";
-import { useAction } from "next-safe-action/hooks";
-import { toast } from "sonner";
+} from '@/actions/report-template.actions'
+import { useAction } from 'next-safe-action/hooks'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,156 +31,148 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ReportTemplateEditorDialog } from "@/components/features/report-template-editor-dialog";
+} from '@/components/ui/alert-dialog'
+import { ReportTemplateEditorDialog } from '@/components/features/report-template-editor-dialog'
 
 interface ReportTemplate {
-  id: string;
-  name: string;
-  description: string | null;
-  frequency: string;
-  format: string;
-  templateContent: string;
-  variables: any;
-  isActive: boolean;
-  isDefault: boolean;
-  sortOrder: number;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  name: string
+  description: string | null
+  frequency: string
+  format: string
+  templateContent: string
+  variables: any
+  isActive: boolean
+  isDefault: boolean
+  sortOrder: number
+  createdAt: Date
+  updatedAt: Date
   User: {
-    id: string;
-    name: string;
-    email: string;
-  };
+    id: string
+    name: string
+    email: string
+  }
   _count: {
-    Report: number;
-  };
+    Report: number
+  }
 }
 
 export default function ReportTemplatesPage() {
-  const [templates, setTemplates] = useState<ReportTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<ReportTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null)
 
   // Actions
   const { execute: fetchTemplates } = useAction(getReportTemplates, {
     onSuccess: ({ data }) => {
       if (data) {
-        setTemplates(data as ReportTemplate[]);
+        setTemplates(data as ReportTemplate[])
       }
-      setLoading(false);
+      setLoading(false)
     },
     onError: ({ error }) => {
-      toast.error(error.serverError || "Erreur lors du chargement des modèles");
-      setLoading(false);
+      toast.error(error.serverError || 'Erreur lors du chargement des modèles')
+      setLoading(false)
     },
-  });
+  })
 
   const { execute: executeDelete, isExecuting: isDeleting } = useAction(deleteReportTemplate, {
     onSuccess: () => {
-      toast.success("Modèle supprimé avec succès");
-      setDeleteDialogOpen(false);
-      setTemplateToDelete(null);
-      fetchTemplates();
+      toast.success('Modèle supprimé avec succès')
+      setDeleteDialogOpen(false)
+      setTemplateToDelete(null)
+      fetchTemplates()
     },
     onError: ({ error }) => {
-      toast.error(error.serverError || "Erreur lors de la suppression");
+      toast.error(error.serverError || 'Erreur lors de la suppression')
     },
-  });
+  })
 
   const { execute: executeSetDefault, isExecuting: isSettingDefault } = useAction(
     setDefaultReportTemplate,
     {
       onSuccess: () => {
-        toast.success("Modèle défini par défaut avec succès");
-        fetchTemplates();
+        toast.success('Modèle défini par défaut avec succès')
+        fetchTemplates()
       },
       onError: ({ error }) => {
-        toast.error(error.serverError || "Erreur lors de la définition du modèle par défaut");
+        toast.error(error.serverError || 'Erreur lors de la définition du modèle par défaut')
       },
-    }
-  );
+    },
+  )
 
   useEffect(() => {
-    fetchTemplates();
-  }, []);
+    fetchTemplates()
+  }, [])
 
   const handleCreateNew = () => {
-    setSelectedTemplate(null);
-    setEditorOpen(true);
-  };
+    setSelectedTemplate(null)
+    setEditorOpen(true)
+  }
 
   const handleEdit = (template: ReportTemplate) => {
-    setSelectedTemplate(template);
-    setEditorOpen(true);
-  };
+    setSelectedTemplate(template)
+    setEditorOpen(true)
+  }
 
   const handleDeleteClick = (templateId: string) => {
-    setTemplateToDelete(templateId);
-    setDeleteDialogOpen(true);
-  };
+    setTemplateToDelete(templateId)
+    setDeleteDialogOpen(true)
+  }
 
   const handleDeleteConfirm = () => {
     if (templateToDelete) {
-      executeDelete({ id: templateToDelete });
+      executeDelete({ id: templateToDelete })
     }
-  };
+  }
 
   const handleSetDefault = (templateId: string, frequency: string) => {
-    executeSetDefault({ id: templateId, frequency: frequency as any });
-  };
+    executeSetDefault({ id: templateId, frequency: frequency as any })
+  }
 
   const handleEditorClose = () => {
-    setEditorOpen(false);
-    setSelectedTemplate(null);
-    fetchTemplates();
-  };
+    setEditorOpen(false)
+    setSelectedTemplate(null)
+    fetchTemplates()
+  }
 
   const getFrequencyBadge = (frequency: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      WEEKLY: "default",
-      MONTHLY: "secondary",
-      INDIVIDUAL: "destructive",
-    };
+    const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+      WEEKLY: 'default',
+      MONTHLY: 'secondary',
+      INDIVIDUAL: 'destructive',
+    }
     const labels: Record<string, string> = {
-      WEEKLY: "Hebdomadaire",
-      MONTHLY: "Mensuel",
-      INDIVIDUAL: "Individuel",
-    };
+      WEEKLY: 'Hebdomadaire',
+      MONTHLY: 'Mensuel',
+      INDIVIDUAL: 'Individuel',
+    }
     return (
-      <Badge variant={variants[frequency] || "default"}>
-        {labels[frequency] || frequency}
-      </Badge>
-    );
-  };
+      <Badge variant={variants[frequency] || 'default'}>{labels[frequency] || frequency}</Badge>
+    )
+  }
 
   const getFormatBadge = (format: string) => {
-    const variants: Record<string, "default" | "secondary" | "outline"> = {
-      word: "default",
-      excel: "secondary",
-      pdf: "outline",
-    };
-    return (
-      <Badge variant={variants[format] || "outline"}>
-        {format.toUpperCase()}
-      </Badge>
-    );
-  };
+    const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
+      word: 'default',
+      excel: 'secondary',
+      pdf: 'outline',
+    }
+    return <Badge variant={variants[format] || 'outline'}>{format.toUpperCase()}</Badge>
+  }
 
   if (loading) {
     return (
       <div className="flex flex-col gap-4 sm:gap-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Modèles de Rapports</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Chargement...
-          </p>
+          <p className="text-sm sm:text-base text-muted-foreground">Chargement...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -205,7 +197,7 @@ export default function ReportTemplatesPage() {
           <CardTitle>Mes modèles</CardTitle>
           <CardDescription>
             {templates.length === 0
-              ? "Aucun modèle créé pour le moment"
+              ? 'Aucun modèle créé pour le moment'
               : `${templates.length} modèle(s)`}
           </CardDescription>
         </CardHeader>
@@ -257,12 +249,10 @@ export default function ReportTemplatesPage() {
                       <TableCell>{getFrequencyBadge(template.frequency)}</TableCell>
                       <TableCell>{getFormatBadge(template.format)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {template._count.Report} rapport(s)
-                        </Badge>
+                        <Badge variant="outline">{template._count.Report} rapport(s)</Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(template.updatedAt), "d MMM yyyy", { locale: fr })}
+                        {format(new Date(template.updatedAt), 'd MMM yyyy', { locale: fr })}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -328,11 +318,11 @@ export default function ReportTemplatesPage() {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Suppression..." : "Supprimer"}
+              {isDeleting ? 'Suppression...' : 'Supprimer'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
+  )
 }

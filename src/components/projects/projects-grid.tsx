@@ -63,7 +63,7 @@ export function ProjectsGrid({
                  I should probably extend ProjectCard or wrap it.
                  For now, I'll add a dropdown in the top right corner.
              */}
-                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-3 right-3 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="secondary" size="icon" className="h-8 w-8 shadow-sm">

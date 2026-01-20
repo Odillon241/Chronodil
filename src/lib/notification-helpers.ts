@@ -4,74 +4,73 @@
  * Note: web-push est importé dynamiquement pour éviter les problèmes avec Turbopack
  */
 
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db'
 import {
   getUserPushSubscriptions,
   removeInvalidPushSubscription,
-} from "@/actions/push-subscription.actions";
+} from '@/actions/push-subscription.actions'
 
 // Configuration VAPID
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:admin@chronodil.com";
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "";
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@chronodil.com'
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
 
 // Vérifier si les clés VAPID sont configurées
-const isVapidConfigured =
-  VAPID_PUBLIC_KEY.length > 0 && VAPID_PRIVATE_KEY.length > 0;
+const isVapidConfigured = VAPID_PUBLIC_KEY.length > 0 && VAPID_PRIVATE_KEY.length > 0
 
 // Variable pour stocker l'instance web-push configurée
-let webpushInstance: typeof import("web-push") | null = null;
+let webpushInstance: typeof import('web-push') | null = null
 
 /**
  * Obtenir l'instance web-push configurée (lazy loading)
  */
-async function getWebPush(): Promise<typeof import("web-push") | null> {
+async function getWebPush(): Promise<typeof import('web-push') | null> {
   if (!isVapidConfigured) {
-    return null;
+    return null
   }
 
   if (!webpushInstance) {
     try {
       // Import dynamique pour éviter les problèmes avec Turbopack
-      const webpush = await import("web-push");
-      webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
-      webpushInstance = webpush;
-      console.log("[Push] VAPID configuré avec succès");
+      const webpush = await import('web-push')
+      webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+      webpushInstance = webpush
+      console.log('[Push] VAPID configuré avec succès')
     } catch (error) {
-      console.error("[Push] Erreur lors du chargement de web-push:", error);
-      return null;
+      console.error('[Push] Erreur lors du chargement de web-push:', error)
+      return null
     }
   }
 
-  return webpushInstance;
+  return webpushInstance
 }
 
 /**
  * Interface pour les données d'une notification
  */
 export interface NotificationData {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  type: string;
-  link: string | null;
+  id: string
+  userId: string
+  title: string
+  message: string
+  type: string
+  link: string | null
 }
 
 /**
  * Données à envoyer dans le payload push
  */
 interface PushPayload {
-  title: string;
-  body: string;
-  icon: string;
-  badge: string;
-  tag: string;
+  title: string
+  body: string
+  icon: string
+  badge: string
+  tag: string
   data: {
-    url: string;
-    notificationId: string;
-    type: string;
-  };
+    url: string
+    notificationId: string
+    type: string
+  }
 }
 
 /**
@@ -82,35 +81,35 @@ interface PushPayload {
  */
 export async function sendPushNotificationForNotification(
   userId: string,
-  notification: Omit<NotificationData, "userId">
+  notification: Omit<NotificationData, 'userId'>,
 ): Promise<{ success: boolean; sent: number; failed: number }> {
-  const webpush = await getWebPush();
-  
+  const webpush = await getWebPush()
+
   if (!webpush) {
-    console.log("[Push] Skip - VAPID non configuré ou web-push non disponible");
-    return { success: false, sent: 0, failed: 0 };
+    console.log('[Push] Skip - VAPID non configuré ou web-push non disponible')
+    return { success: false, sent: 0, failed: 0 }
   }
 
   try {
-    const subscriptions = await getUserPushSubscriptions(userId);
+    const subscriptions = await getUserPushSubscriptions(userId)
 
     if (subscriptions.length === 0) {
-      console.log(`[Push] Aucune subscription pour l'utilisateur ${userId}`);
-      return { success: true, sent: 0, failed: 0 };
+      console.log(`[Push] Aucune subscription pour l'utilisateur ${userId}`)
+      return { success: true, sent: 0, failed: 0 }
     }
 
     const payload: PushPayload = {
       title: notification.title,
       body: notification.message,
-      icon: "/assets/media/logo-icon.svg",
-      badge: "/assets/media/logo-icon.svg",
+      icon: '/assets/media/logo-icon.svg',
+      badge: '/assets/media/logo-icon.svg',
       tag: `chronodil-${notification.type}-${notification.id}`,
       data: {
-        url: notification.link || "/dashboard/notifications",
+        url: notification.link || '/dashboard/notifications',
         notificationId: notification.id,
         type: notification.type,
       },
-    };
+    }
 
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
@@ -120,42 +119,38 @@ export async function sendPushNotificationForNotification(
             p256dh: sub.p256dh,
             auth: sub.auth,
           },
-        };
+        }
 
         try {
-          await webpush.sendNotification(
-            pushSubscription,
-            JSON.stringify(payload),
-            {
-              TTL: 24 * 60 * 60, // 24 heures
-              urgency: notification.type === "error" ? "high" : "normal",
-            }
-          );
-          return { success: true, endpoint: sub.endpoint };
+          await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
+            TTL: 24 * 60 * 60, // 24 heures
+            urgency: notification.type === 'error' ? 'high' : 'normal',
+          })
+          return { success: true, endpoint: sub.endpoint }
         } catch (error: any) {
           // Si la subscription est invalide (410 ou 404), la supprimer
           if (error.statusCode === 410 || error.statusCode === 404) {
-            await removeInvalidPushSubscription(sub.endpoint);
+            await removeInvalidPushSubscription(sub.endpoint)
             console.log(
-              `[Push] Subscription expirée supprimée: ${sub.endpoint.substring(0, 50)}...`
-            );
+              `[Push] Subscription expirée supprimée: ${sub.endpoint.substring(0, 50)}...`,
+            )
           }
-          throw error;
+          throw error
         }
-      })
-    );
+      }),
+    )
 
-    const sent = results.filter((r) => r.status === "fulfilled").length;
-    const failed = results.filter((r) => r.status === "rejected").length;
+    const sent = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
 
     console.log(
-      `[Push] Envoyé ${sent}/${subscriptions.length} notifications pour l'utilisateur ${userId}`
-    );
+      `[Push] Envoyé ${sent}/${subscriptions.length} notifications pour l'utilisateur ${userId}`,
+    )
 
-    return { success: true, sent, failed };
+    return { success: true, sent, failed }
   } catch (error) {
-    console.error("[Push] Erreur lors de l'envoi:", error);
-    return { success: false, sent: 0, failed: 1 };
+    console.error("[Push] Erreur lors de l'envoi:", error)
+    return { success: false, sent: 0, failed: 1 }
   }
 }
 
@@ -165,32 +160,32 @@ export async function sendPushNotificationForNotification(
  * @returns Résultat global
  */
 export async function sendPushNotificationsForNotifications(
-  notifications: NotificationData[]
+  notifications: NotificationData[],
 ): Promise<{ success: boolean; totalSent: number; totalFailed: number }> {
-  const webpush = await getWebPush();
-  
+  const webpush = await getWebPush()
+
   if (!webpush) {
-    console.log("[Push] Skip - VAPID non configuré ou web-push non disponible");
-    return { success: false, totalSent: 0, totalFailed: 0 };
+    console.log('[Push] Skip - VAPID non configuré ou web-push non disponible')
+    return { success: false, totalSent: 0, totalFailed: 0 }
   }
 
-  let totalSent = 0;
-  let totalFailed = 0;
+  let totalSent = 0
+  let totalFailed = 0
 
   // Grouper les notifications par userId pour optimiser les requêtes
   const notificationsByUser = notifications.reduce(
     (acc, notif) => {
       if (!acc[notif.userId]) {
-        acc[notif.userId] = [];
+        acc[notif.userId] = []
       }
-      acc[notif.userId].push(notif);
-      return acc;
+      acc[notif.userId].push(notif)
+      return acc
     },
-    {} as Record<string, NotificationData[]>
-  );
+    {} as Record<string, NotificationData[]>,
+  )
 
   // Envoyer les notifications pour chaque utilisateur
-  const results = await Promise.allSettled(
+  const _results = await Promise.allSettled(
     Object.entries(notificationsByUser).map(async ([userId, userNotifs]) => {
       // Envoyer chaque notification séparément pour ce user
       for (const notif of userNotifs) {
@@ -200,18 +195,16 @@ export async function sendPushNotificationsForNotifications(
           message: notif.message,
           type: notif.type,
           link: notif.link,
-        });
-        totalSent += result.sent;
-        totalFailed += result.failed;
+        })
+        totalSent += result.sent
+        totalFailed += result.failed
       }
-    })
-  );
+    }),
+  )
 
-  console.log(
-    `[Push] Batch envoyé: ${totalSent} réussis, ${totalFailed} échoués`
-  );
+  console.log(`[Push] Batch envoyé: ${totalSent} réussis, ${totalFailed} échoués`)
 
-  return { success: true, totalSent, totalFailed };
+  return { success: true, totalSent, totalFailed }
 }
 
 /**
@@ -219,16 +212,16 @@ export async function sendPushNotificationsForNotifications(
  * Fonction utilitaire centralisée
  */
 export async function createAndSendNotification(params: {
-  userId: string;
-  title: string;
-  message: string;
-  type?: string;
-  link?: string | null;
-  sendPush?: boolean;
-  sendEmail?: boolean;
+  userId: string
+  title: string
+  message: string
+  type?: string
+  link?: string | null
+  sendPush?: boolean
+  sendEmail?: boolean
 }): Promise<{ notification: any; pushResult?: any; emailResult?: any }> {
-  const { nanoid } = await import("nanoid");
-  const { sendNotificationEmail } = await import("@/lib/email");
+  const { nanoid } = await import('nanoid')
+  const { sendNotificationEmail } = await import('@/lib/email')
 
   const notification = await prisma.notification.create({
     data: {
@@ -236,12 +229,12 @@ export async function createAndSendNotification(params: {
       userId: params.userId,
       title: params.title,
       message: params.message,
-      type: params.type || "info",
+      type: params.type || 'info',
       link: params.link || null,
     },
-  });
+  })
 
-  let pushResult = undefined;
+  let pushResult = undefined
   if (params.sendPush !== false) {
     // Par défaut, envoyer la push notification
     pushResult = await sendPushNotificationForNotification(params.userId, {
@@ -250,18 +243,18 @@ export async function createAndSendNotification(params: {
       message: notification.message,
       type: notification.type,
       link: notification.link,
-    });
+    })
   }
 
   // Envoyer l'email si activé (par défaut: oui)
-  let emailResult = undefined;
+  let emailResult = undefined
   if (params.sendEmail !== false) {
     try {
       // Récupérer les préférences utilisateur
       const user = await prisma.user.findUnique({
         where: { id: params.userId },
         select: { email: true, name: true, emailNotificationsEnabled: true },
-      });
+      })
 
       if (user?.emailNotificationsEnabled && user.email) {
         emailResult = await sendNotificationEmail(user.email, {
@@ -270,20 +263,21 @@ export async function createAndSendNotification(params: {
           link: notification.link,
           type: notification.type,
           userName: user.name || undefined,
-        });
-        console.log(`[Email] Notification email envoyé à ${user.email}`);
+        })
+        console.log(`[Email] Notification email envoyé, userId: ${params.userId}`)
       } else {
-        console.log(`[Email] Skip - Emails désactivés ou email manquant pour l'utilisateur ${params.userId}`);
+        console.log(
+          `[Email] Skip - Emails désactivés ou email manquant pour l'utilisateur ${params.userId}`,
+        )
       }
     } catch (error) {
-      console.error("[Email] Erreur lors de l'envoi de l'email de notification:", error);
+      console.error("[Email] Erreur lors de l'envoi de l'email de notification:", error)
       // Ne pas faire échouer toute l'opération si l'email échoue
     }
   }
 
-  return { notification, pushResult, emailResult };
+  return { notification, pushResult, emailResult }
 }
-
 
 /**
  * Créer des notifications pour plusieurs utilisateurs
@@ -291,15 +285,15 @@ export async function createAndSendNotification(params: {
  */
 export async function createAndSendNotifications(
   notifications: Array<{
-    userId: string;
-    title: string;
-    message: string;
-    type?: string;
-    link?: string | null;
+    userId: string
+    title: string
+    message: string
+    type?: string
+    link?: string | null
   }>,
-  sendPush: boolean = true
+  sendPush: boolean = true,
 ): Promise<{ count: number; pushResult?: any }> {
-  const { nanoid } = await import("nanoid");
+  const { nanoid } = await import('nanoid')
 
   // Créer toutes les notifications en batch
   const result = await prisma.notification.createMany({
@@ -308,21 +302,21 @@ export async function createAndSendNotifications(
       userId: n.userId,
       title: n.title,
       message: n.message,
-      type: n.type || "info",
+      type: n.type || 'info',
       link: n.link || null,
     })),
-  });
+  })
 
-  let pushResult = undefined;
+  let pushResult = undefined
   if (sendPush && result.count > 0) {
     // Récupérer les notifications créées pour les push
     const createdNotifications = await prisma.notification.findMany({
       where: {
         userId: { in: notifications.map((n) => n.userId) },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       take: result.count,
-    });
+    })
 
     pushResult = await sendPushNotificationsForNotifications(
       createdNotifications.map((n) => ({
@@ -332,23 +326,23 @@ export async function createAndSendNotifications(
         message: n.message,
         type: n.type,
         link: n.link,
-      }))
-    );
+      })),
+    )
   }
 
-  return { count: result.count, pushResult };
+  return { count: result.count, pushResult }
 }
 
 /**
  * Vérifier si les push notifications sont configurées
  */
 export function isPushConfigured(): boolean {
-  return isVapidConfigured;
+  return isVapidConfigured
 }
 
 /**
  * Obtenir la clé publique VAPID pour le client
  */
 export function getVapidPublicKey(): string {
-  return VAPID_PUBLIC_KEY;
+  return VAPID_PUBLIC_KEY
 }

@@ -1,0 +1,45 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type(s):
+#   feat:      Nouvelle fonctionnalité (MINOR bump)
+#   fix:       Correction de bug (PATCH bump)
+#   perf:      Amélioration performance (PATCH bump)
+#   docs:      Documentation (NO release)
+#   style:     Formatage (NO release)
+#   refactor:  Refactoring (NO release)
+#   test:      Tests (NO release)
+#   build:     Build system (NO release)
+#   ci:        CI/CD (NO release)
+#   chore:     Maintenance (NO release)
+#   revert:    Revert (PATCH bump)
+#
+# Scope: components of your code affected
+#   Examples: auth, chat, tasks, notifications, dashboard, db, api
+#
+# Subject:
+#   - Use lowercase
+#   - No period at the end
+#   - Imperative mood ("add" not "added" or "adds")
+#   - Max 50 characters
+#
+# Body:
+#   - Explain what and why, not how
+#   - Wrap at 72 characters
+#   - Can be multiple paragraphs
+#
+# Footer:
+#   - BREAKING CHANGE: description
+#   - Closes #123, #456
+#   - Refs #789
+#
+# Examples:
+#   feat(auth): add OAuth Google provider
+#   fix(chat): resolve message ordering issue
+#   perf(queries): optimize user lookup with indexes
+#   feat(api)!: migrate REST API to GraphQL
+#
+#   BREAKING CHANGE: All REST endpoints removed

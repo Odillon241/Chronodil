@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useNotificationSound, type SoundFiles } from '@/hooks/use-notification-sound';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Volume2, Wifi, WifiOff, Check, X } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { useNotificationSound, type SoundFiles } from '@/hooks/use-notification-sound'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Volume2, Wifi, WifiOff, Check, X } from 'lucide-react'
 
 /**
  * Composant de test pour vérifier:
@@ -14,74 +14,75 @@ import { Volume2, Wifi, WifiOff, Check, X } from 'lucide-react';
  * 4. Le statut de BroadcastChannel
  */
 export function NotificationSoundTester() {
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [broadcastStatus, setBroadcastStatus] = useState<string>('checking');
-  const [testLog, setTestLog] = useState<string[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [soundEnabled, _setSoundEnabled] = useState(true)
+  const [broadcastStatus, setBroadcastStatus] = useState<string>('checking')
+  const [testLog, setTestLog] = useState<string[]>([])
+  const [mounted, setMounted] = useState(false)
 
   const sound = useNotificationSound({
     soundEnabled,
     volume: 0.7,
     onPermissionChange: (permission) => {
-      addLog(`Permission changed: ${permission}`);
+      addLog(`Permission changed: ${permission}`)
     },
-  });
+  })
 
   useEffect(() => {
-    setMounted(true);
-    addLog('Composant monté');
+    setMounted(true)
+    addLog('Composant monté')
 
     // Vérifier BroadcastChannel
     if ('BroadcastChannel' in window) {
-      setBroadcastStatus('supported');
-      addLog('✅ BroadcastChannel supporté');
+      setBroadcastStatus('supported')
+      addLog('✅ BroadcastChannel supporté')
     } else {
-      setBroadcastStatus('not-supported');
-      addLog('❌ BroadcastChannel non supporté');
+      setBroadcastStatus('not-supported')
+      addLog('❌ BroadcastChannel non supporté')
     }
 
     // Vérifier Notification API
     if ('Notification' in window) {
-      addLog(`✅ Notification API supportée (permission: ${sound.permission})`);
+      addLog(`✅ Notification API supportée (permission: ${sound.permission})`)
     } else {
-      addLog('❌ Notification API non supportée');
+      addLog('❌ Notification API non supportée')
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString('fr-FR');
-    setTestLog((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)]);
-  };
+    const timestamp = new Date().toLocaleTimeString('fr-FR')
+    setTestLog((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)])
+  }
 
   const testSound = (soundType: keyof SoundFiles) => {
-    addLog(`▶️ Lecture de: ${soundType}`);
-    sound.playSound(soundType);
-  };
+    addLog(`▶️ Lecture de: ${soundType}`)
+    sound.playSound(soundType)
+  }
 
   const testNotification = () => {
-    addLog('📢 Notification avec son');
+    addLog('📢 Notification avec son')
     sound.notifyWithSound('Test Notification', {
       body: 'Ceci est un test de notification avec son',
       soundType: 'notification',
       icon: '/icon.png',
-    });
-  };
+    })
+  }
 
   const requestPermission = async () => {
-    addLog('🔐 Demande de permission...');
-    const result = await sound.requestPermission();
-    addLog(`Résultat: ${result}`);
-  };
+    addLog('🔐 Demande de permission...')
+    const result = await sound.requestPermission()
+    addLog(`Résultat: ${result}`)
+  }
 
   const testMultiTab = async () => {
-    addLog('🔄 Test multi-onglets (voir les autres onglets)');
-    sound.playSound('taskAssigned');
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    sound.playSound('taskCompleted');
-  };
+    addLog('🔄 Test multi-onglets (voir les autres onglets)')
+    sound.playSound('taskAssigned')
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    sound.playSound('taskCompleted')
+  }
 
   if (!mounted) {
-    return <div className="p-4 text-sm text-muted-foreground">Initialisation...</div>;
+    return <div className="p-4 text-sm text-muted-foreground">Initialisation...</div>
   }
 
   return (
@@ -204,7 +205,7 @@ export function NotificationSoundTester() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
 function getSoundLabel(soundType: string): string {
@@ -215,6 +216,6 @@ function getSoundLabel(soundType: string): string {
     taskUpdated: 'Tâche mise à jour',
     error: 'Erreur',
     success: 'Succès',
-  };
-  return labels[soundType] || soundType;
+  }
+  return labels[soundType] || soundType
 }

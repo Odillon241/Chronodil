@@ -1,37 +1,46 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, XCircle, Edit, FileText, Download, Clock, User, Briefcase, MapPin, Activity, Calendar, CheckCircle, Info, History } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { HRTimesheetActivitiesTable } from "@/components/hr-timesheet/hr-timesheet-activities-table";
+  ArrowLeft,
+  XCircle,
+  Edit,
+  FileText,
+  Download,
+  Clock,
+  User,
+  Briefcase,
+  MapPin,
+  Activity,
+  Calendar,
+  CheckCircle,
+  Info,
+  History,
+} from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
+import { HRTimesheetActivitiesTable } from '@/components/hr-timesheet/hr-timesheet-activities-table'
 import {
   getHRTimesheet,
   deleteHRActivity,
   submitHRTimesheet,
   managerApproveHRTimesheet,
   odillonApproveHRTimesheet,
-} from "@/actions/hr-timesheet.actions";
-import { exportHRTimesheetToExcel } from "@/actions/hr-timesheet-export.actions";
-import { useRouter, useParams } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
-import { useSession } from "@/lib/auth-client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+} from '@/actions/hr-timesheet.actions'
+import { exportHRTimesheetToExcel } from '@/actions/hr-timesheet-export.actions'
+import { useRouter, useParams } from 'next/navigation'
+import { useSession } from '@/lib/auth-client'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,71 +50,71 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog'
 
 interface Activity {
-  id: string;
-  activityType: string;
-  activityName: string;
-  description?: string;
-  periodicity: string;
-  startDate: Date;
-  endDate: Date;
-  totalHours: number;
-  status: string;
+  id: string
+  activityType: string
+  activityName: string
+  description?: string
+  periodicity: string
+  startDate: Date
+  endDate: Date
+  totalHours: number
+  status: string
   ActivityCatalog?: {
-    name: string;
-    category: string;
-  } | null;
+    name: string
+    category: string
+  } | null
 }
 
 interface Timesheet {
-  id: string;
-  weekStartDate: Date;
-  weekEndDate: Date;
-  employeeName: string;
-  position: string;
-  site: string;
-  totalHours: number;
-  status: string;
-  employeeSignedAt?: Date | null;
-  managerSignedAt?: Date | null;
-  odillonSignedAt?: Date | null;
-  employeeObservations?: string | null;
-  managerComments?: string | null;
-  odillonComments?: string | null;
+  id: string
+  weekStartDate: Date
+  weekEndDate: Date
+  employeeName: string
+  position: string
+  site: string
+  totalHours: number
+  status: string
+  employeeSignedAt?: Date | null
+  managerSignedAt?: Date | null
+  odillonSignedAt?: Date | null
+  employeeObservations?: string | null
+  managerComments?: string | null
+  odillonComments?: string | null
   User_HRTimesheet_userIdToUser?: {
-    name: string;
-    email: string;
-  };
+    name: string
+    email: string
+  }
   User_HRTimesheet_managerSignedByIdToUser?: {
-    name: string;
-  } | null;
+    name: string
+  } | null
   User_HRTimesheet_odillonSignedByIdToUser?: {
-    name: string;
-  } | null;
-  HRActivity: Activity[];
+    name: string
+  } | null
+  HRActivity: Activity[]
 }
 
 const validationSchema = z.object({
   comments: z.string().optional(),
-});
+})
 
-type ValidationInput = z.infer<typeof validationSchema>;
+type ValidationInput = z.infer<typeof validationSchema>
 
 export default function HRTimesheetDetailPage() {
-  const router = useRouter();
-  const params = useParams();
-  const timesheetId = params.id as string;
-  const { data: session } = useSession() as any;
-  const userRole = session?.user?.role;
-  const canValidate = userRole === "MANAGER" || userRole === "DIRECTEUR" || userRole === "ADMIN";
+  const router = useRouter()
+  const params = useParams()
+  const timesheetId = params.id as string
+  const { data: session } = useSession() as any
+  const userRole = session?.user?.role
+  const canValidate = userRole === 'MANAGER' || userRole === 'DIRECTEUR' || userRole === 'ADMIN'
 
-  const [timesheet, setTimesheet] = useState<Timesheet | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isExporting, setIsExporting] = useState(false);
-  const [showApproveDialog, setShowApproveDialog] = useState(false);
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [timesheet, setTimesheet] = useState<Timesheet | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isExporting, setIsExporting] = useState(false)
+  const [showApproveDialog, setShowApproveDialog] = useState(false)
+  const [showRejectDialog, setShowRejectDialog] = useState(false)
 
   const {
     register,
@@ -114,191 +123,195 @@ export default function HRTimesheetDetailPage() {
     reset,
   } = useForm<ValidationInput>({
     resolver: zodResolver(validationSchema),
-  });
+  })
 
   useEffect(() => {
-    loadTimesheet();
-  }, [timesheetId]);
+    loadTimesheet()
+  }, [timesheetId])
 
   const loadTimesheet = async () => {
     try {
-      setIsLoading(true);
-      const result = await getHRTimesheet({ timesheetId });
+      setIsLoading(true)
+      const result = await getHRTimesheet({ timesheetId })
 
       if (result?.data) {
-        setTimesheet(result.data as Timesheet);
+        setTimesheet(result.data as Timesheet)
       } else {
-        toast.error("Timesheet non trouvé");
-        router.push("/dashboard/hr-timesheet");
+        toast.error('Timesheet non trouvé')
+        router.push('/dashboard/hr-timesheet')
       }
     } catch (error) {
-      console.error("Erreur:", error);
-      toast.error("Erreur lors du chargement");
-      router.push("/dashboard/hr-timesheet");
+      console.error('Erreur:', error)
+      toast.error('Erreur lors du chargement')
+      router.push('/dashboard/hr-timesheet')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleDeleteActivity = async (activityId: string) => {
-    if (!confirm("Supprimer cette activité ?")) return;
+    if (!confirm('Supprimer cette activité ?')) return
 
     try {
       const result = await deleteHRActivity({
         timesheetId,
         activityId,
-      });
+      })
 
       if (result?.data) {
-        toast.success("Activité supprimée");
-        loadTimesheet();
+        toast.success('Activité supprimée')
+        loadTimesheet()
       } else {
-        toast.error(result?.serverError || "Erreur lors de la suppression");
+        toast.error(result?.serverError || 'Erreur lors de la suppression')
       }
-    } catch (error) {
-      toast.error("Erreur lors de la suppression");
+    } catch (_error) {
+      toast.error('Erreur lors de la suppression')
     }
-  };
+  }
 
   const handleSubmitTimesheet = async () => {
-    if (!confirm("Soumettre ce timesheet pour validation ?")) return;
+    if (!confirm('Soumettre ce timesheet pour validation ?')) return
 
     try {
-      const result = await submitHRTimesheet({ timesheetId });
+      const result = await submitHRTimesheet({ timesheetId })
       if (result?.data) {
-        toast.success("Timesheet soumis avec succès !");
-        loadTimesheet();
+        toast.success('Timesheet soumis avec succès !')
+        loadTimesheet()
       } else {
-        toast.error(result?.serverError || "Erreur lors de la soumission");
+        toast.error(result?.serverError || 'Erreur lors de la soumission')
       }
     } catch (error: any) {
-      toast.error(error.message || String(error) || "Erreur lors de la soumission");
+      toast.error(error.message || String(error) || 'Erreur lors de la soumission')
     }
-  };
+  }
 
   const handleExportExcel = async () => {
     try {
-      setIsExporting(true);
-      toast.info("Génération du fichier Excel en cours...");
+      setIsExporting(true)
+      toast.info('Génération du fichier Excel en cours...')
 
-      const result = await exportHRTimesheetToExcel({ timesheetId });
+      const result = await exportHRTimesheetToExcel({ timesheetId })
 
       if (result?.data) {
-        const byteCharacters = atob(result.data.fileData);
-        const byteNumbers = new Array(byteCharacters.length);
+        const byteCharacters = atob(result.data.fileData)
+        const byteNumbers = new Array(byteCharacters.length)
         for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
         }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: result.data.mimeType });
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: result.data.mimeType })
 
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = result.data.fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = result.data.fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
 
-        toast.success("Fichier Excel téléchargé avec succès !");
+        toast.success('Fichier Excel téléchargé avec succès !')
       } else {
-        toast.error(result?.serverError || "Erreur lors de l'export");
+        toast.error(result?.serverError || "Erreur lors de l'export")
       }
     } catch (error) {
-      console.error("Erreur export:", error);
-      toast.error("Erreur lors de l'export Excel");
+      console.error('Erreur export:', error)
+      toast.error("Erreur lors de l'export Excel")
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   const handleApprove = async (data: ValidationInput) => {
     try {
-      let result;
-      if (timesheet?.status === "PENDING") {
+      let result
+      if (timesheet?.status === 'PENDING') {
         result = await managerApproveHRTimesheet({
           timesheetId,
-          action: "approve",
+          action: 'approve',
           comments: data.comments,
-        });
-      } else if (timesheet?.status === "MANAGER_APPROVED") {
+        })
+      } else if (timesheet?.status === 'MANAGER_APPROVED') {
         result = await odillonApproveHRTimesheet({
           timesheetId,
-          action: "approve",
+          action: 'approve',
           comments: data.comments,
-        });
+        })
       }
 
       if (result?.data) {
-        toast.success("Timesheet approuvé avec succès !");
-        reset();
-        loadTimesheet();
+        toast.success('Timesheet approuvé avec succès !')
+        reset()
+        loadTimesheet()
       } else {
-        toast.error(result?.serverError || "Erreur lors de l'approbation");
+        toast.error(result?.serverError || "Erreur lors de l'approbation")
       }
-    } catch (error) {
-      toast.error("Erreur lors de l'approbation");
+    } catch (_error) {
+      toast.error("Erreur lors de l'approbation")
     }
-  };
+  }
 
   const handleReject = async (data: ValidationInput) => {
-    if (!data.comments || data.comments.trim() === "") {
-      toast.error("Veuillez fournir un commentaire pour le rejet");
-      return;
+    if (!data.comments || data.comments.trim() === '') {
+      toast.error('Veuillez fournir un commentaire pour le rejet')
+      return
     }
 
     try {
-      let result;
-      if (timesheet?.status === "PENDING") {
+      let result
+      if (timesheet?.status === 'PENDING') {
         result = await managerApproveHRTimesheet({
           timesheetId,
-          action: "reject",
+          action: 'reject',
           comments: data.comments,
-        });
-      } else if (timesheet?.status === "MANAGER_APPROVED") {
+        })
+      } else if (timesheet?.status === 'MANAGER_APPROVED') {
         result = await odillonApproveHRTimesheet({
           timesheetId,
-          action: "reject",
+          action: 'reject',
           comments: data.comments,
-        });
+        })
       }
 
       if (result?.data) {
-        toast.success("Timesheet rejeté");
-        reset();
-        loadTimesheet();
+        toast.success('Timesheet rejeté')
+        reset()
+        loadTimesheet()
       } else {
-        toast.error(result?.serverError || "Erreur lors du rejet");
+        toast.error(result?.serverError || 'Erreur lors du rejet')
       }
-    } catch (error) {
-      toast.error("Erreur lors du rejet");
+    } catch (_error) {
+      toast.error('Erreur lors du rejet')
     }
-  };
+  }
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", label: string }> = {
-      DRAFT: { variant: "outline", label: "Brouillon" },
-      PENDING: { variant: "secondary", label: "En attente" },
-      MANAGER_APPROVED: { variant: "default", label: "Validé Manager" },
-      APPROVED: { variant: "default", label: "Approuvé" },
-      REJECTED: { variant: "destructive", label: "Rejeté" },
-    };
-    const config = variants[status] || variants.DRAFT;
-    return <Badge variant={config.variant}>{config.label}</Badge>;
-  };
+    const variants: Record<
+      string,
+      { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
+    > = {
+      DRAFT: { variant: 'outline', label: 'Brouillon' },
+      PENDING: { variant: 'secondary', label: 'En attente' },
+      MANAGER_APPROVED: { variant: 'default', label: 'Validé Manager' },
+      APPROVED: { variant: 'default', label: 'Approuvé' },
+      REJECTED: { variant: 'destructive', label: 'Rejeté' },
+    }
+    const config = variants[status] || variants.DRAFT
+    return <Badge variant={config.variant}>{config.label}</Badge>
+  }
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-20">
         <Spinner className="h-8 w-8 text-primary" />
       </div>
-    );
+    )
   }
 
-  if (!timesheet) return null;
+  if (!timesheet) return null
 
-  const canValidateTimesheet = canValidate && (timesheet.status === "PENDING" || timesheet.status === "MANAGER_APPROVED");
+  const canValidateTimesheet =
+    canValidate && (timesheet.status === 'PENDING' || timesheet.status === 'MANAGER_APPROVED')
 
   return (
     <div className="flex flex-col gap-8 max-w-[1600px] mx-auto">
@@ -306,7 +319,12 @@ export default function HRTimesheetDetailPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Button variant="ghost" size="sm" className="-ml-3 h-8 text-muted-foreground" onClick={() => router.push('/dashboard/hr-timesheet')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="-ml-3 h-8 text-muted-foreground"
+              onClick={() => router.push('/dashboard/hr-timesheet')}
+            >
               <ArrowLeft className="mr-2 h-3 w-3" />
               Retour
             </Button>
@@ -314,10 +332,12 @@ export default function HRTimesheetDetailPage() {
             <span>Détails</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <span className="bg-primary/10 p-2 rounded-lg"><Calendar className="h-6 w-6 text-primary" /></span>
-            Feuille du {format(new Date(timesheet.weekStartDate), "dd MMM", { locale: fr })}
+            <span className="bg-primary/10 p-2 rounded-lg">
+              <Calendar className="h-6 w-6 text-primary" />
+            </span>
+            Feuille du {format(new Date(timesheet.weekStartDate), 'dd MMM', { locale: fr })}
             <span className="text-muted-foreground mx-1">-</span>
-            {format(new Date(timesheet.weekEndDate), "dd MMM yyyy", { locale: fr })}
+            {format(new Date(timesheet.weekEndDate), 'dd MMM yyyy', { locale: fr })}
           </h1>
           <div className="flex items-center gap-2 mt-2">
             {getStatusBadge(timesheet.status)}
@@ -329,29 +349,52 @@ export default function HRTimesheetDetailPage() {
 
         <div className="flex items-center gap-3 flex-wrap justify-end">
           {/* Actions Toolbar */}
-          {timesheet.status === "DRAFT" && (
+          {timesheet.status === 'DRAFT' && (
             <>
               <Button onClick={handleSubmitTimesheet} className="shadow-sm">
                 <FileText className="h-4 w-4 mr-2" />
                 Soumettre
               </Button>
-              <Button variant="outline" size="icon" onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => router.push(`/dashboard/hr-timesheet/${timesheetId}/edit`)}
+              >
                 <Edit className="h-4 w-4" />
               </Button>
             </>
           )}
           {canValidateTimesheet && (
             <div className="flex gap-2 bg-muted/40 p-1 rounded-md border">
-              <Button size="sm" onClick={() => setShowApproveDialog(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-none h-8">
+              <Button
+                size="sm"
+                onClick={() => setShowApproveDialog(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-none h-8"
+              >
                 <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Approuver
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowRejectDialog(true)} className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowRejectDialog(true)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8"
+              >
                 <XCircle className="h-3.5 w-3.5 mr-1.5" /> Rejeter
               </Button>
             </div>
           )}
-          <Button variant="outline" size="sm" onClick={handleExportExcel} disabled={isExporting} className="h-9">
-            {isExporting ? <Spinner className="h-3 w-3 mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="h-9"
+          >
+            {isExporting ? (
+              <Spinner className="h-3 w-3 mr-2" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             Export
           </Button>
         </div>
@@ -359,7 +402,6 @@ export default function HRTimesheetDetailPage() {
 
       {/* Top Info Section in a Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
         {/* Employee Card */}
         <Card className="border-border/50 shadow-sm h-full">
           <CardHeader className="pb-3 pt-5">
@@ -374,7 +416,9 @@ export default function HRTimesheetDetailPage() {
               </div>
               <div>
                 <div className="font-semibold">{timesheet.employeeName}</div>
-                <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_userIdToUser?.email || "Email non disponible"}</div>
+                <div className="text-xs text-muted-foreground">
+                  {timesheet.User_HRTimesheet_userIdToUser?.email || 'Email non disponible'}
+                </div>
               </div>
             </div>
 
@@ -392,7 +436,9 @@ export default function HRTimesheetDetailPage() {
               </div>
               <div className="flex items-start justify-between">
                 <span className="text-sm text-muted-foreground">Total Heures</span>
-                <Badge variant="default" className="text-sm font-mono">{timesheet.totalHours} h</Badge>
+                <Badge variant="default" className="text-sm font-mono">
+                  {timesheet.totalHours} h
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -432,9 +478,11 @@ export default function HRTimesheetDetailPage() {
                   <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-background" />
                   <div className="text-sm font-medium">Validation Finale</div>
                   <div className="text-xs text-muted-foreground">
-                    {format(new Date(timesheet.odillonSignedAt), "d MMM yyyy", { locale: fr })}
+                    {format(new Date(timesheet.odillonSignedAt), 'd MMM yyyy', { locale: fr })}
                   </div>
-                  <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_odillonSignedByIdToUser?.name || "Admin"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {timesheet.User_HRTimesheet_odillonSignedByIdToUser?.name || 'Admin'}
+                  </div>
                 </div>
               )}
 
@@ -443,9 +491,11 @@ export default function HRTimesheetDetailPage() {
                   <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-blue-500 ring-4 ring-background" />
                   <div className="text-sm font-medium">Validation Manager</div>
                   <div className="text-xs text-muted-foreground">
-                    {format(new Date(timesheet.managerSignedAt), "d MMM yyyy", { locale: fr })}
+                    {format(new Date(timesheet.managerSignedAt), 'd MMM yyyy', { locale: fr })}
                   </div>
-                  <div className="text-xs text-muted-foreground">{timesheet.User_HRTimesheet_managerSignedByIdToUser?.name || "Manager"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {timesheet.User_HRTimesheet_managerSignedByIdToUser?.name || 'Manager'}
+                  </div>
                 </div>
               )}
 
@@ -454,7 +504,7 @@ export default function HRTimesheetDetailPage() {
                   <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-slate-400 ring-4 ring-background" />
                   <div className="text-sm font-medium">Soumission</div>
                   <div className="text-xs text-muted-foreground">
-                    {format(new Date(timesheet.employeeSignedAt), "d MMM yyyy", { locale: fr })}
+                    {format(new Date(timesheet.employeeSignedAt), 'd MMM yyyy', { locale: fr })}
                   </div>
                 </div>
               )}
@@ -485,20 +535,20 @@ export default function HRTimesheetDetailPage() {
           <CardContent className="p-0">
             <HRTimesheetActivitiesTable
               activities={timesheet.HRActivity}
-              onDelete={timesheet.status === "DRAFT" ? handleDeleteActivity : undefined}
-              showActions={timesheet.status === "DRAFT"}
+              onDelete={timesheet.status === 'DRAFT' ? handleDeleteActivity : undefined}
+              showActions={timesheet.status === 'DRAFT'}
             />
           </CardContent>
         </Card>
 
         {/* Rejection Info Block */}
-        {timesheet.status === "REJECTED" && (
+        {timesheet.status === 'REJECTED' && (
           <div className="bg-destructive/5 border border-destructive/20 rounded-md p-4 flex gap-4">
             <XCircle className="h-6 w-6 text-destructive shrink-0" />
             <div>
               <h3 className="font-medium text-destructive">Feuille de temps rejetée</h3>
               <p className="text-sm text-destructive/80 mt-1">
-                {(timesheet.managerComments || timesheet.odillonComments) || "Aucun motif spécifié."}
+                {timesheet.managerComments || timesheet.odillonComments || 'Aucun motif spécifié.'}
               </p>
             </div>
           </div>
@@ -521,12 +571,16 @@ export default function HRTimesheetDetailPage() {
                 id="approve-comments"
                 placeholder="Ex: RAS, validé..."
                 className="resize-none"
-                {...register("comments")}
+                {...register('comments')}
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel type="button" onClick={() => reset()}>Annuler</AlertDialogCancel>
-              <AlertDialogAction type="submit" className="bg-emerald-600 hover:bg-emerald-700">Approuver</AlertDialogAction>
+              <AlertDialogCancel type="button" onClick={() => reset()}>
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction type="submit" className="bg-emerald-600 hover:bg-emerald-700">
+                Approuver
+              </AlertDialogAction>
             </AlertDialogFooter>
           </form>
         </AlertDialogContent>
@@ -543,22 +597,30 @@ export default function HRTimesheetDetailPage() {
           </AlertDialogHeader>
           <form onSubmit={handleSubmit(handleReject)} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="reject-comments">Motif du rejet <span className="text-destructive">*</span></Label>
+              <Label htmlFor="reject-comments">
+                Motif du rejet <span className="text-destructive">*</span>
+              </Label>
               <Textarea
                 id="reject-comments"
                 placeholder="Ex: Heures incorrectes le mardi..."
                 className="resize-none"
-                {...register("comments")}
+                {...register('comments')}
               />
-              {errors.comments && <p className="text-xs text-destructive">{errors.comments.message}</p>}
+              {errors.comments && (
+                <p className="text-xs text-destructive">{errors.comments.message}</p>
+              )}
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel type="button" onClick={() => reset()}>Annuler</AlertDialogCancel>
-              <AlertDialogAction type="submit" className="bg-destructive hover:bg-destructive/90">Rejeter</AlertDialogAction>
+              <AlertDialogCancel type="button" onClick={() => reset()}>
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction type="submit" className="bg-destructive hover:bg-destructive/90">
+                Rejeter
+              </AlertDialogAction>
             </AlertDialogFooter>
           </form>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
+  )
 }

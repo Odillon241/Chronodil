@@ -1,7 +1,7 @@
-import { inngest } from "../client";
-import { prisma } from "@/lib/db";
-import { nanoid } from "nanoid";
-import { sendEmail } from "@/lib/email";
+import { inngest } from '../client'
+import { prisma } from '@/lib/db'
+import { nanoid } from 'nanoid'
+import { sendEmail, getTransactionalEmailTemplate } from '@/lib/email'
 
 /**
  * Job Inngest : Vérification et envoi des rappels de tâches
@@ -21,24 +21,24 @@ import { sendEmail } from "@/lib/email";
  */
 export const taskReminderJob = inngest.createFunction(
   {
-    id: "task-reminder-check",
-    name: "Check Task Reminders Every 5 Minutes",
+    id: 'task-reminder-check',
+    name: 'Check Task Reminders Every 5 Minutes',
     // Retry en cas d'erreur
     retries: 3,
   },
   {
     // Toutes les 5 minutes
-    cron: "*/5 * * * *",
+    cron: '*/5 * * * *',
   },
   async ({ step }) => {
-    const now = new Date();
+    const now = new Date()
 
     // Étape 1: Trouver les tâches avec rappel dû
-    const dueTasks = await step.run("find-due-reminders", async () => {
+    const dueTasks = await step.run('find-due-reminders', async () => {
       return prisma.task.findMany({
         where: {
           isActive: true,
-          status: { in: ["TODO", "IN_PROGRESS", "BLOCKED"] },
+          status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
           reminderDate: {
             lte: now,
             // Seulement les rappels non encore notifiés (ou notifiés il y a plus de 24h)
@@ -78,36 +78,34 @@ export const taskReminderJob = inngest.createFunction(
           },
         },
         take: 100, // Limiter à 100 tâches par run pour éviter les timeouts
-      });
-    });
+      })
+    })
 
     if (dueTasks.length === 0) {
       return {
         processed: 0,
-        message: "Aucun rappel à traiter",
-      };
+        message: 'Aucun rappel à traiter',
+      }
     }
 
     // Étape 2: Envoyer notifications pour chaque tâche
-    const results = [];
+    const results = []
     for (const task of dueTasks) {
       const result = await step.run(`send-reminder-${task.id}`, async () => {
         // Collecter tous les utilisateurs à notifier (créateur + membres)
         const users = [
           task.User_Task_createdByToUser,
           ...task.TaskMember.map((m) => m.User),
-        ].filter(Boolean);
+        ].filter(Boolean)
 
-        const uniqueUsers = Array.from(
-          new Map(users.map((u) => [u!.id, u])).values()
-        );
+        const uniqueUsers = Array.from(new Map(users.map((u) => [u!.id, u])).values())
 
-        let notificationsSent = 0;
-        let emailsSent = 0;
+        let notificationsSent = 0
+        let emailsSent = 0
 
         // Envoyer notifications pour chaque utilisateur
         for (const user of uniqueUsers) {
-          if (!user) continue;
+          if (!user) continue
 
           try {
             // 1. Créer notification in-app + push
@@ -116,72 +114,74 @@ export const taskReminderJob = inngest.createFunction(
                 data: {
                   id: nanoid(),
                   userId: user.id,
-                  title: "📅 Rappel de tâche",
+                  title: '📅 Rappel de tâche',
                   message: `Il est temps de travailler sur : ${task.name}`,
-                  type: "task_reminder",
+                  type: 'task_reminder',
                   link: `/dashboard/tasks?task=${task.id}`,
                   isRead: false,
                 },
-              });
+              })
 
               // Envoyer push notification (fire and forget)
               try {
-                const { sendPushNotificationForNotification } = await import(
-                  "@/lib/notification-helpers"
-                );
+                const { sendPushNotificationForNotification } =
+                  await import('@/lib/notification-helpers')
                 await sendPushNotificationForNotification(user.id, {
                   id: notification.id,
                   title: notification.title,
                   message: notification.message,
                   type: notification.type,
                   link: notification.link,
-                });
+                })
               } catch (pushError) {
-                console.error(
-                  `Erreur push notification pour user ${user.id}:`,
-                  pushError
-                );
+                console.error(`Erreur push notification pour user ${user.id}:`, pushError)
               }
 
-              notificationsSent++;
+              notificationsSent++
             }
 
             // 2. Envoyer email si préférence activée
             if (user.emailNotificationsEnabled) {
               try {
+                const details = [{ label: 'Tâche', value: task.name }]
+                if (task.description) {
+                  details.push({
+                    label: 'Description',
+                    value:
+                      task.description.substring(0, 100) +
+                      (task.description.length > 100 ? '...' : ''),
+                  })
+                }
+                if (task.dueDate) {
+                  details.push({
+                    label: 'Échéance',
+                    value: new Date(task.dueDate).toLocaleDateString('fr-FR'),
+                  })
+                }
+
                 await sendEmail({
                   to: user.email,
                   subject: `Rappel: ${task.name}`,
-                  html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                      <h2 style="color: #C7522B;">📅 Rappel de tâche</h2>
-                      <p>Bonjour ${user.name},</p>
-                      <p>Il est temps de travailler sur la tâche suivante :</p>
-                      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                        <h3 style="margin-top: 0;">${task.name}</h3>
-                        ${task.description ? `<p>${task.description}</p>` : ""}
-                        ${task.dueDate ? `<p><strong>Date d'échéance :</strong> ${new Date(task.dueDate).toLocaleDateString("fr-FR")}</p>` : ""}
-                      </div>
-                      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tasks?task=${task.id}"
-                         style="display: inline-block; background-color: #C7522B; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                        Voir la tâche
-                      </a>
-                    </div>
-                  `,
-                });
-                emailsSent++;
+                  html: getTransactionalEmailTemplate({
+                    userName: user.name || undefined,
+                    title: 'Rappel de tâche',
+                    preheader: `Il est temps de travailler sur : ${task.name}`,
+                    content: 'Il est temps de travailler sur la tâche suivante.',
+                    alertType: 'info',
+                    alertTitle: 'Tâche à traiter',
+                    alertMessage: task.name,
+                    details,
+                    buttonText: 'Voir la tâche',
+                    buttonUrl: `/dashboard/tasks?task=${task.id}`,
+                  }),
+                })
+                emailsSent++
               } catch (emailError) {
-                console.error(
-                  `Erreur email pour user ${user.id}:`,
-                  emailError
-                );
+                console.error(`Erreur email pour user ${user.id}:`, emailError)
               }
             }
           } catch (userError) {
-            console.error(
-              `Erreur notification pour user ${user.id}:`,
-              userError
-            );
+            console.error(`Erreur notification pour user ${user.id}:`, userError)
           }
         }
 
@@ -191,7 +191,7 @@ export const taskReminderJob = inngest.createFunction(
           data: {
             reminderNotifiedAt: now,
           },
-        });
+        })
 
         return {
           taskId: task.id,
@@ -199,16 +199,16 @@ export const taskReminderJob = inngest.createFunction(
           usersNotified: uniqueUsers.length,
           notificationsSent,
           emailsSent,
-        };
-      });
+        }
+      })
 
-      results.push(result);
+      results.push(result)
     }
 
     return {
       processed: dueTasks.length,
       results,
       timestamp: now.toISOString(),
-    };
-  }
-);
+    }
+  },
+)

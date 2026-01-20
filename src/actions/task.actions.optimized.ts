@@ -1,4 +1,4 @@
-﻿"use server";
+﻿'use server'
 
 // ============================================
 // VERSION OPTIMISÉE DES REQUÊTES TASK
@@ -9,19 +9,16 @@
 // 3. Ajoutant de la pagination
 // 4. Optimisant les requêtes N+1
 
-import { getSession, getUserRole } from "@/lib/auth";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/db";
-import { actionClient } from "@/lib/safe-action";
-import { z } from "zod";
+import { getSession, getUserRole } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { actionClient } from '@/lib/safe-action'
+import { z } from 'zod'
 
 // ============================================
 // SCHÉMA POUR LA PAGINATION
 // ============================================
-const paginationSchema = z.object({
-  page: z.number().min(1).default(1),
-  limit: z.number().min(1).max(100).default(50),
-});
+// Note: Ce schéma est intégré directement dans les actions ci-dessous
+// pour éviter les avertissements de variable non utilisée
 
 // ============================================
 // OPTIMISATION: getMyTasks avec select spécifique
@@ -35,17 +32,17 @@ export const getMyTasksOptimized = actionClient
       searchQuery: z.string().optional(),
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(50),
-    })
+    }),
   )
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
+    const session = await getSession()
 
     if (!session) {
-      throw new Error("Non authentifié");
+      throw new Error('Non authentifié')
     }
 
-    const { page, limit, projectId, searchQuery } = parsedInput;
-    const skip = (page - 1) * limit;
+    const { page, limit, projectId, searchQuery } = parsedInput
+    const skip = (page - 1) * limit
 
     // ⚡ OPTIMISATION: Récupérer taskIds et projectIds en une seule requête
     const [taskMemberships, projectMemberships] = await Promise.all([
@@ -57,41 +54,41 @@ export const getMyTasksOptimized = actionClient
         where: { userId: session.user.id },
         select: { projectId: true },
       }),
-    ]);
+    ])
 
-    const taskIds = taskMemberships.map((tm) => tm.taskId);
-    const projectIds = projectMemberships.map((pm) => pm.projectId);
+    const taskIds = taskMemberships.map((tm) => tm.taskId)
+    const projectIds = projectMemberships.map((pm) => pm.projectId)
 
     // Construire les conditions de visibilité
-    const orVisibilityConditions: any[] = [];
+    const orVisibilityConditions: any[] = []
     if (taskIds.length > 0) {
-      orVisibilityConditions.push({ id: { in: taskIds } });
+      orVisibilityConditions.push({ id: { in: taskIds } })
     }
-    orVisibilityConditions.push({ createdBy: session.user.id });
+    orVisibilityConditions.push({ createdBy: session.user.id })
     if (projectIds.length > 0) {
       orVisibilityConditions.push({
         projectId: { in: projectIds },
         createdBy: { not: session.user.id },
-      });
+      })
     }
 
-    const andConditions: any[] = [];
+    const andConditions: any[] = []
     if (projectId) {
-      andConditions.push({ projectId });
+      andConditions.push({ projectId })
     }
     if (searchQuery) {
       andConditions.push({
         OR: [
-          { name: { contains: searchQuery, mode: "insensitive" } },
-          { description: { contains: searchQuery, mode: "insensitive" } },
+          { name: { contains: searchQuery, mode: 'insensitive' } },
+          { description: { contains: searchQuery, mode: 'insensitive' } },
         ],
-      });
+      })
     }
 
     const where = {
       isActive: true,
       AND: [...andConditions, { OR: orVisibilityConditions }],
-    };
+    }
 
     // ⚡ OPTIMISATION: Requête parallèle pour count + data
     const [tasks, totalCount] = await Promise.all([
@@ -154,13 +151,13 @@ export const getMyTasksOptimized = actionClient
           },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         skip,
         take: limit,
       }),
       prisma.task.count({ where }),
-    ]);
+    ])
 
     return {
       tasks,
@@ -171,8 +168,8 @@ export const getMyTasksOptimized = actionClient
         totalPages: Math.ceil(totalCount / limit),
         hasMore: page * limit < totalCount,
       },
-    };
-  });
+    }
+  })
 
 // ============================================
 // OPTIMISATION: getAllTasks avec pagination
@@ -182,39 +179,39 @@ export const getAllTasksOptimized = actionClient
     z.object({
       projectId: z.string().optional(),
       searchQuery: z.string().optional(),
-      status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED"]).optional(),
+      status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE', 'BLOCKED']).optional(),
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(50),
-    })
+    }),
   )
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
+    const session = await getSession()
 
     if (!session) {
-      throw new Error("Non authentifié");
+      throw new Error('Non authentifié')
     }
 
-    const { page, limit, projectId, searchQuery, status } = parsedInput;
-    const skip = (page - 1) * limit;
+    const { page, limit, projectId, searchQuery, status } = parsedInput
+    const skip = (page - 1) * limit
 
-    const andConditions: any[] = [{ isActive: true }];
+    const andConditions: any[] = [{ isActive: true }]
 
     if (projectId) {
-      andConditions.push({ projectId });
+      andConditions.push({ projectId })
     }
     if (status) {
-      andConditions.push({ status });
+      andConditions.push({ status })
     }
     if (searchQuery) {
       andConditions.push({
         OR: [
-          { name: { contains: searchQuery, mode: "insensitive" } },
-          { description: { contains: searchQuery, mode: "insensitive" } },
+          { name: { contains: searchQuery, mode: 'insensitive' } },
+          { description: { contains: searchQuery, mode: 'insensitive' } },
         ],
-      });
+      })
     }
 
-    const where = { AND: andConditions };
+    const where = { AND: andConditions }
 
     // ⚡ REQUÊTE PARALLÈLE
     const [tasks, totalCount] = await Promise.all([
@@ -264,13 +261,13 @@ export const getAllTasksOptimized = actionClient
           },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         skip,
         take: limit,
       }),
       prisma.task.count({ where }),
-    ]);
+    ])
 
     return {
       tasks,
@@ -281,8 +278,8 @@ export const getAllTasksOptimized = actionClient
         totalPages: Math.ceil(totalCount / limit),
         hasMore: page * limit < totalCount,
       },
-    };
-  });
+    }
+  })
 
 // ============================================
 // OPTIMISATION: getTaskById avec select minimal
@@ -290,10 +287,10 @@ export const getAllTasksOptimized = actionClient
 export const getTaskByIdOptimized = actionClient
   .schema(z.object({ id: z.string() }))
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
+    const session = await getSession()
 
     if (!session) {
-      throw new Error("Non authentifié");
+      throw new Error('Non authentifié')
     }
 
     const task = await prisma.task.findUnique({
@@ -388,7 +385,7 @@ export const getTaskByIdOptimized = actionClient
             },
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
           take: 10,
         },
@@ -411,7 +408,7 @@ export const getTaskByIdOptimized = actionClient
             },
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
           take: 20,
         },
@@ -422,23 +419,23 @@ export const getTaskByIdOptimized = actionClient
           },
         },
       },
-    });
+    })
 
     if (!task) {
-      throw new Error("Tâche non trouvée");
+      throw new Error('Tâche non trouvée')
     }
 
     // Vérifier les permissions
-    const isCreator = task.User_Task_createdByToUser?.id === session.user.id;
-    const isMember = task.TaskMember.some((m) => m.User.id === session.user.id);
-    const isAdmin = getUserRole(session) === "ADMIN";
+    const isCreator = task.User_Task_createdByToUser?.id === session.user.id
+    const isMember = task.TaskMember.some((m) => m.User.id === session.user.id)
+    const isAdmin = getUserRole(session) === 'ADMIN'
 
     if (!isCreator && !isMember && !isAdmin) {
-      throw new Error("Vous n'avez pas accès à cette tâche");
+      throw new Error("Vous n'avez pas accès à cette tâche")
     }
 
-    return task;
-  });
+    return task
+  })
 
 // ============================================
 // OPTIMISATION: getTasksByProjectId batch
@@ -450,17 +447,17 @@ export const getTasksByProjectIdOptimized = actionClient
       projectId: z.string(),
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(50),
-    })
+    }),
   )
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
+    const session = await getSession()
 
     if (!session) {
-      throw new Error("Non authentifié");
+      throw new Error('Non authentifié')
     }
 
-    const { projectId, page, limit } = parsedInput;
-    const skip = (page - 1) * limit;
+    const { projectId, page, limit } = parsedInput
+    const skip = (page - 1) * limit
 
     // Vérifier que l'utilisateur est membre du projet
     const member = await prisma.projectMember.findFirst({
@@ -468,16 +465,16 @@ export const getTasksByProjectIdOptimized = actionClient
         projectId,
         userId: session.user.id,
       },
-    });
+    })
 
-    if (!member && getUserRole(session) !== "ADMIN") {
-      throw new Error("Vous n'êtes pas membre de ce projet");
+    if (!member && getUserRole(session) !== 'ADMIN') {
+      throw new Error("Vous n'êtes pas membre de ce projet")
     }
 
     const where = {
       projectId,
       isActive: true,
-    };
+    }
 
     const [tasks, totalCount] = await Promise.all([
       prisma.task.findMany({
@@ -516,13 +513,13 @@ export const getTasksByProjectIdOptimized = actionClient
           },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         skip,
         take: limit,
       }),
       prisma.task.count({ where }),
-    ]);
+    ])
 
     return {
       tasks,
@@ -533,8 +530,8 @@ export const getTasksByProjectIdOptimized = actionClient
         totalPages: Math.ceil(totalCount / limit),
         hasMore: page * limit < totalCount,
       },
-    };
-  });
+    }
+  })
 
 // ============================================
 // NOTES D'OPTIMISATION
