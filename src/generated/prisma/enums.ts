@@ -91,7 +91,7 @@ export type Role = (typeof Role)[keyof typeof Role]
 export const TaskComplexity = {
   FAIBLE: 'FAIBLE',
   MOYEN: 'MOYEN',
-  LEV_: 'ÉLEVÉ'
+  LEV_: 'LEV_'
 } as const
 
 export type TaskComplexity = (typeof TaskComplexity)[keyof typeof TaskComplexity]
