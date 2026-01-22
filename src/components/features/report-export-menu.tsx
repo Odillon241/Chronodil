@@ -18,7 +18,7 @@ interface ReportExportMenuProps {
   reportTitle: string
 }
 
-export function ReportExportMenu({ reportId, reportTitle: _reportTitle }: ReportExportMenuProps) {
+export function ReportExportMenu({ reportId, reportTitle }: ReportExportMenuProps) {
   const [isExporting, setIsExporting] = useState(false)
 
   const { execute: executeExport } = useAction(exportReport, {
@@ -44,7 +44,7 @@ export function ReportExportMenu({ reportId, reportTitle: _reportTitle }: Report
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      toast.success(`Rapport exporté avec succès: ${data.filename}`)
+      toast.success(`"${reportTitle}" exporté avec succès`)
       setIsExporting(false)
     },
     onError: ({ error }) => {
@@ -55,7 +55,7 @@ export function ReportExportMenu({ reportId, reportTitle: _reportTitle }: Report
 
   const handleExport = async (format: 'word' | 'excel' | 'pdf') => {
     setIsExporting(true)
-    toast.loading(`Export en cours (${format.toUpperCase()})...`)
+    toast.loading(`Export de "${reportTitle}" en ${format.toUpperCase()}...`)
 
     executeExport({
       reportId,

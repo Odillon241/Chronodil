@@ -1,5 +1,5 @@
-import { unstable_cache } from "next/cache";
-import { cache } from "react";
+import { unstable_cache } from 'next/cache'
+import { cache } from 'react'
 
 /**
  * 🚀 Cache utilities pour Next.js 16
@@ -10,15 +10,17 @@ import { cache } from "react";
 
 // Tags de cache pour invalidation ciblée
 export const CacheTags = {
-  PROJECTS: "projects",
-  USERS: "users",
-  TASKS: "tasks",
-  REPORTS: "reports",
-  VALIDATIONS: "validations",
-  DEPARTMENTS: "departments",
-  NOTIFICATIONS: "notifications",
-  HR_TIMESHEETS: "hr-timesheets",
-} as const;
+  PROJECTS: 'projects',
+  USERS: 'users',
+  TASKS: 'tasks',
+  REPORTS: 'reports',
+  VALIDATIONS: 'validations',
+  DEPARTMENTS: 'departments',
+  NOTIFICATIONS: 'notifications',
+  HR_TIMESHEETS: 'hr-timesheets',
+  AUDIT_LOGS: 'audit-logs',
+  MONITORING_STATS: 'monitoring-stats',
+} as const
 
 // Durées de revalidation (en secondes)
 export const CacheDuration = {
@@ -26,7 +28,7 @@ export const CacheDuration = {
   MEDIUM: 300, // 5 minutes
   LONG: 3600, // 1 heure
   VERY_LONG: 86400, // 24 heures
-} as const;
+} as const
 
 /**
  * Wrapper pour créer des fonctions cachées avec Next.js unstable_cache
@@ -42,14 +44,14 @@ export function createCachedFunction<TArgs extends any[], TResult>(
   fn: (...args: TArgs) => Promise<TResult>,
   keyParts: string[],
   options: {
-    revalidate?: number;
-    tags?: string[];
-  } = {}
+    revalidate?: number
+    tags?: string[]
+  } = {},
 ) {
   return unstable_cache(fn, keyParts, {
     revalidate: options.revalidate,
     tags: options.tags,
-  });
+  })
 }
 
 /**
@@ -57,7 +59,7 @@ export function createCachedFunction<TArgs extends any[], TResult>(
  * Combine avec unstable_cache pour une stratégie de caching complète
  */
 export function createDeduplicatedFunction<TArgs extends any[], TResult>(
-  fn: (...args: TArgs) => Promise<TResult>
+  fn: (...args: TArgs) => Promise<TResult>,
 ) {
-  return cache(fn);
+  return cache(fn)
 }

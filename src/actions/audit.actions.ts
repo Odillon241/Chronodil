@@ -21,9 +21,9 @@ export const getAuditLogs = actionClient
     const session = await getSession()
     const userRole = getUserRole(session)
 
-    // Seul l'administrateur peut voir les audits
-    if (!session || userRole !== 'ADMIN') {
-      throw new Error('Accès non autorisé - Rôle ADMIN requis')
+    // Seuls les administrateurs et directeurs peuvent voir les audits
+    if (!session || !['ADMIN', 'DIRECTEUR'].includes(userRole as string)) {
+      throw new Error('Accès non autorisé - Rôle ADMIN ou DIRECTEUR requis')
     }
 
     // Récupérer TOUS les audits (tous les utilisateurs), pas seulement ceux de l'admin
@@ -63,9 +63,9 @@ export const getAuditStats = actionClient.schema(z.object({})).action(async () =
   const session = await getSession()
   const userRole = getUserRole(session)
 
-  // Seul l'administrateur peut voir les statistiques d'audit
-  if (!session || userRole !== 'ADMIN') {
-    throw new Error('Accès non autorisé - Rôle ADMIN requis')
+  // Seuls les administrateurs et directeurs peuvent voir les statistiques d'audit
+  if (!session || !['ADMIN', 'DIRECTEUR'].includes(userRole as string)) {
+    throw new Error('Accès non autorisé - Rôle ADMIN ou DIRECTEUR requis')
   }
 
   const total = await prisma.auditLog.count()

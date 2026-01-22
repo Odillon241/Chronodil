@@ -290,7 +290,7 @@ export function TaskDialog({
           sharedWith: formData.isShared ? selectedUsers : undefined,
           status: formData.status as 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'BLOCKED',
           priority: formData.priority as 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT',
-          complexity: formData.complexity as 'FAIBLE' | 'MOYEN' | 'LEV_',
+          complexity: formData.complexity as 'FAIBLE' | 'MOYEN' | 'ELEVE',
           trainingLevel: formData.trainingLevel,
           masteryLevel: formData.masteryLevel,
           understandingLevel: formData.understandingLevel,

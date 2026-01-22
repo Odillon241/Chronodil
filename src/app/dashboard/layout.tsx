@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { registerServiceWorker } from '@/lib/service-worker-registration'
 import { usePresenceTracker } from '@/hooks/use-presence-tracker'
 import { usePreloadDashboardData } from '@/hooks/use-preload-dashboard-data'
+import { VersionUpdateNotifier } from '@/components/features/version-update-notifier'
 
 function SearchBar() {
   const [isMac, setIsMac] = useState(false)
@@ -122,6 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SettingsProvider>
         <DashboardContent>{children}</DashboardContent>
         <GlobalCommand />
+        <VersionUpdateNotifier />
       </SettingsProvider>
     </QueryProvider>
   )

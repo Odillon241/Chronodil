@@ -107,3 +107,13 @@ export const managerActionClient = authActionClient.use(async ({ next, ctx }) =>
 
   return next({ ctx })
 })
+
+// ✅ SÉCURITÉ: Client pour les actions admin ou directeur (monitoring, audit)
+export const adminOrDirecteurActionClient = authActionClient.use(async ({ next, ctx }) => {
+  if (!['ADMIN', 'DIRECTEUR'].includes(ctx.userRole)) {
+    logUnauthorizedAccess(ctx.userId, 'monitoring_action', 'access_denied')
+    throw new Error('Accès réservé aux administrateurs et directeurs')
+  }
+
+  return next({ ctx })
+})

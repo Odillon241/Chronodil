@@ -23,7 +23,7 @@ const createTaskSchema = z.object({
   sharedWith: z.array(z.string()).optional(), // Array of user IDs
   status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE', 'BLOCKED']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-  complexity: z.enum(['FAIBLE', 'MOYEN', 'LEV_']).optional(),
+  complexity: z.enum(['FAIBLE', 'MOYEN', 'ELEVE']).optional(),
   trainingLevel: z
     .enum(['NONE', 'BASIC', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'])
     .optional()

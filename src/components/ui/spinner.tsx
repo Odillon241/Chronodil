@@ -1,45 +1,45 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
-interface SpinnerProps extends React.ComponentProps<"div"> {
-  size?: "sm" | "md" | "lg" | "xl" | "custom"
-  speed?: "normal" | "fast" | "faster"
+interface SpinnerProps extends React.ComponentProps<'svg'> {
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'custom'
+  speed?: 'normal' | 'fast' | 'faster'
 }
 
-function Spinner({ className, size = "sm", speed = "fast", style, ...props }: SpinnerProps) {
+function Spinner({ className, size = 'sm', speed = 'fast', ...props }: SpinnerProps) {
   const speedClasses = {
-    normal: "animate-[spin_1.2s_linear_infinite]",
-    fast: "animate-[spin_0.8s_linear_infinite]",
-    faster: "animate-[spin_0.5s_linear_infinite]",
+    normal: 'animate-spin duration-[1.2s]',
+    fast: 'animate-spin duration-[0.8s]',
+    faster: 'animate-spin duration-[0.5s]',
+  }
+
+  const sizeClasses = {
+    sm: 'size-4',
+    md: 'size-8',
+    lg: 'size-12',
+    xl: 'size-20',
+    custom: '',
   }
 
   return (
-    <div
+    <svg
       role="status"
       aria-label="Loading"
-      className={cn(
-        "relative rounded-full flex items-center justify-center overflow-hidden",
-        size !== "custom" && (size === "sm" ? "size-4" : size === "md" ? "size-8" : size === "lg" ? "size-12" : size === "xl" ? "size-20" : ""),
-        speedClasses[speed],
-        className
-      )}
-      style={style}
+      className={cn(speedClasses[speed], sizeClasses[size], className)}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      {/* The gradient ring */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: `conic-gradient(from 0deg, var(--color-primary), transparent)`
-        }}
+      {/* Background circle (faded) */}
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-20" />
+      {/* Spinning arc */}
+      <path
+        d="M12 2a10 10 0 0 1 10 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
       />
-      {/* The inner hole to create the ring effect */}
-      <div
-        className={cn(
-          "absolute rounded-full bg-background",
-          size === "sm" ? "inset-[1.5px]" : size === "md" ? "inset-[2.5px]" : size === "lg" ? "inset-[3.5px]" : size === "xl" ? "inset-[5px]" : "inset-[10%]"
-        )}
-      />
-    </div>
+    </svg>
   )
 }
 

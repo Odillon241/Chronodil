@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic'
 import { TasksHeader } from '@/components/tasks/tasks-header'
 import { TasksToolbar } from '@/components/tasks/tasks-toolbar'
 import { TasksList } from '@/components/tasks/tasks-list'
-import { TaskDialog } from '@/components/tasks/task-dialog'
+import { TaskDialogV2 } from '@/components/tasks/task-dialog-v2'
 import { Spinner } from '@/components/ui/spinner'
 
 // Hooks
@@ -321,7 +321,7 @@ export default function TasksPage() {
         </>
       )}
 
-      <TaskDialog
+      <TaskDialogV2
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         editingTask={editingTask}

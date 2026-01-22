@@ -1,24 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Plus, FileText, Edit, Trash2, Calendar, Settings, BarChart3 } from 'lucide-react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
-import { getUserReports, deleteReport } from '@/actions/report.actions'
-import { useAction } from 'next-safe-action/hooks'
+import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
+import {
+  FileText,
+  Plus,
+  LayoutList,
+  Calendar as CalendarIcon,
+  Settings,
+  TrendingUp,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,53 +23,100 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { ReportEditorDialog } from '@/components/features/report-editor-dialog'
-import { ReportExportMenu } from '@/components/features/report-export-menu'
-import { useRouter } from 'next/navigation'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import Link from 'next/link'
 
-interface Report {
-  id: string
-  title: string
-  content: string
-  format: string
-  period: string | null
-  includeSummary: boolean
-  fileSize: number
-  createdAt: Date
-  updatedAt: Date
-  User: {
-    id: string
-    name: string | null
-    email: string
-  }
+// New optimized components
+import {
+  ReportStatsCards,
+  ReportStatsCardsSkeleton,
+  type ReportStats,
+} from '@/components/features/reports/report-stats-cards'
+import {
+  ReportFiltersPanel,
+  type ReportFilters,
+} from '@/components/features/reports/report-filters-panel'
+import { ReportCalendar } from '@/components/features/reports/report-calendar'
+import { ReportEditorDialog } from '@/components/features/report-editor-dialog'
+import { ReportsList, type ReportViewMode } from '@/components/reports'
+
+import {
+  getUserReports,
+  getReportStats,
+  deleteReport,
+  duplicateReport,
+} from '@/actions/report.actions'
+import { getReportTemplates } from '@/actions/report-template.actions'
+import { exportReport } from '@/actions/report-export.actions'
+import { useAction } from 'next-safe-action/hooks'
+import type { Report, ReportTemplate, ReportType, ReportFormat } from '@/types/report.types'
+
+// Initial empty filters
+const initialFilters: ReportFilters = {
+  search: '',
+  types: [],
+  formats: [],
+  startDate: undefined,
+  endDate: undefined,
+  templateId: undefined,
+  createdById: undefined,
 }
 
 export default function ReportsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Data
   const [reports, setReports] = useState<Report[]>([])
+  const [stats, setStats] = useState<ReportStats | null>(null)
+  const [templates, setTemplates] = useState<ReportTemplate[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingStats, setLoadingStats] = useState(true)
+
+  // Dialogs
   const [editorOpen, setEditorOpen] = useState(false)
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [reportToDelete, setReportToDelete] = useState<string | null>(null)
 
+  // Filters & View
+  const [filters, setFilters] = useState<ReportFilters>(initialFilters)
+  const [viewMode, setViewMode] = useState<ReportViewMode>('list')
+
+  // Parse URL params for edit mode
+  const editReportId = searchParams.get('edit')
+
   // Actions
   const { execute: fetchReports } = useAction(getUserReports, {
     onSuccess: ({ data }) => {
-      if (data) {
-        setReports(data as Report[])
-      }
+      if (data) setReports(data as Report[])
       setLoading(false)
     },
     onError: ({ error }) => {
-      toast.error(error.serverError || 'Erreur lors du chargement des rapports')
+      toast.error(error.serverError || 'Erreur lors du chargement')
       setLoading(false)
+    },
+  })
+
+  const { execute: fetchStats } = useAction(getReportStats, {
+    onSuccess: ({ data }) => {
+      if (data) setStats(data as ReportStats)
+      setLoadingStats(false)
+    },
+    onError: () => {
+      setLoadingStats(false)
+    },
+  })
+
+  const { execute: fetchTemplates } = useAction(getReportTemplates, {
+    onSuccess: ({ data }) => {
+      if (data) setTemplates(data as ReportTemplate[])
     },
   })
 
   const { execute: executeDelete, isExecuting: isDeleting } = useAction(deleteReport, {
     onSuccess: () => {
-      toast.success('Rapport supprimé avec succès')
+      toast.success('Rapport supprimé')
       setDeleteDialogOpen(false)
       setReportToDelete(null)
       fetchReports()
@@ -85,180 +126,255 @@ export default function ReportsPage() {
     },
   })
 
+  const { execute: executeDuplicate } = useAction(duplicateReport, {
+    onSuccess: ({ data }) => {
+      toast.success(`Rapport dupliqué: ${data?.title}`)
+      fetchReports()
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError || 'Erreur lors de la duplication')
+    },
+  })
+
+  const { execute: executeExport } = useAction(exportReport, {
+    onSuccess: ({ data }) => {
+      if (!data) return
+      const byteCharacters = atob(data.data)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: data.mimeType })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = data.filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      toast.success('Export terminé')
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError || "Erreur lors de l'export")
+    },
+  })
+
+  // Load all data on mount
   useEffect(() => {
     fetchReports()
+    fetchStats()
+    fetchTemplates()
   }, [])
 
-  const handleCreateNew = () => {
-    setSelectedReport(null)
-    setEditorOpen(true)
-  }
+  // Handle edit mode from URL
+  useEffect(() => {
+    if (editReportId && reports.length > 0) {
+      const reportToEdit = reports.find((r) => r.id === editReportId)
+      if (reportToEdit) {
+        setSelectedReport(reportToEdit)
+        setEditorOpen(true)
+        // Clear the URL param after opening
+        router.replace('/dashboard/reports', { scroll: false })
+      }
+    }
+  }, [editReportId, reports, router])
 
-  const handleEdit = (report: Report) => {
+  // Filter reports using the new ReportFilters
+  const filteredReports = useMemo(() => {
+    return reports.filter((report) => {
+      // Search filter
+      if (filters.search) {
+        const q = filters.search.toLowerCase()
+        const matchTitle = report.title.toLowerCase().includes(q)
+        const matchPeriod = report.period?.toLowerCase().includes(q)
+        const matchContent = report.content?.toLowerCase().includes(q)
+        if (!matchTitle && !matchPeriod && !matchContent) return false
+      }
+
+      // Type filter
+      if (filters.types.length > 0) {
+        const reportType = report.reportType || 'INDIVIDUAL'
+        if (!filters.types.includes(reportType as ReportType)) return false
+      }
+
+      // Format filter
+      if (filters.formats.length > 0) {
+        if (!filters.formats.includes(report.format as ReportFormat)) return false
+      }
+
+      // Date range filter
+      if (filters.startDate) {
+        const reportDate = new Date(report.createdAt)
+        if (reportDate < filters.startDate) return false
+      }
+      if (filters.endDate) {
+        const reportDate = new Date(report.createdAt)
+        if (reportDate > filters.endDate) return false
+      }
+
+      // Template filter
+      if (filters.templateId && report.templateId !== filters.templateId) {
+        return false
+      }
+
+      return true
+    })
+  }, [reports, filters])
+
+  // Handlers
+  const handleNewReport = useCallback(() => {
+    // Navigate to the new report page instead of opening modal
+    router.push('/dashboard/reports/new')
+  }, [router])
+
+  const handleEdit = useCallback((report: Report) => {
     setSelectedReport(report)
     setEditorOpen(true)
-  }
+  }, [])
 
-  const handleDeleteClick = (reportId: string) => {
+  const handleDelete = useCallback((reportId: string) => {
     setReportToDelete(reportId)
     setDeleteDialogOpen(true)
-  }
+  }, [])
 
-  const handleDeleteConfirm = () => {
-    if (reportToDelete) {
-      executeDelete({ id: reportToDelete })
-    }
-  }
+  const handleDeleteConfirm = useCallback(() => {
+    if (reportToDelete) executeDelete({ id: reportToDelete })
+  }, [reportToDelete, executeDelete])
 
-  const handleEditorClose = () => {
+  const handlePreview = useCallback(
+    (report: Report) => {
+      // Navigate to the report detail page
+      router.push(`/dashboard/reports/${report.id}`)
+    },
+    [router],
+  )
+
+  const handleDuplicate = useCallback(
+    (report: Report) => {
+      executeDuplicate({ id: report.id })
+    },
+    [executeDuplicate],
+  )
+
+  const handleExport = useCallback(
+    (report: Report, format: 'word' | 'excel' | 'pdf') => {
+      executeExport({ reportId: report.id, format })
+    },
+    [executeExport],
+  )
+
+  const handleEditorClose = useCallback(() => {
     setEditorOpen(false)
     setSelectedReport(null)
     fetchReports()
-  }
-
-  const getFormatBadge = (format: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
-      pdf: 'default',
-      word: 'secondary',
-      excel: 'destructive',
-    }
-    return <Badge variant={variants[format] || 'default'}>{format.toUpperCase()}</Badge>
-  }
-
-  const _formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 octets'
-    const k = 1024
-    const sizes = ['octets', 'Ko', 'Mo', 'Go']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Rapports</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    )
-  }
+    fetchStats()
+  }, [fetchReports, fetchStats])
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col gap-6">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Rapports</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Créez et gérez vos rapports d'activité
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Rapports</h1>
+          <p className="text-muted-foreground">Créez et gérez vos rapports d'activité</p>
         </div>
-        <Separator orientation="vertical" className="h-14" />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => router.push('/dashboard/reports/templates')}>
-            <Settings className="h-4 w-4 mr-2" />
-            Modèles
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/reports/templates">
+              <Settings className="h-4 w-4 mr-2" />
+              Modèles
+            </Link>
           </Button>
-          <Button variant="outline" onClick={() => router.push('/dashboard/reports/monthly')}>
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Rapport Mensuel
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/reports/monthly">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Mensuel
+            </Link>
           </Button>
-          <Button onClick={handleCreateNew}>
+          <Button onClick={handleNewReport}>
             <Plus className="h-4 w-4 mr-2" />
             Nouveau rapport
           </Button>
         </div>
       </div>
 
-      {/* Liste des rapports */}
-      {reports.length === 0 ? (
-        <Card>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aucun rapport</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Créez votre premier rapport pour commencer
-              </p>
-              <Button onClick={handleCreateNew}>
-                <Plus className="h-4 w-4 mr-2" />
-                Créer un rapport
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats Cards */}
+      {loadingStats ? (
+        <ReportStatsCardsSkeleton />
+      ) : stats ? (
+        <ReportStatsCards stats={stats} />
+      ) : null}
+
+      {/* Filters + View Mode */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ReportFiltersPanel filters={filters} onChange={setFilters} templates={templates} />
+
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ReportViewMode)}>
+          <TabsList className="h-9">
+            <TabsTrigger value="list" className="px-2.5">
+              <LayoutList className="h-4 w-4" />
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="px-2.5">
+              <CalendarIcon className="h-4 w-4" />
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <Spinner className="h-8 w-8" />
+        </div>
+      ) : filteredReports.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center border rounded-lg bg-muted/20">
+          <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">
+            {reports.length === 0 ? 'Aucun rapport' : 'Aucun résultat'}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            {reports.length === 0
+              ? 'Créez votre premier rapport pour commencer'
+              : 'Modifiez vos filtres pour voir plus de résultats'}
+          </p>
+          {reports.length === 0 && (
+            <Button onClick={handleNewReport}>
+              <Plus className="h-4 w-4 mr-2" />
+              Créer un rapport
+            </Button>
+          )}
+          {reports.length > 0 && filters.search && (
+            <Button variant="outline" onClick={() => setFilters(initialFilters)}>
+              Réinitialiser les filtres
+            </Button>
+          )}
+        </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardDescription>{reports.length} rapport(s)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Titre</TableHead>
-                    <TableHead>Format</TableHead>
-                    <TableHead>Période</TableHead>
-                    <TableHead>Modifié le</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reports.map((report) => (
-                    <TableRow key={report.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          {report.title}
-                        </div>
-                      </TableCell>
-                      <TableCell>{getFormatBadge(report.format)}</TableCell>
-                      <TableCell>
-                        {report.period ? (
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {report.period}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(report.updatedAt), 'd MMM yyyy', { locale: fr })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(report)}
-                            title="Éditer"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <ReportExportMenu reportId={report.id} reportTitle={report.title} />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteClick(report.id)}
-                            title="Supprimer"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>
+              {filteredReports.length} rapport{filteredReports.length > 1 ? 's' : ''}{' '}
+              {filteredReports.length !== reports.length && `sur ${reports.length}`}
+            </span>
+          </div>
+          {viewMode === 'calendar' ? (
+            <ReportCalendar reports={filteredReports} onReportClick={handlePreview} />
+          ) : (
+            <ReportsList
+              reports={filteredReports}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPreview={handlePreview}
+              onDuplicate={handleDuplicate}
+              onExport={handleExport}
+            />
+          )}
+        </>
       )}
 
-      {/* Dialog d'édition */}
+      {/* Editor Dialog */}
       <ReportEditorDialog
         open={editorOpen}
         onOpenChange={setEditorOpen}
@@ -266,14 +382,12 @@ export default function ReportsPage() {
         onClose={handleEditorClose}
       />
 
-      {/* Dialog de confirmation de suppression */}
+      {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce rapport ? Cette action est irréversible.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Supprimer ce rapport ?</AlertDialogTitle>
+            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
