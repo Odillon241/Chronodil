@@ -48,6 +48,7 @@ import {
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { useSession, signOut } from '@/lib/auth-client'
 import { useChatUnreadCount } from '@/hooks/use-chat-unread-count'
+import { APP_VERSION } from '@/lib/version'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
@@ -155,30 +156,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center justify-center group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="border-b border-sidebar-border h-14 sm:h-16 flex items-center justify-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
         <SidebarMenu className="w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
           <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
             <SidebarMenuButton
               size="lg"
               asChild
-              className="group-data-[collapsible=icon]:w-8! group-data-[collapsible=icon]:justify-center!"
+              className="group-data-[collapsible=icon]:!size-9 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center"
             >
               <Link
                 href="/dashboard"
                 className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
               >
-                <div className="flex aspect-square size-8 items-center justify-center">
+                <div className="flex aspect-square size-10 items-center justify-center group-data-[collapsible=icon]:size-9">
                   <Image
                     src="/assets/media/chronodil-icon.svg"
                     alt="Chronodil"
-                    width={32}
-                    height={32}
-                    className="size-8"
+                    width={40}
+                    height={40}
+                    className="size-10 group-data-[collapsible=icon]:size-7"
                     priority
                   />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold">Chronodil</span>
+                <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate text-base font-bold tracking-tight">Chronodil</span>
+                    <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary/80">
+                      v{APP_VERSION}
+                    </span>
+                  </span>
                   <span className="truncate text-xs text-muted-foreground">
                     {t('navigation.timesheets')}
                   </span>

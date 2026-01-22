@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import TypingText from '@/components/ui/shadcn-io/typing-text'
 import { AuroraBackground } from '@/components/ui/shadcn-io/aurora-background'
 import { PenLine } from 'lucide-react'
+import { APP_VERSION } from '@/lib/version'
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -82,9 +83,10 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
           <CardContent>{children}</CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} ODILLON. Tous droits réservés.
-        </p>
+        <div className="text-center text-xs text-muted-foreground space-y-1">
+          <p>&copy; {new Date().getFullYear()} ODILLON. Tous droits réservés.</p>
+          <p className="text-muted-foreground/60">Chronodil v{APP_VERSION}</p>
+        </div>
       </div>
     </AuroraBackground>
   )

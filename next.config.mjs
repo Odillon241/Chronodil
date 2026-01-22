@@ -1,6 +1,16 @@
+import { readFileSync } from 'fs'
+
+// Lire la version depuis package.json
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Exposer la version de l'app côté client
+  env: {
+    NEXT_PUBLIC_APP_VERSION: packageJson.version,
+  },
 
   // Timeout pour la génération de pages statiques
   staticPageGenerationTimeout: 120,

@@ -13,6 +13,7 @@ import {
   Building2,
   ChevronRight,
   Search,
+  Info,
 } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -354,6 +355,52 @@ const settingsNavigation = [
       },
     ],
   },
+  {
+    title: 'À propos',
+    href: '/dashboard/settings/about',
+    icon: Info,
+    description: "Informations sur l'application",
+    keywords: [
+      'about',
+      'à propos',
+      'version',
+      'info',
+      'informations',
+      'application',
+      'app',
+      'chronodil',
+      'changelog',
+      'historique',
+      'mise à jour',
+      'update',
+      'technologies',
+      'stack',
+      'tech',
+      'licence',
+      'license',
+      'auteur',
+      'author',
+      'crédits',
+      'credits',
+    ],
+    subsections: [
+      {
+        title: 'Version',
+        anchor: '#version',
+        keywords: ['version', 'numéro', 'build', 'release'],
+      },
+      {
+        title: 'Technologies',
+        anchor: '#tech',
+        keywords: ['stack', 'tech', 'next.js', 'react', 'typescript'],
+      },
+      {
+        title: 'Liens',
+        anchor: '#liens',
+        keywords: ['documentation', 'github', 'changelog', 'bugs'],
+      },
+    ],
+  },
 ]
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
@@ -450,6 +497,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
     if (pathname.startsWith('/dashboard/settings/departments'))
       return '/dashboard/settings/departments'
     if (pathname.startsWith('/dashboard/settings/general')) return '/dashboard/settings/general'
+    if (pathname.startsWith('/dashboard/settings/about')) return '/dashboard/settings/about'
 
     // Par défaut, profil
     return '/dashboard/settings/profile'
