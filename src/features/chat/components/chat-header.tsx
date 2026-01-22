@@ -105,17 +105,26 @@ export function ChatHeader({
         >
           {/* Back button on mobile */}
           {onBack && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation()
-                onBack()
-              }}
-              className="md:hidden h-8 w-8 shrink-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onBack()
+                    }}
+                    className="md:hidden h-8 w-8 shrink-0"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs md:hidden">
+                  Retour (Échap)
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {/* Avatar */}

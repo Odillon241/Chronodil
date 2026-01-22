@@ -20,15 +20,19 @@
      `removeConsole: process.env.NODE_ENV === 'production'`
    - Les logs sont automatiquement supprimés en build de production
 
+4. **Vérification JWT WebSocket/Socket.io - IMPLÉMENTÉE** (2026-01-22)
+   - `websocket-manager.ts` - Vérification token JWT via Supabase Auth
+   - `socketio-manager.ts` - Vérification token JWT via Supabase Auth
+   - Les connexions non authentifiées sont maintenant rejetées
+   - Support du header `Authorization: Bearer <token>`
+
 ### ⚠️ TODOs Restants (Non-critiques)
 
-| Fichier                       | TODO                                       | Priorité   |
-| ----------------------------- | ------------------------------------------ | ---------- |
-| `websocket-manager.ts:110`    | Vérification token JWT/session             | 🟡 Moyenne |
-| `socketio-manager.ts:35`      | Vérification token JWT                     | 🟡 Moyenne |
-| `security.ts:331`             | Intégration service de monitoring (Sentry) | 🟢 Faible  |
-| `chat.actions.ts` (x3)        | Module d'audit de chat                     | 🟢 Faible  |
-| `report-export.actions.ts:98` | Configuration export PDF                   | 🟢 Faible  |
+| Fichier                       | TODO                                       | Priorité  |
+| ----------------------------- | ------------------------------------------ | --------- |
+| `security.ts:331`             | Intégration service de monitoring (Sentry) | 🟢 Faible |
+| `chat.actions.ts` (x3)        | Module d'audit de chat                     | 🟢 Faible |
+| `report-export.actions.ts:98` | Configuration export PDF                   | 🟢 Faible |
 
 ### 📊 Métriques de Qualité
 
@@ -38,6 +42,7 @@
 | ESLint             | ✅     | Conforme (removeConsole en prod) |
 | Sécurité           | ✅     | Audit 2026-01-21 passé           |
 | Push Notifications | ✅     | Activées                         |
+| WebSocket Auth     | ✅     | JWT Supabase vérifié             |
 
 ---
 

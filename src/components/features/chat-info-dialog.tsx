@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,8 @@ import { UserAvatar } from '@/components/ui/user-avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   CalendarDays,
   Hash,
@@ -27,10 +30,12 @@ import {
   Download,
   Link as LinkIcon,
   UserPlus,
+  Pencil,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Conversation, MessageAttachment } from '@/features/chat/types/chat.types'
 import { cn } from '@/lib/utils'
+import { updateChannel } from '@/actions/chat.actions'
 
 interface ChatInfoDialogProps {
   open: boolean
@@ -38,6 +43,7 @@ interface ChatInfoDialogProps {
   conversation: Conversation
   currentUserId: string
   onManageMembers?: () => void
+  onUpdate?: () => void
 }
 
 export function ChatInfoDialog({
@@ -46,7 +52,60 @@ export function ChatInfoDialog({
   conversation,
   currentUserId,
   onManageMembers,
+  onUpdate,
 }: ChatInfoDialogProps) {
+  // État pour l'édition
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState(conversation.name || '')
+  const [editDescription, setEditDescription] = useState(conversation.description || '')
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Vérifier si l'utilisateur peut éditer (tous les membres pour GROUP/CHANNEL)
+  const canEdit = useMemo(() => {
+    if (conversation.type === 'DIRECT') return false
+    return conversation.ConversationMember.some((m) => m.User.id === currentUserId)
+  }, [conversation, currentUserId])
+
+  const handleStartEdit = () => {
+    setEditName(conversation.name || '')
+    setEditDescription(conversation.description || '')
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditName(conversation.name || '')
+    setEditDescription(conversation.description || '')
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editName.trim()) {
+      toast.error('Le nom est obligatoire')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const result = await updateChannel({
+        conversationId: conversation.id,
+        name: editName.trim(),
+        description: editDescription.trim() || undefined,
+      })
+
+      if (result?.data) {
+        toast.success('Conversation mise à jour')
+        setIsEditing(false)
+        onUpdate?.()
+      } else {
+        toast.error(result?.serverError || 'Erreur lors de la mise à jour')
+      }
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   // Identifier l'autre utilisateur pour les chats directs
   const otherUser = useMemo(() => {
     if (conversation.type === 'DIRECT') {
@@ -137,24 +196,80 @@ export function ChatInfoDialog({
               )}
             </div>
 
-            <DialogTitle className="text-2xl font-bold">
-              {conversation.type === 'DIRECT'
-                ? otherUser?.name
-                : conversation.name || 'Conversation'}
-            </DialogTitle>
+            {/* Nom - Éditable ou Affichage */}
+            {isEditing ? (
+              <div className="w-full max-w-[300px] space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Nom du groupe</label>
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Entrez le nom..."
+                    className="h-10 text-base font-medium"
+                    maxLength={100}
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Description</label>
+                  <Textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="Ajouter une description..."
+                    className="text-sm resize-none min-h-[80px]"
+                    maxLength={500}
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="flex-1 h-9 border-destructive/50 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={handleSaveEdit}
+                    disabled={isSaving || !editName.trim()}
+                    className="flex-1 h-9"
+                  >
+                    {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  {conversation.type === 'DIRECT'
+                    ? otherUser?.name
+                    : conversation.name || 'Conversation'}
+                  {canEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                      onClick={handleStartEdit}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                </DialogTitle>
 
-            <DialogDescription className="text-base mt-1 flex items-center justify-center gap-2">
-              {conversation.type === 'DIRECT' ? (
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary/50 text-secondary-foreground text-xs font-medium">
-                  {otherUser?.role || 'Membre'}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  {conversation.isPrivate && <Lock className="h-3 w-3" />}
-                  {conversation.description || 'Aucune description'}
-                </span>
-              )}
-            </DialogDescription>
+                <DialogDescription className="text-base mt-1 flex items-center justify-center gap-2">
+                  {conversation.type === 'DIRECT' ? (
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary/50 text-secondary-foreground text-xs font-medium">
+                      {otherUser?.role || 'Membre'}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      {conversation.isPrivate && <Lock className="h-3 w-3" />}
+                      {conversation.description || 'Aucune description'}
+                    </span>
+                  )}
+                </DialogDescription>
+              </>
+            )}
           </DialogHeader>
         </div>
 

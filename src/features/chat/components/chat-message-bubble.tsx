@@ -44,7 +44,7 @@ import { VoiceMessagePlayer } from './voice-message-player'
 import { ForwardMessageDialog } from './forward-message-dialog'
 import type { Message } from '../types/chat.types'
 
-interface ChatMessageBubbleProps {
+export interface ChatMessageBubbleProps {
   message: Message
   currentUserId: string
   isOwn: boolean

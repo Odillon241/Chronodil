@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io'
 import { nanoid } from 'nanoid'
 import { prisma } from './db'
+import { createSupabaseServerAdminClient } from './supabase-admin'
 import {
   WSMessageType,
   WSJoinConversationMessage,
@@ -23,18 +24,31 @@ export class SocketIOManager {
   }
 
   private setupSocketIO(): void {
-    // Middleware d'authentification
+    // Middleware d'authentification avec vérification JWT Supabase
     this.io.use(async (socket: AuthenticatedSocket, next) => {
-      const token = socket.handshake.auth.token || socket.handshake.headers.authorization
+      // Extraire le token du handshake (auth.token ou header Authorization)
+      let token = socket.handshake.auth.token || socket.handshake.headers.authorization
 
       if (!token) {
         return next(new Error('Authentication required'))
       }
 
+      // Retirer le préfixe "Bearer " si présent
+      if (token.startsWith('Bearer ')) {
+        token = token.slice(7)
+      }
+
       try {
-        // TODO: Implémenter la vérification du token JWT
-        // Pour l'instant, on utilise une authentification simplifiée (DEV ONLY)
-        const userId = token
+        // Vérifier le token JWT avec Supabase Auth
+        const supabase = createSupabaseServerAdminClient()
+        const { data: authData, error: authError } = await supabase.auth.getUser(token)
+
+        if (authError || !authData?.user) {
+          console.error('Socket.IO auth error:', authError?.message || 'Invalid token')
+          return next(new Error('Invalid or expired token'))
+        }
+
+        const userId = authData.user.id
 
         // Récupérer les infos utilisateur depuis la base de données
         const user = await prisma.user.findUnique({
@@ -50,6 +64,7 @@ export class SocketIOManager {
         socket.userId = user.id
         socket.userName = user.name
 
+        console.log(`✅ Socket.IO authenticated via Supabase: ${user.name} (${user.id})`)
         next()
       } catch (error) {
         console.error('Authentication error:', error)

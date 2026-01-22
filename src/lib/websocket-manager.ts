@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws'
 import { IncomingMessage } from 'http'
 import { nanoid } from 'nanoid'
 import { prisma } from './db'
+import { createSupabaseServerAdminClient } from './supabase-admin'
 import {
   WSMessageType,
   WSClientMessage,
@@ -107,16 +108,34 @@ export class WebSocketManager {
 
   private async handleAuthenticate(ws: WebSocket, message: WSAuthenticateMessage): Promise<void> {
     try {
-      // TODO: Implémenter la vérification du token JWT/session
-      // Pour l'instant, on utilise une authentification simplifiée
+      const token = message.token
 
-      // Exemple d'authentification (à remplacer par votre logique)
-      // const token = message.token;
-      // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // const userId = decoded.userId;
+      if (!token) {
+        this.send(ws, {
+          type: WSMessageType.AUTH_ERROR,
+          timestamp: new Date().toISOString(),
+          error: 'Token is required',
+        })
+        ws.close()
+        return
+      }
 
-      // Pour l'instant, extraire l'userId du token directement (DEV ONLY)
-      const userId = message.token // Remplacer par une vraie vérification JWT
+      // Vérifier le token JWT avec Supabase Auth
+      const supabase = createSupabaseServerAdminClient()
+      const { data: authData, error: authError } = await supabase.auth.getUser(token)
+
+      if (authError || !authData?.user) {
+        console.error('WebSocket auth error:', authError?.message || 'Invalid token')
+        this.send(ws, {
+          type: WSMessageType.AUTH_ERROR,
+          timestamp: new Date().toISOString(),
+          error: 'Invalid or expired token',
+        })
+        ws.close()
+        return
+      }
+
+      const userId = authData.user.id
 
       // Récupérer les infos utilisateur depuis la base de données
       const user = await prisma.user.findUnique({
@@ -149,7 +168,7 @@ export class WebSocketManager {
         userName: user.name,
       })
 
-      console.log(`✅ User authenticated: ${user.name} (${user.id})`)
+      console.log(`✅ User authenticated via Supabase: ${user.name} (${user.id})`)
     } catch (error) {
       console.error('Authentication error:', error)
       this.send(ws, {

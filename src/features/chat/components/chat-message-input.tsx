@@ -14,7 +14,7 @@ import { useChatInput } from '../hooks/use-chat-input'
 import { VoiceRecorderButton } from './voice-recorder-button'
 import type { Message } from '../types/chat.types'
 
-interface ChatMessageInputProps {
+export interface ChatMessageInputProps {
   conversationId: string
   currentUserId: string
   currentUserName: string

@@ -97,15 +97,30 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       streamRef.current = stream
 
       // Déterminer le meilleur format supporté
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : MediaRecorder.isTypeSupported('audio/mp4')
-            ? 'audio/mp4'
-            : 'audio/wav'
+      // Priorité: mp4/AAC (universel), puis webm/opus (Chrome/Firefox)
+      // Ref: MDN MediaRecorder.isTypeSupported()
+      const getSupportedMimeType = (): string => {
+        const types = [
+          'audio/mp4', // Safari, Chrome, Firefox (AAC)
+          'audio/webm;codecs=opus', // Chrome, Firefox (meilleure qualité)
+          'audio/webm', // Chrome, Firefox
+          'audio/ogg;codecs=opus', // Firefox
+          'audio/wav', // Fallback universel
+        ]
+        for (const type of types) {
+          if (MediaRecorder.isTypeSupported(type)) {
+            console.log(`[VoiceRecorder] Format sélectionné: ${type}`)
+            return type
+          }
+        }
+        return '' // Laisser le navigateur choisir
+      }
+      const mimeType = getSupportedMimeType()
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType })
+      // Si pas de mimeType explicite, laisser le navigateur choisir
+      const mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
 
       mediaRecorder.ondataavailable = (event) => {
@@ -115,7 +130,9 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       }
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: mimeType })
+        // Utiliser le mimeType réel du MediaRecorder (peut différer si le navigateur a choisi)
+        const actualMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm'
+        const blob = new Blob(chunksRef.current, { type: actualMimeType })
         setAudioBlob(blob)
         const url = URL.createObjectURL(blob)
         setAudioUrl(url)

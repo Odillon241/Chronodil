@@ -24,6 +24,7 @@ export function ChatMessageList({
   onVideoCall,
   onDeleteConversation,
   onLeaveConversation,
+  onBack,
   openInfoOnMount,
   openManageMembersOnMount,
   onInfoOpened,
@@ -161,6 +162,7 @@ export function ChatMessageList({
         onShowInfo={() => setShowInfo(true)}
         onVideoCall={onVideoCall}
         onToggleMute={handleToggleMute}
+        onBack={onBack}
         isMuted={isMuted}
         isAdmin={isAdmin}
         showSearch={showSearch}
@@ -269,6 +271,7 @@ export function ChatMessageList({
           setShowInfo(false)
           setShowManageMembers(true)
         }}
+        onUpdate={onUpdate}
       />
     </div>
   )

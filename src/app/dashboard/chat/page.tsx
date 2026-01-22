@@ -50,7 +50,7 @@ function ChatPageInner() {
   const [users, setUsers] = useState<any[]>([])
   const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [_isInitialLoad, setIsInitialLoad] = useState(true)
+  const [, setIsInitialLoad] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false)
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
@@ -80,9 +80,28 @@ function ChatPageInner() {
     onSearch: () => {}, // Recherche désactivée
     onNewMessage: () => setNewChatDialogOpen(true),
     onEscape: () => {
-      setNewChatDialogOpen(false)
-      setCreateChannelDialogOpen(false)
-      if (selectedThreadId) setSelectedThreadId(null)
+      // Priorité 1: Fermer les dialogs ouverts
+      if (newChatDialogOpen) {
+        setNewChatDialogOpen(false)
+        return
+      }
+      if (createChannelDialogOpen) {
+        setCreateChannelDialogOpen(false)
+        return
+      }
+
+      // Priorité 2: Fermer le thread si ouvert
+      if (selectedThreadId) {
+        setSelectedThreadId(null)
+        return
+      }
+
+      // Priorité 3: Revenir à la liste des conversations (désélectionner la conversation)
+      if (selectedConversation) {
+        setSelectedConversation(null)
+        // Supprimer le paramètre conversation de l'URL
+        window.history.pushState({}, '', '/dashboard/chat')
+      }
     },
   })
 
@@ -273,7 +292,7 @@ function ChatPageInner() {
   )
 
   const handleRealtimeConversationChange = useCallback(
-    (_eventType?: string, conversationId?: string) => {
+    (_eventType: string | undefined, conversationId?: string) => {
       scheduleConversationsRefresh()
       // Utiliser la ref pour éviter les dépendances circulaires
       if (conversationId && selectedConversationIdRef.current === conversationId) {
@@ -284,7 +303,7 @@ function ChatPageInner() {
   )
 
   const handleRealtimeMessageChange = useCallback(
-    (_eventType?: string, _messageId?: string, conversationId?: string) => {
+    (_eventType: string | undefined, _messageId: string | undefined, conversationId?: string) => {
       scheduleConversationsRefresh()
       // Utiliser la ref pour éviter les dépendances circulaires
       if (conversationId && selectedConversationIdRef.current === conversationId) {
@@ -295,7 +314,7 @@ function ChatPageInner() {
   )
 
   // Real-time updates pour le chat
-  const { isConnected: _isRealtimeConnected, reconnect: _reconnectRealtime } = useRealtimeChat({
+  useRealtimeChat({
     onConversationChange: handleRealtimeConversationChange,
     onMessageChange: handleRealtimeMessageChange,
     userId: currentUser?.id,
@@ -391,6 +410,10 @@ function ChatPageInner() {
                 onThreadClick={(threadId) => setSelectedThreadId(threadId)}
                 onDeleteConversation={handleDeleteConversation}
                 onLeaveConversation={handleLeaveConversation}
+                onBack={() => {
+                  setSelectedConversation(null)
+                  window.history.pushState({}, '', '/dashboard/chat')
+                }}
                 openInfoOnMount={openChannelInfoOnSelect && selectedConversation.type === 'CHANNEL'}
                 openManageMembersOnMount={
                   openManageMembersOnSelect && selectedConversation.type === 'CHANNEL'

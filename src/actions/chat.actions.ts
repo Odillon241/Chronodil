@@ -1850,7 +1850,8 @@ export const createChannel = authActionClient
   })
 
 /**
- * Mettre à jour les informations d'un canal
+ * Mettre à jour les informations d'un canal ou groupe
+ * Tous les membres peuvent modifier le nom, la description, etc.
  */
 export const updateChannel = authActionClient
   .schema(updateChannelSchema)
@@ -1858,37 +1859,25 @@ export const updateChannel = authActionClient
     const { conversationId, name, description, topic, purpose, category } = parsedInput
     const userId = ctx.userId
 
-    // Vérifier que c'est un canal
+    // Vérifier que c'est un canal ou groupe (pas une conversation directe)
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
     })
 
-    if (!conversation || conversation.type !== 'CHANNEL') {
-      throw new Error("Cette conversation n'est pas un canal")
+    if (!conversation || conversation.type === 'DIRECT') {
+      throw new Error('Cette conversation ne peut pas être modifiée')
     }
 
-    // Vérifier les permissions (admin ou owner)
+    // Vérifier que l'utilisateur est membre de la conversation
     const membership = await prisma.conversationMember.findFirst({
       where: {
         conversationId,
         userId,
-        isAdmin: true,
       },
     })
 
     if (!membership) {
-      // Vérifier les permissions via ChannelPermission
-      const permission = await prisma.channelPermission.findFirst({
-        where: {
-          conversationId,
-          userId,
-          role: { in: ['OWNER', 'ADMIN'] },
-        },
-      })
-
-      if (!permission) {
-        throw new Error("Vous n'avez pas les permissions pour modifier ce canal")
-      }
+      throw new Error('Vous devez être membre de cette conversation pour la modifier')
     }
 
     // Mettre à jour
