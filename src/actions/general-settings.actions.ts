@@ -1,65 +1,62 @@
-"use server";
+'use server'
 
-import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { actionClient } from "@/lib/safe-action";
-import { z } from "zod";
+import { getSession } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { actionClient } from '@/lib/safe-action'
+import { z } from 'zod'
+import {
+  generalSettingsSchema,
+  DEFAULT_GENERAL_SETTINGS,
+  VALID_TIMEZONES,
+} from '@/lib/validations/general-settings'
 
-// Schéma de validation pour les paramètres généraux Phase 1
-const generalSettingsSchema = z.object({
-  // Apparence
-  accentColor: z.enum(["yellow-vibrant", "green-anis", "green-teal", "dark"]).optional(),
-  viewDensity: z.enum(["compact", "normal", "comfortable"]).optional(),
-  fontSize: z.number().int().min(12).max(24).optional(),
-
-  // Localisation
-  language: z.enum(["fr", "en"]).optional(),
-  dateFormat: z.enum(["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"]).optional(),
-  hourFormat: z.enum(["12", "24"]).optional(),
-  timezone: z.string().optional(),
-
-  // Accessibilité
-  highContrast: z.boolean().optional(),
-  screenReaderMode: z.boolean().optional(),
-  reduceMotion: z.boolean().optional(),
-});
-
-export type GeneralSettingsInput = z.infer<typeof generalSettingsSchema>;
+// Re-export du type pour utilisation côté client
+export type { GeneralSettingsInput } from '@/lib/validations/general-settings'
 
 /**
  * Récupère les paramètres généraux de l'utilisateur
  */
-export const getGeneralSettings = actionClient
-  .schema(z.object({}))
-  .action(async () => {
-    const session = await getSession();
+export const getGeneralSettings = actionClient.schema(z.object({})).action(async () => {
+  const session = await getSession()
 
-    if (!session) {
-      throw new Error("Non authentifié");
-    }
+  if (!session) {
+    throw new Error('Non authentifié')
+  }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        accentColor: true,
-        viewDensity: true,
-        fontSize: true,
-        language: true,
-        dateFormat: true,
-        hourFormat: true,
-        timezone: true,
-        highContrast: true,
-        screenReaderMode: true,
-        reduceMotion: true,
-      },
-    });
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      // Apparence
+      darkModeEnabled: true,
+      accentColor: true,
+      viewDensity: true,
+      fontSize: true,
 
-    if (!user) {
-      throw new Error("Utilisateur non trouvé");
-    }
+      // Localisation
+      language: true,
+      dateFormat: true,
+      hourFormat: true,
+      timezone: true,
 
-    return user;
-  });
+      // Accessibilité
+      highContrast: true,
+      screenReaderMode: true,
+      reduceMotion: true,
+
+      // Heures silencieuses
+      quietHoursEnabled: true,
+      quietHoursStart: true,
+      quietHoursEnd: true,
+      quietHoursDays: true,
+    },
+  })
+
+  if (!user) {
+    throw new Error('Utilisateur non trouvé')
+  }
+
+  return user
+})
 
 /**
  * Met à jour les paramètres généraux de l'utilisateur
@@ -67,77 +64,95 @@ export const getGeneralSettings = actionClient
 export const updateGeneralSettings = actionClient
   .schema(generalSettingsSchema)
   .action(async ({ parsedInput }) => {
-    const session = await getSession();
+    const session = await getSession()
 
     if (!session) {
-      throw new Error("Non authentifié");
+      throw new Error('Non authentifié')
+    }
+
+    // Validation supplémentaire du timezone si fourni
+    if (parsedInput.timezone) {
+      const isValidTimezone =
+        VALID_TIMEZONES.includes(parsedInput.timezone as (typeof VALID_TIMEZONES)[number]) ||
+        /^[A-Za-z_]+\/[A-Za-z_]+$/.test(parsedInput.timezone) ||
+        parsedInput.timezone === 'UTC' ||
+        parsedInput.timezone.startsWith('Etc/')
+
+      if (!isValidTimezone) {
+        throw new Error('Fuseau horaire invalide')
+      }
     }
 
     const user = await prisma.user.update({
       where: { id: session.user.id },
       data: parsedInput,
       select: {
+        // Apparence
+        darkModeEnabled: true,
         accentColor: true,
         viewDensity: true,
         fontSize: true,
+
+        // Localisation
         language: true,
         dateFormat: true,
         hourFormat: true,
         timezone: true,
+
+        // Accessibilité
         highContrast: true,
         screenReaderMode: true,
         reduceMotion: true,
-      },
-    });
 
-    console.log("Mise à jour réussie:", user);
-    return user;
-  });
+        // Heures silencieuses
+        quietHoursEnabled: true,
+        quietHoursStart: true,
+        quietHoursEnd: true,
+        quietHoursDays: true,
+      },
+    })
+
+    return user
+  })
 
 /**
  * Réinitialise les paramètres généraux aux valeurs par défaut
  */
-export const resetGeneralSettings = actionClient
-  .schema(z.object({}))
-  .action(async () => {
-    const session = await getSession();
+export const resetGeneralSettings = actionClient.schema(z.object({})).action(async () => {
+  const session = await getSession()
 
-    if (!session) {
-      throw new Error("Non authentifié");
-    }
+  if (!session) {
+    throw new Error('Non authentifié')
+  }
 
-    const user = await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        // Apparence
-        accentColor: "green-anis",
-        viewDensity: "normal",
-        fontSize: 16,
+  const user = await prisma.user.update({
+    where: { id: session.user.id },
+    data: DEFAULT_GENERAL_SETTINGS,
+    select: {
+      // Apparence
+      darkModeEnabled: true,
+      accentColor: true,
+      viewDensity: true,
+      fontSize: true,
 
-        // Localisation
-        language: "fr",
-        dateFormat: "DD/MM/YYYY",
-        hourFormat: "24",
-        timezone: "Africa/Libreville",
+      // Localisation
+      language: true,
+      dateFormat: true,
+      hourFormat: true,
+      timezone: true,
 
-        // Accessibilité
-        highContrast: false,
-        screenReaderMode: false,
-        reduceMotion: false,
-      },
-      select: {
-        accentColor: true,
-        viewDensity: true,
-        fontSize: true,
-        language: true,
-        dateFormat: true,
-        hourFormat: true,
-        timezone: true,
-        highContrast: true,
-        screenReaderMode: true,
-        reduceMotion: true,
-      },
-    });
+      // Accessibilité
+      highContrast: true,
+      screenReaderMode: true,
+      reduceMotion: true,
 
-    return user;
-  });
+      // Heures silencieuses
+      quietHoursEnabled: true,
+      quietHoursStart: true,
+      quietHoursEnd: true,
+      quietHoursDays: true,
+    },
+  })
+
+  return user
+})

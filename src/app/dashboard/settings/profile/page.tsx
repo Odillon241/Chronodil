@@ -18,7 +18,7 @@ import {
 import { uploadAvatar } from '@/actions/upload.actions'
 import { createClient } from '@/lib/supabase-client'
 import { ImageCropper } from '@/components/features/image-cropper'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -155,7 +155,6 @@ export default function ProfilePage() {
     resolver: zodResolver(changePasswordSchema),
   })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadProfile()
   }, [])
@@ -427,123 +426,113 @@ export default function ProfilePage() {
 
         {/* Info Tab */}
         <TabsContent value="info" className="mt-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Informations personnelles</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium flex items-center gap-2">
-                      <User className="h-3.5 w-3.5" />
-                      Nom complet <span className="text-destructive">*</span>
-                    </Label>
-                    <Input placeholder="Jean Dupont" {...register('name')} />
-                    {errors.name && (
-                      <p className="text-xs text-destructive">{errors.name.message}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium flex items-center gap-2">
-                      <Mail className="h-3.5 w-3.5" />
-                      Email <span className="text-destructive">*</span>
-                    </Label>
-                    <Input type="email" placeholder="jean@example.com" {...register('email')} />
-                    {errors.email && (
-                      <p className="text-xs text-destructive">{errors.email.message}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium flex items-center gap-2">
-                      <Briefcase className="h-3.5 w-3.5" />
-                      Poste
-                    </Label>
-                    <Input placeholder="Développeur, Chef de projet..." {...register('position')} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium flex items-center gap-2">
-                      <Building2 className="h-3.5 w-3.5" />
-                      Département
-                    </Label>
-                    <Input
-                      value={user.department?.name || 'Non assigné'}
-                      disabled
-                      className="bg-muted/50"
-                    />
-                  </div>
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Informations personnelles</h3>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium flex items-center gap-2">
+                    <User className="h-3.5 w-3.5" />
+                    Nom complet <span className="text-destructive">*</span>
+                  </Label>
+                  <Input placeholder="Jean Dupont" {...register('name')} />
+                  {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
                 </div>
-
-                {/* Read-only info */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Shield className="h-3 w-3" />
-                      Rôle
-                    </span>
-                    <Badge className={cn('text-xs', ROLES[user.role]?.color)}>
-                      {ROLES[user.role]?.label}
-                    </Badge>
-                  </div>
-                  {user.manager && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <UserCog className="h-3 w-3" />
-                        Manager
-                      </span>
-                      <p className="text-sm font-medium">{user.manager.name}</p>
-                    </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5" />
+                    Email <span className="text-destructive">*</span>
+                  </Label>
+                  <Input type="email" placeholder="jean@example.com" {...register('email')} />
+                  {errors.email && (
+                    <p className="text-xs text-destructive">{errors.email.message}</p>
                   )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium flex items-center gap-2">
+                    <Briefcase className="h-3.5 w-3.5" />
+                    Poste
+                  </Label>
+                  <Input placeholder="Développeur, Chef de projet..." {...register('position')} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium flex items-center gap-2">
+                    <Building2 className="h-3.5 w-3.5" />
+                    Département
+                  </Label>
+                  <Input
+                    value={user.department?.name || 'Non assigné'}
+                    disabled
+                    className="bg-muted/50"
+                  />
+                </div>
+              </div>
+
+              {/* Read-only info */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    Rôle
+                  </span>
+                  <Badge className={cn('text-xs', ROLES[user.role]?.color)}>
+                    {ROLES[user.role]?.label}
+                  </Badge>
+                </div>
+                {user.manager && (
                   <div className="space-y-1">
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <CalendarDays className="h-3 w-3" />
-                      Membre depuis
+                      <UserCog className="h-3 w-3" />
+                      Manager
                     </span>
-                    <p className="text-sm font-medium">
-                      {new Date(user.createdAt).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
+                    <p className="text-sm font-medium">{user.manager.name}</p>
                   </div>
+                )}
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <CalendarDays className="h-3 w-3" />
+                    Membre depuis
+                  </span>
+                  <p className="text-sm font-medium">
+                    {new Date(user.createdAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
                 </div>
+              </div>
 
-                <div className="flex justify-end pt-4 border-t">
-                  <Button type="submit" disabled={isSaving || !isDirty} className="min-w-[140px]">
-                    {isSaving ? <Spinner className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
-                    Enregistrer
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+              <div className="flex justify-end pt-4 border-t">
+                <Button type="submit" disabled={isSaving || !isDirty} className="min-w-[140px]">
+                  {isSaving ? <Spinner className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
+                  Enregistrer
+                </Button>
+              </div>
+            </form>
+          </div>
         </TabsContent>
 
         {/* Security Tab */}
         <TabsContent value="security" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <KeyRound className="h-5 w-5" />
-                Mot de passe
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
-                <div>
-                  <p className="font-medium">Changer votre mot de passe</p>
-                  <p className="text-sm text-muted-foreground">
-                    Nous recommandons d'utiliser un mot de passe unique et sécurisé
-                  </p>
-                </div>
-                <Button variant="outline" onClick={() => setIsPasswordDialogOpen(true)}>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Modifier
-                </Button>
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <KeyRound className="h-5 w-5" />
+              Mot de passe
+            </h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+              <div>
+                <p className="font-medium">Changer votre mot de passe</p>
+                <p className="text-sm text-muted-foreground">
+                  Nous recommandons d'utiliser un mot de passe unique et sécurisé
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Button variant="outline" onClick={() => setIsPasswordDialogOpen(true)}>
+                <Lock className="h-4 w-4 mr-2" />
+                Modifier
+              </Button>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 

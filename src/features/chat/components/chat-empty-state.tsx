@@ -142,7 +142,7 @@ export function ChatEmptyState({ onNewChat }: ChatEmptyStateProps) {
           <p className="text-xs text-muted-foreground/60 flex items-center justify-center gap-2">
             <span>Raccourci clavier :</span>
             <kbd className="px-2 py-1 rounded bg-muted text-muted-foreground text-[10px] font-mono border border-muted-foreground/20 shadow-sm">
-              Ctrl + N
+              Alt + N
             </kbd>
           </p>
         </motion.div>

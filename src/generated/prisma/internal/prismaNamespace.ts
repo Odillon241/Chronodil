@@ -3036,7 +3036,8 @@ export const MessageScalarFieldEnum = {
   isThreadRoot: 'isThreadRoot',
   reactions: 'reactions',
   pinnedAt: 'pinnedAt',
-  pinnedById: 'pinnedById'
+  pinnedById: 'pinnedById',
+  taskId: 'taskId'
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]

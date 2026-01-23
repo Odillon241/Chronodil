@@ -239,12 +239,14 @@ model Message {
   reactions       Json?
   pinnedAt        DateTime?
   pinnedById      String?
+  taskId          String?
   Conversation    Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   Message         Message?          @relation("MessageToMessage", fields: [replyToId], references: [id])
   other_Message   Message[]         @relation("MessageToMessage")
   User            User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
   ThreadParent    Message?          @relation("ThreadMessages", fields: [threadId], references: [id])
   ThreadReplies   Message[]         @relation("ThreadMessages")
+  Task            Task?             @relation(fields: [taskId], references: [id], onDelete: SetNull)
   MessageRead     MessageRead[]
   MessageReminder MessageReminder[] @relation("MessageReminderMessage")
 
@@ -256,6 +258,7 @@ model Message {
   @@index([conversationId, pinnedAt])
   @@index([threadId])
   @@index([conversationId, threadId])
+  @@index([taskId])
 }
 
 model MessageRead {
@@ -565,6 +568,7 @@ model Task {
   TaskActivity                TaskActivity[]
   TaskComment                 TaskComment[]
   TaskMember                  TaskMember[]
+  Message                     Message[]
 
   @@index([activityType])
   @@index([complexity])

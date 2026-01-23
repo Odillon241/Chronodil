@@ -546,15 +546,13 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                     href={item.href}
                     className={cn(
                       'group relative flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground',
+                      isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50',
                     )}
                   >
                     <Icon
                       className={cn(
-                        'h-4 w-4 shrink-0 transition-opacity duration-200',
-                        isActive ? 'opacity-100' : 'opacity-60 group-hover:opacity-100',
+                        'h-4 w-4 shrink-0 transition-colors duration-200',
+                        isActive ? 'text-primary' : 'text-foreground',
                       )}
                     />
 
@@ -562,7 +560,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                       <div
                         className={cn(
                           'font-medium transition-colors duration-200',
-                          isActive ? 'text-primary' : '',
+                          isActive ? 'text-primary' : 'text-foreground',
                         )}
                       >
                         {item.title}

@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -64,31 +64,26 @@ jobs:
         run: pnpm test --run 2>/dev/null || true
         continue-on-error: true
 
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Create release
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 23.0.6
-          branches: |
-            [
-              {
-                "name": "main",
-                "prerelease": false
-              },
-              {
-                "name": "staging",
-                "prerelease": "rc"
-              },
-              {
-                "name": "develop",
-                "prerelease": "beta"
-              }
-            ]
           extra_plugins: |
+            conventional-changelog-conventionalcommits@8.0.0
             @semantic-release/changelog@6.0.3
             @semantic-release/git@10.0.1
-            @semantic-release/github@9.2.6
+            @semantic-release/github@10.3.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
 
       - name: Notify Slack on release
         if: success()

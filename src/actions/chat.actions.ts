@@ -51,6 +51,7 @@ const sendMessageSchema = z.object({
   content: z.string().min(1),
   attachments: z.any().optional(),
   replyToId: z.string().optional(),
+  taskId: z.string().optional(),
 })
 
 const updateMessageSchema = z.object({
@@ -139,6 +140,7 @@ const sendMessageWithThreadSchema = z.object({
   attachments: z.any().optional(),
   replyToId: z.string().optional(),
   threadId: z.string().optional(), // Répondre dans un thread existant
+  taskId: z.string().optional(), // Lier le message à une tâche
 })
 
 const scheduleMessageSchema = z.object({
@@ -604,7 +606,7 @@ export const getConversationById = authActionClient
 export const sendMessage = authActionClient
   .schema(sendMessageSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { conversationId, content, attachments, replyToId } = parsedInput
+    const { conversationId, content, attachments, replyToId, taskId } = parsedInput
     const userId = ctx.userId
 
     // Vérifier que l'utilisateur est membre de la conversation
@@ -627,6 +629,7 @@ export const sendMessage = authActionClient
         content,
         attachments,
         replyToId,
+        taskId,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -2029,7 +2032,7 @@ export const updateChannelPermission = authActionClient
 export const sendMessageWithThread = authActionClient
   .schema(sendMessageWithThreadSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { conversationId, content, attachments, replyToId, threadId } = parsedInput
+    const { conversationId, content, attachments, replyToId, threadId, taskId } = parsedInput
     const userId = ctx.userId
 
     // Vérifier que l'utilisateur est membre
@@ -2074,6 +2077,7 @@ export const sendMessageWithThread = authActionClient
         attachments,
         replyToId,
         threadId: finalThreadId,
+        taskId,
         isThreadRoot: !finalThreadId && !!replyToId, // Si pas de threadId mais replyToId, c'est une nouvelle racine
         createdAt: new Date(),
         updatedAt: new Date(),

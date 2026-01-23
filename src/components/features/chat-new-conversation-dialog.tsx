@@ -213,7 +213,7 @@ export function ChatNewConversationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] p-0 overflow-hidden border-none shadow-2xl bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl rounded-2xl flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[85vh] p-0 overflow-hidden shadow-2xl bg-background border rounded-2xl flex flex-col">
         {/* Header avec Gradient */}
         <div className="relative p-6 pb-2 border-b shrink-0">
           <DialogHeader>
@@ -289,17 +289,12 @@ export function ChatNewConversationDialog({
                             className="ring-2 ring-transparent group-hover:ring-primary/10 transition-all"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">
+                            <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">
                               {user.name}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate opacity-80">
-                              {user.email}
-                            </p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                           </div>
-                          <Badge
-                            variant="secondary"
-                            className="bg-transparent border-border/60 text-muted-foreground group-hover:bg-background group-hover:text-foreground transition-colors"
-                          >
+                          <Badge variant="outline" className="text-xs font-medium">
                             {user.role}
                           </Badge>
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity text-primary">

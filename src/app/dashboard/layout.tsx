@@ -60,6 +60,9 @@ function SearchBar() {
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isChatPage = pathname?.startsWith('/dashboard/chat')
+  const isFullWidthPage =
+    pathname === '/dashboard/projects/new' ||
+    (pathname?.startsWith('/dashboard/projects/') && pathname?.endsWith('/edit'))
 
   // Tracker la présence de l'utilisateur (met à jour lastSeenAt en DB)
   usePresenceTracker()
@@ -106,7 +109,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </header>
         <main
           className={`flex-1 overflow-y-auto flex flex-col ${
-            isChatPage ? 'p-0' : 'gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6'
+            isChatPage || isFullWidthPage ? 'p-0' : 'gap-4 p-3 sm:p-4 lg:gap-6 lg:p-6'
           }`}
         >
           {children}

@@ -49,6 +49,7 @@ export type MessageMinAggregateOutputType = {
   isThreadRoot: boolean | null
   pinnedAt: Date | null
   pinnedById: string | null
+  taskId: string | null
 }
 
 export type MessageMaxAggregateOutputType = {
@@ -66,6 +67,7 @@ export type MessageMaxAggregateOutputType = {
   isThreadRoot: boolean | null
   pinnedAt: Date | null
   pinnedById: string | null
+  taskId: string | null
 }
 
 export type MessageCountAggregateOutputType = {
@@ -85,6 +87,7 @@ export type MessageCountAggregateOutputType = {
   reactions: number
   pinnedAt: number
   pinnedById: number
+  taskId: number
   _all: number
 }
 
@@ -112,6 +115,7 @@ export type MessageMinAggregateInputType = {
   isThreadRoot?: true
   pinnedAt?: true
   pinnedById?: true
+  taskId?: true
 }
 
 export type MessageMaxAggregateInputType = {
@@ -129,6 +133,7 @@ export type MessageMaxAggregateInputType = {
   isThreadRoot?: true
   pinnedAt?: true
   pinnedById?: true
+  taskId?: true
 }
 
 export type MessageCountAggregateInputType = {
@@ -148,6 +153,7 @@ export type MessageCountAggregateInputType = {
   reactions?: true
   pinnedAt?: true
   pinnedById?: true
+  taskId?: true
   _all?: true
 }
 
@@ -254,6 +260,7 @@ export type MessageGroupByOutputType = {
   reactions: runtime.JsonValue | null
   pinnedAt: Date | null
   pinnedById: string | null
+  taskId: string | null
   _count: MessageCountAggregateOutputType | null
   _avg: MessageAvgAggregateOutputType | null
   _sum: MessageSumAggregateOutputType | null
@@ -296,12 +303,14 @@ export type MessageWhereInput = {
   reactions?: Prisma.JsonNullableFilter<"Message">
   pinnedAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null
   pinnedById?: Prisma.StringNullableFilter<"Message"> | string | null
+  taskId?: Prisma.StringNullableFilter<"Message"> | string | null
   Conversation?: Prisma.XOR<Prisma.ConversationScalarRelationFilter, Prisma.ConversationWhereInput>
   Message?: Prisma.XOR<Prisma.MessageNullableScalarRelationFilter, Prisma.MessageWhereInput> | null
   other_Message?: Prisma.MessageListRelationFilter
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   ThreadParent?: Prisma.XOR<Prisma.MessageNullableScalarRelationFilter, Prisma.MessageWhereInput> | null
   ThreadReplies?: Prisma.MessageListRelationFilter
+  Task?: Prisma.XOR<Prisma.TaskNullableScalarRelationFilter, Prisma.TaskWhereInput> | null
   MessageRead?: Prisma.MessageReadListRelationFilter
   MessageReminder?: Prisma.MessageReminderListRelationFilter
 }
@@ -323,12 +332,14 @@ export type MessageOrderByWithRelationInput = {
   reactions?: Prisma.SortOrderInput | Prisma.SortOrder
   pinnedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   pinnedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  taskId?: Prisma.SortOrderInput | Prisma.SortOrder
   Conversation?: Prisma.ConversationOrderByWithRelationInput
   Message?: Prisma.MessageOrderByWithRelationInput
   other_Message?: Prisma.MessageOrderByRelationAggregateInput
   User?: Prisma.UserOrderByWithRelationInput
   ThreadParent?: Prisma.MessageOrderByWithRelationInput
   ThreadReplies?: Prisma.MessageOrderByRelationAggregateInput
+  Task?: Prisma.TaskOrderByWithRelationInput
   MessageRead?: Prisma.MessageReadOrderByRelationAggregateInput
   MessageReminder?: Prisma.MessageReminderOrderByRelationAggregateInput
 }
@@ -353,12 +364,14 @@ export type MessageWhereUniqueInput = Prisma.AtLeast<{
   reactions?: Prisma.JsonNullableFilter<"Message">
   pinnedAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null
   pinnedById?: Prisma.StringNullableFilter<"Message"> | string | null
+  taskId?: Prisma.StringNullableFilter<"Message"> | string | null
   Conversation?: Prisma.XOR<Prisma.ConversationScalarRelationFilter, Prisma.ConversationWhereInput>
   Message?: Prisma.XOR<Prisma.MessageNullableScalarRelationFilter, Prisma.MessageWhereInput> | null
   other_Message?: Prisma.MessageListRelationFilter
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   ThreadParent?: Prisma.XOR<Prisma.MessageNullableScalarRelationFilter, Prisma.MessageWhereInput> | null
   ThreadReplies?: Prisma.MessageListRelationFilter
+  Task?: Prisma.XOR<Prisma.TaskNullableScalarRelationFilter, Prisma.TaskWhereInput> | null
   MessageRead?: Prisma.MessageReadListRelationFilter
   MessageReminder?: Prisma.MessageReminderListRelationFilter
 }, "id">
@@ -380,6 +393,7 @@ export type MessageOrderByWithAggregationInput = {
   reactions?: Prisma.SortOrderInput | Prisma.SortOrder
   pinnedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   pinnedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  taskId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.MessageCountOrderByAggregateInput
   _avg?: Prisma.MessageAvgOrderByAggregateInput
   _max?: Prisma.MessageMaxOrderByAggregateInput
@@ -407,6 +421,7 @@ export type MessageScalarWhereWithAggregatesInput = {
   reactions?: Prisma.JsonNullableWithAggregatesFilter<"Message">
   pinnedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
   pinnedById?: Prisma.StringNullableWithAggregatesFilter<"Message"> | string | null
+  taskId?: Prisma.StringNullableWithAggregatesFilter<"Message"> | string | null
 }
 
 export type MessageCreateInput = {
@@ -428,6 +443,7 @@ export type MessageCreateInput = {
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -449,6 +465,7 @@ export type MessageUncheckedCreateInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
@@ -474,6 +491,7 @@ export type MessageUpdateInput = {
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -495,6 +513,7 @@ export type MessageUncheckedUpdateInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
@@ -518,6 +537,7 @@ export type MessageCreateManyInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
 }
 
 export type MessageUpdateManyMutationInput = {
@@ -552,6 +572,7 @@ export type MessageUncheckedUpdateManyInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MessageListRelationFilter = {
@@ -586,6 +607,7 @@ export type MessageCountOrderByAggregateInput = {
   reactions?: Prisma.SortOrder
   pinnedAt?: Prisma.SortOrder
   pinnedById?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
 }
 
 export type MessageAvgOrderByAggregateInput = {
@@ -607,6 +629,7 @@ export type MessageMaxOrderByAggregateInput = {
   isThreadRoot?: Prisma.SortOrder
   pinnedAt?: Prisma.SortOrder
   pinnedById?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
 }
 
 export type MessageMinOrderByAggregateInput = {
@@ -624,6 +647,7 @@ export type MessageMinOrderByAggregateInput = {
   isThreadRoot?: Prisma.SortOrder
   pinnedAt?: Prisma.SortOrder
   pinnedById?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
 }
 
 export type MessageSumOrderByAggregateInput = {
@@ -821,6 +845,48 @@ export type MessageUpdateOneRequiredWithoutMessageReminderNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MessageUpdateToOneWithWhereWithoutMessageReminderInput, Prisma.MessageUpdateWithoutMessageReminderInput>, Prisma.MessageUncheckedUpdateWithoutMessageReminderInput>
 }
 
+export type MessageCreateNestedManyWithoutTaskInput = {
+  create?: Prisma.XOR<Prisma.MessageCreateWithoutTaskInput, Prisma.MessageUncheckedCreateWithoutTaskInput> | Prisma.MessageCreateWithoutTaskInput[] | Prisma.MessageUncheckedCreateWithoutTaskInput[]
+  connectOrCreate?: Prisma.MessageCreateOrConnectWithoutTaskInput | Prisma.MessageCreateOrConnectWithoutTaskInput[]
+  createMany?: Prisma.MessageCreateManyTaskInputEnvelope
+  connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+}
+
+export type MessageUncheckedCreateNestedManyWithoutTaskInput = {
+  create?: Prisma.XOR<Prisma.MessageCreateWithoutTaskInput, Prisma.MessageUncheckedCreateWithoutTaskInput> | Prisma.MessageCreateWithoutTaskInput[] | Prisma.MessageUncheckedCreateWithoutTaskInput[]
+  connectOrCreate?: Prisma.MessageCreateOrConnectWithoutTaskInput | Prisma.MessageCreateOrConnectWithoutTaskInput[]
+  createMany?: Prisma.MessageCreateManyTaskInputEnvelope
+  connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+}
+
+export type MessageUpdateManyWithoutTaskNestedInput = {
+  create?: Prisma.XOR<Prisma.MessageCreateWithoutTaskInput, Prisma.MessageUncheckedCreateWithoutTaskInput> | Prisma.MessageCreateWithoutTaskInput[] | Prisma.MessageUncheckedCreateWithoutTaskInput[]
+  connectOrCreate?: Prisma.MessageCreateOrConnectWithoutTaskInput | Prisma.MessageCreateOrConnectWithoutTaskInput[]
+  upsert?: Prisma.MessageUpsertWithWhereUniqueWithoutTaskInput | Prisma.MessageUpsertWithWhereUniqueWithoutTaskInput[]
+  createMany?: Prisma.MessageCreateManyTaskInputEnvelope
+  set?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  disconnect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  delete?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  update?: Prisma.MessageUpdateWithWhereUniqueWithoutTaskInput | Prisma.MessageUpdateWithWhereUniqueWithoutTaskInput[]
+  updateMany?: Prisma.MessageUpdateManyWithWhereWithoutTaskInput | Prisma.MessageUpdateManyWithWhereWithoutTaskInput[]
+  deleteMany?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[]
+}
+
+export type MessageUncheckedUpdateManyWithoutTaskNestedInput = {
+  create?: Prisma.XOR<Prisma.MessageCreateWithoutTaskInput, Prisma.MessageUncheckedCreateWithoutTaskInput> | Prisma.MessageCreateWithoutTaskInput[] | Prisma.MessageUncheckedCreateWithoutTaskInput[]
+  connectOrCreate?: Prisma.MessageCreateOrConnectWithoutTaskInput | Prisma.MessageCreateOrConnectWithoutTaskInput[]
+  upsert?: Prisma.MessageUpsertWithWhereUniqueWithoutTaskInput | Prisma.MessageUpsertWithWhereUniqueWithoutTaskInput[]
+  createMany?: Prisma.MessageCreateManyTaskInputEnvelope
+  set?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  disconnect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  delete?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[]
+  update?: Prisma.MessageUpdateWithWhereUniqueWithoutTaskInput | Prisma.MessageUpdateWithWhereUniqueWithoutTaskInput[]
+  updateMany?: Prisma.MessageUpdateManyWithWhereWithoutTaskInput | Prisma.MessageUpdateManyWithWhereWithoutTaskInput[]
+  deleteMany?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[]
+}
+
 export type MessageCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.MessageCreateWithoutUserInput, Prisma.MessageUncheckedCreateWithoutUserInput> | Prisma.MessageCreateWithoutUserInput[] | Prisma.MessageUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.MessageCreateOrConnectWithoutUserInput | Prisma.MessageCreateOrConnectWithoutUserInput[]
@@ -881,6 +947,7 @@ export type MessageCreateWithoutConversationInput = {
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -901,6 +968,7 @@ export type MessageUncheckedCreateWithoutConversationInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
@@ -953,6 +1021,7 @@ export type MessageScalarWhereInput = {
   reactions?: Prisma.JsonNullableFilter<"Message">
   pinnedAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null
   pinnedById?: Prisma.StringNullableFilter<"Message"> | string | null
+  taskId?: Prisma.StringNullableFilter<"Message"> | string | null
 }
 
 export type MessageCreateWithoutOther_MessageInput = {
@@ -973,6 +1042,7 @@ export type MessageCreateWithoutOther_MessageInput = {
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -994,6 +1064,7 @@ export type MessageUncheckedCreateWithoutOther_MessageInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutMessageInput
@@ -1022,6 +1093,7 @@ export type MessageCreateWithoutMessageInput = {
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -1042,6 +1114,7 @@ export type MessageUncheckedCreateWithoutMessageInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
@@ -1076,6 +1149,7 @@ export type MessageCreateWithoutThreadRepliesInput = {
   other_Message?: Prisma.MessageCreateNestedManyWithoutMessageInput
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -1097,6 +1171,7 @@ export type MessageUncheckedCreateWithoutThreadRepliesInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutMessageInput
@@ -1125,6 +1200,7 @@ export type MessageCreateWithoutThreadParentInput = {
   other_Message?: Prisma.MessageCreateNestedManyWithoutMessageInput
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -1145,6 +1221,7 @@ export type MessageUncheckedCreateWithoutThreadParentInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
@@ -1190,6 +1267,7 @@ export type MessageUpdateWithoutOther_MessageInput = {
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -1211,6 +1289,7 @@ export type MessageUncheckedUpdateWithoutOther_MessageInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutMessageNestedInput
@@ -1261,6 +1340,7 @@ export type MessageUpdateWithoutThreadRepliesInput = {
   other_Message?: Prisma.MessageUpdateManyWithoutMessageNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -1282,6 +1362,7 @@ export type MessageUncheckedUpdateWithoutThreadRepliesInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutMessageNestedInput
@@ -1322,6 +1403,7 @@ export type MessageCreateWithoutMessageReadInput = {
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
 
@@ -1342,6 +1424,7 @@ export type MessageUncheckedCreateWithoutMessageReadInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutMessageInput
@@ -1382,6 +1465,7 @@ export type MessageUpdateWithoutMessageReadInput = {
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
 
@@ -1402,6 +1486,7 @@ export type MessageUncheckedUpdateWithoutMessageReadInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutMessageNestedInput
@@ -1426,6 +1511,7 @@ export type MessageCreateWithoutMessageReminderInput = {
   User: Prisma.UserCreateNestedOneWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
 }
 
@@ -1446,6 +1532,7 @@ export type MessageUncheckedCreateWithoutMessageReminderInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
@@ -1486,6 +1573,7 @@ export type MessageUpdateWithoutMessageReminderInput = {
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
 }
 
@@ -1506,9 +1594,82 @@ export type MessageUncheckedUpdateWithoutMessageReminderInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
+}
+
+export type MessageCreateWithoutTaskInput = {
+  id: string
+  content: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isEdited?: boolean
+  isDeleted?: boolean
+  createdAt?: Date | string
+  updatedAt: Date | string
+  threadCount?: number
+  isThreadRoot?: boolean
+  reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pinnedAt?: Date | string | null
+  pinnedById?: string | null
+  Conversation: Prisma.ConversationCreateNestedOneWithoutMessageInput
+  Message?: Prisma.MessageCreateNestedOneWithoutOther_MessageInput
+  other_Message?: Prisma.MessageCreateNestedManyWithoutMessageInput
+  User: Prisma.UserCreateNestedOneWithoutMessageInput
+  ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
+  ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
+  MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
+}
+
+export type MessageUncheckedCreateWithoutTaskInput = {
+  id: string
+  conversationId: string
+  senderId: string
+  content: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isEdited?: boolean
+  isDeleted?: boolean
+  createdAt?: Date | string
+  updatedAt: Date | string
+  replyToId?: string | null
+  threadId?: string | null
+  threadCount?: number
+  isThreadRoot?: boolean
+  reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pinnedAt?: Date | string | null
+  pinnedById?: string | null
+  other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
+  ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
+  MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
+  MessageReminder?: Prisma.MessageReminderUncheckedCreateNestedManyWithoutMessageInput
+}
+
+export type MessageCreateOrConnectWithoutTaskInput = {
+  where: Prisma.MessageWhereUniqueInput
+  create: Prisma.XOR<Prisma.MessageCreateWithoutTaskInput, Prisma.MessageUncheckedCreateWithoutTaskInput>
+}
+
+export type MessageCreateManyTaskInputEnvelope = {
+  data: Prisma.MessageCreateManyTaskInput | Prisma.MessageCreateManyTaskInput[]
+  skipDuplicates?: boolean
+}
+
+export type MessageUpsertWithWhereUniqueWithoutTaskInput = {
+  where: Prisma.MessageWhereUniqueInput
+  update: Prisma.XOR<Prisma.MessageUpdateWithoutTaskInput, Prisma.MessageUncheckedUpdateWithoutTaskInput>
+  create: Prisma.XOR<Prisma.MessageCreateWithoutTaskInput, Prisma.MessageUncheckedCreateWithoutTaskInput>
+}
+
+export type MessageUpdateWithWhereUniqueWithoutTaskInput = {
+  where: Prisma.MessageWhereUniqueInput
+  data: Prisma.XOR<Prisma.MessageUpdateWithoutTaskInput, Prisma.MessageUncheckedUpdateWithoutTaskInput>
+}
+
+export type MessageUpdateManyWithWhereWithoutTaskInput = {
+  where: Prisma.MessageScalarWhereInput
+  data: Prisma.XOR<Prisma.MessageUpdateManyMutationInput, Prisma.MessageUncheckedUpdateManyWithoutTaskInput>
 }
 
 export type MessageCreateWithoutUserInput = {
@@ -1529,6 +1690,7 @@ export type MessageCreateWithoutUserInput = {
   other_Message?: Prisma.MessageCreateNestedManyWithoutMessageInput
   ThreadParent?: Prisma.MessageCreateNestedOneWithoutThreadRepliesInput
   ThreadReplies?: Prisma.MessageCreateNestedManyWithoutThreadParentInput
+  Task?: Prisma.TaskCreateNestedOneWithoutMessageInput
   MessageRead?: Prisma.MessageReadCreateNestedManyWithoutMessageInput
   MessageReminder?: Prisma.MessageReminderCreateNestedManyWithoutMessageInput
 }
@@ -1549,6 +1711,7 @@ export type MessageUncheckedCreateWithoutUserInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
   other_Message?: Prisma.MessageUncheckedCreateNestedManyWithoutMessageInput
   ThreadReplies?: Prisma.MessageUncheckedCreateNestedManyWithoutThreadParentInput
   MessageRead?: Prisma.MessageReadUncheckedCreateNestedManyWithoutMessageInput
@@ -1597,6 +1760,7 @@ export type MessageCreateManyConversationInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
 }
 
 export type MessageUpdateWithoutConversationInput = {
@@ -1617,6 +1781,7 @@ export type MessageUpdateWithoutConversationInput = {
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -1637,6 +1802,7 @@ export type MessageUncheckedUpdateWithoutConversationInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
@@ -1659,6 +1825,7 @@ export type MessageUncheckedUpdateManyWithoutConversationInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MessageCreateManyMessageInput = {
@@ -1677,6 +1844,7 @@ export type MessageCreateManyMessageInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
 }
 
 export type MessageCreateManyThreadParentInput = {
@@ -1695,6 +1863,7 @@ export type MessageCreateManyThreadParentInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
 }
 
 export type MessageUpdateWithoutMessageInput = {
@@ -1715,6 +1884,7 @@ export type MessageUpdateWithoutMessageInput = {
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -1735,6 +1905,7 @@ export type MessageUncheckedUpdateWithoutMessageInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
@@ -1757,6 +1928,7 @@ export type MessageUncheckedUpdateManyWithoutMessageInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MessageUpdateWithoutThreadParentInput = {
@@ -1777,6 +1949,7 @@ export type MessageUpdateWithoutThreadParentInput = {
   other_Message?: Prisma.MessageUpdateManyWithoutMessageNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -1797,6 +1970,7 @@ export type MessageUncheckedUpdateWithoutThreadParentInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
@@ -1814,6 +1988,91 @@ export type MessageUncheckedUpdateManyWithoutThreadParentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  threadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isThreadRoot?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type MessageCreateManyTaskInput = {
+  id: string
+  conversationId: string
+  senderId: string
+  content: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isEdited?: boolean
+  isDeleted?: boolean
+  createdAt?: Date | string
+  updatedAt: Date | string
+  replyToId?: string | null
+  threadId?: string | null
+  threadCount?: number
+  isThreadRoot?: boolean
+  reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pinnedAt?: Date | string | null
+  pinnedById?: string | null
+}
+
+export type MessageUpdateWithoutTaskInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isEdited?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  threadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isThreadRoot?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Conversation?: Prisma.ConversationUpdateOneRequiredWithoutMessageNestedInput
+  Message?: Prisma.MessageUpdateOneWithoutOther_MessageNestedInput
+  other_Message?: Prisma.MessageUpdateManyWithoutMessageNestedInput
+  User?: Prisma.UserUpdateOneRequiredWithoutMessageNestedInput
+  ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
+  ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
+  MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
+}
+
+export type MessageUncheckedUpdateWithoutTaskInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  conversationId?: Prisma.StringFieldUpdateOperationsInput | string
+  senderId?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isEdited?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  threadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  threadCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isThreadRoot?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
+  ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
+  MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
+  MessageReminder?: Prisma.MessageReminderUncheckedUpdateManyWithoutMessageNestedInput
+}
+
+export type MessageUncheckedUpdateManyWithoutTaskInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  conversationId?: Prisma.StringFieldUpdateOperationsInput | string
+  senderId?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isEdited?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  threadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   threadCount?: Prisma.IntFieldUpdateOperationsInput | number
   isThreadRoot?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1837,6 +2096,7 @@ export type MessageCreateManyUserInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Date | string | null
   pinnedById?: string | null
+  taskId?: string | null
 }
 
 export type MessageUpdateWithoutUserInput = {
@@ -1857,6 +2117,7 @@ export type MessageUpdateWithoutUserInput = {
   other_Message?: Prisma.MessageUpdateManyWithoutMessageNestedInput
   ThreadParent?: Prisma.MessageUpdateOneWithoutThreadRepliesNestedInput
   ThreadReplies?: Prisma.MessageUpdateManyWithoutThreadParentNestedInput
+  Task?: Prisma.TaskUpdateOneWithoutMessageNestedInput
   MessageRead?: Prisma.MessageReadUpdateManyWithoutMessageNestedInput
   MessageReminder?: Prisma.MessageReminderUpdateManyWithoutMessageNestedInput
 }
@@ -1877,6 +2138,7 @@ export type MessageUncheckedUpdateWithoutUserInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   other_Message?: Prisma.MessageUncheckedUpdateManyWithoutMessageNestedInput
   ThreadReplies?: Prisma.MessageUncheckedUpdateManyWithoutThreadParentNestedInput
   MessageRead?: Prisma.MessageReadUncheckedUpdateManyWithoutMessageNestedInput
@@ -1899,6 +2161,7 @@ export type MessageUncheckedUpdateManyWithoutUserInput = {
   reactions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   pinnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pinnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1976,12 +2239,14 @@ export type MessageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   reactions?: boolean
   pinnedAt?: boolean
   pinnedById?: boolean
+  taskId?: boolean
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   Message?: boolean | Prisma.Message$MessageArgs<ExtArgs>
   other_Message?: boolean | Prisma.Message$other_MessageArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   ThreadParent?: boolean | Prisma.Message$ThreadParentArgs<ExtArgs>
   ThreadReplies?: boolean | Prisma.Message$ThreadRepliesArgs<ExtArgs>
+  Task?: boolean | Prisma.Message$TaskArgs<ExtArgs>
   MessageRead?: boolean | Prisma.Message$MessageReadArgs<ExtArgs>
   MessageReminder?: boolean | Prisma.Message$MessageReminderArgs<ExtArgs>
   _count?: boolean | Prisma.MessageCountOutputTypeDefaultArgs<ExtArgs>
@@ -2004,10 +2269,12 @@ export type MessageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   reactions?: boolean
   pinnedAt?: boolean
   pinnedById?: boolean
+  taskId?: boolean
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   Message?: boolean | Prisma.Message$MessageArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   ThreadParent?: boolean | Prisma.Message$ThreadParentArgs<ExtArgs>
+  Task?: boolean | Prisma.Message$TaskArgs<ExtArgs>
 }, ExtArgs["result"]["message"]>
 
 export type MessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2027,10 +2294,12 @@ export type MessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   reactions?: boolean
   pinnedAt?: boolean
   pinnedById?: boolean
+  taskId?: boolean
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   Message?: boolean | Prisma.Message$MessageArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   ThreadParent?: boolean | Prisma.Message$ThreadParentArgs<ExtArgs>
+  Task?: boolean | Prisma.Message$TaskArgs<ExtArgs>
 }, ExtArgs["result"]["message"]>
 
 export type MessageSelectScalar = {
@@ -2050,9 +2319,10 @@ export type MessageSelectScalar = {
   reactions?: boolean
   pinnedAt?: boolean
   pinnedById?: boolean
+  taskId?: boolean
 }
 
-export type MessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "senderId" | "content" | "attachments" | "isEdited" | "isDeleted" | "createdAt" | "updatedAt" | "replyToId" | "threadId" | "threadCount" | "isThreadRoot" | "reactions" | "pinnedAt" | "pinnedById", ExtArgs["result"]["message"]>
+export type MessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "senderId" | "content" | "attachments" | "isEdited" | "isDeleted" | "createdAt" | "updatedAt" | "replyToId" | "threadId" | "threadCount" | "isThreadRoot" | "reactions" | "pinnedAt" | "pinnedById" | "taskId", ExtArgs["result"]["message"]>
 export type MessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   Message?: boolean | Prisma.Message$MessageArgs<ExtArgs>
@@ -2060,6 +2330,7 @@ export type MessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   ThreadParent?: boolean | Prisma.Message$ThreadParentArgs<ExtArgs>
   ThreadReplies?: boolean | Prisma.Message$ThreadRepliesArgs<ExtArgs>
+  Task?: boolean | Prisma.Message$TaskArgs<ExtArgs>
   MessageRead?: boolean | Prisma.Message$MessageReadArgs<ExtArgs>
   MessageReminder?: boolean | Prisma.Message$MessageReminderArgs<ExtArgs>
   _count?: boolean | Prisma.MessageCountOutputTypeDefaultArgs<ExtArgs>
@@ -2069,12 +2340,14 @@ export type MessageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   Message?: boolean | Prisma.Message$MessageArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   ThreadParent?: boolean | Prisma.Message$ThreadParentArgs<ExtArgs>
+  Task?: boolean | Prisma.Message$TaskArgs<ExtArgs>
 }
 export type MessageIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Conversation?: boolean | Prisma.ConversationDefaultArgs<ExtArgs>
   Message?: boolean | Prisma.Message$MessageArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   ThreadParent?: boolean | Prisma.Message$ThreadParentArgs<ExtArgs>
+  Task?: boolean | Prisma.Message$TaskArgs<ExtArgs>
 }
 
 export type $MessagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2086,6 +2359,7 @@ export type $MessagePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     User: Prisma.$UserPayload<ExtArgs>
     ThreadParent: Prisma.$MessagePayload<ExtArgs> | null
     ThreadReplies: Prisma.$MessagePayload<ExtArgs>[]
+    Task: Prisma.$TaskPayload<ExtArgs> | null
     MessageRead: Prisma.$MessageReadPayload<ExtArgs>[]
     MessageReminder: Prisma.$MessageReminderPayload<ExtArgs>[]
   }
@@ -2106,6 +2380,7 @@ export type $MessagePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     reactions: runtime.JsonValue | null
     pinnedAt: Date | null
     pinnedById: string | null
+    taskId: string | null
   }, ExtArgs["result"]["message"]>
   composites: {}
 }
@@ -2506,6 +2781,7 @@ export interface Prisma__MessageClient<T, Null = never, ExtArgs extends runtime.
   User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   ThreadParent<T extends Prisma.Message$ThreadParentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Message$ThreadParentArgs<ExtArgs>>): Prisma.Prisma__MessageClient<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   ThreadReplies<T extends Prisma.Message$ThreadRepliesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Message$ThreadRepliesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  Task<T extends Prisma.Message$TaskArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Message$TaskArgs<ExtArgs>>): Prisma.Prisma__TaskClient<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   MessageRead<T extends Prisma.Message$MessageReadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Message$MessageReadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   MessageReminder<T extends Prisma.Message$MessageReminderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Message$MessageReminderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2553,6 +2829,7 @@ export interface MessageFieldRefs {
   readonly reactions: Prisma.FieldRef<"Message", 'Json'>
   readonly pinnedAt: Prisma.FieldRef<"Message", 'DateTime'>
   readonly pinnedById: Prisma.FieldRef<"Message", 'String'>
+  readonly taskId: Prisma.FieldRef<"Message", 'String'>
 }
     
 
@@ -3032,6 +3309,25 @@ export type Message$ThreadRepliesArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[]
+}
+
+/**
+ * Message.Task
+ */
+export type Message$TaskArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Task
+   */
+  select?: Prisma.TaskSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Task
+   */
+  omit?: Prisma.TaskOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TaskInclude<ExtArgs> | null
+  where?: Prisma.TaskWhereInput
 }
 
 /**

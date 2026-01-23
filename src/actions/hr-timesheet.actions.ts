@@ -21,6 +21,11 @@ import { calculateWorkingHours } from '@/lib/business-hours'
 import { createAuditLog, AuditActions, AuditEntities } from '@/lib/audit'
 import { revalidateTag } from 'next/cache'
 import { CacheTags } from '@/lib/cache'
+import {
+  syncTaskFromHRActivity,
+  checkTaskAfterHRActivityDeletion,
+  recalculateTaskHoursFromActivities,
+} from '@/lib/hr-task-sync'
 
 // ⚡ Fonctions d'invalidation du cache HR Timesheet
 async function invalidateAfterTimesheetCreate(timesheetId: string, _userId: string) {
@@ -839,6 +844,18 @@ export const updateHRActivity = authActionClient
     // Mettre à jour le total des heures du timesheet
     await updateTimesheetTotalHours(activity.hrTimesheetId)
 
+    // 🔄 Synchronisation bidirectionnelle : mettre à jour la tâche liée
+    if (updatedActivity.taskId) {
+      // Si le statut a changé, synchroniser avec la tâche
+      if (data.status && updatedActivity.status) {
+        await syncTaskFromHRActivity(updatedActivity.taskId, updatedActivity.status as any)
+      }
+      // Recalculer les heures de la tâche si totalHours a changé
+      if (data.totalHours !== undefined || data.startDate || data.endDate) {
+        await recalculateTaskHoursFromActivities(updatedActivity.taskId)
+      }
+    }
+
     revalidatePath('/dashboard/hr-timesheet')
     revalidatePath(`/dashboard/hr-timesheet/${activity.hrTimesheetId}`)
     // ⚡ Phase 2: Invalidation cache Next.js 16
@@ -887,6 +904,11 @@ export const deleteHRActivity = authActionClient
 
     // Mettre à jour le total des heures du timesheet
     await updateTimesheetTotalHours(activity.hrTimesheetId)
+
+    // 🔄 Synchronisation : vérifier si la tâche liée doit être désactivée
+    if (linkedTaskId) {
+      await checkTaskAfterHRActivityDeletion(linkedTaskId)
+    }
 
     revalidatePath('/dashboard/hr-timesheet')
     revalidatePath(`/dashboard/hr-timesheet/${activity.hrTimesheetId}`)

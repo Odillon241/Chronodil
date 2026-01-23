@@ -149,8 +149,7 @@
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md",
-        "changelogTitle": "# Changelog\n\nTous les changements notables de ce projet sont documentés dans ce fichier.",
-        "repositoryUrl": "https://github.com/your-org/chronodil-app"
+        "changelogTitle": "# Changelog\n\nTous les changements notables de ce projet sont documentés dans ce fichier."
       }
     ],
     [
@@ -176,9 +175,8 @@
       "@semantic-release/github",
       {
         "successComment": false,
-        "failComment": "Cette version a échoué. Veuillez consulter le log GitHub Actions pour plus de détails.",
-        "labels": ["type: release"],
-        "assignees": ["@devops-release"]
+        "failComment": false,
+        "labels": ["type: release"]
       }
     ]
   ]

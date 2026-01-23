@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid'
 import { logTaskActivity, logTaskChanges } from '@/lib/task-activity'
 import { createAuditLog, AuditActions, AuditEntities } from '@/lib/audit'
 import { updateTag } from 'next/cache'
+import { syncHRActivityFromTask, archiveHRActivitiesForDeletedTask } from '@/lib/hr-task-sync'
 
 const createTaskSchema = z.object({
   name: z.string().min(1, 'Le nom est requis'),
@@ -306,6 +307,11 @@ export const updateTask = actionClient.schema(updateTaskSchema).action(async ({ 
   // Logger les changements
   await logTaskChanges(id, session.user.id, task, updatedTask)
 
+  // 🔄 Synchronisation bidirectionnelle : si le statut a changé, mettre à jour les HRActivity liées
+  if (data.status && data.status !== task.status) {
+    await syncHRActivityFromTask(id, data.status as any)
+  }
+
   // Créer un log d'audit
   await createAuditLog({
     userId: session.user.id,
@@ -379,6 +385,9 @@ export const deleteTask = actionClient
       projectId: task.projectId,
       createdBy: task.createdBy,
     }
+
+    // 🔄 Archiver les HRActivity liées avant suppression (préserve l'historique des heures)
+    await archiveHRActivitiesForDeletedTask(parsedInput.id)
 
     await prisma.task.delete({
       where: { id: parsedInput.id },
@@ -767,6 +776,11 @@ export const updateTaskStatus = actionClient
         },
       },
     })
+
+    // 🔄 Synchronisation bidirectionnelle : mettre à jour les HRActivity liées
+    if (task.status !== parsedInput.status) {
+      await syncHRActivityFromTask(parsedInput.id, parsedInput.status as any)
+    }
 
     // Notifier les membres si la tâche est partagée
     if (task.isShared && task.TaskMember.length > 1) {

@@ -630,6 +630,8 @@ export const getAllUsers = authActionClient.schema(z.object({})).action(async ({
       name: true,
       email: true,
       role: true,
+      avatar: true,
+      image: true,
       Department: {
         select: {
           id: true,

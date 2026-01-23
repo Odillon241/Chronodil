@@ -7,18 +7,17 @@ import { toast } from 'sonner'
 import { useConfirmationDialog } from '@/hooks/use-confirmation-dialog'
 import { getProjects, archiveProject, cloneProject, deleteProject } from '@/actions/project.actions'
 import { getDepartments } from '@/actions/settings.actions'
-import { getAllUsers } from '@/actions/user.actions'
 import { useSession } from '@/lib/auth-client'
 import { useRealtimeProjects } from '@/hooks/use-realtime-projects'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import Link from 'next/link'
 
 // Components
 import { ProjectsHeader } from '@/components/projects/projects-header'
 import { ProjectsToolbar } from '@/components/projects/projects-toolbar'
 import { ProjectsList } from '@/components/projects/projects-list'
 import { ProjectsGrid } from '@/components/projects/projects-grid'
-import { ProjectCreateDialog } from '@/components/projects/project-create-dialog'
 import { ProjectEditDialog } from '@/components/projects/project-edit-dialog'
 import { ProjectDetailsDialog } from '@/components/projects/project-details-dialog'
 import { ProjectTeamDialog } from '@/components/features/project-team-dialog'
@@ -39,7 +38,6 @@ export default function ProjectsPage() {
   const t = useT('projects')
 
   // Dialog states
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
@@ -48,7 +46,6 @@ export default function ProjectsPage() {
   // Data states
   const [projects, setProjects] = useState<Project[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
-  const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   // Filter and view states
@@ -82,17 +79,15 @@ export default function ProjectsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [projectsResult, deptResult, usersResult] = await Promise.all([
+      const [projectsResult, deptResult] = await Promise.all([
         getProjects({
           isActive: activeTab === 'all' ? undefined : activeTab === 'active' ? true : false,
         }),
         getDepartments({}),
-        getAllUsers({}),
       ])
 
       if (projectsResult?.data) setProjects(projectsResult.data as any)
       if (deptResult?.data) setDepartments(deptResult.data as Department[])
-      if (usersResult?.data) setUsers(usersResult.data)
     } catch (_error) {
       toast.error(t('messages.loadError'))
     } finally {
@@ -185,10 +180,6 @@ export default function ProjectsPage() {
       setSortField(field)
       setSortOrder('asc')
     }
-  }
-
-  const handleCreate = () => {
-    setCreateDialogOpen(true)
   }
 
   const handleEdit = (project: Project) => {
@@ -294,9 +285,11 @@ export default function ProjectsPage() {
     <div className="flex-1 space-y-6">
       <ProjectsHeader
         action={
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('create')}
+          <Button asChild>
+            <Link href="/dashboard/projects/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau projet
+            </Link>
           </Button>
         }
       />
@@ -355,14 +348,6 @@ export default function ProjectsPage() {
       )}
 
       {/* Dialogs */}
-      <ProjectCreateDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        departments={departments}
-        users={users}
-        onSuccess={loadProjects}
-      />
-
       <ProjectEditDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
